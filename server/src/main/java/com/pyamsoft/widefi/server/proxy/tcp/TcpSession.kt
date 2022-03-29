@@ -351,10 +351,8 @@ internal constructor(
 
   companion object {
 
-    private const val BAD_PS4_CONNECTION_CHECK_URL =
-        "http://ps4-system.sec.np.dl.playstation.nethttp://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env"
-    private const val FIXED_PS4_CONNECTION_CHECK_URL =
-        "http://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env"
+    private val PSN_REGEX =
+        "^http://\\S*[.]playstation[.]nethttp://\\S*[.]playstation[.]net/S*".toRegex()
 
     /**
      * Check if this is an HTTPS connection
@@ -383,11 +381,17 @@ internal constructor(
      */
     @CheckResult
     private fun String.fixSpecialBuggyUrls(): String {
-      return if (this == BAD_PS4_CONNECTION_CHECK_URL) {
-        FIXED_PS4_CONNECTION_CHECK_URL
-      } else {
-        this
+      if (PSN_REGEX.matches(this)) {
+        // Get the second http
+        val httpIndex = this.lastIndexOf("http")
+        if (httpIndex >= 0) {
+          val fixed = this.substring(httpIndex + 1)
+          Timber.d("Fixed bad Playstation URL: $this => $fixed")
+          return fixed
+        }
       }
+
+      return this
     }
   }
 
