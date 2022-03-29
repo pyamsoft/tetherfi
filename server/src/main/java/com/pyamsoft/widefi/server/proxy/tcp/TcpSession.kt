@@ -268,7 +268,6 @@ internal constructor(
         Timber.e(e, "${proxyType.name} Error during Internet exchange")
         errorBus.send(
             ErrorEvent.Tcp(
-                type = proxyType,
                 request = request,
                 throwable = e,
             ),
@@ -292,7 +291,6 @@ internal constructor(
         Timber.w("${proxyType.name} $msg")
         errorBus.send(
             ErrorEvent.Tcp(
-                type = proxyType,
                 request = request,
                 throwable = RuntimeException(msg),
             ),
@@ -302,6 +300,13 @@ internal constructor(
       }
 
       debugLog { "${proxyType.name} Proxy to: $request" }
+
+      errorBus.send(
+          ErrorEvent.Tcp(
+              request = request,
+              throwable = RuntimeException("Proxy to ${request.url}"),
+          ),
+      )
 
       connectToInternet(request).use { internet ->
         debugLog { "Connect to internet: $request" }
@@ -320,7 +325,6 @@ internal constructor(
         Timber.e(e, "${proxyType.name} Error during connect to internet: $request")
         errorBus.send(
             ErrorEvent.Tcp(
-                type = proxyType,
                 request = request,
                 throwable = e,
             ),

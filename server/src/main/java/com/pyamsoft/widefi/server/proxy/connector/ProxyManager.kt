@@ -9,6 +9,8 @@ import com.pyamsoft.widefi.server.proxy.tcp.TcpProxyConnection
 import com.pyamsoft.widefi.server.proxy.udp.UdpProxyConnection
 import com.pyamsoft.widefi.server.status.StatusBroadcast
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 internal class ProxyManager
 private constructor(
@@ -20,35 +22,39 @@ private constructor(
     private val proxyDebug: Boolean,
 ) {
 
-  private suspend fun loopTcp() {
-    TcpProxyConnection(
+  private fun CoroutineScope.loopTcp() {
+    val tcp =
+        TcpProxyConnection(
             port = port,
             status = status,
             dispatcher = dispatcher,
             errorBus = errorBus,
             proxyDebug = proxyDebug,
         )
-        .loop()
+
+    launch(context = dispatcher) { tcp.loop() }
   }
 
-  private suspend fun loopUdp() {
-    UdpProxyConnection(
+  private fun CoroutineScope.loopUdp() {
+    val udp =
+        UdpProxyConnection(
             port = port,
             status = status,
             dispatcher = dispatcher,
             errorBus = errorBus,
             proxyDebug = proxyDebug,
         )
-        .loop()
+
+    launch(context = dispatcher) { udp.loop() }
   }
 
   /** Loop this proxy connection, accepting new connections up to a connection limit */
-  suspend fun loop() {
+  fun loop(scope: CoroutineScope) {
     Enforcer.assertOffMainThread()
 
     when (proxyType) {
-      SharedProxy.Type.TCP -> loopTcp()
-      SharedProxy.Type.UDP -> loopUdp()
+      SharedProxy.Type.TCP -> scope.loopTcp()
+      SharedProxy.Type.UDP -> scope.loopUdp()
     }
   }
 

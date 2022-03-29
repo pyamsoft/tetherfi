@@ -31,6 +31,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.PYDroidActivity
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import javax.inject.Inject
@@ -58,6 +59,7 @@ class MainActivity : PYDroidActivity() {
         p.start()
       }
 
+      Timber.d("Now fetch group info")
       val info = p.getGroupInfo()
       if (info != null) {
         onInfo(info)
@@ -161,7 +163,7 @@ class MainActivity : PYDroidActivity() {
                         style = MaterialTheme.typography.caption,
                     )
                     Text(
-                        text = "${e.type.name}: ${e.request}",
+                        text = "${SharedProxy.Type.TCP.name}: ${e.request}",
                         style = MaterialTheme.typography.caption,
                     )
                   }
@@ -171,7 +173,7 @@ class MainActivity : PYDroidActivity() {
                         style = MaterialTheme.typography.caption,
                     )
                     Text(
-                        text = e.type.name,
+                        text = SharedProxy.Type.UDP.name,
                         style = MaterialTheme.typography.caption,
                     )
                   }

@@ -39,9 +39,7 @@ abstract class ServerModule {
 
   @Binds
   @CheckResult
-  internal abstract fun bindErrorListener(
-      impl: EventBus<ErrorEvent>
-  ): EventConsumer<ErrorEvent>
+  internal abstract fun bindErrorListener(impl: EventBus<ErrorEvent>): EventConsumer<ErrorEvent>
 
   @Module
   companion object {

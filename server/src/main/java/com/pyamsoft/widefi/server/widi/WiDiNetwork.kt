@@ -6,6 +6,10 @@ import com.pyamsoft.widefi.server.status.RunningStatus
 
 interface WiDiNetwork : Server {
 
+    suspend fun start()
+
+    suspend fun stop()
+
   @CheckResult suspend fun getGroupInfo(): GroupInfo?
 
   suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit)

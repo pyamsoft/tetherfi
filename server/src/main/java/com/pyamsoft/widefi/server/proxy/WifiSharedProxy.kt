@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,14 +25,19 @@ import timber.log.Timber
 internal class WifiSharedProxy
 @Inject
 internal constructor(
-    private val errorBus: EventBus<ErrorEvent>,
     @Named("proxy_debug") private val proxyDebug: Boolean,
+    private val errorBus: EventBus<ErrorEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
-  private val dispatcher by lazy { Executors.newCachedThreadPool().asCoroutineDispatcher() }
   private val mutex = Mutex()
   private val jobs = mutableListOf<ProxyJob>()
+
+  /** Dispatcher backed by its own thread group */
+  private val dispatcher by lazy { Executors.newCachedThreadPool().asCoroutineDispatcher() }
+
+  /** We own our own scope here because the proxy lifespan is separate */
+  private val scope by lazy { CoroutineScope(context = dispatcher) }
 
   /**
    * Get the port for the proxy
@@ -57,7 +62,7 @@ internal constructor(
         )
 
     Timber.d("Begin UDP proxy server loop")
-    val job = launch(context = dispatcher) { udp.loop() }
+    val job = launch(context = dispatcher) { udp.loop(this) }
     return ProxyJob(type = SharedProxy.Type.UDP, job = job)
   }
 
@@ -73,13 +78,12 @@ internal constructor(
         )
 
     Timber.d("Begin TCP proxy server loop")
-    val job = launch(context = dispatcher) { tcp.loop() }
+    val job = launch(context = dispatcher) { tcp.loop(this) }
     return ProxyJob(type = SharedProxy.Type.TCP, job = job)
   }
 
   private suspend fun shutdown() {
     clearJobs()
-    dispatcher.cancelChildren()
   }
 
   private suspend fun clearJobs() {
@@ -87,14 +91,15 @@ internal constructor(
     mutex.withLock { jobs.removeEach { it.job.cancel() } }
   }
 
-  override suspend fun start() =
-      withContext(context = Dispatchers.IO) {
-        shutdown()
+  override fun start() {
+    scope.launch(context = dispatcher) {
+      shutdown()
 
-        val port = getPort()
+      val port = getPort()
 
-        status.set(RunningStatus.Starting)
+      status.set(RunningStatus.Starting)
 
+      coroutineScope {
         val tcp = loopTcp(port = port)
         val udp = loopUdp(port = port)
 
@@ -105,17 +110,20 @@ internal constructor(
 
         Timber.d("Started proxy server on port: $port")
       }
+    }
+  }
 
-  override suspend fun stop() =
-      withContext(context = Dispatchers.IO) {
-        Timber.d("Stopping proxy server")
+  override fun stop() {
+    scope.launch(context = dispatcher) {
+      Timber.d("Stopping proxy server")
 
-        status.set(RunningStatus.Stopping)
+      status.set(RunningStatus.Stopping)
 
-        shutdown()
+      shutdown()
 
-        status.set(RunningStatus.NotRunning)
-      }
+      status.set(RunningStatus.NotRunning)
+    }
+  }
 
   override suspend fun onErrorEvent(block: (ErrorEvent) -> Unit) {
     return errorBus.onEvent { block(it) }
