@@ -163,6 +163,7 @@ internal constructor(
     status.set(runningStatus)
   }
 
+  @CheckResult
   @SuppressLint("MissingPermission")
   private suspend fun resolveCurrentGroup(channel: WifiP2pManager.Channel): WiDiNetwork.GroupInfo? =
       withContext(context = Dispatchers.Main) {
@@ -173,13 +174,37 @@ internal constructor(
               channel,
           ) { group ->
             if (group == null) {
-              Timber.w("Wifi group info was null from P2PManager")
+              Timber.w("Group info was null from P2PManager")
               cont.resume(null)
             } else {
               cont.resume(
                   WiDiNetwork.GroupInfo(
                       ssid = group.networkName,
                       password = group.passphrase,
+                  ),
+              )
+            }
+          }
+        }
+      }
+
+  @CheckResult
+  private suspend fun resolveConnectionInfo(
+      channel: WifiP2pManager.Channel
+  ): WiDiNetwork.ConnectionInfo? =
+      withContext(context = Dispatchers.Main) {
+        return@withContext suspendCoroutine { cont ->
+          directManager.requestConnectionInfo(
+              channel,
+          ) { conn ->
+            if (conn == null) {
+              Timber.w("Connection Info info was null from P2PManager")
+              cont.resume(null)
+            } else {
+              cont.resume(
+                  WiDiNetwork.ConnectionInfo(
+                      ip = conn.groupOwnerAddress?.hostAddress ?: "No IP Address",
+                      hostName = conn.groupOwnerAddress?.hostName ?: "No Host Name",
                   ),
               )
             }
@@ -205,6 +230,17 @@ internal constructor(
         }
 
         return@withContext resolveCurrentGroup(channel)
+      }
+
+  override suspend fun getConnectionInfo(): WiDiNetwork.ConnectionInfo? =
+      withContext(context = Dispatchers.Main) {
+        val channel = getChannel()
+        if (channel == null) {
+          Timber.w("Cannot get connection info without Wifi channel")
+          return@withContext null
+        }
+
+        return@withContext resolveConnectionInfo(channel)
       }
 
   override suspend fun start() =

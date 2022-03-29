@@ -37,7 +37,6 @@ import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class MainActivity : PYDroidActivity() {
 
@@ -49,7 +48,8 @@ class MainActivity : PYDroidActivity() {
 
   private inline fun toggleWiDi(
       on: Boolean,
-      crossinline onInfo: (WiDiNetwork.GroupInfo) -> Unit,
+      crossinline onGroupInfo: (WiDiNetwork.GroupInfo) -> Unit,
+      crossinline onConnectionInfo: (WiDiNetwork.ConnectionInfo) -> Unit,
   ) {
     val p = wiDiNetwork.requireNotNull()
     lifecycleScope.launch(context = Dispatchers.Main) {
@@ -59,10 +59,14 @@ class MainActivity : PYDroidActivity() {
         p.start()
       }
 
-      Timber.d("Now fetch group info")
-      val info = p.getGroupInfo()
-      if (info != null) {
-        onInfo(info)
+      val group = p.getGroupInfo()
+      if (group != null) {
+        onGroupInfo(group)
+      }
+
+      val conn = p.getConnectionInfo()
+      if (conn != null) {
+        onConnectionInfo(conn)
       }
     }
   }
@@ -100,10 +104,14 @@ class MainActivity : PYDroidActivity() {
         ) {
           Button(
               onClick = {
-                toggleWiDi(isWiDiOn) { info ->
-                  ssid = info.ssid
-                  password = info.password
-                }
+                toggleWiDi(
+                    isWiDiOn,
+                    onGroupInfo = { info ->
+                      ssid = info.ssid
+                      password = info.password
+                    },
+                    onConnectionInfo = { info -> },
+                )
                 isWiDiOn = !isWiDiOn
               },
           ) {
@@ -113,7 +121,7 @@ class MainActivity : PYDroidActivity() {
           }
 
           Text(
-              text = "WideFi Network: SSID=$ssid PASSWORD=$password",
+              text = "SSID=$ssid PASSWORD=$password",
               style = MaterialTheme.typography.body1,
           )
 

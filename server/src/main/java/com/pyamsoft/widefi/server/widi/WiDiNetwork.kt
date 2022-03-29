@@ -6,11 +6,13 @@ import com.pyamsoft.widefi.server.status.RunningStatus
 
 interface WiDiNetwork : Server {
 
-    suspend fun start()
+  suspend fun start()
 
-    suspend fun stop()
+  suspend fun stop()
 
   @CheckResult suspend fun getGroupInfo(): GroupInfo?
+
+  @CheckResult suspend fun getConnectionInfo(): ConnectionInfo?
 
   suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit)
 
@@ -18,5 +20,11 @@ interface WiDiNetwork : Server {
   internal constructor(
       val ssid: String,
       val password: String,
+  )
+
+  data class ConnectionInfo
+  internal constructor(
+      val ip: String,
+      val hostName: String,
   )
 }
