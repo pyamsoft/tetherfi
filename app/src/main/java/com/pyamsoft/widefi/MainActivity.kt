@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.PYDroidActivity
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -86,6 +88,10 @@ class MainActivity : PYDroidActivity() {
       var proxyStatus by remember { mutableStateOf<RunningStatus>(RunningStatus.NotRunning) }
       var widiStatus by remember { mutableStateOf<RunningStatus>(RunningStatus.NotRunning) }
 
+      val connections = remember { mutableStateMapOf<String, Int>() }
+
+      val connectionItems = remember(connections) { connections.keys.toList() }
+
       LaunchedEffect(true) {
         wiDiNetwork.requireNotNull().also { widi ->
           this.launch(context = Dispatchers.Main) { widi.onStatusChanged { widiStatus = it } }
@@ -95,6 +101,19 @@ class MainActivity : PYDroidActivity() {
           this.launch(context = Dispatchers.Main) { widi.onProxyStatusChanged { proxyStatus = it } }
 
           this.launch(context = Dispatchers.Main) { widi.onErrorEvent { proxyErrors.add(it) } }
+
+          this.launch(context = Dispatchers.Main) {
+            widi.onConnectionEvent { e ->
+              when (e) {
+                is ConnectionEvent.Tcp -> {
+                  val key = e.request.host
+                  val current = connections[key] ?: 0
+                  connections[key] = current + 1
+                }
+                is ConnectionEvent.Udp -> {}
+              }
+            }
+          }
         }
       }
 
@@ -152,6 +171,49 @@ class MainActivity : PYDroidActivity() {
           LazyColumn(
               verticalArrangement = Arrangement.spacedBy(8.dp),
           ) {
+            item {
+              Text(
+                  text = "Connections",
+                  style =
+                      MaterialTheme.typography.body1.copy(
+                          fontWeight = FontWeight.Bold,
+                      ),
+              )
+            }
+
+            itemsIndexed(
+                items = connectionItems,
+                key = { i, _ -> i },
+            ) { _, key ->
+              val conn = remember(connections, key) { connections.getOrElse(key) { 0 } }
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+              ) {
+                Text(
+                    text = "$key: ",
+                    style =
+                        MaterialTheme.typography.body2.copy(
+                            fontWeight = FontWeight.Bold,
+                        ),
+                )
+
+                Text(
+                    text = conn.toString(),
+                    style = MaterialTheme.typography.body2,
+                )
+              }
+            }
+
+            item {
+              Text(
+                  text = "Errors",
+                  style =
+                      MaterialTheme.typography.body1.copy(
+                          fontWeight = FontWeight.Bold,
+                      ),
+              )
+            }
+
             itemsIndexed(
                 items = proxyErrors,
                 key = { i, _ -> i },

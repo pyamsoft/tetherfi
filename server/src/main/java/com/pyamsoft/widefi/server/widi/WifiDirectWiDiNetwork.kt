@@ -2,13 +2,17 @@ package com.pyamsoft.widefi.server.widi
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import android.os.Looper
 import androidx.annotation.CheckResult
+import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.BaseServer
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.proxy.SharedProxy
@@ -50,14 +54,64 @@ internal constructor(
     return mutex.withLock { wifiChannel }
   }
 
+  @CheckResult
+  private suspend fun getNetworkName(): String =
+      withContext(context = Dispatchers.IO) {
+        return@withContext "WideFi"
+      }
+
+  @CheckResult
+  private suspend fun getNetworkPassword(): String =
+      withContext(context = Dispatchers.IO) {
+        return@withContext "widefi42"
+      }
+
+  @CheckResult
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private suspend fun getNetworkBand(): Int =
+      withContext(context = Dispatchers.IO) {
+        return@withContext WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+      }
+
+  @CheckResult
+  private suspend fun getConfiguration(): WifiP2pConfig? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      WifiP2pConfig.Builder()
+          .setNetworkName("DIRECT-WF-${getNetworkName()}")
+          .setPassphrase(getNetworkPassword())
+          .setGroupOperatingBand(getNetworkBand())
+          .build()
+    } else {
+      null
+    }
+  }
+
+  @SuppressLint("MissingPermission")
+  private fun createGroupQ(
+      channel: WifiP2pManager.Channel,
+      config: WifiP2pConfig,
+      listener: WifiP2pManager.ActionListener,
+  ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      directManager.createGroup(
+          channel,
+          config,
+          listener,
+      )
+    } else {
+      throw IllegalStateException("Called createGroupQ but not Q: ${Build.VERSION.SDK_INT}")
+    }
+  }
+
   @SuppressLint("MissingPermission")
   private suspend fun createGroup(channel: WifiP2pManager.Channel): RunningStatus =
       withContext(context = Dispatchers.Main) {
         Timber.d("Creating new wifi p2p group")
 
+        val config = getConfiguration()
+
         return@withContext suspendCoroutine { cont ->
-          directManager.createGroup(
-              channel,
+          val listener =
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                   Timber.d("New network created")
@@ -69,8 +123,16 @@ internal constructor(
                   Timber.w(msg)
                   cont.resume(RunningStatus.Error(msg))
                 }
-              },
-          )
+              }
+
+          if (config != null) {
+            createGroupQ(channel, config, listener)
+          } else {
+            directManager.createGroup(
+                channel,
+                listener,
+            )
+          }
         }
       }
 
@@ -214,6 +276,10 @@ internal constructor(
 
   override suspend fun onErrorEvent(block: (ErrorEvent) -> Unit) {
     return proxy.onErrorEvent(block)
+  }
+
+  override suspend fun onConnectionEvent(block: (ConnectionEvent) -> Unit) {
+    return proxy.onConnectionEvent(block)
   }
 
   override suspend fun getGroupInfo(): WiDiNetwork.GroupInfo? =

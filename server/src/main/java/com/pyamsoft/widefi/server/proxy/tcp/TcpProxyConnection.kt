@@ -2,6 +2,7 @@ package com.pyamsoft.widefi.server.proxy.tcp
 
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.connector.BaseProxyConnection
@@ -18,6 +19,7 @@ internal class TcpProxyConnection(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
+    private val connectionBus: EventBus<ConnectionEvent>,
     status: StatusBroadcast,
     proxyDebug: Boolean,
 ) :
@@ -50,6 +52,7 @@ internal class TcpProxyConnection(
         TcpSession(
             dispatcher = dispatcher,
             errorBus = errorBus,
+            connectionBus = connectionBus,
             proxyDebug = proxyDebug,
         )
 

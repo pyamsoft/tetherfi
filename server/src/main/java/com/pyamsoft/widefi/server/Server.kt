@@ -7,4 +7,6 @@ interface Server {
   suspend fun onStatusChanged(block: (RunningStatus) -> Unit)
 
   suspend fun onErrorEvent(block: (ErrorEvent) -> Unit)
+
+  suspend fun onConnectionEvent(block: (ConnectionEvent) -> Unit)
 }

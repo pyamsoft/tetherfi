@@ -41,6 +41,12 @@ abstract class ServerModule {
   @CheckResult
   internal abstract fun bindErrorListener(impl: EventBus<ErrorEvent>): EventConsumer<ErrorEvent>
 
+  @Binds
+  @CheckResult
+  internal abstract fun bindConnectionListener(
+      impl: EventBus<ConnectionEvent>
+  ): EventConsumer<ConnectionEvent>
+
   @Module
   companion object {
 
@@ -48,6 +54,13 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     internal fun provideErrorBus(): EventBus<ErrorEvent> {
+      return EventBus.create()
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideConnectionBus(): EventBus<ConnectionEvent> {
       return EventBus.create()
     }
 

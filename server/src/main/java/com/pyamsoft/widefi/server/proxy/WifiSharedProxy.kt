@@ -3,6 +3,7 @@ package com.pyamsoft.widefi.server.proxy
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.BaseServer
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -27,6 +28,7 @@ internal class WifiSharedProxy
 internal constructor(
     @Named("proxy_debug") private val proxyDebug: Boolean,
     private val errorBus: EventBus<ErrorEvent>,
+    private val connectionBus: EventBus<ConnectionEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -57,6 +59,7 @@ internal constructor(
             port = port,
             status = status,
             errorBus = errorBus,
+            connectionBus = connectionBus,
             dispatcher = dispatcher,
             proxyDebug = proxyDebug,
         )
@@ -73,6 +76,7 @@ internal constructor(
             port = port,
             status = status,
             errorBus = errorBus,
+            connectionBus = connectionBus,
             dispatcher = dispatcher,
             proxyDebug = proxyDebug,
         )
@@ -84,6 +88,10 @@ internal constructor(
 
   private suspend fun shutdown() {
     clearJobs()
+
+    // Clear busses
+    errorBus.send(ErrorEvent.Clear)
+    connectionBus.send(ConnectionEvent.Clear)
   }
 
   private suspend fun clearJobs() {
@@ -127,6 +135,10 @@ internal constructor(
 
   override suspend fun onErrorEvent(block: (ErrorEvent) -> Unit) {
     return errorBus.onEvent { block(it) }
+  }
+
+  override suspend fun onConnectionEvent(block: (ConnectionEvent) -> Unit) {
+    return connectionBus.onEvent { block(it) }
   }
 
   private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {

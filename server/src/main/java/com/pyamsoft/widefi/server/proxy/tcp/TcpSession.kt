@@ -5,6 +5,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ProxyRequest
 import com.pyamsoft.widefi.server.proxy.SharedProxy
@@ -37,6 +38,7 @@ internal class TcpSession
 internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
+    private val connectionBus: EventBus<ConnectionEvent>,
     proxyDebug: Boolean,
 ) : BaseSession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
 
@@ -310,6 +312,14 @@ internal constructor(
 
       connectToInternet(request).use { internet ->
         debugLog { "Connect to internet: $request" }
+
+        // Log connection
+        connectionBus.send(
+            ConnectionEvent.Tcp(
+                request = request,
+            ),
+        )
+
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
         exchangeInternet(

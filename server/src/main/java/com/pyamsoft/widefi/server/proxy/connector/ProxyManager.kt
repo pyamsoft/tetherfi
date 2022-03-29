@@ -3,6 +3,7 @@ package com.pyamsoft.widefi.server.proxy.connector
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.tcp.TcpProxyConnection
@@ -19,6 +20,7 @@ private constructor(
     private val dispatcher: CoroutineDispatcher,
     private val status: StatusBroadcast,
     private val errorBus: EventBus<ErrorEvent>,
+    private val connectionBus: EventBus<ConnectionEvent>,
     private val proxyDebug: Boolean,
 ) {
 
@@ -29,6 +31,7 @@ private constructor(
             status = status,
             dispatcher = dispatcher,
             errorBus = errorBus,
+            connectionBus = connectionBus,
             proxyDebug = proxyDebug,
         )
 
@@ -42,6 +45,7 @@ private constructor(
             status = status,
             dispatcher = dispatcher,
             errorBus = errorBus,
+            connectionBus = connectionBus,
             proxyDebug = proxyDebug,
         )
 
@@ -67,6 +71,7 @@ private constructor(
         status: StatusBroadcast,
         dispatcher: CoroutineDispatcher,
         errorBus: EventBus<ErrorEvent>,
+        connectionBus: EventBus<ConnectionEvent>,
         proxyDebug: Boolean,
     ): ProxyManager {
       return ProxyManager(
@@ -75,6 +80,7 @@ private constructor(
           status = status,
           dispatcher = dispatcher,
           errorBus = errorBus,
+          connectionBus = connectionBus,
           proxyDebug = proxyDebug,
       )
     }
@@ -85,6 +91,7 @@ private constructor(
         port: Int,
         status: StatusBroadcast,
         dispatcher: CoroutineDispatcher,
+        connectionBus: EventBus<ConnectionEvent>,
         errorBus: EventBus<ErrorEvent>,
         proxyDebug: Boolean,
     ): ProxyManager {
@@ -94,6 +101,7 @@ private constructor(
           status = status,
           dispatcher = dispatcher,
           errorBus = errorBus,
+          connectionBus = connectionBus,
           proxyDebug = proxyDebug,
       )
     }
