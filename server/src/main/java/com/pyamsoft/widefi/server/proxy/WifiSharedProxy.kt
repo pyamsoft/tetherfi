@@ -7,14 +7,12 @@ import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
-import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -26,17 +24,15 @@ import timber.log.Timber
 internal class WifiSharedProxy
 @Inject
 internal constructor(
-    @Named("proxy_debug") private val proxyDebug: Boolean,
+    @Named("proxy_dispatcher") private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
+    private val factory: ProxyManager.Factory,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
   private val mutex = Mutex()
   private val jobs = mutableListOf<ProxyJob>()
-
-  /** Dispatcher backed by its own thread group */
-  private val dispatcher by lazy { Executors.newCachedThreadPool().asCoroutineDispatcher() }
 
   /** We own our own scope here because the proxy lifespan is separate */
   private val scope by lazy { CoroutineScope(context = dispatcher) }
@@ -48,42 +44,17 @@ internal constructor(
    */
   @CheckResult
   private suspend fun getPort(): Int =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = dispatcher) {
         return@withContext 8228
       }
 
   @CheckResult
-  private fun CoroutineScope.loopUdp(port: Int): ProxyJob {
-    val udp =
-        ProxyManager.udp(
-            port = port,
-            status = status,
-            errorBus = errorBus,
-            connectionBus = connectionBus,
-            dispatcher = dispatcher,
-            proxyDebug = proxyDebug,
-        )
+  private fun CoroutineScope.proxyLoop(type: SharedProxy.Type, port: Int): ProxyJob {
+    val tcp = factory.create(type = type, port = port)
 
-    Timber.d("Begin UDP proxy server loop")
-    val job = launch(context = dispatcher) { udp.loop(this) }
-    return ProxyJob(type = SharedProxy.Type.UDP, job = job)
-  }
-
-  @CheckResult
-  private fun CoroutineScope.loopTcp(port: Int): ProxyJob {
-    val tcp =
-        ProxyManager.tcp(
-            port = port,
-            status = status,
-            errorBus = errorBus,
-            connectionBus = connectionBus,
-            dispatcher = dispatcher,
-            proxyDebug = proxyDebug,
-        )
-
-    Timber.d("Begin TCP proxy server loop")
-    val job = launch(context = dispatcher) { tcp.loop(this) }
-    return ProxyJob(type = SharedProxy.Type.TCP, job = job)
+    Timber.d("${type.name} Begin proxy server loop")
+    val job = launch(context = dispatcher) { tcp.loop() }
+    return ProxyJob(type = type, job = job)
   }
 
   private suspend fun shutdown() {
@@ -108,8 +79,8 @@ internal constructor(
       status.set(RunningStatus.Starting)
 
       coroutineScope {
-        val tcp = loopTcp(port = port)
-        val udp = loopUdp(port = port)
+        val tcp = proxyLoop(type = SharedProxy.Type.TCP, port = port)
+        val udp = proxyLoop(type = SharedProxy.Type.UDP, port = port)
 
         mutex.withLock {
           jobs.add(tcp)

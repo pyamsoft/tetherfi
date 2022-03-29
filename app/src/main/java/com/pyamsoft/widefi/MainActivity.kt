@@ -100,7 +100,14 @@ class MainActivity : PYDroidActivity() {
 
           this.launch(context = Dispatchers.Main) { widi.onProxyStatusChanged { proxyStatus = it } }
 
-          this.launch(context = Dispatchers.Main) { widi.onErrorEvent { proxyErrors.add(it) } }
+          this.launch(context = Dispatchers.Main) {
+            widi.onErrorEvent { e ->
+              when (e) {
+                ErrorEvent.Clear -> proxyErrors.clear()
+                else -> proxyErrors.add(e)
+              }
+            }
+          }
 
           this.launch(context = Dispatchers.Main) {
             widi.onConnectionEvent { e ->
@@ -111,6 +118,7 @@ class MainActivity : PYDroidActivity() {
                   connections[key] = current + 1
                 }
                 is ConnectionEvent.Udp -> {}
+                is ConnectionEvent.Clear -> connections.clear()
               }
             }
           }
@@ -247,6 +255,7 @@ class MainActivity : PYDroidActivity() {
                         style = MaterialTheme.typography.caption,
                     )
                   }
+                  else -> throw IllegalStateException("Clear events should not be propagated")
                 }
               }
             }

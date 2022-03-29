@@ -14,12 +14,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal abstract class BaseProxyConnection<SS : ASocket, CS : Any>(
+internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
     protected val proxyType: SharedProxy.Type,
     private val status: StatusBroadcast,
     private val dispatcher: CoroutineDispatcher,
     protected val proxyDebug: Boolean,
-) {
+) : ProxyManager {
 
   /** Log only when session is in debug mode */
   protected inline fun debugLog(message: () -> String) {
@@ -52,7 +52,7 @@ internal abstract class BaseProxyConnection<SS : ASocket, CS : Any>(
     return NetworkAddress(hostname = "0.0.0.0", port = port)
   }
 
-  suspend fun loop() {
+  override suspend fun loop() {
     val socket = openServerSocket()
     status.set(RunningStatus.Running)
 

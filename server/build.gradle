@@ -65,7 +65,8 @@ dependencies {
 
     kapt "com.google.dagger:dagger-compiler:$dagger"
 
-    implementation "io.ktor:ktor-network:$ktor"
+    // API for Dagger
+    api "io.ktor:ktor-network:$ktor"
 
     // MOVE TO CORE
 

@@ -1,21 +1,22 @@
-package com.pyamsoft.widefi.server.proxy.udp
+package com.pyamsoft.widefi.server.proxy.session
 
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
-import com.pyamsoft.widefi.server.proxy.session.BaseSession
+import com.pyamsoft.widefi.server.proxy.session.BaseProxySession
 import io.ktor.network.sockets.Datagram
 import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber
 
-internal class UdpSession(
+internal class UdpProxySession
+internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
     proxyDebug: Boolean,
-) : BaseSession<Datagram>(SharedProxy.Type.UDP, proxyDebug) {
+) : BaseProxySession<Datagram>(SharedProxy.Type.UDP, proxyDebug) {
 
   override suspend fun exchange(proxy: Datagram) {
     Enforcer.assertOffMainThread()

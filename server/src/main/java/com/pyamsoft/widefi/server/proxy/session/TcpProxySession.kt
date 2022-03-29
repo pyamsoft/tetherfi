@@ -1,4 +1,4 @@
-package com.pyamsoft.widefi.server.proxy.tcp
+package com.pyamsoft.widefi.server.proxy.session
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
@@ -9,9 +9,6 @@ import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ProxyRequest
 import com.pyamsoft.widefi.server.proxy.SharedProxy
-import com.pyamsoft.widefi.server.proxy.session.BaseSession
-import com.pyamsoft.widefi.server.proxy.session.proxyResponse
-import com.pyamsoft.widefi.server.proxy.session.writeMessageAndAwaitMore
 import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.Socket
@@ -25,7 +22,6 @@ import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
 import java.net.URI
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
@@ -33,14 +29,13 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class TcpSession
-@Inject
+internal class TcpProxySession
 internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
     proxyDebug: Boolean,
-) : BaseSession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
+) : BaseProxySession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
 
   /**
    * Parse the first line of content which may be a connect call

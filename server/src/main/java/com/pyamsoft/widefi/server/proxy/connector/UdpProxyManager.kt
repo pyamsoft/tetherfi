@@ -1,11 +1,9 @@
-package com.pyamsoft.widefi.server.proxy.udp
+package com.pyamsoft.widefi.server.proxy.connector
 
-import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
-import com.pyamsoft.widefi.server.proxy.connector.BaseProxyConnection
+import com.pyamsoft.widefi.server.proxy.connector.BaseProxyManager
+import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import com.pyamsoft.widefi.server.proxy.tagSocket
 import com.pyamsoft.widefi.server.status.StatusBroadcast
 import io.ktor.network.selector.ActorSelectorManager
@@ -15,15 +13,15 @@ import io.ktor.network.sockets.aSocket
 import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber
 
-internal class UdpProxyConnection(
+internal class UdpProxyManager
+internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
-    private val errorBus: EventBus<ErrorEvent>,
-    private val connectionBus: EventBus<ConnectionEvent>,
+    private val factory: ProxySession.Factory<Datagram>,
     status: StatusBroadcast,
     proxyDebug: Boolean,
 ) :
-    BaseProxyConnection<BoundDatagramSocket, Datagram>(
+    BaseProxyManager<BoundDatagramSocket, Datagram>(
         SharedProxy.Type.UDP,
         status,
         dispatcher,
@@ -48,14 +46,7 @@ internal class UdpProxyConnection(
   }
 
   override suspend fun handleSocketSession(client: Datagram) {
-    val session =
-        UdpSession(
-            dispatcher = dispatcher,
-            errorBus = errorBus,
-            connectionBus = connectionBus,
-            proxyDebug = proxyDebug,
-        )
-
+    val session = factory.create()
     try {
       session.exchange(client)
     } catch (e: Throwable) {
