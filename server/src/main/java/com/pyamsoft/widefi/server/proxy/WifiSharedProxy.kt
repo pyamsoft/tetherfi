@@ -5,10 +5,10 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.BaseServer
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -24,10 +24,10 @@ import timber.log.Timber
 internal class WifiSharedProxy
 @Inject
 internal constructor(
-    @Named("proxy_dispatcher") private val dispatcher: CoroutineDispatcher,
-    private val errorBus: EventBus<ErrorEvent>,
-    private val connectionBus: EventBus<ConnectionEvent>,
-    private val factory: ProxyManager.Factory,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
+    @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
+    @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
+    @ServerInternalApi private val factory: ProxyManager.Factory,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -88,6 +88,7 @@ internal constructor(
         }
 
         Timber.d("Started proxy server on port: $port")
+        status.set(RunningStatus.Running)
       }
     }
   }

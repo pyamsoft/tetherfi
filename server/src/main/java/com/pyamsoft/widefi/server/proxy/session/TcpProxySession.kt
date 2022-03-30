@@ -34,6 +34,7 @@ internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
+    private val urlFixers: Set<UrlFixer>,
     proxyDebug: Boolean,
 ) : BaseProxySession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
 
@@ -188,6 +189,19 @@ internal constructor(
         method = methodString.trim(),
         version = versionString.trim(),
     )
+  }
+
+  /**
+   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
+   * very specific cases is correct
+   */
+  @CheckResult
+  private fun String.fixSpecialBuggyUrls(): String {
+    var result = this
+    for (fixer in urlFixers) {
+      result = fixer.fix(result)
+    }
+    return result
   }
 
   /**
@@ -353,9 +367,6 @@ internal constructor(
 
   companion object {
 
-    private val PSN_REGEX =
-        "^http://\\S*[.]playstation[.]nethttp://\\S*[.]playstation[.]net/S*".toRegex()
-
     /**
      * Check if this is an HTTPS connection
      *
@@ -369,31 +380,6 @@ internal constructor(
     /** Write a generic error back to the client socket because something has gone wrong */
     private suspend fun writeError(output: ByteWriteChannel) {
       proxyResponse(output, "HTTP/1.1 502 Bad Gateway")
-    }
-
-    /**
-     * Some connection request formats are buggy, this method seeks to fix them to what it knows in
-     * very specific cases is correct
-     *
-     * Known ===== PS4 network test, sends initial is-network-connected check URL as GET
-     * http://ps4-system.sec.np.dl.playstation.nethttp://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env
-     * HTTP/1.1 which we know is wrong and should be fixed to GET
-     * http://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env HTTP/1.1
-     * =====
-     */
-    @CheckResult
-    private fun String.fixSpecialBuggyUrls(): String {
-      if (PSN_REGEX.matches(this)) {
-        // Get the second http
-        val httpIndex = this.lastIndexOf("http")
-        if (httpIndex >= 0) {
-          val fixed = this.substring(httpIndex + 1)
-          Timber.d("Fixed bad Playstation URL: $this => $fixed")
-          return fixed
-        }
-      }
-
-      return this
     }
   }
 

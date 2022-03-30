@@ -14,6 +14,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.BaseServer
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -33,7 +34,7 @@ internal class WifiDirectWiDiNetwork
 internal constructor(
     private val context: Context,
     private val permissionGuard: PermissionGuard,
-    private val proxy: SharedProxy,
+    @ServerInternalApi private val proxy: SharedProxy,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork {
 
@@ -196,7 +197,6 @@ internal constructor(
       Timber.d("Proxy stopped!")
     }
 
-    Timber.d("Update WiDi status: $status")
     status.set(runningStatus)
   }
 

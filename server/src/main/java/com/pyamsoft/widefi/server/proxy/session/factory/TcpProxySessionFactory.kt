@@ -3,11 +3,12 @@ package com.pyamsoft.widefi.server.proxy.session.factory
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import com.pyamsoft.widefi.server.proxy.session.TcpProxySession
+import com.pyamsoft.widefi.server.proxy.session.UrlFixer
 import io.ktor.network.sockets.Socket
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -15,10 +16,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 internal class TcpProxySessionFactory
 @Inject
 internal constructor(
-    @Named("proxy_debug") private val proxyDebug: Boolean,
-    @Named("proxy_dispatcher") private val dispatcher: CoroutineDispatcher,
-    private val errorBus: EventBus<ErrorEvent>,
-    private val connectionBus: EventBus<ConnectionEvent>,
+    // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
+    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    @ServerInternalApi private val proxyDebug: Boolean,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
+    @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
+    @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
 ) : ProxySession.Factory<Socket> {
 
   override fun create(): ProxySession<Socket> {
@@ -27,6 +30,7 @@ internal constructor(
         errorBus = errorBus,
         connectionBus = connectionBus,
         proxyDebug = proxyDebug,
+        urlFixers = urlFixers,
     )
   }
 }

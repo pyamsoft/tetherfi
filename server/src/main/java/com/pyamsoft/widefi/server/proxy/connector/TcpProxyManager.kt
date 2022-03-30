@@ -18,12 +18,10 @@ internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
     private val factory: ProxySession.Factory<Socket>,
-    status: StatusBroadcast,
     proxyDebug: Boolean,
 ) :
     BaseProxyManager<ServerSocket, Socket>(
         SharedProxy.Type.TCP,
-        status,
         dispatcher,
         proxyDebug,
     ) {

@@ -3,8 +3,6 @@ package com.pyamsoft.widefi.server.proxy.connector
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
-import com.pyamsoft.widefi.server.status.RunningStatus
-import com.pyamsoft.widefi.server.status.StatusBroadcast
 import io.ktor.network.sockets.ASocket
 import io.ktor.util.network.NetworkAddress
 import java.io.Closeable
@@ -16,7 +14,6 @@ import timber.log.Timber
 
 internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
     protected val proxyType: SharedProxy.Type,
-    private val status: StatusBroadcast,
     private val dispatcher: CoroutineDispatcher,
     protected val proxyDebug: Boolean,
 ) : ProxyManager {
@@ -54,7 +51,6 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
 
   override suspend fun loop() {
     val socket = openServerSocket()
-    status.set(RunningStatus.Running)
 
     socket.use { ss ->
       whileSocketAlive(ss) { s ->
