@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -88,9 +87,7 @@ class MainActivity : PYDroidActivity() {
       var proxyStatus by remember { mutableStateOf<RunningStatus>(RunningStatus.NotRunning) }
       var widiStatus by remember { mutableStateOf<RunningStatus>(RunningStatus.NotRunning) }
 
-      val connections = remember { mutableStateMapOf<String, Int>() }
-
-      val connectionItems = remember(connections) { connections.keys.toList() }
+      val connections = remember { mutableStateListOf<String>() }
 
       LaunchedEffect(true) {
         wiDiNetwork.requireNotNull().also { widi ->
@@ -112,12 +109,8 @@ class MainActivity : PYDroidActivity() {
           this.launch(context = Dispatchers.Main) {
             widi.onConnectionEvent { e ->
               when (e) {
-                is ConnectionEvent.Tcp -> {
-                  val key = e.request.host
-                  val current = connections[key] ?: 0
-                  connections[key] = current + 1
-                }
                 is ConnectionEvent.Udp -> {}
+                is ConnectionEvent.Tcp -> connections.add(e.request.host)
                 is ConnectionEvent.Clear -> connections.clear()
               }
             }
@@ -190,26 +183,13 @@ class MainActivity : PYDroidActivity() {
             }
 
             itemsIndexed(
-                items = connectionItems,
-                key = { i, _ -> i },
-            ) { _, key ->
-              val conn = remember(connections, key) { connections.getOrElse(key) { 0 } }
-              Row(
-                  verticalAlignment = Alignment.CenterVertically,
-              ) {
-                Text(
-                    text = "$key: ",
-                    style =
-                        MaterialTheme.typography.body2.copy(
-                            fontWeight = FontWeight.Bold,
-                        ),
-                )
-
-                Text(
-                    text = conn.toString(),
-                    style = MaterialTheme.typography.body2,
-                )
-              }
+                items = connections,
+                key = { i, c -> "$c-$i" },
+            ) { _, conn ->
+              Text(
+                  text = conn,
+                  style = MaterialTheme.typography.body2,
+              )
             }
 
             item {
@@ -224,7 +204,7 @@ class MainActivity : PYDroidActivity() {
 
             itemsIndexed(
                 items = proxyErrors,
-                key = { i, _ -> i },
+                key = { i, e -> "$e-$i" },
             ) { _, e ->
               Column {
                 when (e) {
