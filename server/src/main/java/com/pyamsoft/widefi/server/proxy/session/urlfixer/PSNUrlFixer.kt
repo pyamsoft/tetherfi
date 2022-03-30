@@ -9,10 +9,16 @@ import timber.log.Timber
 class PSNUrlFixer @Inject internal constructor() : UrlFixer {
 
   /**
-   * PS4 network test, sends initial is-network-connected check URL as GET
+   * PS4 network test, sends initial is-network-connected check URL as
+   *
+   * GET
    * http://ps4-system.sec.np.dl.playstation.nethttp://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env
-   * HTTP/1.1 which we know is wrong and should be fixed to GET
-   * http://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env HTTP/1.1
+   * HTTP/1.1
+   *
+   * which we know is wrong and should be fixed to
+   *
+   * GET http://ps4-system.sec.np.dl.playstation.net/ps4-system/party/np/v00/party_config.env
+   * HTTP/1.1
    */
   override fun fix(url: String): String {
     if (PSN_REGEX.matches(url)) {
