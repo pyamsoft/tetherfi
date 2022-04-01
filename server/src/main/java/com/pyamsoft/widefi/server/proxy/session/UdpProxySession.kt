@@ -5,7 +5,6 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
-import com.pyamsoft.widefi.server.proxy.session.BaseProxySession
 import io.ktor.network.sockets.Datagram
 import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber

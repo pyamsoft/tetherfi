@@ -20,72 +20,72 @@ apply plugin: "kotlin-kapt"
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion rootProject.ext.maxSdk
+  compileSdkVersion rootProject.ext.maxSdk
 
-    //noinspection GroovyMissingReturnStatement
-    defaultConfig {
-        minSdkVersion rootProject.ext.minSdk
-        targetSdkVersion rootProject.ext.maxSdk
+  //noinspection GroovyMissingReturnStatement
+  defaultConfig {
+    minSdkVersion rootProject.ext.minSdk
+    targetSdkVersion rootProject.ext.maxSdk
 
-        resConfigs "en"
-    }
+    resConfigs "en"
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
 
-        // Flag to enable support for the new language APIs
-        coreLibraryDesugaringEnabled true
-    }
+    // Flag to enable support for the new language APIs
+    coreLibraryDesugaringEnabled true
+  }
 
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+  kotlinOptions {
+    jvmTarget = "11"
+  }
 
-    buildFeatures {
-        buildConfig false
-    }
+  buildFeatures {
+    buildConfig false
+  }
 }
 
 // Kapt flags
 kapt {
-    correctErrorTypes = true
-    useBuildCache = true
-    mapDiagnosticLocations = true
+  correctErrorTypes = true
+  useBuildCache = true
+  mapDiagnosticLocations = true
 
-    javacOptions {
-        option("-Xlint:unchecked")
-        option("-Xlint:deprecation")
-        option("-Xmaxerrs", 10000)
-    }
+  javacOptions {
+    option("-Xlint:unchecked")
+    option("-Xlint:deprecation")
+    option("-Xmaxerrs", 10000)
+  }
 }
 
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
+  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
 
-    kapt "com.google.dagger:dagger-compiler:$dagger"
+  kapt "com.google.dagger:dagger-compiler:$dagger"
 
-    // API for Dagger
-    api "io.ktor:ktor-network:$ktor"
+  // API for Dagger
+  api "io.ktor:ktor-network:$ktor"
 
-    // MOVE TO CORE
+  // MOVE TO CORE
 
-    // Timber logging
-    api "com.jakewharton.timber:timber:$timber"
+  // Timber logging
+  api "com.jakewharton.timber:timber:$timber"
 
-    // PYDroid
-    api "com.github.pyamsoft.pydroid:arch:$pydroid"
-    api "com.github.pyamsoft.pydroid:ui:$pydroid"
+  // PYDroid
+  api "com.github.pyamsoft.pydroid:arch:$pydroid"
+  api "com.github.pyamsoft.pydroid:ui:$pydroid"
 
-    // Cachify
-    api "com.github.pyamsoft:cachify:$cachify"
+  // Cachify
+  api "com.github.pyamsoft:cachify:$cachify"
 
-    // Highlander
-    api "com.github.pyamsoft:highlander:$highlander"
+  // Highlander
+  api "com.github.pyamsoft:highlander:$highlander"
 
-    // Android support library.
-    api "androidx.core:core-ktx:$core"
+  // Android support library.
+  api "androidx.core:core-ktx:$core"
 
-    // Dagger
-    api "com.google.dagger:dagger:$dagger"
+  // Dagger
+  api "com.google.dagger:dagger:$dagger"
 }

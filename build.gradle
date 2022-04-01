@@ -17,162 +17,162 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext {
-        kotlin_version = '1.6.10'
-        desugar = "1.1.5"
-        compose_version = "1.1.1"
+  ext {
+    kotlin_version = '1.6.10'
+    desugar = "1.1.5"
+    compose_version = "1.1.1"
+  }
+
+  repositories {
+    mavenLocal()
+    google()
+    mavenCentral()
+
+    maven {
+      url "https://jitpack.io"
+      content {
+        includeGroup("com.github.pyamsoft.pydroid")
+        includeGroup("com.github.pyamsoft")
+      }
     }
 
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-
-        maven {
-            url "https://jitpack.io"
-            content {
-                includeGroup("com.github.pyamsoft.pydroid")
-                includeGroup("com.github.pyamsoft")
-            }
-        }
-
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+    maven {
+      url "https://plugins.gradle.org/m2/"
     }
+  }
 
-    ext {
-        minSdk = 23
-        maxSdk = 31
+  ext {
+    minSdk = 23
+    maxSdk = 31
 
-        // Us
-        pydroid = "25.0.0-SNAPSHOT"
-        cachify = "0.0.26"
-        highlander = "0.0.22"
-        spark = "2.0.1"
+    // Us
+    pydroid = "25.0.0-SNAPSHOT"
+    cachify = "0.0.26"
+    highlander = "0.0.22"
+    spark = "2.0.1"
 
-        // Jobs
-        workmanager = "2.7.1"
+    // Jobs
+    workmanager = "2.7.1"
 
-        // Leak Canary
-        leakCanary = "2.8.1"
+    // Leak Canary
+    leakCanary = "2.8.1"
 
-        // Logging
-        timber = "5.0.1"
+    // Logging
+    timber = "5.0.1"
 
-        // Room
-        room = "2.3.0"
+    // Room
+    room = "2.3.0"
 
-        // Dagger
-        dagger = "2.41"
+    // Dagger
+    dagger = "2.41"
 
-        // Compose
-        composeActivity = "1.4.0"
-        accompanist = "0.23.1"
-        coil = "1.4.0"
+    // Compose
+    composeActivity = "1.4.0"
+    accompanist = "0.23.1"
+    coil = "1.4.0"
 
-        // AndroidX
-        core = "1.7.0"
-        fragment = "1.4.1"
-        appCompat = "1.4.1"
+    // AndroidX
+    core = "1.7.0"
+    fragment = "1.4.1"
+    appCompat = "1.4.1"
 
-        // Material Design
-        materialDesign = "1.5.0"
+    // Material Design
+    materialDesign = "1.5.0"
 
-        ktor = "1.6.8"
-    }
+    ktor = "1.6.8"
+  }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+  dependencies {
+    classpath 'com.android.tools.build:gradle:7.1.2'
 
-        // Gradle version checker
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0'
+    // Gradle version checker
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0'
 
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        // Spotless
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.3.0"
+    // Spotless
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.4.1"
 
-        //        classpath 'com.google.gms:google-services:4.3.2'
-    }
+    //        classpath 'com.google.gms:google-services:4.3.2'
+  }
 }
 
 plugins {
-    // Fix Android build cache
-    // https://github.com/gradle/android-cache-fix-gradle-plugin
-    id "org.gradle.android.cache-fix" version "2.4.6" apply false
+  // Fix Android build cache
+  // https://github.com/gradle/android-cache-fix-gradle-plugin
+  id "org.gradle.android.cache-fix" version "2.4.6" apply false
 }
 
 subprojects {
-    plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
-        project.apply plugin: "org.gradle.android.cache-fix"
-    }
+  plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
+    project.apply plugin: "org.gradle.android.cache-fix"
+  }
 }
 
 allprojects {
-    apply plugin: "com.github.ben-manes.versions"
-    apply plugin: "com.diffplug.spotless"
+  apply plugin: "com.github.ben-manes.versions"
+  apply plugin: "com.diffplug.spotless"
 
-    spotless {
-        java {
-            target "src/**/*.java"
+  spotless {
+    java {
+      target "src/**/*.java"
 
-            removeUnusedImports()
-            trimTrailingWhitespace()
-            endWithNewline()
-            indentWithSpaces(2)
-        }
-        kotlin {
-            target "src/**/*.kt"
-            ktfmt()
+      removeUnusedImports()
+      trimTrailingWhitespace()
+      endWithNewline()
+      indentWithSpaces(2)
+    }
+    kotlin {
+      target "src/**/*.kt"
+      ktfmt()
 
-            trimTrailingWhitespace()
-            endWithNewline()
-            indentWithSpaces(2)
-        }
-        groovyGradle {
-            target "*.gradle"
-            greclipse()
+      trimTrailingWhitespace()
+      endWithNewline()
+      indentWithSpaces(2)
+    }
+    groovyGradle {
+      target "*.gradle"
+      greclipse()
 
-            trimTrailingWhitespace()
-            endWithNewline()
-            indentWithSpaces(2)
-        }
+      trimTrailingWhitespace()
+      endWithNewline()
+      indentWithSpaces(2)
+    }
+  }
+
+  // Ignore non-release libraries
+  def isNonStable = { version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+  }
+
+  tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+      isNonStable(it.candidate.version)
+    }
+  }
+
+  repositories {
+    mavenLocal()
+    google()
+    mavenCentral()
+
+    maven {
+      url "https://jitpack.io"
+      content {
+        includeGroup("com.github.pyamsoft.pydroid")
+        includeGroup("com.github.pyamsoft")
+      }
     }
 
-    // Ignore non-release libraries
-    def isNonStable = { version ->
-        def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
-        def regex = /^[0-9,.v-]+(-r)?$/
-        return !stableKeyword && !(version ==~ regex)
+    maven {
+      url "https://plugins.gradle.org/m2/"
     }
+  }
 
-    tasks.named("dependencyUpdates").configure {
-        rejectVersionIf {
-            isNonStable(it.candidate.version)
-        }
-    }
-
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-
-        maven {
-            url "https://jitpack.io"
-            content {
-                includeGroup("com.github.pyamsoft.pydroid")
-                includeGroup("com.github.pyamsoft")
-            }
-        }
-
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
-        options.deprecation = true
-    }
+  tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+    options.deprecation = true
+  }
 }

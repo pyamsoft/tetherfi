@@ -4,6 +4,5 @@ import androidx.annotation.CheckResult
 
 interface UrlFixer {
 
-  @CheckResult
-  fun fix(url: String): String
+  @CheckResult fun fix(url: String): String
 }

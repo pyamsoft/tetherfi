@@ -20,134 +20,134 @@ apply plugin: 'kotlin-kapt'
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion rootProject.ext.maxSdk
+  compileSdkVersion rootProject.ext.maxSdk
 
-    defaultConfig {
-        applicationId "com.pyamsoft.widefi"
-        minSdkVersion rootProject.ext.minSdk
-        targetSdkVersion rootProject.ext.maxSdk
-        versionCode 1
-        versionName "1"
+  defaultConfig {
+    applicationId "com.pyamsoft.widefi"
+    minSdkVersion rootProject.ext.minSdk
+    targetSdkVersion rootProject.ext.maxSdk
+    versionCode 1
+    versionName "1"
 
-        // For vector drawables
-        vectorDrawables.useSupportLibrary = true
+    // For vector drawables
+    vectorDrawables.useSupportLibrary = true
 
-        resConfigs "en"
+    resConfigs "en"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+
+    // Flag to enable support for the new language APIs
+    coreLibraryDesugaringEnabled true
+  }
+
+  kotlinOptions {
+    jvmTarget = "11"
+  }
+
+  signingConfigs {
+    debug {
+      storeFile file("debug.keystore")
+      keyAlias "androiddebugkey"
+      keyPassword "android"
+      storePassword "android"
+    }
+    release {
+      storeFile new File(BUNDLE_STORE_FILE)
+      keyAlias BUNDLE_KEY_ALIAS
+      keyPassword BUNDLE_KEY_PASSWD
+      storePassword BUNDLE_STORE_PASSWD
+    }
+  }
+
+  buildTypes {
+    release {
+      signingConfig signingConfigs.release
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+          "proguard-rules.pro"
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-
-        // Flag to enable support for the new language APIs
-        coreLibraryDesugaringEnabled true
+    debug {
+      signingConfig signingConfigs.debug
+      applicationIdSuffix ".dev"
+      versionNameSuffix "-dev"
     }
+  }
 
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+  buildFeatures {
+    viewBinding true
+    compose true
+  }
 
-    signingConfigs {
-        debug {
-            storeFile file("debug.keystore")
-            keyAlias "androiddebugkey"
-            keyPassword "android"
-            storePassword "android"
-        }
-        release {
-            storeFile new File(BUNDLE_STORE_FILE)
-            keyAlias BUNDLE_KEY_ALIAS
-            keyPassword BUNDLE_KEY_PASSWD
-            storePassword BUNDLE_STORE_PASSWD
-        }
-    }
+  composeOptions {
+    kotlinCompilerExtensionVersion "$compose_version"
+  }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-        }
-
-        debug {
-            signingConfig signingConfigs.debug
-            applicationIdSuffix ".dev"
-            versionNameSuffix "-dev"
-        }
-    }
-
-    buildFeatures {
-        viewBinding true
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion "$compose_version"
-    }
-
-    // Fixes this error message
-    // More than one file was found with OS independent path 'META-INF/core_release.kotlin_module'
-    packagingOptions {
-        pickFirst 'META-INF/core_release.kotlin_module'
-        pickFirst 'META-INF/ui_release.kotlin_module'
-        pickFirst 'META-INF/INDEX.LIST'
-        pickFirst 'META-INF/io.netty.versions.properties'
-    }
+  // Fixes this error message
+  // More than one file was found with OS independent path 'META-INF/core_release.kotlin_module'
+  packagingOptions {
+    pickFirst 'META-INF/core_release.kotlin_module'
+    pickFirst 'META-INF/ui_release.kotlin_module'
+    pickFirst 'META-INF/INDEX.LIST'
+    pickFirst 'META-INF/io.netty.versions.properties'
+  }
 }
 
 // Kapt flags
 kapt {
-    correctErrorTypes = true
-    useBuildCache = true
-    mapDiagnosticLocations = true
+  correctErrorTypes = true
+  useBuildCache = true
+  mapDiagnosticLocations = true
 
-    javacOptions {
-        option("-Xlint:unchecked")
-        option("-Xlint:deprecation")
-        option("-Xmaxerrs", 10000)
-    }
+  javacOptions {
+    option("-Xlint:unchecked")
+    option("-Xlint:deprecation")
+    option("-Xmaxerrs", 10000)
+  }
 }
 
 // Leave at bottom
 // apply plugin: 'com.google.gms.google-services'
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
+  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
 
-    kapt "com.google.dagger:dagger-compiler:$dagger"
+  kapt "com.google.dagger:dagger-compiler:$dagger"
 
-    // Leak Canary
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanary"
-    implementation "com.squareup.leakcanary:plumber-android:$leakCanary"
+  // Leak Canary
+  debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanary"
+  implementation "com.squareup.leakcanary:plumber-android:$leakCanary"
 
-    // Autopsy
-    debugImplementation "com.github.pyamsoft.pydroid:autopsy:$pydroid"
+  // Autopsy
+  debugImplementation "com.github.pyamsoft.pydroid:autopsy:$pydroid"
 
-    // AndroidX
-    api "androidx.fragment:fragment-ktx:$fragment"
-    api "androidx.appcompat:appcompat:$appCompat"
+  // AndroidX
+  api "androidx.fragment:fragment-ktx:$fragment"
+  api "androidx.appcompat:appcompat:$appCompat"
 
-    // Compose
-    api "androidx.activity:activity-compose:$composeActivity"
-    api "androidx.compose.compiler:compiler:$compose_version"
-    api "androidx.compose.ui:ui:$compose_version"
-    api "androidx.compose.material:material:$compose_version"
-    api "androidx.compose.animation:animation:$compose_version"
-    api "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    debugApi "androidx.compose.ui:ui-tooling:$compose_version"
-    // api "androidx.compose.material:material-icons-extended:$compose_version"
+  // Compose
+  api "androidx.activity:activity-compose:$composeActivity"
+  api "androidx.compose.compiler:compiler:$compose_version"
+  api "androidx.compose.ui:ui:$compose_version"
+  api "androidx.compose.material:material:$compose_version"
+  api "androidx.compose.animation:animation:$compose_version"
+  api "androidx.compose.ui:ui-tooling-preview:$compose_version"
+  debugApi "androidx.compose.ui:ui-tooling:$compose_version"
+  // api "androidx.compose.material:material-icons-extended:$compose_version"
 
-    api project(":server")
+  api project(":server")
 
 
-    // MOVE TO UI
-    implementation "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
+  // MOVE TO UI
+  implementation "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
 
-    implementation "io.coil-kt:coil-compose-base:$coil"
+  implementation "io.coil-kt:coil-compose-base:$coil"
 
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist"
+  implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist"
 
-    // Material Design
-    api "com.google.android.material:material:$materialDesign"
+  // Material Design
+  api "com.google.android.material:material:$materialDesign"
 }
