@@ -96,6 +96,13 @@ abstract class ServerModule {
     @JvmStatic
     @ServerInternalApi
     internal fun provideProxyDispatcher(): CoroutineDispatcher {
+      // This is a completely unbounded threadpool that is different from Dispatcher IO
+      // so we don't block that dispatcher with network related work
+      //
+      // We use an unbounded instead of a bounded pool because a bound queue with task waiting is
+      // just too slow for network related performance
+      //
+      // Since most networking is short lived, this pool is suited for quick threading tasks
       return Executors.newCachedThreadPool().asCoroutineDispatcher()
     }
   }
