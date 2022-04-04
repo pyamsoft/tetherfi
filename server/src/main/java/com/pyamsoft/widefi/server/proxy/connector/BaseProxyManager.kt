@@ -5,7 +5,6 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import io.ktor.network.sockets.ASocket
 import io.ktor.util.network.NetworkAddress
-import java.io.Closeable
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -26,21 +25,15 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
   }
 
   /** As long as the socket is alive, we loop the connection and accept new connections */
-  private suspend inline fun whileSocketAlive(
-      socket: SS,
+  private suspend inline fun whileServerAlive(
+      server: SS,
       crossinline block: suspend (CS) -> Unit,
   ) = coroutineScope {
     while (isActive) {
       debugLog { "Awaiting new ${proxyType.name} socket connection..." }
-      val s = acceptClientSocket(socket)
+      val s = acceptClient(server)
 
-      launch(context = dispatcher) {
-        if (s is Closeable) {
-          s.use { block(it) }
-        } else {
-          block(s)
-        }
-      }
+      launch(context = dispatcher) { block(s) }
     }
   }
 
@@ -50,24 +43,31 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
   }
 
   override suspend fun loop() {
-    val socket = openServerSocket()
+    val server = openServer()
 
-    socket.use { ss ->
-      whileSocketAlive(ss) { s ->
+    try {
+      whileServerAlive(server) { s ->
         try {
-          handleSocketSession(s)
+          runSession(s)
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e, "Error during ${proxyType.name} session communication")
           }
+        } finally {
+          closeSession(s)
         }
       }
+    } finally {
+      // Close socket
+      server.dispose()
     }
   }
 
-  @CheckResult protected abstract suspend fun handleSocketSession(client: CS)
+  protected abstract suspend fun closeSession(client: CS)
 
-  @CheckResult protected abstract suspend fun acceptClientSocket(server: SS): CS
+  @CheckResult protected abstract suspend fun runSession(client: CS)
 
-  @CheckResult protected abstract fun openServerSocket(): SS
+  @CheckResult protected abstract suspend fun acceptClient(server: SS): CS
+
+  @CheckResult protected abstract fun openServer(): SS
 }

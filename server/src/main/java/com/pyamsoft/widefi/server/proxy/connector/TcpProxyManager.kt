@@ -1,5 +1,6 @@
 package com.pyamsoft.widefi.server.proxy.connector
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
@@ -8,7 +9,10 @@ import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
+import io.ktor.util.network.hostname
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 
 internal class TcpProxyManager
@@ -24,7 +28,10 @@ internal constructor(
         proxyDebug,
     ) {
 
-  override fun openServerSocket(): ServerSocket {
+  private val mutex = Mutex()
+  private val clientMap = mutableMapOf<String, Boolean>()
+
+  override fun openServer(): ServerSocket {
     tagSocket()
 
     return aSocket(ActorSelectorManager(context = dispatcher))
@@ -37,16 +44,39 @@ internal constructor(
         )
   }
 
-  override suspend fun acceptClientSocket(server: ServerSocket): Socket {
-    return server.accept()
+  override suspend fun acceptClient(server: ServerSocket): Socket {
+    return server.accept().apply {
+      val id = getClientId(this)
+
+      mutex.withLock { clientMap[id] = true }
+    }
   }
 
-  override suspend fun handleSocketSession(client: Socket) {
+  override suspend fun runSession(client: Socket) {
     val session = factory.create()
     try {
       session.exchange(client)
     } catch (e: Throwable) {
       e.ifNotCancellation { Timber.e(e, "${proxyType.name} Error during session") }
+    }
+  }
+
+  override suspend fun closeSession(client: Socket) {
+    try {
+      val id = getClientId(client)
+      mutex.withLock { clientMap[id] = false }
+    } finally {
+      // Close the socket
+      client.dispose()
+    }
+  }
+
+  companion object {
+
+    @JvmStatic
+    @CheckResult
+    private fun getClientId(client: Socket): String {
+      return client.remoteAddress.hostname
     }
   }
 }
