@@ -3,6 +3,7 @@ package com.pyamsoft.widefi.server.proxy.connector
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
+import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.sockets.ASocket
 import io.ktor.util.network.NetworkAddress
 import kotlinx.coroutines.CoroutineDispatcher
@@ -43,6 +44,9 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
   }
 
   override suspend fun loop() {
+    // Tag sockets for Android O strict mode
+    tagSocket()
+
     val server = openServer()
 
     try {

@@ -32,8 +32,6 @@ internal constructor(
   private val clientMap = mutableMapOf<String, Boolean>()
 
   override fun openServer(): ServerSocket {
-    tagSocket()
-
     return aSocket(ActorSelectorManager(context = dispatcher))
         .tcp()
         .bind(

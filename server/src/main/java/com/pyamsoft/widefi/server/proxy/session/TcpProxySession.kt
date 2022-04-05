@@ -347,6 +347,7 @@ internal constructor(
   }
 
   private suspend fun connectToInternet(request: ProxyRequest): Socket {
+      // Tag sockets for Android O strict mode
     tagSocket()
 
     // We dont actually use the socket tls() method here since we are not a TLS server

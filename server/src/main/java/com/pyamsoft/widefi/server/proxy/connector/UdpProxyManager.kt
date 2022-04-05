@@ -32,8 +32,6 @@ internal constructor(
   private val clientMap = mutableMapOf<String, Boolean>()
 
   override fun openServer(): BoundDatagramSocket {
-    tagSocket()
-
     return aSocket(ActorSelectorManager(context = dispatcher))
         .udp()
         .bind(
