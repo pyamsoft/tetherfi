@@ -61,7 +61,7 @@ buildscript {
     timber = "5.0.1"
 
     // Room
-    room = "2.3.0"
+    room = "2.4.2"
 
     // Dagger
     dagger = "2.41"
@@ -91,7 +91,7 @@ buildscript {
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
     // Spotless
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.4.1"
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.4.2"
 
     //        classpath 'com.google.gms:google-services:4.3.2'
   }
@@ -100,7 +100,7 @@ buildscript {
 plugins {
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id "org.gradle.android.cache-fix" version "2.4.6" apply false
+  id "org.gradle.android.cache-fix" version "2.5.0" apply false
 }
 
 subprojects {
