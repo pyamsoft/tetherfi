@@ -162,7 +162,7 @@ internal constructor(
         }
       }
 
-  private suspend fun startNetwork() {
+  private suspend fun startNetwork(onStart: () -> Unit) {
     Enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -191,6 +191,7 @@ internal constructor(
       Timber.d("Network started, start proxy")
       proxy.start()
       Timber.d("Proxy started!")
+      onStart()
     } else {
       Timber.w("Group failed creation, stop proxy")
       proxy.stop()
@@ -200,13 +201,14 @@ internal constructor(
     status.set(runningStatus)
   }
 
-  private suspend fun stopNetwork() {
+  private suspend fun stopNetwork(onStop: () -> Unit = {}) {
     Enforcer.assertOffMainThread()
 
     val channel = getChannel()
 
     if (channel == null) {
       status.set(RunningStatus.NotRunning)
+      onStop()
       return
     }
 
@@ -223,6 +225,7 @@ internal constructor(
       proxy.stop()
     }
     status.set(runningStatus)
+    onStop()
   }
 
   @CheckResult
@@ -309,19 +312,19 @@ internal constructor(
         return@withContext resolveConnectionInfo(channel)
       }
 
-  override suspend fun start() =
+  override suspend fun start(onStart: () -> Unit) =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 
         stopNetwork()
-        startNetwork()
+        startNetwork(onStart)
       }
 
-  override suspend fun stop() =
+  override suspend fun stop(onStop: () -> Unit) =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 
-        stopNetwork()
+        stopNetwork(onStop)
       }
 
   override suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit) {

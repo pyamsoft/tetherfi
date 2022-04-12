@@ -15,4 +15,8 @@ protected constructor(
   final override suspend fun onStatusChanged(block: (RunningStatus) -> Unit) {
     return status.onStatus(block)
   }
+
+  final override fun getCurrentStatus(): RunningStatus {
+    return status.get()
+  }
 }

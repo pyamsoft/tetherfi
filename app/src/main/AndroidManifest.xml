@@ -13,7 +13,7 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
@@ -21,6 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.ProxyService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="" />
+
     </application>
 
 </manifest>

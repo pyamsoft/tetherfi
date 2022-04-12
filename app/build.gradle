@@ -139,6 +139,7 @@ dependencies {
   // api "androidx.compose.material:material-icons-extended:$compose_version"
 
   api project(":server")
+  api project(":service")
 
 
   // MOVE TO UI

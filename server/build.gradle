@@ -68,24 +68,5 @@ dependencies {
   // API for Dagger
   api "io.ktor:ktor-network:$ktor"
 
-  // MOVE TO CORE
-
-  // Timber logging
-  api "com.jakewharton.timber:timber:$timber"
-
-  // PYDroid
-  api "com.github.pyamsoft.pydroid:arch:$pydroid"
-  api "com.github.pyamsoft.pydroid:ui:$pydroid"
-
-  // Cachify
-  api "com.github.pyamsoft:cachify:$cachify"
-
-  // Highlander
-  api "com.github.pyamsoft:highlander:$highlander"
-
-  // Android support library.
-  api "androidx.core:core-ktx:$core"
-
-  // Dagger
-  api "com.google.dagger:dagger:$dagger"
+  api project(":core")
 }

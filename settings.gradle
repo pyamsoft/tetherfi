@@ -1,3 +1,5 @@
 rootProject.name = "Widefi"
 include ':app'
 include ':server'
+include ':service'
+include ':core'

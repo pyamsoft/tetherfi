@@ -1,11 +1,15 @@
 package com.pyamsoft.widefi
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import androidx.annotation.CheckResult
 import coil.ImageLoader
 import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.widefi.main.MainActivity
 import com.pyamsoft.widefi.server.ServerModule
+import com.pyamsoft.widefi.service.ProxyService
+import com.pyamsoft.widefi.service.ServiceModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -19,11 +23,14 @@ import javax.inject.Singleton
         [
             WidefiComponent.Provider::class,
             ServerModule::class,
+            ServiceModule::class,
         ],
 )
 internal interface WidefiComponent {
 
-  fun inject(mainActivity: MainActivity)
+  fun inject(activity: MainActivity)
+
+  fun inject(service: ProxyService)
 
   @Component.Factory
   interface Factory {
@@ -61,6 +68,12 @@ internal interface WidefiComponent {
       @Named("app_name")
       internal fun provideAppNameRes(): Int {
         return R.string.app_name
+      }
+
+      @Provides
+      @JvmStatic
+      internal fun provideActivityClass(): Class<out Activity> {
+        return MainActivity::class.java
       }
     }
   }
