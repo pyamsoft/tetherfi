@@ -148,6 +148,7 @@ dependencies {
   implementation "io.coil-kt:coil-compose-base:$coil"
 
   implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist"
+  implementation "com.google.accompanist:accompanist-insets:$accompanist"
 
   // Material Design
   api "com.google.android.material:material:$materialDesign"

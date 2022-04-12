@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="screen_status" type="id" />
+    <item name="screen_activity" type="id" />
+    <item name="screen_error" type="id" />
+</resources>

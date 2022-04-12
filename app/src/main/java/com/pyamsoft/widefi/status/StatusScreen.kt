@@ -1,7 +1,9 @@
-package com.pyamsoft.widefi.main
+package com.pyamsoft.widefi.status
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -9,20 +11,45 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
 
 @Composable
 internal fun StatusScreen(
     modifier: Modifier = Modifier,
-    state: MainViewState,
+    state: StatusViewState,
+    onToggle: () -> Unit,
 ) {
   val group = state.group
   val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
 
+  val isButtonEnabled =
+      remember(wiDiStatus) {
+        wiDiStatus == RunningStatus.Running || wiDiStatus == RunningStatus.NotRunning
+      }
+  val buttonText =
+      remember(wiDiStatus) {
+        when (wiDiStatus) {
+          is RunningStatus.Error -> "WideFi Error"
+          is RunningStatus.NotRunning -> "Turn WideFi ON"
+          is RunningStatus.Running -> "Turn WideFi OFF"
+          else -> "WideFi is thinking..."
+        }
+      }
+
   Column(
-      modifier = modifier,
+      modifier = modifier.padding(MaterialTheme.keylines.content),
   ) {
+    Button(
+        enabled = isButtonEnabled,
+        onClick = onToggle,
+    ) {
+      Text(
+          text = buttonText,
+      )
+    }
+
     Text(
         text = "SSID=${group?.ssid ?: "NULL"}",
         style = MaterialTheme.typography.body1,

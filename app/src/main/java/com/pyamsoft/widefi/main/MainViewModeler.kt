@@ -1,62 +1,43 @@
 package com.pyamsoft.widefi.main
 
+import android.app.Activity
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.widefi.server.status.RunningStatus
-import com.pyamsoft.widefi.server.widi.WiDiNetwork
+import com.pyamsoft.pydroid.arch.UiSavedStateReader
+import com.pyamsoft.pydroid.arch.UiSavedStateWriter
+import com.pyamsoft.pydroid.ui.theme.Theming
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class MainViewModeler
 @Inject
 internal constructor(
     private val state: MutableMainViewState,
-    private val network: WiDiNetwork,
+    private val theming: Theming,
 ) : AbstractViewModeler<MainViewState>(state) {
 
-  private fun toggleProxyState(
-      scope: CoroutineScope,
-      onStart: () -> Unit,
-      onStop: () -> Unit,
-  ) {
-    when (val s = network.getCurrentStatus()) {
-      RunningStatus.NotRunning ->
-          scope.launch(context = Dispatchers.Main) { network.start(onStart) }
-      RunningStatus.Running -> scope.launch(context = Dispatchers.Main) { network.stop(onStop) }
-      else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $s")
+  fun handleSyncDarkTheme(activity: Activity) {
+    val isDark = theming.isDarkTheme(activity)
+    state.theme = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+  }
+
+  override fun saveState(outState: UiSavedStateWriter) {
+    state.theme.also { theme ->
+      if (theme != Theming.Mode.SYSTEM) {
+        outState.put(KEY_THEME, theme.name)
+      } else {
+        outState.remove(KEY_THEME)
       }
     }
   }
 
-  private fun refreshGroupInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) { state.group = network.getGroupInfo() }
-  }
-
-  fun handleUpdateView(view: MainView) {
-    state.view = view
-  }
-
-  fun watchStatusUpdates(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) {
-      network.onProxyStatusChanged { state.proxyStatus = it }
+  override fun restoreState(savedInstanceState: UiSavedStateReader) {
+    savedInstanceState.get<String>(KEY_THEME)?.also { themeName ->
+      val theme = Theming.Mode.valueOf(themeName)
+      state.theme = theme
     }
-
-    scope.launch(context = Dispatchers.Main) { network.onStatusChanged { state.wiDiStatus = it } }
   }
 
-  fun handleToggleProxy(
-      scope: CoroutineScope,
-      onStart: () -> Unit,
-      onStop: () -> Unit,
-  ) {
-    toggleProxyState(
-        scope = scope,
-        onStart = onStart,
-        onStop = onStop,
-    )
-    refreshGroupInfo(scope = scope)
+  companion object {
+
+    private const val KEY_THEME = "theme"
   }
 }
