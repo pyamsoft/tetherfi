@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -66,7 +67,10 @@ class ActivityFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    viewModel.requireNotNull().restoreState(savedInstanceState)
+    viewModel.requireNotNull().also { vm ->
+      vm.restoreState(savedInstanceState)
+      vm.watchNetworkActivity(scope = viewLifecycleOwner.lifecycleScope)
+    }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
