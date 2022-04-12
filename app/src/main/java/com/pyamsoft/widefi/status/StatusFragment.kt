@@ -83,6 +83,7 @@ class StatusFragment : Fragment() {
     viewModel.requireNotNull().also { vm ->
       vm.restoreState(savedInstanceState)
       vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope)
+      vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
     }
   }
 

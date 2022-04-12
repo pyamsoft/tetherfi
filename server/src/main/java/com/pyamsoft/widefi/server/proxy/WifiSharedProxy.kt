@@ -5,6 +5,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.BaseServer
 import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -45,7 +46,7 @@ internal constructor(
   @CheckResult
   private suspend fun getPort(): Int =
       withContext(context = dispatcher) {
-        return@withContext 8228
+        return@withContext ServerDefaults.PORT
       }
 
   @CheckResult

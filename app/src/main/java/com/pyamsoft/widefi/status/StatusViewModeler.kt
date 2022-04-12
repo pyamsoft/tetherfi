@@ -31,7 +31,7 @@ internal constructor(
     }
   }
 
-  private fun refreshGroupInfo(scope: CoroutineScope) {
+  fun refreshGroupInfo(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) { state.group = network.getGroupInfo() }
   }
 

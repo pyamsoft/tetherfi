@@ -1,8 +1,10 @@
 package com.pyamsoft.widefi.status
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -11,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
 
@@ -23,6 +26,10 @@ internal fun StatusScreen(
   val group = state.group
   val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
+
+  val ip = state.ip.ifBlank { "UNDEFINED" }
+  val port = state.port
+  val portString = remember(port) { if (port <= 0) "UNSET" else "$port" }
 
   val isButtonEnabled =
       remember(wiDiStatus) {
@@ -38,37 +45,66 @@ internal fun StatusScreen(
         }
       }
 
-  Column(
+  LazyColumn(
       modifier = modifier.padding(MaterialTheme.keylines.content),
+      contentPadding =
+          PaddingValues(
+              horizontal = ZeroSize,
+              vertical = MaterialTheme.keylines.content,
+          ),
   ) {
-    Button(
-        enabled = isButtonEnabled,
-        onClick = onToggle,
-    ) {
-      Text(
-          text = buttonText,
-      )
+    item {
+      Button(
+          enabled = isButtonEnabled,
+          onClick = onToggle,
+      ) {
+        Text(
+            text = buttonText,
+        )
+      }
     }
 
-    Text(
-        text = "SSID=${group?.ssid ?: "NULL"}",
-        style = MaterialTheme.typography.body1,
-    )
+    item {
+      Column {
+        Item(
+            title = "SSID",
+            value = group?.ssid ?: "NULL",
+        )
 
-    Text(
-        text = "PASSWORD=${group?.password ?: "NULL"}",
-        style = MaterialTheme.typography.body1,
-    )
+        Item(
+            title = "PASSWORD",
+            value = group?.password ?: "NULL",
+        )
+      }
+    }
 
-    DisplayStatus(
-        title = "WiFi Network Status:",
-        status = wiDiStatus,
-    )
+    item {
+      Column {
+        Item(
+            title = "IP",
+            value = ip,
+        )
 
-    DisplayStatus(
-        title = "Proxy Status:",
-        status = proxyStatus,
-    )
+        Item(
+            title = "PORT",
+            value = portString,
+        )
+      }
+    }
+
+    item {
+      Column {
+        DisplayStatus(
+            title = "WiFi Network Status:",
+            status = wiDiStatus,
+        )
+
+        DisplayStatus(
+            title = "Proxy Status:",
+            status = proxyStatus,
+        )
+      }
+    }
   }
 }
 
@@ -100,6 +136,21 @@ private fun DisplayStatus(
         }
       }
 
+  Item(
+      modifier = modifier,
+      title = title,
+      value = text,
+      color = color,
+  )
+}
+
+@Composable
+private fun Item(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    color: Color = Color.Unspecified,
+) {
   Row(
       modifier = modifier,
       verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +160,8 @@ private fun DisplayStatus(
         style = MaterialTheme.typography.body2,
     )
     Text(
-        text = text,
+        modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+        text = value,
         style = MaterialTheme.typography.body2,
         color = color,
     )
