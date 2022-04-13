@@ -22,7 +22,7 @@ internal fun ActivityScreen(
   val events = state.events
 
   Column(
-      modifier = modifier,
+      modifier = modifier.padding(MaterialTheme.keylines.content),
   ) {
     Text(
         text = "Activity Log",

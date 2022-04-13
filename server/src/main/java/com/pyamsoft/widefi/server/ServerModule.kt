@@ -12,6 +12,8 @@ import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import com.pyamsoft.widefi.server.proxy.session.UrlFixer
 import com.pyamsoft.widefi.server.proxy.session.factory.TcpProxySessionFactory
 import com.pyamsoft.widefi.server.proxy.session.factory.UdpProxySessionFactory
+import com.pyamsoft.widefi.server.proxy.session.mempool.ByteArrayMemPool
+import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import com.pyamsoft.widefi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import com.pyamsoft.widefi.server.widi.WifiDirectWiDiNetwork
@@ -32,6 +34,11 @@ abstract class ServerModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
+
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindByteArrayMemPool(impl: ByteArrayMemPool): MemPool<ByteArray>
 
   @Binds
   @CheckResult

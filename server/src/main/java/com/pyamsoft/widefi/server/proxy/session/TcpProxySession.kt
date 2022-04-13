@@ -9,6 +9,7 @@ import com.pyamsoft.widefi.server.ConnectionEvent
 import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ProxyRequest
 import com.pyamsoft.widefi.server.proxy.SharedProxy
+import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.Socket
@@ -18,7 +19,7 @@ import io.ktor.network.sockets.openWriteChannel
 import io.ktor.util.network.NetworkAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.copyTo
+import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
 import java.net.URI
@@ -34,6 +35,7 @@ internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
+    private val memPool: MemPool<ByteArray>,
     private val urlFixers: Set<UrlFixer>,
     proxyDebug: Boolean,
 ) : BaseProxySession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
@@ -247,6 +249,20 @@ internal constructor(
     output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
+  private suspend fun CoroutineScope.talk(input: ByteReadChannel, output: ByteWriteChannel) {
+    memPool.use { buffer ->
+      while (isActive) {
+        val size = input.readAvailable(buffer)
+        if (size < 0) {
+          break
+        }
+
+        debugLog { "TALK: $input -> $output\n${String(buffer, 0, size)}" }
+        output.writeFully(buffer, 0, size)
+      }
+    }
+  }
+
   private suspend fun exchangeInternet(
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -270,8 +286,22 @@ internal constructor(
 
       // Exchange data until completed
       debugLog { "Exchange rest of data: $request" }
-      val job = launch(context = dispatcher) { internetInput.copyTo(proxyOutput) }
-      proxyInput.copyTo(internetOutput)
+      val job =
+          launch(context = dispatcher) {
+            // Send data from the internet back to the proxy in a different thread
+            talk(
+                input = internetInput,
+                output = proxyOutput,
+            )
+          }
+
+      // Send input from the proxy (clients) to the internet on this thread
+      talk(
+          input = proxyInput,
+          output = internetOutput,
+      )
+
+      // Wait for internet communication to finish
       job.join()
       debugLog { "Done with proxy request: $request" }
     } catch (e: Throwable) {
@@ -347,7 +377,7 @@ internal constructor(
   }
 
   private suspend fun connectToInternet(request: ProxyRequest): Socket {
-      // Tag sockets for Android O strict mode
+    // Tag sockets for Android O strict mode
     tagSocket()
 
     // We dont actually use the socket tls() method here since we are not a TLS server

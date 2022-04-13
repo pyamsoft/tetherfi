@@ -1,7 +1,6 @@
 package com.pyamsoft.widefi.status
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
 
@@ -33,8 +31,11 @@ internal fun StatusScreen(
 
   val isButtonEnabled =
       remember(wiDiStatus) {
-        wiDiStatus == RunningStatus.Running || wiDiStatus == RunningStatus.NotRunning
+        wiDiStatus is RunningStatus.Running ||
+            wiDiStatus is RunningStatus.NotRunning ||
+            wiDiStatus is RunningStatus.Error
       }
+
   val buttonText =
       remember(wiDiStatus) {
         when (wiDiStatus) {
@@ -46,26 +47,31 @@ internal fun StatusScreen(
       }
 
   LazyColumn(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
-      contentPadding =
-          PaddingValues(
-              horizontal = ZeroSize,
-              vertical = MaterialTheme.keylines.content,
-          ),
+      modifier = modifier,
   ) {
     item {
-      Button(
-          enabled = isButtonEnabled,
-          onClick = onToggle,
+      Column(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .padding(horizontal = MaterialTheme.keylines.content),
       ) {
-        Text(
-            text = buttonText,
-        )
+        Button(
+            enabled = isButtonEnabled,
+            onClick = onToggle,
+        ) {
+          Text(
+              text = buttonText,
+          )
+        }
       }
     }
 
     item {
-      Column {
+      Column(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .padding(horizontal = MaterialTheme.keylines.content),
+      ) {
         Item(
             title = "SSID",
             value = group?.ssid ?: "NULL",
@@ -79,7 +85,11 @@ internal fun StatusScreen(
     }
 
     item {
-      Column {
+      Column(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .padding(horizontal = MaterialTheme.keylines.content),
+      ) {
         Item(
             title = "IP",
             value = ip,
@@ -93,7 +103,11 @@ internal fun StatusScreen(
     }
 
     item {
-      Column {
+      Column(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .padding(horizontal = MaterialTheme.keylines.content),
+      ) {
         DisplayStatus(
             title = "WiFi Network Status:",
             status = wiDiStatus,

@@ -22,9 +22,10 @@ internal constructor(
       onStop: () -> Unit,
   ) {
     when (val s = network.getCurrentStatus()) {
-      RunningStatus.NotRunning ->
+      is RunningStatus.NotRunning ->
           scope.launch(context = Dispatchers.Main) { network.start(onStart) }
-      RunningStatus.Running -> scope.launch(context = Dispatchers.Main) { network.stop(onStop) }
+      is RunningStatus.Running -> scope.launch(context = Dispatchers.Main) { network.stop(onStop) }
+      is RunningStatus.Error -> scope.launch(context = Dispatchers.Main) { network.stop(onStop) }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $s")
       }

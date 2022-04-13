@@ -7,6 +7,7 @@ import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import com.pyamsoft.widefi.server.proxy.session.TcpProxySession
 import com.pyamsoft.widefi.server.proxy.session.UrlFixer
+import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import io.ktor.network.sockets.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -22,6 +23,7 @@ internal constructor(
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
+    @ServerInternalApi private val memPool: MemPool<ByteArray>
 ) : ProxySession.Factory<Socket> {
 
   override fun create(): ProxySession<Socket> {
@@ -31,6 +33,7 @@ internal constructor(
         connectionBus = connectionBus,
         proxyDebug = proxyDebug,
         urlFixers = urlFixers,
+        memPool = memPool,
     )
   }
 }
