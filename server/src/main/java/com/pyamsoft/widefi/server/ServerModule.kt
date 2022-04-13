@@ -24,8 +24,10 @@ import dagger.multibindings.IntoSet
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.Socket
 import java.util.concurrent.Executors
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
+import timber.log.Timber
 
 @Module
 abstract class ServerModule {
@@ -80,6 +82,7 @@ abstract class ServerModule {
 
     @Provides
     @JvmStatic
+    @Singleton
     @ServerInternalApi
     internal fun provideErrorBus(): EventBus<ErrorEvent> {
       return EventBus.create()
@@ -87,6 +90,7 @@ abstract class ServerModule {
 
     @Provides
     @JvmStatic
+    @Singleton
     @ServerInternalApi
     internal fun provideConnectionBus(): EventBus<ConnectionEvent> {
       return EventBus.create()
@@ -101,6 +105,7 @@ abstract class ServerModule {
 
     @Provides
     @JvmStatic
+    @Singleton
     @ServerInternalApi
     internal fun provideProxyDispatcher(): CoroutineDispatcher {
       // This is a completely unbounded threadpool that is different from Dispatcher IO

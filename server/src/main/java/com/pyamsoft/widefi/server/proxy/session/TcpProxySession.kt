@@ -346,6 +346,7 @@ internal constructor(
         debugLog { "Connect to internet: $request" }
 
         // Log connection
+        Timber.d("Log connection: $request")
         connectionBus.send(
             ConnectionEvent.Tcp(
                 request = request,

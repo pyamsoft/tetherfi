@@ -7,6 +7,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 internal class ActivityViewModeler
 @Inject
@@ -18,6 +19,7 @@ internal constructor(
   fun watchNetworkActivity(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
+
       network.onConnectionEvent { event ->
         when (event) {
           is ConnectionEvent.Clear -> {

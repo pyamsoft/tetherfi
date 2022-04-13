@@ -26,7 +26,7 @@ internal fun ActivityScreen(
   ) {
     Text(
         text = "Activity Log",
-        style = MaterialTheme.typography.h6,
+        style = MaterialTheme.typography.h5,
     )
 
     LazyColumn {
@@ -51,7 +51,7 @@ private fun ActivityItem(modifier: Modifier = Modifier, event: ActivityEvent) {
   ) {
     Text(
         text = host,
-        style = MaterialTheme.typography.h1,
+        style = MaterialTheme.typography.h6,
     )
 
     Column {

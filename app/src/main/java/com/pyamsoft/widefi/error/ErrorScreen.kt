@@ -28,7 +28,7 @@ internal fun ErrorScreen(
   ) {
     Text(
         text = "Error Log",
-        style = MaterialTheme.typography.h6,
+        style = MaterialTheme.typography.h5,
     )
 
     LazyColumn {
@@ -57,7 +57,7 @@ private fun ErrorItem(modifier: Modifier = Modifier, event: ActivityEvent) {
   ) {
     Text(
         text = host,
-        style = MaterialTheme.typography.h1,
+        style = MaterialTheme.typography.h6,
     )
 
     Column {
