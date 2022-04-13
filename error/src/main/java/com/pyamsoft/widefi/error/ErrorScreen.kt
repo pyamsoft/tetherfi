@@ -14,10 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.widefi.activity.ActivityEvent
+import com.pyamsoft.widefi.ui.ProxyEvent
 
 @Composable
-internal fun ErrorScreen(
+fun ErrorScreen(
     modifier: Modifier = Modifier,
     state: ErrorViewState,
 ) {
@@ -45,7 +45,10 @@ internal fun ErrorScreen(
 }
 
 @Composable
-private fun ErrorItem(modifier: Modifier = Modifier, event: ActivityEvent) {
+private fun ErrorItem(
+    modifier: Modifier = Modifier,
+    event: ProxyEvent,
+) {
   val host = event.host
   val connections = remember(event.tcpConnections) { event.tcpConnections.get() }
 

@@ -16,7 +16,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
 
 @Composable
-internal fun StatusScreen(
+fun StatusScreen(
     modifier: Modifier = Modifier,
     state: StatusViewState,
     onToggle: () -> Unit,

@@ -1,9 +1,9 @@
 package com.pyamsoft.widefi.server.proxy.session.factory
 
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import com.pyamsoft.widefi.server.proxy.session.TcpProxySession
 import com.pyamsoft.widefi.server.proxy.session.UrlFixer

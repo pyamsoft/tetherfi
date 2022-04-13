@@ -3,10 +3,10 @@ package com.pyamsoft.widefi.server.proxy
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.BaseServer
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
 import javax.inject.Inject

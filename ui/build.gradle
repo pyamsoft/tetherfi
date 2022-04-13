@@ -62,24 +62,27 @@ kapt {
 
 dependencies {
   coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
-
   kapt "com.google.dagger:dagger-compiler:$dagger"
 
-  api "com.jakewharton.timber:timber:$timber"
+  // Compose
+  api "androidx.activity:activity-compose:$composeActivity"
+  api "androidx.compose.compiler:compiler:$compose_version"
+  api "androidx.compose.ui:ui:$compose_version"
+  api "androidx.compose.material:material:$compose_version"
+  api "androidx.compose.animation:animation:$compose_version"
+  api "androidx.compose.ui:ui-tooling-preview:$compose_version"
+  debugApi "androidx.compose.ui:ui-tooling:$compose_version"
+  // api "androidx.compose.material:material-icons-extended:$compose_version"
 
-  // PYDroid
-  api "com.github.pyamsoft.pydroid:arch:$pydroid"
-  api "com.github.pyamsoft.pydroid:ui:$pydroid"
+  api "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
 
-  // Cachify
-  api "com.github.pyamsoft:cachify:$cachify"
+  api "io.coil-kt:coil-compose-base:$coil"
 
-  // Highlander
-  api "com.github.pyamsoft:highlander:$highlander"
+  api "com.google.accompanist:accompanist-systemuicontroller:$accompanist"
+  api "com.google.accompanist:accompanist-insets:$accompanist"
 
-  // Android support library.
-  api "androidx.core:core-ktx:$core"
+  // Material Design
+  api "com.google.android.material:material:$materialDesign"
 
-  // Dagger
-  api "com.google.dagger:dagger:$dagger"
+  api project(":core")
 }

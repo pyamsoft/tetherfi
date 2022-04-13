@@ -12,9 +12,9 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.BaseServer
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus

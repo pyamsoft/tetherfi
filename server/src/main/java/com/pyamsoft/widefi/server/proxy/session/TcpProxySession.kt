@@ -5,9 +5,9 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
-import com.pyamsoft.widefi.server.ProxyRequest
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
+import com.pyamsoft.widefi.server.event.ProxyRequest
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import com.pyamsoft.widefi.server.proxy.tagSocket

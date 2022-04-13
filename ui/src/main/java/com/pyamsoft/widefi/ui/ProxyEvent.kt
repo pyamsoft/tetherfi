@@ -1,19 +1,19 @@
-package com.pyamsoft.widefi.activity
+package com.pyamsoft.widefi.ui
 
 import androidx.annotation.CheckResult
 
-interface ActivityEvent {
+interface ProxyEvent {
   val host: String
   val tcpConnections: ConnectionTracker
 
-  @CheckResult fun addTcpConnection(url: String, method: String): ActivityEvent
+  @CheckResult fun addTcpConnection(url: String, method: String): ProxyEvent
 
   companion object {
 
     @JvmStatic
     @CheckResult
-    fun forHost(host: String): ActivityEvent {
-      return ActivityEventImpl(
+    fun forHost(host: String): ProxyEvent {
+      return ProxyEventImpl(
           host = host,
           tcpConnections = ConnectionTrackerImpl(),
       )
@@ -35,7 +35,7 @@ interface ConnectionTracker {
   }
 }
 
-private class ConnectionTrackerImpl() : ConnectionTracker {
+private class ConnectionTrackerImpl : ConnectionTracker {
 
   private val connections = mutableMapOf<String, MutableMap<String, Int>>()
 
@@ -52,15 +52,15 @@ private class ConnectionTrackerImpl() : ConnectionTracker {
   }
 }
 
-private data class ActivityEventImpl(
+private data class ProxyEventImpl(
     override val host: String,
     override val tcpConnections: ConnectionTrackerImpl
-) : ActivityEvent {
+) : ProxyEvent {
 
   @CheckResult
-  override fun addTcpConnection(url: String, method: String): ActivityEvent {
+  override fun addTcpConnection(url: String, method: String): ProxyEvent {
     val c = tcpConnections
-    return ActivityEventImpl(
+    return ProxyEventImpl(
         host = host,
         tcpConnections = c.add(url, method),
     )

@@ -1,43 +1,38 @@
-package com.pyamsoft.widefi.error
+package com.pyamsoft.widefi.activity
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.widefi.activity.ActivityEvent
-import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
+import com.pyamsoft.widefi.ui.ProxyEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
-internal class ErrorViewModeler
+class ActivityViewModeler
 @Inject
 internal constructor(
-    private val state: MutableErrorViewState,
+    private val state: MutableActivityViewState,
     private val network: WiDiNetwork,
-) : AbstractViewModeler<ErrorViewState>(state) {
+) : AbstractViewModeler<ActivityViewState>(state) {
 
   fun watchNetworkActivity(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
-      network.onErrorEvent { event ->
+
+      network.onConnectionEvent { event ->
         when (event) {
-          is ErrorEvent.Clear -> {
+          is ConnectionEvent.Clear -> {
             s.events = emptyList()
           }
-          is ErrorEvent.Tcp -> {
+          is ConnectionEvent.Tcp -> {
             val request = event.request
-            if (request == null) {
-              Timber.w("Error event with no request data: $event")
-              return@onErrorEvent
-            }
-
             val newEvents = s.events.toMutableList()
             val existing = newEvents.find { it.host == request.host }
 
-            val e: ActivityEvent
+            val e: ProxyEvent
             if (existing == null) {
-              e = ActivityEvent.forHost(request.host)
+              e = ProxyEvent.forHost(request.host)
             } else {
               e = existing
               newEvents.remove(existing)
@@ -51,7 +46,7 @@ internal constructor(
             newEvents.add(newE)
             s.events = newEvents
           }
-          is ErrorEvent.Udp -> {}
+          is ConnectionEvent.Udp -> {}
         }
       }
     }

@@ -1,4 +1,4 @@
-package com.pyamsoft.widefi.server
+package com.pyamsoft.widefi.server.event
 
 sealed class ConnectionEvent {
 

@@ -2,6 +2,8 @@ package com.pyamsoft.widefi.server
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.permission.PermissionGuardImpl
 import com.pyamsoft.widefi.server.proxy.SharedProxy
@@ -27,7 +29,6 @@ import java.util.concurrent.Executors
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
-import timber.log.Timber
 
 @Module
 abstract class ServerModule {

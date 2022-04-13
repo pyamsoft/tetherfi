@@ -20,52 +20,52 @@ apply plugin: "kotlin-kapt"
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion rootProject.ext.maxSdk
+  compileSdkVersion rootProject.ext.maxSdk
 
-    //noinspection GroovyMissingReturnStatement
-    defaultConfig {
-        minSdkVersion rootProject.ext.minSdk
-        targetSdkVersion rootProject.ext.maxSdk
+  //noinspection GroovyMissingReturnStatement
+  defaultConfig {
+    minSdkVersion rootProject.ext.minSdk
+    targetSdkVersion rootProject.ext.maxSdk
 
-        resConfigs "en"
-    }
+    resConfigs "en"
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
 
-        // Flag to enable support for the new language APIs
-        coreLibraryDesugaringEnabled true
-    }
+    // Flag to enable support for the new language APIs
+    coreLibraryDesugaringEnabled true
+  }
 
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+  kotlinOptions {
+    jvmTarget = "11"
+  }
 
-    buildFeatures {
-        buildConfig false
-    }
+  buildFeatures {
+    buildConfig false
+  }
 }
 
 // Kapt flags
 kapt {
-    correctErrorTypes = true
-    useBuildCache = true
-    mapDiagnosticLocations = true
+  correctErrorTypes = true
+  useBuildCache = true
+  mapDiagnosticLocations = true
 
-    javacOptions {
-        option("-Xlint:unchecked")
-        option("-Xlint:deprecation")
-        option("-Xmaxerrs", 10000)
-    }
+  javacOptions {
+    option("-Xlint:unchecked")
+    option("-Xlint:deprecation")
+    option("-Xmaxerrs", 10000)
+  }
 }
 
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
+  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
 
-    api "com.github.pyamsoft.pydroid:notify:$pydroid"
+  api "com.github.pyamsoft.pydroid:notify:$pydroid"
 
-    kapt "com.google.dagger:dagger-compiler:$dagger"
+  kapt "com.google.dagger:dagger-compiler:$dagger"
 
-    api project(":core")
+  api project(":core")
 }

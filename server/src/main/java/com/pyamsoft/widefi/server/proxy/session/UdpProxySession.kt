@@ -2,8 +2,8 @@ package com.pyamsoft.widefi.server.proxy.session
 
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
-import com.pyamsoft.widefi.server.ConnectionEvent
-import com.pyamsoft.widefi.server.ErrorEvent
+import com.pyamsoft.widefi.server.event.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import io.ktor.network.sockets.Datagram
 import kotlinx.coroutines.CoroutineDispatcher

@@ -1,38 +1,43 @@
-package com.pyamsoft.widefi.activity
+package com.pyamsoft.widefi.error
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.widefi.server.ConnectionEvent
+import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
+import com.pyamsoft.widefi.ui.ProxyEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class ActivityViewModeler
+class ErrorViewModeler
 @Inject
 internal constructor(
-    private val state: MutableActivityViewState,
+    private val state: MutableErrorViewState,
     private val network: WiDiNetwork,
-) : AbstractViewModeler<ActivityViewState>(state) {
+) : AbstractViewModeler<ErrorViewState>(state) {
 
   fun watchNetworkActivity(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
-
-      network.onConnectionEvent { event ->
+      network.onErrorEvent { event ->
         when (event) {
-          is ConnectionEvent.Clear -> {
+          is ErrorEvent.Clear -> {
             s.events = emptyList()
           }
-          is ConnectionEvent.Tcp -> {
+          is ErrorEvent.Tcp -> {
             val request = event.request
+            if (request == null) {
+              Timber.w("Error event with no request data: $event")
+              return@onErrorEvent
+            }
+
             val newEvents = s.events.toMutableList()
             val existing = newEvents.find { it.host == request.host }
 
-            val e: ActivityEvent
+            val e: ProxyEvent
             if (existing == null) {
-              e = ActivityEvent.forHost(request.host)
+              e = ProxyEvent.forHost(request.host)
             } else {
               e = existing
               newEvents.remove(existing)
@@ -46,7 +51,7 @@ internal constructor(
             newEvents.add(newE)
             s.events = newEvents
           }
-          is ConnectionEvent.Udp -> {}
+          is ErrorEvent.Udp -> {}
         }
       }
     }

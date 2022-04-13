@@ -4,7 +4,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
-import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket

@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class StatusViewModeler
+class StatusViewModeler
 @Inject
 internal constructor(
     private val state: MutableStatusViewState,

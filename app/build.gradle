@@ -128,28 +128,9 @@ dependencies {
   api "androidx.fragment:fragment-ktx:$fragment"
   api "androidx.appcompat:appcompat:$appCompat"
 
-  // Compose
-  api "androidx.activity:activity-compose:$composeActivity"
-  api "androidx.compose.compiler:compiler:$compose_version"
-  api "androidx.compose.ui:ui:$compose_version"
-  api "androidx.compose.material:material:$compose_version"
-  api "androidx.compose.animation:animation:$compose_version"
-  api "androidx.compose.ui:ui-tooling-preview:$compose_version"
-  debugApi "androidx.compose.ui:ui-tooling:$compose_version"
-  // api "androidx.compose.material:material-icons-extended:$compose_version"
-
+  api project(":activity")
+  api project(":error")
   api project(":server")
   api project(":service")
-
-
-  // MOVE TO UI
-  implementation "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
-
-  implementation "io.coil-kt:coil-compose-base:$coil"
-
-  implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist"
-  implementation "com.google.accompanist:accompanist-insets:$accompanist"
-
-  // Material Design
-  api "com.google.android.material:material:$materialDesign"
+  api project(":status")
 }

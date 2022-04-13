@@ -13,9 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.widefi.ui.ProxyEvent
 
 @Composable
-internal fun ActivityScreen(
+fun ActivityScreen(
     modifier: Modifier = Modifier,
     state: ActivityViewState,
 ) {
@@ -43,7 +44,10 @@ internal fun ActivityScreen(
 }
 
 @Composable
-private fun ActivityItem(modifier: Modifier = Modifier, event: ActivityEvent) {
+private fun ActivityItem(
+    modifier: Modifier = Modifier,
+    event: ProxyEvent,
+) {
   val host = event.host
   val connections = remember(event.tcpConnections) { event.tcpConnections.get() }
   Column(
