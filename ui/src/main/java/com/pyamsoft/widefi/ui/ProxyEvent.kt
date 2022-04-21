@@ -24,15 +24,6 @@ interface ProxyEvent {
 interface ConnectionTracker {
 
   @CheckResult fun get(): List<Pair<String, Map<String, Int>>>
-
-  companion object {
-
-    @JvmStatic
-    @CheckResult
-    fun empty(): ConnectionTracker {
-      return ConnectionTrackerImpl()
-    }
-  }
 }
 
 private class ConnectionTrackerImpl : ConnectionTracker {
