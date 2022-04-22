@@ -2,6 +2,7 @@ package com.pyamsoft.widefi.server
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
@@ -19,6 +20,8 @@ import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import com.pyamsoft.widefi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import com.pyamsoft.widefi.server.widi.WifiDirectWiDiNetwork
+import com.pyamsoft.widefi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.widefi.server.widi.receiver.WifiDirectReceiver
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -60,6 +63,13 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   @ServerInternalApi
+  internal abstract fun bindWidiReceiver(
+      impl: WifiDirectReceiver
+  ): WiDiReceiver
+
+  @Binds
+  @CheckResult
+  @ServerInternalApi
   internal abstract fun bindProxyManagerFactory(
       impl: DefaultProxyManagerFactory
   ): ProxyManager.Factory
@@ -86,6 +96,14 @@ abstract class ServerModule {
     @Singleton
     @ServerInternalApi
     internal fun provideErrorBus(): EventBus<ErrorEvent> {
+      return EventBus.create()
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    @ServerInternalApi
+    internal fun provideWidiReceiverEventBus(): EventBus<WiDiReceiver.Event> {
       return EventBus.create()
     }
 

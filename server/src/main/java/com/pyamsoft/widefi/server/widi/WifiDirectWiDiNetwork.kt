@@ -18,11 +18,15 @@ import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus
+import com.pyamsoft.widefi.server.widi.receiver.WiDiReceiver
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -35,19 +39,42 @@ internal constructor(
     private val context: Context,
     private val permissionGuard: PermissionGuard,
     @ServerInternalApi private val proxy: SharedProxy,
+    @ServerInternalApi private val receiver: WiDiReceiver,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork {
 
-  private val directManager by lazy {
+  /** We own our own scope here because the proxy lifespan is separate */
+  private val scope = CoroutineScope(context = dispatcher)
+
+  private val wifiP2PManager by lazy {
     context.applicationContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
 
   private val mutex = Mutex()
   private var wifiChannel: WifiP2pManager.Channel? = null
 
+  init {
+    scope.launch(context = dispatcher) { registerWiDiReceiver() }
+  }
+
+  private fun CoroutineScope.registerWiDiReceiver() {
+    launch(context = dispatcher) {
+      receiver.onEvent { event ->
+        when (event) {
+          is WiDiReceiver.Event.StateWifiEnabled -> {}
+          is WiDiReceiver.Event.StateConnectionChanged -> {}
+          is WiDiReceiver.Event.StateDeviceChanged -> {}
+          is WiDiReceiver.Event.StateWifiDisabled -> {}
+          is WiDiReceiver.Event.StatePeersChanged -> {}
+        }
+      }
+    }
+  }
+
   @CheckResult
   private fun createChannel(): WifiP2pManager.Channel? {
-    return directManager.initialize(context.applicationContext, Looper.getMainLooper(), null)
+    return wifiP2PManager.initialize(context.applicationContext, Looper.getMainLooper(), null)
   }
 
   @CheckResult
@@ -94,7 +121,7 @@ internal constructor(
       listener: WifiP2pManager.ActionListener,
   ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      directManager.createGroup(
+      wifiP2PManager.createGroup(
           channel,
           config,
           listener,
@@ -129,7 +156,7 @@ internal constructor(
           if (config != null) {
             createGroupQ(channel, config, listener)
           } else {
-            directManager.createGroup(
+            wifiP2PManager.createGroup(
                 channel,
                 listener,
             )
@@ -143,7 +170,7 @@ internal constructor(
         Timber.d("Stop existing network")
 
         return@withContext suspendCoroutine { cont ->
-          directManager.removeGroup(
+          wifiP2PManager.removeGroup(
               channel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
@@ -162,44 +189,48 @@ internal constructor(
         }
       }
 
-  private suspend fun startNetwork(onStart: () -> Unit) {
-    Enforcer.assertOffMainThread()
+  private suspend fun startNetwork(onStart: () -> Unit) =
+      withContext(context = dispatcher) {
+        Enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateWiDiNetwork()) {
-      Timber.w("Missing permissions for making WiDi network")
-      status.set(RunningStatus.NotRunning)
-      return
-    }
+        if (!permissionGuard.canCreateWiDiNetwork()) {
+          Timber.w("Missing permissions for making WiDi network")
+          status.set(RunningStatus.NotRunning)
+          return@withContext
+        }
 
-    val channel = createChannel()
-    if (channel == null) {
-      Timber.w("Failed to create channel, cannot initialize WiDi network")
-      status.set(RunningStatus.NotRunning)
-      return
-    }
+        val channel = createChannel()
+        if (channel == null) {
+          Timber.w("Failed to create channel, cannot initialize WiDi network")
+          status.set(RunningStatus.NotRunning)
+          return@withContext
+        }
 
-    Timber.d("Start new network")
-    status.set(RunningStatus.Starting)
+        Timber.d("Start new network")
+        status.set(RunningStatus.Starting)
 
-    val runningStatus = createGroup(channel)
-    if (runningStatus == RunningStatus.Running) {
-      mutex.withLock {
-        Timber.d("Store WiFi channel")
-        wifiChannel = channel
+        val runningStatus = createGroup(channel)
+        if (runningStatus == RunningStatus.Running) {
+          mutex.withLock {
+            Timber.d("Store WiFi channel")
+            wifiChannel = channel
+
+            Timber.d("Register wifi receiver")
+            receiver.register()
+          }
+
+          Timber.d("Network started, start proxy")
+          proxy.start()
+          Timber.d("Proxy started!")
+          onStart()
+        } else {
+          Timber.w("Group failed creation, stop proxy")
+          proxy.stop()
+          Timber.d("Proxy stopped!")
+        }
+
+        status.set(runningStatus)
       }
-
-      Timber.d("Network started, start proxy")
-      proxy.start()
-      Timber.d("Proxy started!")
-      onStart()
-    } else {
-      Timber.w("Group failed creation, stop proxy")
-      proxy.stop()
-      Timber.d("Proxy stopped!")
-    }
-
-    status.set(runningStatus)
-  }
 
   private suspend fun stopNetwork(onStop: () -> Unit = {}) {
     Enforcer.assertOffMainThread()
@@ -217,7 +248,13 @@ internal constructor(
 
     val runningStatus = removeGroup(channel)
     if (runningStatus == RunningStatus.NotRunning) {
-      mutex.withLock { wifiChannel = null }
+      mutex.withLock {
+        Timber.d("Clear wifi channel")
+        wifiChannel = null
+
+        Timber.d("Unregister wifi receiver")
+        receiver.unregister()
+      }
       Timber.d("Stop proxy when wifi network removed")
       proxy.stop()
     } else {
@@ -235,7 +272,7 @@ internal constructor(
         return@withContext suspendCoroutine { cont ->
           Timber.d("Get current group info")
 
-          directManager.requestGroupInfo(
+          wifiP2PManager.requestGroupInfo(
               channel,
           ) { group ->
             if (group == null) {
@@ -259,7 +296,7 @@ internal constructor(
   ): WiDiNetwork.ConnectionInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
-          directManager.requestConnectionInfo(
+          wifiP2PManager.requestConnectionInfo(
               channel,
           ) { conn ->
             if (conn == null) {
@@ -312,20 +349,22 @@ internal constructor(
         return@withContext resolveConnectionInfo(channel)
       }
 
-  override suspend fun start(onStart: () -> Unit) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
+  override fun start(onStart: () -> Unit) {
+    scope.launch(context = dispatcher) {
+      Enforcer.assertOffMainThread()
 
-        stopNetwork()
-        startNetwork(onStart)
-      }
+      stopNetwork()
+      startNetwork(onStart)
+    }
+  }
 
-  override suspend fun stop(onStop: () -> Unit) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
+  override fun stop(onStop: () -> Unit) {
+    scope.launch(context = dispatcher) {
+      Enforcer.assertOffMainThread()
 
-        stopNetwork(onStop)
-      }
+      stopNetwork(onStop)
+    }
+  }
 
   override suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit) {
     return proxy.onStatusChanged(block)

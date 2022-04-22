@@ -6,9 +6,9 @@ import com.pyamsoft.widefi.server.status.RunningStatus
 
 interface WiDiNetwork : Server {
 
-  suspend fun start(onStart: () -> Unit)
+  fun start(onStart: () -> Unit)
 
-  suspend fun stop(onStop: () -> Unit)
+  fun stop(onStop: () -> Unit)
 
   @CheckResult suspend fun getGroupInfo(): GroupInfo?
 
