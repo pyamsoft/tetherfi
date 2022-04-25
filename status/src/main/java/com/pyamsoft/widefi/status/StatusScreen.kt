@@ -26,10 +26,6 @@ fun StatusScreen(
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
 
-  val group = state.group
-  val ip = remember(state.ip) { state.ip.ifBlank { "UNDEFINED" } }
-  val port = remember(state.port) { if (state.port <= 0) "UNSET" else "${state.port}" }
-
   val isButtonEnabled =
       remember(wiDiStatus) {
         wiDiStatus is RunningStatus.Running ||
@@ -87,44 +83,12 @@ fun StatusScreen(
 
     if (isLoaded) {
       item {
-        Column(
+        NetworkInformation(
             modifier =
                 Modifier.padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
-        ) {
-          Item(
-              title = "SSID",
-              value = group?.ssid ?: "NULL",
-          )
-
-          Item(
-              title = "PASSWORD",
-              value = group?.password ?: "NULL",
-          )
-
-          Item(
-              title = "BAND",
-              value = group?.band?.name ?: "NULL",
-          )
-        }
-      }
-
-      item {
-        Column(
-            modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
-        ) {
-          Item(
-              title = "IP",
-              value = ip,
-          )
-
-          Item(
-              title = "PORT",
-              value = port,
-          )
-        }
+            state = state,
+        )
       }
     } else {
       item {
@@ -135,6 +99,53 @@ fun StatusScreen(
         ) { CircularProgressIndicator() }
       }
     }
+  }
+}
+
+@Composable
+private fun NetworkInformation(
+    modifier: Modifier = Modifier,
+    state: StatusViewState,
+) {
+  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
+    
+  val group = state.group
+  val ssid = remember(isEditable, group) { if (isEditable) state.ssid else group?.ssid ?: "NULL" }
+  val password =
+      remember(isEditable, group) { if (isEditable) state.password else group?.password ?: "NULL" }
+  val band = remember(isEditable, group) { if (isEditable) state.band else state.group?.band }
+  val bandName = remember(band) { band?.name ?: "NULL" }
+
+  val ip = remember(state.ip) { state.ip.ifBlank { "UNDEFINED" } }
+  val port = remember(state.port) { if (state.port <= 0) "UNSET" else "${state.port}" }
+
+  Column(
+      modifier = modifier,
+  ) {
+    Item(
+        title = "SSID",
+        value = ssid,
+    )
+
+    Item(
+        title = "PASSWORD",
+        value = password,
+    )
+
+    Item(
+        title = "BAND",
+        value = bandName,
+    )
+
+    Item(
+        title = "IP",
+        value = ip,
+    )
+
+    Item(
+        title = "PORT",
+        value = port,
+    )
   }
 }
 
