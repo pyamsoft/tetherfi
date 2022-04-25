@@ -81,6 +81,11 @@ fun StatusScreen(
             title = "PASSWORD",
             value = group?.password ?: "NULL",
         )
+
+        Item(
+            title = "BAND",
+            value = group?.band?.name ?: "NULL",
+        )
       }
     }
 

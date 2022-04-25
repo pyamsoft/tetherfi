@@ -2,6 +2,7 @@ package com.pyamsoft.widefi.server.widi
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.widefi.server.Server
+import com.pyamsoft.widefi.server.ServerNetworkBand
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.receiver.WidiNetworkEvent
 
@@ -23,6 +24,7 @@ interface WiDiNetwork : Server {
   internal constructor(
       val ssid: String,
       val password: String,
+      val band: ServerNetworkBand,
   )
 
   data class ConnectionInfo

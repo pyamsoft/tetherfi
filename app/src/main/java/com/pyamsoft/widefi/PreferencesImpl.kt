@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.widefi.server.ServerDefaults
+import com.pyamsoft.widefi.server.ServerNetworkBand
 import com.pyamsoft.widefi.server.ServerPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -63,16 +64,16 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
         preferences.edit { putInt(PORT, port) }
       }
 
-  override suspend fun getNetworkBand(): ServerPreferences.NetworkBand =
+  override suspend fun getNetworkBand(): ServerNetworkBand =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 
         val fallback = ServerDefaults.NETWORK_BAND.name
         val band = preferences.getString(NETWORK_BAND, fallback).orEmpty().ifBlank { fallback }
-        return@withContext ServerPreferences.NetworkBand.valueOf(band)
+        return@withContext ServerNetworkBand.valueOf(band)
       }
 
-  override suspend fun setNetworkBand(band: ServerPreferences.NetworkBand) =
+  override suspend fun setNetworkBand(band: ServerNetworkBand) =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 

@@ -3,6 +3,7 @@ package com.pyamsoft.widefi.server.widi
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pConfig
+import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Looper
@@ -14,6 +15,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.BaseServer
 import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.ServerNetworkBand
 import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
@@ -79,9 +81,9 @@ internal constructor(
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredBand(): Int {
     return when (preferences.getNetworkBand()) {
-      ServerPreferences.NetworkBand.AUTO -> WifiP2pConfig.GROUP_OWNER_BAND_AUTO
-      ServerPreferences.NetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
-      ServerPreferences.NetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
+      ServerNetworkBand.AUTO -> WifiP2pConfig.GROUP_OWNER_BAND_AUTO
+      ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+      ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
     }
   }
 
@@ -250,6 +252,20 @@ internal constructor(
   }
 
   @CheckResult
+  private fun asWifiBand(group: WifiP2pGroup): ServerNetworkBand {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      when (group.frequency) {
+        WifiP2pConfig.GROUP_OWNER_BAND_5GHZ -> ServerNetworkBand.MODERN
+        WifiP2pConfig.GROUP_OWNER_BAND_2GHZ -> ServerNetworkBand.LEGACY
+        WifiP2pConfig.GROUP_OWNER_BAND_AUTO -> ServerNetworkBand.AUTO
+        else -> ServerNetworkBand.AUTO
+      }
+    } else {
+      ServerNetworkBand.AUTO
+    }
+  }
+
+  @CheckResult
   @SuppressLint("MissingPermission")
   private suspend fun resolveCurrentGroup(channel: WifiP2pManager.Channel): WiDiNetwork.GroupInfo? =
       withContext(context = Dispatchers.Main) {
@@ -267,6 +283,7 @@ internal constructor(
                   WiDiNetwork.GroupInfo(
                       ssid = group.networkName,
                       password = group.passphrase,
+                      band = asWifiBand(group),
                   ),
               )
             }

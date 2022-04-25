@@ -3,6 +3,7 @@ package com.pyamsoft.widefi.status
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
+import com.pyamsoft.widefi.server.widi.receiver.WidiNetworkEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,33 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Main) { network.onStatusChanged { state.wiDiStatus = it } }
+
+    scope.launch(context = Dispatchers.Main) {
+      network.onWifiDirectEvent { event ->
+        when (event) {
+          is WidiNetworkEvent.ConnectionChanged -> {
+            Timber.d("Connection Changed")
+            refreshGroupInfo(scope = scope)
+          }
+          is WidiNetworkEvent.DeviceChanged -> {
+            Timber.d("Device Changed")
+            refreshGroupInfo(scope = scope)
+          }
+          is WidiNetworkEvent.PeersChanged -> {
+            Timber.d("Peers Changed")
+            refreshGroupInfo(scope = scope)
+          }
+          is WidiNetworkEvent.WifiDisabled -> {
+            Timber.d("Wifi Disabled")
+            refreshGroupInfo(scope = scope)
+          }
+          is WidiNetworkEvent.WifiEnabled -> {
+            Timber.d("Wifi Enabled")
+            refreshGroupInfo(scope = scope)
+          }
+        }
+      }
+    }
   }
 
   fun handleToggleProxy(

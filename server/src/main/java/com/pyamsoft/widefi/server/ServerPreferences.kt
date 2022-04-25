@@ -16,13 +16,8 @@ interface ServerPreferences {
 
   suspend fun setPort(port: Int)
 
-  @CheckResult suspend fun getNetworkBand(): NetworkBand
+  @CheckResult suspend fun getNetworkBand(): ServerNetworkBand
 
-  suspend fun setNetworkBand(band: NetworkBand)
+  suspend fun setNetworkBand(band: ServerNetworkBand)
 
-  enum class NetworkBand {
-    AUTO,
-    LEGACY,
-    MODERN
-  }
 }
