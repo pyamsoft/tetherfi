@@ -12,7 +12,9 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.BaseServer
+import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
@@ -35,6 +37,7 @@ import timber.log.Timber
 internal class WifiDirectWiDiNetwork
 @Inject
 internal constructor(
+    private val preferences: ServerPreferences,
     private val context: Context,
     private val permissionGuard: PermissionGuard,
     @ServerInternalApi private val proxy: SharedProxy,
@@ -61,31 +64,34 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun getNetworkName(): String =
-      withContext(context = Dispatchers.IO) {
-        return@withContext "WideFi"
-      }
-
-  @CheckResult
-  private suspend fun getNetworkPassword(): String =
-      withContext(context = Dispatchers.IO) {
-        return@withContext "widefi42"
-      }
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private suspend fun getPreferredSsid(): String {
+    return preferences.getSsid()
+  }
 
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
-  private suspend fun getNetworkBand(): Int =
-      withContext(context = Dispatchers.IO) {
-        return@withContext WifiP2pConfig.GROUP_OWNER_BAND_AUTO
-      }
+  private suspend fun getPreferredPassword(): String {
+    return preferences.getPassword()
+  }
+
+  @CheckResult
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private suspend fun getPreferredBand(): Int {
+    return when (preferences.getNetworkBand()) {
+      ServerPreferences.NetworkBand.AUTO -> WifiP2pConfig.GROUP_OWNER_BAND_AUTO
+      ServerPreferences.NetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+      ServerPreferences.NetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
+    }
+  }
 
   @CheckResult
   private suspend fun getConfiguration(): WifiP2pConfig? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       WifiP2pConfig.Builder()
-          .setNetworkName("DIRECT-WF-${getNetworkName()}")
-          .setPassphrase(getNetworkPassword())
-          .setGroupOperatingBand(getNetworkBand())
+          .setNetworkName(ServerDefaults.asSsid(getPreferredSsid()))
+          .setPassphrase(getPreferredPassword())
+          .setGroupOperatingBand(getPreferredBand())
           .build()
     } else {
       null

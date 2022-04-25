@@ -9,8 +9,10 @@ import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.widefi.main.MainActivity
 import com.pyamsoft.widefi.main.MainComponent
 import com.pyamsoft.widefi.server.ServerModule
+import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.service.ProxyService
 import com.pyamsoft.widefi.service.ServiceModule
+import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -47,6 +49,9 @@ internal interface WidefiComponent {
 
   @Module
   abstract class Provider {
+
+    @Binds
+    internal abstract fun bindPreferences(impl: PreferencesImpl): ServerPreferences
 
     @Module
     companion object {
