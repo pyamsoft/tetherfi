@@ -1,5 +1,6 @@
 package com.pyamsoft.widefi.status
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -96,7 +97,11 @@ fun StatusScreen(
             modifier =
                 Modifier.padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
-        ) { CircularProgressIndicator() }
+        ) {
+          Box(
+              contentAlignment = Alignment.Center,
+          ) { CircularProgressIndicator() }
+        }
       }
     }
   }
@@ -108,7 +113,7 @@ private fun NetworkInformation(
     state: StatusViewState,
 ) {
   val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
-    
+
   val group = state.group
   val ssid = remember(isEditable, group) { if (isEditable) state.ssid else group?.ssid ?: "NULL" }
   val password =
