@@ -29,7 +29,9 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -51,6 +53,8 @@ internal constructor(
   private val wifiP2PManager by lazy {
     context.applicationContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
+
+  private val scope by lazy { CoroutineScope(context = dispatcher) }
 
   private val mutex = Mutex()
   private var wifiChannel: WifiP2pManager.Channel? = null
@@ -350,20 +354,22 @@ internal constructor(
         return@withContext resolveConnectionInfo(channel)
       }
 
-  override suspend fun start(onStart: () -> Unit) =
-      withContext(context = dispatcher) {
-        Enforcer.assertOffMainThread()
+  override fun start(onStart: () -> Unit) {
+    scope.launch(context = dispatcher) {
+      Enforcer.assertOffMainThread()
 
-        stopNetwork()
-        startNetwork(onStart)
-      }
+      stopNetwork()
+      startNetwork(onStart)
+    }
+  }
 
-  override suspend fun stop(onStop: () -> Unit) =
-      withContext(context = dispatcher) {
-        Enforcer.assertOffMainThread()
+  override fun stop(onStop: () -> Unit) {
+    scope.launch(context = dispatcher) {
+      Enforcer.assertOffMainThread()
 
-        stopNetwork(onStop)
-      }
+      stopNetwork(onStop)
+    }
+  }
 
   override suspend fun onWifiDirectEvent(block: (WidiNetworkEvent) -> Unit) {
     return receiver.onEvent { block(it) }
