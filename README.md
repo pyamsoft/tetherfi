@@ -20,7 +20,6 @@ also currently fails to connect correctly to the Playstation Network. General "n
 browsing should work fine - however it is depedent on the speed and availability of your Android
 device's internet connection.
 
-
 ## Privacy
 
 WideFi respects your privacy. WideFi is open source, and always will be. WideFi
@@ -32,10 +31,9 @@ or any features.
 relies on a proprietary In-App Billing library for in-app purchases in order to stay policy
 compliant with the leading marketplace.
 
-
 ## Development
 
-WideFi is developed in the open on GitHub at:  
+WideFi is developed in the open on GitHub at:
 
 ```
 https://github.com/pyamsoft/widefi
@@ -45,7 +43,6 @@ If you know a few things about Android programming and are wanting to help
 out with development you can do so by creating issue tickets to squash bugs,
 and propose feature requests for future inclusion.
 
-
 # Issues or Questions
 
 Please post any issues with the code in the Issues section on GitHub. Pull Requests
@@ -53,7 +50,6 @@ will be accepted on GitHub only after extensive reading and as long as the reque
 goes in line with the design of the application.
 
 [1]: https://play.google.com/store/apps/details?id=com.pyamsoft.widefi
-
 
 ## License
 
