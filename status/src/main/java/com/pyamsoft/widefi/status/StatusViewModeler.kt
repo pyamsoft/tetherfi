@@ -1,6 +1,8 @@
 package com.pyamsoft.widefi.status
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.widefi.server.ServerDefaults
+import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import com.pyamsoft.widefi.server.widi.receiver.WidiNetworkEvent
@@ -13,6 +15,7 @@ import timber.log.Timber
 class StatusViewModeler
 @Inject
 internal constructor(
+    private val preferences: ServerPreferences,
     private val state: MutableStatusViewState,
     private val network: WiDiNetwork,
 ) : AbstractViewModeler<StatusViewState>(state) {
@@ -28,6 +31,25 @@ internal constructor(
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $s")
       }
+    }
+  }
+
+  fun loadPreferences(scope: CoroutineScope) {
+    val s = state
+    if (s.preferencesLoaded) {
+      return
+    }
+
+    scope.launch(context = Dispatchers.Main) {
+      s.ssid = preferences.getSsid()
+      s.password = preferences.getPassword()
+      s.port = preferences.getPort()
+      s.band = preferences.getNetworkBand()
+
+      // TODO How do we get the interfaces hosting IP?
+      s.ip = ServerDefaults.IP
+
+      s.preferencesLoaded = true
     }
   }
 

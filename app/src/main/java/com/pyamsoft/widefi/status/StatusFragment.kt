@@ -16,8 +16,8 @@ import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
-import com.pyamsoft.pydroid.ui.theme.ThemeProvider
 import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.pydroid.ui.theme.asThemeProvider
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.widefi.R
@@ -31,7 +31,7 @@ class StatusFragment : Fragment() {
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
 
-  private var windowInsetObserver: ViewWindowInsetObserver? = null
+  private var compose: ViewWindowInsetObserver? = null
 
   private fun handleToggleProxy() {
     val ctx = requireContext()
@@ -54,13 +54,13 @@ class StatusFragment : Fragment() {
 
     val vm = viewModel.requireNotNull()
 
-    val themeProvider = ThemeProvider { theming.requireNotNull().isDarkTheme(act) }
+    val themeProvider = act.asThemeProvider(theming.requireNotNull())
     return ComposeView(act).apply {
       id = R.id.screen_status
 
       val observer = ViewWindowInsetObserver(this)
       val windowInsets = observer.start()
-      windowInsetObserver = observer
+      compose = observer
 
       setContent {
         vm.Render { state ->
@@ -84,6 +84,7 @@ class StatusFragment : Fragment() {
       vm.restoreState(savedInstanceState)
       vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope)
       vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
+      vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope)
     }
   }
 
@@ -101,8 +102,8 @@ class StatusFragment : Fragment() {
     super.onDestroyView()
     dispose()
 
-    windowInsetObserver?.stop()
-    windowInsetObserver = null
+    compose?.stop()
+    compose = null
 
     theming = null
     viewModel = null

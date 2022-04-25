@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -21,13 +22,13 @@ fun StatusScreen(
     state: StatusViewState,
     onToggle: () -> Unit,
 ) {
-  val group = state.group
   val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
+  val isLoaded = state.preferencesLoaded
 
-  val ip = state.ip.ifBlank { "UNDEFINED" }
-  val port = state.port
-  val portString = remember(port) { if (port <= 0) "UNSET" else "$port" }
+  val group = state.group
+  val ip = remember(state.ip) { state.ip.ifBlank { "UNDEFINED" } }
+  val port = remember(state.port) { if (state.port <= 0) "UNSET" else "${state.port}" }
 
   val isButtonEnabled =
       remember(wiDiStatus) {
@@ -72,47 +73,6 @@ fun StatusScreen(
               Modifier.padding(top = MaterialTheme.keylines.content)
                   .padding(horizontal = MaterialTheme.keylines.content),
       ) {
-        Item(
-            title = "SSID",
-            value = group?.ssid ?: "NULL",
-        )
-
-        Item(
-            title = "PASSWORD",
-            value = group?.password ?: "NULL",
-        )
-
-        Item(
-            title = "BAND",
-            value = group?.band?.name ?: "NULL",
-        )
-      }
-    }
-
-    item {
-      Column(
-          modifier =
-              Modifier.padding(top = MaterialTheme.keylines.content)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-      ) {
-        Item(
-            title = "IP",
-            value = ip,
-        )
-
-        Item(
-            title = "PORT",
-            value = portString,
-        )
-      }
-    }
-
-    item {
-      Column(
-          modifier =
-              Modifier.padding(top = MaterialTheme.keylines.content)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-      ) {
         DisplayStatus(
             title = "WiFi Network Status:",
             status = wiDiStatus,
@@ -122,6 +82,57 @@ fun StatusScreen(
             title = "Proxy Status:",
             status = proxyStatus,
         )
+      }
+    }
+
+    if (isLoaded) {
+      item {
+        Column(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+        ) {
+          Item(
+              title = "SSID",
+              value = group?.ssid ?: "NULL",
+          )
+
+          Item(
+              title = "PASSWORD",
+              value = group?.password ?: "NULL",
+          )
+
+          Item(
+              title = "BAND",
+              value = group?.band?.name ?: "NULL",
+          )
+        }
+      }
+
+      item {
+        Column(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+        ) {
+          Item(
+              title = "IP",
+              value = ip,
+          )
+
+          Item(
+              title = "PORT",
+              value = port,
+          )
+        }
+      }
+    } else {
+      item {
+        Column(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+        ) { CircularProgressIndicator() }
       }
     }
   }
