@@ -23,8 +23,8 @@ import timber.log.Timber
 internal class WifiDirectReceiver
 @Inject
 internal constructor(
-    private val context: Context,
-    @ServerInternalApi private val eventBus: EventBus<WiDiReceiver.Event>,
+  private val context: Context,
+  @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
 ) : BroadcastReceiver(), WiDiReceiver {
 
   private val scope by lazy { CoroutineScope(context = Dispatchers.IO) }
@@ -43,14 +43,14 @@ internal constructor(
       val enabled = isWifiEnabled()
       Timber.d("Wifi P2P State Changed: ${if (enabled) "Enabled" else "Disabled"}")
       if (enabled) {
-        eventBus.send(WiDiReceiver.Event.StateWifiEnabled)
+        eventBus.send(WidiNetworkEvent.WifiEnabled)
       } else {
-        eventBus.send(WiDiReceiver.Event.StateWifiDisabled)
+        eventBus.send(WidiNetworkEvent.WifiDisabled)
       }
     }
   }
 
-  override suspend fun onEvent(onEvent: (WiDiReceiver.Event) -> Unit) {
+  override suspend fun onEvent(onEvent: (WidiNetworkEvent) -> Unit) {
     return eventBus.onEvent { onEvent(it) }
   }
 

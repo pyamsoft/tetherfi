@@ -19,14 +19,13 @@ import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.widefi.server.widi.receiver.WidiNetworkEvent
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -44,33 +43,12 @@ internal constructor(
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork {
 
-  /** We own our own scope here because the proxy lifespan is separate */
-  private val scope = CoroutineScope(context = dispatcher)
-
   private val wifiP2PManager by lazy {
     context.applicationContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
 
   private val mutex = Mutex()
   private var wifiChannel: WifiP2pManager.Channel? = null
-
-  init {
-    scope.launch(context = dispatcher) { registerWiDiReceiver() }
-  }
-
-  private fun CoroutineScope.registerWiDiReceiver() {
-    launch(context = dispatcher) {
-      receiver.onEvent { event ->
-        when (event) {
-          is WiDiReceiver.Event.StateWifiEnabled -> {}
-          is WiDiReceiver.Event.StateConnectionChanged -> {}
-          is WiDiReceiver.Event.StateDeviceChanged -> {}
-          is WiDiReceiver.Event.StateWifiDisabled -> {}
-          is WiDiReceiver.Event.StatePeersChanged -> {}
-        }
-      }
-    }
-  }
 
   @CheckResult
   private fun createChannel(): WifiP2pManager.Channel? {
@@ -98,7 +76,7 @@ internal constructor(
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getNetworkBand(): Int =
       withContext(context = Dispatchers.IO) {
-        return@withContext WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+        return@withContext WifiP2pConfig.GROUP_OWNER_BAND_AUTO
       }
 
   @CheckResult
@@ -349,21 +327,23 @@ internal constructor(
         return@withContext resolveConnectionInfo(channel)
       }
 
-  override fun start(onStart: () -> Unit) {
-    scope.launch(context = dispatcher) {
-      Enforcer.assertOffMainThread()
+  override suspend fun start(onStart: () -> Unit) =
+      withContext(context = dispatcher) {
+        Enforcer.assertOffMainThread()
 
-      stopNetwork()
-      startNetwork(onStart)
-    }
-  }
+        stopNetwork()
+        startNetwork(onStart)
+      }
 
-  override fun stop(onStop: () -> Unit) {
-    scope.launch(context = dispatcher) {
-      Enforcer.assertOffMainThread()
+  override suspend fun stop(onStop: () -> Unit) =
+      withContext(context = dispatcher) {
+        Enforcer.assertOffMainThread()
 
-      stopNetwork(onStop)
-    }
+        stopNetwork(onStop)
+      }
+
+  override suspend fun onWifiDirectEvent(block: (WidiNetworkEvent) -> Unit) {
+    return receiver.onEvent { block(it) }
   }
 
   override suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit) {
