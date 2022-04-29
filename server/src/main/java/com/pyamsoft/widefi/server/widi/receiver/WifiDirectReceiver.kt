@@ -4,48 +4,40 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pManager
-import androidx.annotation.CheckResult
-import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.widefi.server.ServerInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @Singleton
 internal class WifiDirectReceiver
 @Inject
 internal constructor(
-  private val context: Context,
-  @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
+    private val context: Context,
+    @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
 ) : BroadcastReceiver(), WiDiReceiver {
 
   private val scope by lazy { CoroutineScope(context = Dispatchers.IO) }
 
-  private val wifiManager by lazy { context.getSystemService<WifiManager>().requireNotNull() }
   private var registered = true
 
-  @CheckResult
-  private suspend fun isWifiEnabled(): Boolean =
-      withContext(context = Dispatchers.Main) {
-        return@withContext wifiManager.isWifiEnabled
-      }
-
-  private fun handleStateChangedAction() {
+  private fun handleStateChangedAction(intent: Intent) {
     scope.launch(context = Dispatchers.IO) {
-      val enabled = isWifiEnabled()
-      Timber.d("Wifi P2P State Changed: ${if (enabled) "Enabled" else "Disabled"}")
-      if (enabled) {
-        eventBus.send(WidiNetworkEvent.WifiEnabled)
-      } else {
-        eventBus.send(WidiNetworkEvent.WifiDisabled)
+      when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
+        WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
+          Timber.d("Wifi P2P Enabled")
+          eventBus.send(WidiNetworkEvent.WifiEnabled)
+        }
+        WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
+          Timber.d("Wifi P2P Disabled")
+          eventBus.send(WidiNetworkEvent.WifiDisabled)
+        }
+        else -> Timber.w("Unknown Wifi p2p state: $p2pState")
       }
     }
   }
@@ -70,7 +62,7 @@ internal constructor(
 
   override fun onReceive(context: Context, intent: Intent) {
     when (val action = intent.action) {
-      WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction()
+      WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)
       WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {}
       WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> {}
       WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {}
