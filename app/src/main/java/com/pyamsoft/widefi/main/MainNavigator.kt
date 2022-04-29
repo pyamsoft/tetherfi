@@ -21,6 +21,8 @@ import androidx.annotation.CheckResult
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import com.pyamsoft.pydroid.arch.UiSavedStateReader
+import com.pyamsoft.pydroid.arch.UiSavedStateWriter
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.widefi.R
@@ -35,6 +37,29 @@ internal constructor(
     activity: MainActivity,
     @IdRes fragmentContainerId: Int,
 ) : FragmentNavigator<MainView>(activity, fragmentContainerId) {
+
+  override fun restoreState(savedInstanceState: UiSavedStateReader) {
+    val s = savedInstanceState.get<String>(KEY_SCREEN_ID)
+    if (s != null) {
+      val restored =
+          when (s) {
+            MainView.Status::class.java.name -> MainView.Status
+            MainView.Errors::class.java.name -> MainView.Errors
+            MainView.Activity::class.java.name -> MainView.Activity
+            else -> throw IllegalArgumentException("Unable to restore screen: $s")
+          }
+      updateCurrentScreen(restored)
+    }
+  }
+
+  override fun saveState(outState: UiSavedStateWriter) {
+    val s = currentScreen()
+    if (s != null) {
+      outState.put(KEY_SCREEN_ID, s::class.java.name)
+    } else {
+      outState.remove<String>(KEY_SCREEN_ID)
+    }
+  }
 
   override fun performFragmentTransaction(
       container: Int,
@@ -58,6 +83,8 @@ internal constructor(
   }
 
   companion object {
+
+    private const val KEY_SCREEN_ID = "key_screen_id"
 
     private fun FragmentTransaction.decideAnimationForPage(newPage: MainView, oldPage: MainView?) {
       val animations =
