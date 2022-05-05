@@ -43,7 +43,7 @@ buildscript {
 
   ext {
     minSdk = 23
-    maxSdk = 31
+    maxSdk = 32
 
     // Us
     pydroid = "25.0.0-SNAPSHOT"
