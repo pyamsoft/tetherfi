@@ -4,8 +4,8 @@ internal interface WiDiReceiver {
 
   suspend fun onEvent(onEvent: (WidiNetworkEvent) -> Unit)
 
-  fun register()
+  suspend fun register()
 
-  fun unregister()
+  suspend fun unregister()
 
 }

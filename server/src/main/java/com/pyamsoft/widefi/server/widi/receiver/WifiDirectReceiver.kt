@@ -12,6 +12,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @Singleton
@@ -24,7 +25,7 @@ internal constructor(
 
   private val scope by lazy { CoroutineScope(context = Dispatchers.IO) }
 
-  private var registered = true
+  private var registered = false
 
   private fun handleStateChangedAction(intent: Intent) {
     scope.launch(context = Dispatchers.IO) {
@@ -46,17 +47,23 @@ internal constructor(
     return eventBus.onEvent { onEvent(it) }
   }
 
-  override fun register() {
-    if (!registered) {
-      registered = true
-      context.registerReceiver(this, INTENT_FILTER)
+  override suspend fun register() {
+    val self = this
+    withContext(context = Dispatchers.Main) {
+      if (!registered) {
+        registered = true
+        context.registerReceiver(self, INTENT_FILTER)
+      }
     }
   }
 
-  override fun unregister() {
-    if (registered) {
-      registered = false
-      context.unregisterReceiver(this)
+  override suspend fun unregister() {
+    val self = this
+    withContext(context = Dispatchers.Main) {
+      if (registered) {
+        registered = false
+        context.unregisterReceiver(self)
+      }
     }
   }
 
