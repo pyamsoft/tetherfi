@@ -122,7 +122,7 @@ dependencies {
   implementation "com.squareup.leakcanary:plumber-android:$leakCanary"
 
   // Autopsy
-//  debugImplementation "com.github.pyamsoft.pydroid:autopsy:$pydroid"
+  debugImplementation "com.github.pyamsoft.pydroid:autopsy:$pydroid"
 
   // AndroidX
   api "androidx.fragment:fragment-ktx:$fragment"
