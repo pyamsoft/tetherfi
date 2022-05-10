@@ -12,11 +12,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.widefi.server.BaseServer
-import com.pyamsoft.widefi.server.ServerDefaults
-import com.pyamsoft.widefi.server.ServerInternalApi
-import com.pyamsoft.widefi.server.ServerNetworkBand
-import com.pyamsoft.widefi.server.ServerPreferences
+import com.pyamsoft.widefi.server.*
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
@@ -28,13 +24,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @Singleton
@@ -358,8 +350,13 @@ internal constructor(
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
-      stopNetwork()
-      startNetwork(onStart)
+      try {
+        stopNetwork()
+        startNetwork(onStart)
+      } catch (e: Throwable) {
+        Timber.e(e, "Error starting Network")
+        status.set(RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+      }
     }
   }
 
@@ -367,7 +364,12 @@ internal constructor(
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
-      stopNetwork(onStop)
+      try {
+        stopNetwork(onStop)
+      } catch (e: Throwable) {
+        Timber.e(e, "Error stopping Network")
+        status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+      }
     }
   }
 
