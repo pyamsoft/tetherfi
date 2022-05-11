@@ -1,9 +1,9 @@
 package com.pyamsoft.widefi.status
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -53,6 +54,8 @@ fun StatusScreen(
           else -> "WideFi is thinking..."
         }
       }
+
+  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
 
   val scaffoldState = rememberScaffoldState()
 
@@ -99,15 +102,27 @@ fun StatusScreen(
       }
 
       if (isLoaded) {
+
         item {
           NetworkInformation(
               modifier =
                   Modifier.padding(top = MaterialTheme.keylines.content)
                       .padding(horizontal = MaterialTheme.keylines.content),
               state = state,
+              isEditable = isEditable,
               onSsidChanged = onSsidChanged,
               onPasswordChanged = onPasswordChanged,
               onPortChanged = onPortChanged,
+          )
+        }
+
+        item {
+          ConnectionInstructions(
+              modifier =
+                  Modifier.padding(top = MaterialTheme.keylines.content)
+                      .padding(horizontal = MaterialTheme.keylines.content),
+              state = state,
+              isEditable = isEditable,
           )
         }
       } else {
@@ -128,15 +143,11 @@ fun StatusScreen(
 }
 
 @Composable
-private fun NetworkInformation(
+private fun ConnectionInstructions(
     modifier: Modifier = Modifier,
     state: StatusViewState,
-    onSsidChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onPortChanged: (String) -> Unit,
+    isEditable: Boolean,
 ) {
-  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
-
   val group = state.group
   val ssid =
       remember(isEditable, group, state.ssid) {
@@ -146,10 +157,97 @@ private fun NetworkInformation(
       remember(isEditable, group, state.password) {
         if (isEditable) state.password else group?.password ?: "--"
       }
-  val bandName = remember(state.band) { state.band?.name ?: "--" }
 
   val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
   val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
+
+  AnimatedVisibility(
+      visible = !isEditable,
+      modifier = modifier,
+  ) {
+    Column(
+        modifier = modifier,
+    ) {
+      Text(
+          text = "How to connect",
+          style = MaterialTheme.typography.h6,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text =
+              "First, make sure this device (Device 1) has an active connection to the Internet. You will be sharing this device's connection, so if this device cannot access the Internet, nothing can.",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text =
+              "Then, on the device you want to connect (Device 2) to the Internet, go to the Wi-Fi settings. In the Wi-Fi network settings, connect to the network labeled: \"${ssid}\"",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text = "Connect to the \"${ssid}\" network using the password: \"${password}\"",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text =
+              "Once you are connected to the network, you will need to go to the Proxy settings (Device 2), and set the following proxy information as an HTTP and HTTPS proxy.",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text = "Proxy URL/Hostname: $ip",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          text = "Proxy Port: $port",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          text = "Leave blank any Proxy username or password or authentication information.",
+          style = MaterialTheme.typography.body2,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text =
+              "Once the network is connected and the proxy information has been set, you should be able to access the Internet on Device 2! You may need to setup Proxy settings for individual applications on Device 2, as every application is different.",
+          style = MaterialTheme.typography.body2,
+      )
+    }
+  }
+}
+
+@Composable
+private fun NetworkInformation(
+    modifier: Modifier = Modifier,
+    state: StatusViewState,
+    isEditable: Boolean,
+    onSsidChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
+) {
+  val group = state.group
+  val ssid =
+      remember(isEditable, group, state.ssid) {
+        if (isEditable) state.ssid else group?.ssid ?: "--"
+      }
+  val password =
+      remember(isEditable, group, state.password) {
+        if (isEditable) state.password else group?.password ?: "--"
+      }
+
+  val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
+  val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
+  val bandName = remember(state.band) { state.band?.name ?: "--" }
 
   Crossfade(
       modifier = modifier,
@@ -194,11 +292,7 @@ private fun NetworkInformation(
         )
 
         Item(
-            title = "BAND",
-            value = bandName,
-        )
-
-        Item(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
             title = "IP",
             value = ip,
         )
@@ -206,6 +300,11 @@ private fun NetworkInformation(
         Item(
             title = "PORT",
             value = port,
+        )
+
+        Item(
+            title = "BAND",
+            value = bandName,
         )
       }
     }
@@ -220,19 +319,18 @@ private fun Editor(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit,
 ) {
-  Row(
+  Column(
       modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
   ) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.body2,
-    )
     TextField(
-        modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
         keyboardOptions = keyboardOptions,
         value = value,
         onValueChange = onChange,
+        label = {
+          Text(
+              text = title,
+          )
+        },
     )
   }
 }
@@ -280,16 +378,17 @@ private fun Item(
     value: String,
     color: Color = Color.Unspecified,
 ) {
-  Row(
+  Column(
       modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
   ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.body2,
+        style =
+            MaterialTheme.typography.caption.copy(
+                fontWeight = FontWeight.Bold,
+            ),
     )
     Text(
-        modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
         text = value,
         style = MaterialTheme.typography.body2,
         color = color,
