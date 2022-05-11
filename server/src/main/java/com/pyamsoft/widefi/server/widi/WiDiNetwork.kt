@@ -24,7 +24,6 @@ interface WiDiNetwork : Server {
   internal constructor(
       val ssid: String,
       val password: String,
-      val band: ServerNetworkBand,
   )
 
   data class ConnectionInfo

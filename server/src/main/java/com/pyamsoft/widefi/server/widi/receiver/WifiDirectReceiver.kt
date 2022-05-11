@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.wifi.p2p.WifiP2pGroup
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.ServerInternalApi
 import javax.inject.Inject
@@ -43,16 +46,34 @@ internal constructor(
     }
   }
 
+  @CheckResult
+  private fun resolveWifiGroupIp(intent: Intent): String {
+    val p2pInfo: WifiP2pInfo? = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+    if (p2pInfo == null) {
+      Timber.w("No P2P Info in connection intent")
+      return ""
+    }
+
+    val address = p2pInfo.groupOwnerAddress
+    if (address == null) {
+      Timber.w("No Group owner address in connection intent")
+      return ""
+    }
+
+    val ip = address.hostAddress.orEmpty()
+    Timber.d("Host address: $ip")
+    return ip
+  }
+
   private fun handleConnectionChangedAction(intent: Intent) {
     scope.launch(context = Dispatchers.IO) {
-      Timber.d("Connection changed!")
-      eventBus.send(WidiNetworkEvent.ConnectionChanged)
+      val ip = resolveWifiGroupIp(intent)
+      eventBus.send(WidiNetworkEvent.ConnectionChanged(ip = ip))
     }
   }
 
   private fun handleDiscoveryChangedAction(intent: Intent) {
     scope.launch(context = Dispatchers.IO) {
-      Timber.d("Discovery changed!")
       eventBus.send(WidiNetworkEvent.DiscoveryChanged)
     }
   }

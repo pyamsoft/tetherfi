@@ -115,14 +115,13 @@ private fun NetworkInformation(
   val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
 
   val group = state.group
-  val ssid = remember(isEditable, group) { if (isEditable) state.ssid else group?.ssid ?: "NULL" }
+  val ssid = remember(isEditable, group) { if (isEditable) state.ssid else group?.ssid ?: "--" }
   val password =
-      remember(isEditable, group) { if (isEditable) state.password else group?.password ?: "NULL" }
-  val band = remember(isEditable, group) { if (isEditable) state.band else state.group?.band }
-  val bandName = remember(band) { band?.name ?: "NULL" }
+      remember(isEditable, group) { if (isEditable) state.password else group?.password ?: "--" }
+  val bandName = remember(state.band) { state.band?.name ?: "--" }
 
-  val ip = remember(state.ip) { state.ip.ifBlank { "UNDEFINED" } }
-  val port = remember(state.port) { if (state.port <= 0) "UNSET" else "${state.port}" }
+  val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
+  val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
 
   Column(
       modifier = modifier,

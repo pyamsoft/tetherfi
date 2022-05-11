@@ -3,7 +3,6 @@ package com.pyamsoft.widefi.server.widi
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pConfig
-import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Looper
@@ -12,7 +11,11 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.widefi.server.*
+import com.pyamsoft.widefi.server.BaseServer
+import com.pyamsoft.widefi.server.ServerDefaults
+import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.ServerNetworkBand
+import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.permission.PermissionGuard
@@ -24,9 +27,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @Singleton
@@ -248,20 +255,6 @@ internal constructor(
   }
 
   @CheckResult
-  private fun asWifiBand(group: WifiP2pGroup): ServerNetworkBand {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      when (group.frequency) {
-        WifiP2pConfig.GROUP_OWNER_BAND_5GHZ -> ServerNetworkBand.MODERN
-        WifiP2pConfig.GROUP_OWNER_BAND_2GHZ -> ServerNetworkBand.LEGACY
-        WifiP2pConfig.GROUP_OWNER_BAND_AUTO -> ServerNetworkBand.AUTO
-        else -> ServerNetworkBand.AUTO
-      }
-    } else {
-      ServerNetworkBand.AUTO
-    }
-  }
-
-  @CheckResult
   @SuppressLint("MissingPermission")
   private suspend fun resolveCurrentGroup(channel: WifiP2pManager.Channel): WiDiNetwork.GroupInfo? =
       withContext(context = Dispatchers.Main) {
@@ -279,7 +272,6 @@ internal constructor(
                   WiDiNetwork.GroupInfo(
                       ssid = group.networkName,
                       password = group.passphrase,
-                      band = asWifiBand(group),
                   ),
               )
             }

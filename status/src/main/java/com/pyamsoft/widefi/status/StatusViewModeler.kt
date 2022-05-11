@@ -46,9 +46,6 @@ internal constructor(
       s.port = preferences.getPort()
       s.band = preferences.getNetworkBand()
 
-      // TODO How do we get the interfaces hosting IP?
-      s.ip = ServerDefaults.IP
-
       s.preferencesLoaded = true
     }
   }
@@ -69,6 +66,7 @@ internal constructor(
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
             Timber.d("Connection Changed, refresh group info")
+            state.ip = event.ip
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
