@@ -5,5 +5,6 @@ sealed class WidiNetworkEvent {
   object WifiDisabled : WidiNetworkEvent()
   object PeersChanged : WidiNetworkEvent()
   object ConnectionChanged : WidiNetworkEvent()
-  object DeviceChanged : WidiNetworkEvent()
+  object ThisDeviceChanged : WidiNetworkEvent()
+  object DiscoveryChanged : WidiNetworkEvent()
 }

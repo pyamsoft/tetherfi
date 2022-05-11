@@ -68,23 +68,27 @@ internal constructor(
       network.onWifiDirectEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
-            Timber.d("Connection Changed")
+            Timber.d("Connection Changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
-          is WidiNetworkEvent.DeviceChanged -> {
-            Timber.d("Device Changed")
+          is WidiNetworkEvent.ThisDeviceChanged -> {
+            Timber.d("This Device Changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.PeersChanged -> {
-            Timber.d("Peers Changed")
+            Timber.d("Peers Changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.WifiDisabled -> {
-            Timber.d("Wifi Disabled")
+            Timber.d("Wifi Disabled, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.WifiEnabled -> {
-            Timber.d("Wifi Enabled")
+            Timber.d("Wifi Enabled, refresh group info")
+            refreshGroupInfo(scope = scope)
+          }
+          is WidiNetworkEvent.DiscoveryChanged -> {
+            Timber.d("Discovery changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
         }

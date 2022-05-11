@@ -43,6 +43,34 @@ internal constructor(
     }
   }
 
+  private fun handleConnectionChangedAction(intent: Intent) {
+    scope.launch(context = Dispatchers.IO) {
+      Timber.d("Connection changed!")
+      eventBus.send(WidiNetworkEvent.ConnectionChanged)
+    }
+  }
+
+  private fun handleDiscoveryChangedAction(intent: Intent) {
+    scope.launch(context = Dispatchers.IO) {
+      Timber.d("Discovery changed!")
+      eventBus.send(WidiNetworkEvent.DiscoveryChanged)
+    }
+  }
+
+  private fun handlePeersChangedAction(intent: Intent) {
+    scope.launch(context = Dispatchers.IO) {
+      Timber.d("Peers changed!")
+      eventBus.send(WidiNetworkEvent.PeersChanged)
+    }
+  }
+
+  private fun handleThisDeviceChangedAction(intent: Intent) {
+    scope.launch(context = Dispatchers.IO) {
+      Timber.d("This Device changed!")
+      eventBus.send(WidiNetworkEvent.ThisDeviceChanged)
+    }
+  }
+
   override suspend fun onEvent(onEvent: (WidiNetworkEvent) -> Unit) {
     return eventBus.onEvent { onEvent(it) }
   }
@@ -70,10 +98,10 @@ internal constructor(
   override fun onReceive(context: Context, intent: Intent) {
     when (val action = intent.action) {
       WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)
-      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {}
-      WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> {}
-      WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {}
-      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {}
+      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> handleConnectionChangedAction(intent)
+      WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> handleDiscoveryChangedAction(intent)
+      WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChangedAction(intent)
+      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> handleThisDeviceChangedAction(intent)
       else -> {
         Timber.w("Unhandled intent action: $action")
       }
