@@ -83,7 +83,7 @@ internal constructor(
       channelInfo: NotifyChannelInfo
   ): NotificationCompat.Builder {
     return NotificationCompat.Builder(context.applicationContext, channelInfo.id)
-        .setSmallIcon(androidx.preference.R.drawable.ic_arrow_down_24dp)
+        .setSmallIcon(R.drawable.ic_wifi_tethering_24)
         .setShowWhen(false)
         .setAutoCancel(false)
         .setOngoing(true)
