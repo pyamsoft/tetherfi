@@ -74,7 +74,8 @@ class MainActivity : PYDroidActivity() {
 
       vm.Render { state ->
         val theme = state.theme
-        SystemBars(theme)
+
+        SystemBars()
         WidefiTheme(theme) {
           ProvideWindowInsets {
             Box(

@@ -16,23 +16,18 @@
 
 package com.pyamsoft.widefi.main
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.pyamsoft.pydroid.ui.theme.Theming
 
 @Composable
-internal fun SystemBars(theme: Theming.Mode) {
-  val isLighStatusBar =
-      if (theme == Theming.Mode.SYSTEM) !isSystemInDarkTheme() else theme == Theming.Mode.LIGHT
-
+internal fun SystemBars() {
   val controller = rememberSystemUiController()
   SideEffect {
     controller.setSystemBarsColor(
         color = Color.Transparent,
-        darkIcons = isLighStatusBar,
+        darkIcons = false,
         isNavigationBarContrastEnforced = false,
     )
   }

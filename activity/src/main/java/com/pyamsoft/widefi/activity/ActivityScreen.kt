@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
@@ -18,22 +20,29 @@ fun ActivityScreen(
 ) {
   val events = state.events
 
-  Column(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
-  ) {
-    Text(
-        text = "Activity Log",
-        style = MaterialTheme.typography.h5,
-    )
+  val scaffoldState = rememberScaffoldState()
 
-    LazyColumn {
-      items(
-          items = events,
-          key = { it.host },
-      ) { event ->
-        ProxyEventItem(
-            event = event,
-        )
+  Scaffold(
+      modifier = modifier,
+      scaffoldState = scaffoldState,
+  ) {
+    Column(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
+    ) {
+      Text(
+          text = "Activity Log",
+          style = MaterialTheme.typography.h5,
+      )
+
+      LazyColumn {
+        items(
+            items = events,
+            key = { it.host },
+        ) { event ->
+          ProxyEventItem(
+              event = event,
+          )
+        }
       }
     }
   }

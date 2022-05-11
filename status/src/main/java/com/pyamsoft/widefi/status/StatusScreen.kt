@@ -4,14 +4,17 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,66 +54,73 @@ fun StatusScreen(
         }
       }
 
-  LazyColumn(
+  val scaffoldState = rememberScaffoldState()
+
+  Scaffold(
       modifier = modifier,
+      scaffoldState = scaffoldState,
   ) {
-    item {
-      Column(
-          modifier =
-              Modifier.padding(top = MaterialTheme.keylines.content)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-      ) {
-        Button(
-            enabled = isButtonEnabled,
-            onClick = onToggle,
-        ) {
-          Text(
-              text = buttonText,
-          )
-        }
-      }
-    }
-
-    item {
-      Column(
-          modifier =
-              Modifier.padding(top = MaterialTheme.keylines.content)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-      ) {
-        DisplayStatus(
-            title = "WiFi Network Status:",
-            status = wiDiStatus,
-        )
-
-        DisplayStatus(
-            title = "Proxy Status:",
-            status = proxyStatus,
-        )
-      }
-    }
-
-    if (isLoaded) {
-      item {
-        NetworkInformation(
-            modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
-            state = state,
-            onSsidChanged = onSsidChanged,
-            onPasswordChanged = onPasswordChanged,
-            onPortChanged = onPortChanged,
-        )
-      }
-    } else {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+    ) {
       item {
         Column(
             modifier =
                 Modifier.padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
         ) {
-          Box(
-              contentAlignment = Alignment.Center,
-          ) { CircularProgressIndicator() }
+          Button(
+              enabled = isButtonEnabled,
+              onClick = onToggle,
+          ) {
+            Text(
+                text = buttonText,
+            )
+          }
+        }
+      }
+
+      item {
+        Column(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+        ) {
+          DisplayStatus(
+              title = "WiFi Network Status:",
+              status = wiDiStatus,
+          )
+
+          DisplayStatus(
+              title = "Proxy Status:",
+              status = proxyStatus,
+          )
+        }
+      }
+
+      if (isLoaded) {
+        item {
+          NetworkInformation(
+              modifier =
+                  Modifier.padding(top = MaterialTheme.keylines.content)
+                      .padding(horizontal = MaterialTheme.keylines.content),
+              state = state,
+              onSsidChanged = onSsidChanged,
+              onPasswordChanged = onPasswordChanged,
+              onPortChanged = onPortChanged,
+          )
+        }
+      } else {
+        item {
+          Column(
+              modifier =
+                  Modifier.padding(top = MaterialTheme.keylines.content)
+                      .padding(horizontal = MaterialTheme.keylines.content),
+          ) {
+            Box(
+                contentAlignment = Alignment.Center,
+            ) { CircularProgressIndicator() }
+          }
         }
       }
     }
@@ -128,9 +138,14 @@ private fun NetworkInformation(
   val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
 
   val group = state.group
-  val ssid = remember(isEditable, group, state.ssid) { if (isEditable) state.ssid else group?.ssid ?: "--" }
+  val ssid =
+      remember(isEditable, group, state.ssid) {
+        if (isEditable) state.ssid else group?.ssid ?: "--"
+      }
   val password =
-      remember(isEditable, group, state.password) { if (isEditable) state.password else group?.password ?: "--" }
+      remember(isEditable, group, state.password) {
+        if (isEditable) state.password else group?.password ?: "--"
+      }
   val bandName = remember(state.band) { state.band?.name ?: "--" }
 
   val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
@@ -152,18 +167,20 @@ private fun NetworkInformation(
             title = "PASSWORD",
             value = password,
             onChange = onPasswordChanged,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                ),
         )
 
         Editor(
             title = "PORT",
             value = port,
             onChange = onPortChanged,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                ),
         )
       } else {
         Item(
