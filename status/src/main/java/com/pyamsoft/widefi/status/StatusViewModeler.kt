@@ -1,7 +1,6 @@
 package com.pyamsoft.widefi.status
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
@@ -104,5 +103,29 @@ internal constructor(
         onStop = onStop,
     )
     refreshGroupInfo(scope = scope)
+  }
+
+  fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
+    state.ssid = ssid
+    scope.launch(context = Dispatchers.Main) {
+      preferences.setSsid(ssid)
+    }
+  }
+
+  fun handlePasswordChanged(scope: CoroutineScope, password: String) {
+    state.password = password
+    scope.launch(context = Dispatchers.Main) {
+      preferences.setPassword(password)
+    }
+  }
+
+  fun handlePortChanged(scope: CoroutineScope, port: String) {
+    val portValue = port.toIntOrNull()
+    if (portValue != null) {
+      state.port = portValue
+      scope.launch(context = Dispatchers.Main) {
+        preferences.setPort(portValue)
+      }
+    }
   }
 }

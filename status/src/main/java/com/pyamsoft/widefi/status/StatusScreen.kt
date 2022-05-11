@@ -1,19 +1,23 @@
 package com.pyamsoft.widefi.status
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.server.status.RunningStatus
 
@@ -22,6 +26,9 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     state: StatusViewState,
     onToggle: () -> Unit,
+    onSsidChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
 ) {
   val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
@@ -89,6 +96,9 @@ fun StatusScreen(
                 Modifier.padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
             state = state,
+            onSsidChanged = onSsidChanged,
+            onPasswordChanged = onPasswordChanged,
+            onPortChanged = onPortChanged,
         )
       }
     } else {
@@ -111,44 +121,101 @@ fun StatusScreen(
 private fun NetworkInformation(
     modifier: Modifier = Modifier,
     state: StatusViewState,
+    onSsidChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
 ) {
   val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
 
   val group = state.group
-  val ssid = remember(isEditable, group) { if (isEditable) state.ssid else group?.ssid ?: "--" }
+  val ssid = remember(isEditable, group, state.ssid) { if (isEditable) state.ssid else group?.ssid ?: "--" }
   val password =
-      remember(isEditable, group) { if (isEditable) state.password else group?.password ?: "--" }
+      remember(isEditable, group, state.password) { if (isEditable) state.password else group?.password ?: "--" }
   val bandName = remember(state.band) { state.band?.name ?: "--" }
 
   val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
   val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
 
-  Column(
+  Crossfade(
       modifier = modifier,
+      targetState = isEditable,
+  ) { editable ->
+    Column {
+      if (editable) {
+        Editor(
+            title = "SSID",
+            value = ssid,
+            onChange = onSsidChanged,
+        )
+
+        Editor(
+            title = "PASSWORD",
+            value = password,
+            onChange = onPasswordChanged,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+            ),
+        )
+
+        Editor(
+            title = "PORT",
+            value = port,
+            onChange = onPortChanged,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+            ),
+        )
+      } else {
+        Item(
+            title = "SSID",
+            value = ssid,
+        )
+
+        Item(
+            title = "PASSWORD",
+            value = password,
+        )
+
+        Item(
+            title = "BAND",
+            value = bandName,
+        )
+
+        Item(
+            title = "IP",
+            value = ip,
+        )
+
+        Item(
+            title = "PORT",
+            value = port,
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun Editor(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onChange: (String) -> Unit,
+) {
+  Row(
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
   ) {
-    Item(
-        title = "SSID",
-        value = ssid,
+    Text(
+        text = title,
+        style = MaterialTheme.typography.body2,
     )
-
-    Item(
-        title = "PASSWORD",
-        value = password,
-    )
-
-    Item(
-        title = "BAND",
-        value = bandName,
-    )
-
-    Item(
-        title = "IP",
-        value = ip,
-    )
-
-    Item(
-        title = "PORT",
-        value = port,
+    TextField(
+        modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+        keyboardOptions = keyboardOptions,
+        value = value,
+        onValueChange = onChange,
     )
   }
 }

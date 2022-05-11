@@ -5,6 +5,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.BaseServer
 import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
+import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
@@ -25,6 +26,7 @@ import timber.log.Timber
 internal class WifiSharedProxy
 @Inject
 internal constructor(
+    private val preferences: ServerPreferences,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
@@ -38,15 +40,11 @@ internal constructor(
   /** We own our own scope here because the proxy lifespan is separate */
   private val scope by lazy { CoroutineScope(context = dispatcher) }
 
-  /**
-   * Get the port for the proxy
-   *
-   * TODO Can be configured via SharedPreferences
-   */
+  /** Get the port for the proxy */
   @CheckResult
   private suspend fun getPort(): Int =
       withContext(context = dispatcher) {
-        return@withContext ServerDefaults.PORT
+        return@withContext preferences.getPort()
       }
 
   @CheckResult
@@ -76,6 +74,11 @@ internal constructor(
       shutdown()
 
       val port = getPort()
+      if (port > 65000 || port < 1024) {
+        Timber.w("Port is invalid: $port")
+        status.set(RunningStatus.Error(message = "Port is invalid: $port"))
+        return@launch
+      }
 
       status.set(RunningStatus.Starting)
 

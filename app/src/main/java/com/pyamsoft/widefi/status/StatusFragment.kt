@@ -44,6 +44,33 @@ class StatusFragment : Fragment() {
         )
   }
 
+  private fun handleSsidChanged(ssid: String) {
+    viewModel
+      .requireNotNull()
+      .handleSsidChanged(
+        scope = viewLifecycleOwner.lifecycleScope,
+        ssid = ssid.trim(),
+      )
+  }
+
+  private fun handlePasswordChanged(password: String) {
+    viewModel
+      .requireNotNull()
+      .handlePasswordChanged(
+        scope = viewLifecycleOwner.lifecycleScope,
+        password = password,
+      )
+  }
+
+  private fun handlePortChanged(port: String) {
+    viewModel
+      .requireNotNull()
+      .handlePortChanged(
+        scope = viewLifecycleOwner.lifecycleScope,
+        port = port,
+      )
+  }
+
   override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
@@ -70,6 +97,9 @@ class StatusFragment : Fragment() {
                   modifier = Modifier.fillMaxSize(),
                   state = state,
                   onToggle = { handleToggleProxy() },
+                  onSsidChanged = { handleSsidChanged(it) },
+                  onPasswordChanged = { handlePasswordChanged(it) },
+                  onPortChanged = { handlePortChanged(it) },
               )
             }
           }
@@ -77,6 +107,7 @@ class StatusFragment : Fragment() {
       }
     }
   }
+
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)

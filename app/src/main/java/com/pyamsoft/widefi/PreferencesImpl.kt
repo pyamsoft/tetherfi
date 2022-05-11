@@ -52,15 +52,12 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
   override suspend fun getPort(): Int =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
-
-        val port = preferences.getInt(PORT, ServerDefaults.PORT)
-        return@withContext if (port <= 0) ServerDefaults.PORT else port
+        return@withContext preferences.getInt(PORT, ServerDefaults.PORT)
       }
 
   override suspend fun setPort(port: Int) =
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
-
         preferences.edit { putInt(PORT, port) }
       }
 
