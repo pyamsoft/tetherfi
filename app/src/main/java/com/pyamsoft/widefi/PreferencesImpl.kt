@@ -1,6 +1,7 @@
 package com.pyamsoft.widefi
 
 import android.content.Context
+import androidx.annotation.CheckResult
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.Enforcer
@@ -9,6 +10,7 @@ import com.pyamsoft.widefi.server.ServerNetworkBand
 import com.pyamsoft.widefi.server.ServerPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -18,6 +20,8 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
   private val preferences by lazy {
     PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
   }
+
+  private val fallbackPassword by lazy(LazyThreadSafetyMode.NONE) { generateRandomPassword() }
 
   override suspend fun getSsid(): String =
       withContext(context = Dispatchers.IO) {
@@ -38,8 +42,15 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 
-        val fallback = ServerDefaults.PASSWORD
-        return@withContext preferences.getString(PASSWORD, fallback).orEmpty().ifBlank { fallback }
+        var pass = preferences.getString(PASSWORD, "")
+
+        // Ensure a random password is generated
+        if (pass.isNullOrBlank()) {
+          pass = fallbackPassword
+          setPassword(pass)
+        }
+
+        return@withContext pass
       }
 
   override suspend fun setPassword(password: String) =
@@ -83,5 +94,23 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
     private const val PASSWORD = "key_password_1"
     private const val PORT = "key_port_1"
     private const val NETWORK_BAND = "key_network_band_1"
+
+    private const val ALL_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    @CheckResult
+    private fun generateRandomPassword(size: Int = 8): String {
+      val chars = ALL_CHARS
+
+      var pass = ""
+      while (true) {
+        pass += chars[Random.nextInt(0, chars.length)]
+
+        // Stop once generated
+        if (pass.length >= size) {
+          break
+        }
+      }
+      return pass
+    }
   }
 }
