@@ -49,10 +49,10 @@ class Widefi : Application() {
   ): WidefiComponent {
     return DaggerWidefiComponent.factory()
         .create(
-            this,
-            isDebugMode(),
-            lazyImageLoader,
-            provider.get().theming(),
+            application = this,
+            debug = isDebugMode(),
+            lazyImageLoader = lazyImageLoader,
+            theming = provider.get().theming(),
         )
         .also { addLibraries() }
   }
