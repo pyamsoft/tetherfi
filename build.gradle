@@ -47,9 +47,8 @@ buildscript {
 
     // Us
     pydroid = "25.0.0-SNAPSHOT"
-    cachify = "0.0.26"
-    highlander = "0.0.22"
-    spark = "2.0.1"
+    cachify = "0.0.27"
+    highlander = "0.0.23"
 
     // Jobs
     workmanager = "2.7.1"
@@ -64,12 +63,12 @@ buildscript {
     room = "2.4.2"
 
     // Dagger
-    dagger = "2.41"
+    dagger = "2.42"
 
     // Compose
     composeActivity = "1.4.0"
     accompanist = "0.23.1"
-    coil = "1.4.0"
+    coil = "2.0.0"
 
     // AndroidX
     core = "1.7.0"
@@ -77,7 +76,7 @@ buildscript {
     appCompat = "1.4.1"
 
     // Material Design
-    materialDesign = "1.5.0"
+    materialDesign = "1.6.0"
 
     ktor = "1.6.8"
   }
