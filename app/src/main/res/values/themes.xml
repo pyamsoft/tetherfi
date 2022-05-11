@@ -11,6 +11,9 @@
 
         <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:navigationBarColor">@color/transparent</item>
+
+        <item name="dialogTheme">@style/ThemeOverlay.WideFi.Dialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.WideFi.Dialog.Alert</item>
     </style>
 
 </resources>

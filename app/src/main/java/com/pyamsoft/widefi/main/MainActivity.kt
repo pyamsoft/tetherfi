@@ -18,6 +18,7 @@ import com.pyamsoft.widefi.R
 import com.pyamsoft.widefi.WidefiComponent
 import com.pyamsoft.widefi.WidefiTheme
 import com.pyamsoft.widefi.databinding.ActivityMainBinding
+import com.pyamsoft.widefi.settings.SettingsDialog
 import javax.inject.Inject
 
 class MainActivity : PYDroidActivity() {
@@ -32,6 +33,10 @@ class MainActivity : PYDroidActivity() {
   override val applicationIcon = R.mipmap.ic_launcher_round
 
   override val changelog = buildChangeLog {}
+
+  private fun handleOpenApplicationSettings() {
+    SettingsDialog.show(this)
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // NOTE(Peter):
@@ -79,6 +84,7 @@ class MainActivity : PYDroidActivity() {
                 MainTopBar(
                     currentTab = s,
                     onTabUpdated = { navi.navigateTo(it.asScreen()) },
+                    onSettingsOpen = { handleOpenApplicationSettings() },
                 )
               }
             }

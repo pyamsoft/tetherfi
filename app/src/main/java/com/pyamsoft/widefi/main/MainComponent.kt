@@ -22,6 +22,8 @@ import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.widefi.activity.ActivityComponent
 import com.pyamsoft.widefi.core.ActivityScope
 import com.pyamsoft.widefi.error.ErrorComponent
+import com.pyamsoft.widefi.settings.AppSettingsComponent
+import com.pyamsoft.widefi.settings.SettingsComponent
 import com.pyamsoft.widefi.status.StatusComponent
 import dagger.Binds
 import dagger.BindsInstance
@@ -31,6 +33,10 @@ import dagger.Subcomponent
 @ActivityScope
 @Subcomponent(modules = [MainComponent.MainModule::class])
 internal interface MainComponent {
+
+  @CheckResult fun plusAppSettings(): AppSettingsComponent.Factory
+
+  @CheckResult fun plusSettings(): SettingsComponent.Factory
 
   @CheckResult fun plusStatus(): StatusComponent.Factory
 
