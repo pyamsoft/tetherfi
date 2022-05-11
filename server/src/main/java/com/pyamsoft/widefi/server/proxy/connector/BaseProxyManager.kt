@@ -5,7 +5,8 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.sockets.ASocket
-import io.ktor.util.network.NetworkAddress
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.SocketAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -39,8 +40,8 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
   }
 
   @CheckResult
-  protected fun getServerAddress(port: Int): NetworkAddress {
-    return NetworkAddress(hostname = "0.0.0.0", port = port)
+  protected fun getServerAddress(port: Int): SocketAddress {
+    return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
 
   override suspend fun loop() {

@@ -12,11 +12,11 @@ import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.session.mempool.MemPool
 import com.pyamsoft.widefi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
-import io.ktor.util.network.NetworkAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
@@ -385,7 +385,7 @@ internal constructor(
     // We do the CONNECT based workaround to handle HTTPS connections
 
     val remote =
-        NetworkAddress(
+        InetSocketAddress(
             hostname = request.host,
             port = request.port,
         )

@@ -5,10 +5,11 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.widefi.server.proxy.SharedProxy
 import com.pyamsoft.widefi.server.proxy.session.ProxySession
 import io.ktor.network.selector.ActorSelectorManager
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
+import io.ktor.network.sockets.UnixSocketAddress
 import io.ktor.network.sockets.aSocket
-import io.ktor.util.network.hostname
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -73,7 +74,10 @@ internal constructor(
     @JvmStatic
     @CheckResult
     private fun getClientId(client: Socket): String {
-      return client.remoteAddress.hostname
+      return when (val addr = client.remoteAddress) {
+        is InetSocketAddress -> addr.hostname
+        is UnixSocketAddress -> throw IllegalStateException("Cannot get client ID from Unix socket")
+      }
     }
   }
 }
