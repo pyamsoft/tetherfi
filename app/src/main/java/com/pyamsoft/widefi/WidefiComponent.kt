@@ -42,7 +42,7 @@ internal interface WidefiComponent {
     fun create(
         @BindsInstance application: Application,
         @Named("debug") @BindsInstance debug: Boolean,
-        @BindsInstance lazyImageLoader: () -> ImageLoader,
+        @BindsInstance lazyImageLoader: Lazy<ImageLoader>,
         @BindsInstance theming: Theming,
     ): WidefiComponent
   }
@@ -64,16 +64,16 @@ internal interface WidefiComponent {
 
       @Provides
       @JvmStatic
-      @Singleton
-      internal fun provideCoilImageLoader(lazyImageLoader: () -> ImageLoader): ImageLoader {
-        return lazyImageLoader()
+      @Named("app_name")
+      internal fun provideAppNameRes(): Int {
+        return R.string.app_name
       }
 
       @Provides
       @JvmStatic
-      @Named("app_name")
-      internal fun provideAppNameRes(): Int {
-        return R.string.app_name
+      @Singleton
+      internal fun provideImageLoader(lazyImageLoader: Lazy<ImageLoader>): ImageLoader {
+        return lazyImageLoader.value
       }
 
       @Provides

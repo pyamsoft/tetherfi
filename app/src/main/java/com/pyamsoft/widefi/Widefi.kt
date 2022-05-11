@@ -13,37 +13,39 @@ private const val TERMS_CONDITIONS_URL = ""
 
 class Widefi : Application() {
 
-  private val component by lazy {
-    val url = "https://github.com/pyamsoft/widefi"
+  // Lazy so we ensure only one creation
+  private val component by
+      lazy(LazyThreadSafetyMode.NONE) {
+        val url = "https://github.com/pyamsoft/widefi"
 
-    // Wrap in a lazy to ensure we only ever construct one
-    val singletonLazyImageLoader by lazy(LazyThreadSafetyMode.NONE) { ImageLoader(this) }
-    val lazyImageLoader = { singletonLazyImageLoader }
+        val lazyImageLoader = lazy(LazyThreadSafetyMode.NONE) { ImageLoader(this) }
 
-    val parameters =
-        PYDroid.Parameters(
-            viewSourceUrl = url,
-            bugReportUrl = "$url/issues",
-            privacyPolicyUrl = PRIVACY_POLICY_URL,
-            termsConditionsUrl = TERMS_CONDITIONS_URL,
-            version = BuildConfig.VERSION_CODE,
-            imageLoader = lazyImageLoader,
-            logger = createLogger(),
-            theme = { activity, themeProvider, content ->
-              activity.WidefiTheme(
-                  themeProvider = themeProvider,
-                  content = content,
-              )
-            },
-        )
+        val parameters =
+            PYDroid.Parameters(
+                // ImageLoader needs to be lazy because Coil calls getSystemService() internally,
+                // which would otherwise lead to SO exception
+                lazyImageLoader = lazyImageLoader,
+                viewSourceUrl = url,
+                bugReportUrl = "$url/issues",
+                privacyPolicyUrl = PRIVACY_POLICY_URL,
+                termsConditionsUrl = TERMS_CONDITIONS_URL,
+                version = BuildConfig.VERSION_CODE,
+                logger = createLogger(),
+                theme = { activity, themeProvider, content ->
+                  activity.WidefiTheme(
+                      themeProvider = themeProvider,
+                      content = content,
+                  )
+                },
+            )
 
-    return@lazy createComponent(PYDroid.init(this, parameters), lazyImageLoader)
-  }
+        return@lazy createComponent(PYDroid.init(this, parameters), lazyImageLoader)
+      }
 
   @CheckResult
   private fun createComponent(
       provider: ModuleProvider,
-      lazyImageLoader: () -> ImageLoader
+      lazyImageLoader: Lazy<ImageLoader>,
   ): WidefiComponent {
     return DaggerWidefiComponent.factory()
         .create(
@@ -53,10 +55,6 @@ class Widefi : Application() {
             provider.get().theming(),
         )
         .also { addLibraries() }
-  }
-
-  override fun onCreate() {
-    super.onCreate()
   }
 
   override fun getSystemService(name: String): Any? {
@@ -95,6 +93,12 @@ class Widefi : Application() {
           "Dagger",
           "https://github.com/google/dagger",
           "A fast dependency injector for Android and Java.",
+      )
+
+      OssLibraries.add(
+          "Ktor",
+          "https://github.com/ktorio/ktor",
+          "Framework for quickly creating connected applications in Kotlin with minimal effort",
       )
     }
   }

@@ -50,17 +50,11 @@ buildscript {
     cachify = "0.0.27"
     highlander = "0.0.23"
 
-    // Jobs
-    workmanager = "2.7.1"
-
     // Leak Canary
     leakCanary = "2.8.1"
 
     // Logging
     timber = "5.0.1"
-
-    // Room
-    room = "2.4.2"
 
     // Dagger
     dagger = "2.42"
