@@ -55,7 +55,7 @@ fun StatusScreen(
         }
       }
 
-  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus == RunningStatus.NotRunning }
+  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus is RunningStatus.NotRunning || state.wiDiStatus is RunningStatus.Error }
 
   val scaffoldState = rememberScaffoldState()
 
@@ -105,9 +105,7 @@ fun StatusScreen(
 
         item {
           NetworkInformation(
-              modifier =
-                  Modifier.padding(top = MaterialTheme.keylines.content)
-                      .padding(horizontal = MaterialTheme.keylines.content),
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
               state = state,
               isEditable = isEditable,
               onSsidChanged = onSsidChanged,
@@ -118,9 +116,7 @@ fun StatusScreen(
 
         item {
           ConnectionInstructions(
-              modifier =
-                  Modifier.padding(top = MaterialTheme.keylines.content)
-                      .padding(horizontal = MaterialTheme.keylines.content),
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
               state = state,
               isEditable = isEditable,
           )
@@ -165,9 +161,7 @@ private fun ConnectionInstructions(
       visible = !isEditable,
       modifier = modifier,
   ) {
-    Column(
-        modifier = modifier,
-    ) {
+    Column {
       Text(
           text = "How to connect",
           style = MaterialTheme.typography.h6,
@@ -177,50 +171,50 @@ private fun ConnectionInstructions(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text =
               "First, make sure this device (Device 1) has an active connection to the Internet. You will be sharing this device's connection, so if this device cannot access the Internet, nothing can.",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text =
               "Then, on the device you want to connect (Device 2) to the Internet, go to the Wi-Fi settings. In the Wi-Fi network settings, connect to the network labeled: \"${ssid}\"",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text = "Connect to the \"${ssid}\" network using the password: \"${password}\"",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text =
               "Once you are connected to the network, you will need to go to the Proxy settings (Device 2), and set the following proxy information as an HTTP and HTTPS proxy.",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text = "Proxy URL/Hostname: $ip",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           text = "Proxy Port: $port",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           text = "Leave blank any Proxy username or password or authentication information.",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
 
       Text(
           modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           text =
               "Once the network is connected and the proxy information has been set, you should be able to access the Internet on Device 2! You may need to setup Proxy settings for individual applications on Device 2, as every application is different.",
-          style = MaterialTheme.typography.body2,
+          style = MaterialTheme.typography.body1,
       )
     }
   }
@@ -390,7 +384,7 @@ private fun Item(
     )
     Text(
         text = value,
-        style = MaterialTheme.typography.body2,
+        style = MaterialTheme.typography.body1,
         color = color,
     )
   }
