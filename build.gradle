@@ -99,7 +99,7 @@ buildscript {
 plugins {
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id "org.gradle.android.cache-fix" version "2.5.0" apply false
+  id "org.gradle.android.cache-fix" version "2.5.2" apply false
 }
 
 subprojects {
