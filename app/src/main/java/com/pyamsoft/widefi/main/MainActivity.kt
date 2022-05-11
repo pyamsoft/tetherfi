@@ -32,7 +32,10 @@ class MainActivity : PYDroidActivity() {
 
   override val applicationIcon = R.mipmap.ic_launcher_round
 
-  override val changelog = buildChangeLog {}
+  override val changelog = buildChangeLog {
+    feature("Initial Release!")
+    feature("Create local WiFi networks to share your device's Internet")
+  }
 
   private fun handleOpenApplicationSettings() {
     SettingsDialog.show(this)
