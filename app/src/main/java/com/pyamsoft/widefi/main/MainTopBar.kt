@@ -47,49 +47,54 @@ internal fun MainTopBar(
 
   Surface(
       modifier = modifier,
-      contentColor = Color.White,
-      color = MaterialTheme.colors.primary,
-      shape =
-          MaterialTheme.shapes.medium.copy(
-              topStart = ZeroCornerSize,
-              topEnd = ZeroCornerSize,
-          ),
-      elevation = AppBarDefaults.TopAppBarElevation,
+      color = MaterialTheme.colors.background,
+      elevation = ZeroElevation,
   ) {
-    Column {
-      Spacer(
-          modifier = Modifier.statusBarsHeight(),
-      )
-      TopAppBar(
-          elevation = ZeroElevation,
-          backgroundColor = Color.Transparent,
-          contentColor = LocalContentColor.current,
-          title = {
-            Text(
-                text = "WideFi",
-            )
-          },
-          actions = {
-            IconButton(
-                onClick = onSettingsOpen,
-            ) {
-              Icon(
-                  imageVector = Icons.Filled.Settings,
-                  contentDescription = "Open Settings",
+    Surface(
+        contentColor = Color.White,
+        color = MaterialTheme.colors.primary,
+        shape =
+            MaterialTheme.shapes.medium.copy(
+                topStart = ZeroCornerSize,
+                topEnd = ZeroCornerSize,
+            ),
+        elevation = AppBarDefaults.TopAppBarElevation,
+    ) {
+      Column {
+        Spacer(
+            modifier = Modifier.statusBarsHeight(),
+        )
+        TopAppBar(
+            elevation = ZeroElevation,
+            backgroundColor = Color.Transparent,
+            contentColor = LocalContentColor.current,
+            title = {
+              Text(
+                  text = "WideFi",
               )
-            }
-          })
-      TabRow(
-          modifier = modifier,
-          backgroundColor = Color.Transparent,
-          selectedTabIndex = index,
-      ) {
-        tabs.forEach { tab ->
-          ScreenTab(
-              current = currentTab,
-              tab = tab,
-              onTabUpdated = onTabUpdated,
-          )
+            },
+            actions = {
+              IconButton(
+                  onClick = onSettingsOpen,
+              ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Open Settings",
+                )
+              }
+            })
+        TabRow(
+            modifier = modifier,
+            backgroundColor = Color.Transparent,
+            selectedTabIndex = index,
+        ) {
+          tabs.forEach { tab ->
+            ScreenTab(
+                current = currentTab,
+                tab = tab,
+                onTabUpdated = onTabUpdated,
+            )
+          }
         }
       }
     }
