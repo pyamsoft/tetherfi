@@ -2,6 +2,7 @@ package com.pyamsoft.widefi.status
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.widefi.server.ServerPreferences
+import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.status.RunningStatus
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import com.pyamsoft.widefi.server.widi.receiver.WidiNetworkEvent
@@ -17,12 +18,19 @@ internal constructor(
     private val preferences: ServerPreferences,
     private val state: MutableStatusViewState,
     private val network: WiDiNetwork,
+    private val permissions: PermissionGuard,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
   private fun toggleProxyState(
       onStart: () -> Unit,
       onStop: () -> Unit,
+      onRequestPermissions: (List<String>) -> Unit,
   ) {
+    if (permissions.canCreateWiDiNetwork()) {
+      onRequestPermissions(permissions.requiredPermissions())
+      return
+    }
+
     when (val s = network.getCurrentStatus()) {
       is RunningStatus.NotRunning -> network.start(onStart)
       is RunningStatus.Running -> network.stop(onStop)
@@ -97,35 +105,31 @@ internal constructor(
       scope: CoroutineScope,
       onStart: () -> Unit,
       onStop: () -> Unit,
+      onRequestPermissions: (List<String>) -> Unit,
   ) {
     toggleProxyState(
         onStart = onStart,
         onStop = onStop,
+        onRequestPermissions = onRequestPermissions,
     )
     refreshGroupInfo(scope = scope)
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
     state.ssid = ssid
-    scope.launch(context = Dispatchers.Main) {
-      preferences.setSsid(ssid)
-    }
+    scope.launch(context = Dispatchers.Main) { preferences.setSsid(ssid) }
   }
 
   fun handlePasswordChanged(scope: CoroutineScope, password: String) {
     state.password = password
-    scope.launch(context = Dispatchers.Main) {
-      preferences.setPassword(password)
-    }
+    scope.launch(context = Dispatchers.Main) { preferences.setPassword(password) }
   }
 
   fun handlePortChanged(scope: CoroutineScope, port: String) {
     val portValue = port.toIntOrNull()
     if (portValue != null) {
       state.port = portValue
-      scope.launch(context = Dispatchers.Main) {
-        preferences.setPort(portValue)
-      }
+      scope.launch(context = Dispatchers.Main) { preferences.setPort(portValue) }
     }
   }
 }

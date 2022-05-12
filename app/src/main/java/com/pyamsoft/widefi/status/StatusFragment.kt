@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,12 +27,14 @@ import com.pyamsoft.widefi.WidefiTheme
 import com.pyamsoft.widefi.main.MainComponent
 import com.pyamsoft.widefi.service.ProxyService
 import javax.inject.Inject
+import timber.log.Timber
 
 class StatusFragment : Fragment() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
 
+  private var permissionCallback: ActivityResultLauncher<Array<String>>? = null
   private var compose: ViewWindowInsetObserver? = null
 
   private fun handleToggleProxy() {
@@ -41,34 +45,38 @@ class StatusFragment : Fragment() {
             scope = viewLifecycleOwner.lifecycleScope,
             onStart = { ProxyService.start(ctx) },
             onStop = { ProxyService.stop(ctx) },
+            onRequestPermissions = { permissions ->
+              Timber.d("Requesting permission for WiDi network")
+              permissionCallback.requireNotNull().launch(permissions.toTypedArray())
+            },
         )
   }
 
   private fun handleSsidChanged(ssid: String) {
     viewModel
-      .requireNotNull()
-      .handleSsidChanged(
-        scope = viewLifecycleOwner.lifecycleScope,
-        ssid = ssid.trim(),
-      )
+        .requireNotNull()
+        .handleSsidChanged(
+            scope = viewLifecycleOwner.lifecycleScope,
+            ssid = ssid.trim(),
+        )
   }
 
   private fun handlePasswordChanged(password: String) {
     viewModel
-      .requireNotNull()
-      .handlePasswordChanged(
-        scope = viewLifecycleOwner.lifecycleScope,
-        password = password,
-      )
+        .requireNotNull()
+        .handlePasswordChanged(
+            scope = viewLifecycleOwner.lifecycleScope,
+            password = password,
+        )
   }
 
   private fun handlePortChanged(port: String) {
     viewModel
-      .requireNotNull()
-      .handlePortChanged(
-        scope = viewLifecycleOwner.lifecycleScope,
-        port = port,
-      )
+        .requireNotNull()
+        .handlePortChanged(
+            scope = viewLifecycleOwner.lifecycleScope,
+            port = port,
+        )
   }
 
   override fun onCreateView(
@@ -108,7 +116,6 @@ class StatusFragment : Fragment() {
     }
   }
 
-
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     viewModel.requireNotNull().also { vm ->
@@ -117,6 +124,25 @@ class StatusFragment : Fragment() {
       vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
       vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope)
     }
+
+    // Register here to watch for permissions
+    permissionCallback =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+          var hasPermission = true
+          for (entry in results) {
+            val permission = entry.key
+            val granted = entry.value
+            if (!granted) {
+              Timber.w("Permission was not granted: $permission")
+              hasPermission = false
+            }
+          }
+
+          if (hasPermission) {
+            Timber.d("All permissions are granted, toggle proxy again!")
+            handleToggleProxy()
+          }
+        }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -132,6 +158,7 @@ class StatusFragment : Fragment() {
   override fun onDestroyView() {
     super.onDestroyView()
     dispose()
+    permissionCallback?.unregister()
 
     compose?.stop()
     compose = null

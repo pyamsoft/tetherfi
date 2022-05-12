@@ -21,9 +21,21 @@ internal constructor(
   }
 
   override fun canCreateWiDiNetwork(): Boolean {
-    return hasPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) &&
-        hasPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) &&
-        hasPermission(android.Manifest.permission.ACCESS_WIFI_STATE) &&
-        hasPermission(android.Manifest.permission.CHANGE_WIFI_STATE)
+    return ALL_PERMISSIONS.all { hasPermission(it) }
+  }
+
+  override fun requiredPermissions(): List<String> {
+    return ALL_PERMISSIONS
+  }
+
+  companion object {
+
+    private val ALL_PERMISSIONS =
+        listOf(
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_WIFI_STATE,
+            android.Manifest.permission.CHANGE_WIFI_STATE,
+        )
   }
 }
