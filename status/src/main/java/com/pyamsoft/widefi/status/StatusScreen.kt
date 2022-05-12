@@ -1,5 +1,6 @@
 package com.pyamsoft.widefi.status
 
+import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
@@ -55,9 +57,15 @@ fun StatusScreen(
         }
       }
 
-  val isEditable = remember(state.wiDiStatus) { state.wiDiStatus is RunningStatus.NotRunning || state.wiDiStatus is RunningStatus.Error }
-
   val scaffoldState = rememberScaffoldState()
+
+  val loadedContent =
+      prepareLoadedContent(
+          state = state,
+          onSsidChanged = onSsidChanged,
+          onPasswordChanged = onPasswordChanged,
+          onPortChanged = onPortChanged,
+      )
 
   Scaffold(
       modifier = modifier,
@@ -85,11 +93,11 @@ fun StatusScreen(
 
       item {
         Column(
-            modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
+            Modifier.padding(top = MaterialTheme.keylines.content)
+                .padding(horizontal = MaterialTheme.keylines.content),
         ) {
           DisplayStatus(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
               title = "WiFi Network Status:",
               status = wiDiStatus,
           )
@@ -102,25 +110,7 @@ fun StatusScreen(
       }
 
       if (isLoaded) {
-
-        item {
-          NetworkInformation(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              state = state,
-              isEditable = isEditable,
-              onSsidChanged = onSsidChanged,
-              onPasswordChanged = onPasswordChanged,
-              onPortChanged = onPortChanged,
-          )
-        }
-
-        item {
-          ConnectionInstructions(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              state = state,
-              isEditable = isEditable,
-          )
-        }
+        loadedContent()
       } else {
         item {
           Column(
@@ -139,11 +129,21 @@ fun StatusScreen(
 }
 
 @Composable
-private fun ConnectionInstructions(
-    modifier: Modifier = Modifier,
+@CheckResult
+private fun prepareLoadedContent(
     state: StatusViewState,
-    isEditable: Boolean,
-) {
+    onSsidChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
+): LazyListScope.() -> Unit {
+  val isEditable =
+      remember(state.wiDiStatus) {
+        when (state.wiDiStatus) {
+          is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
+          else -> true
+        }
+      }
+
   val group = state.group
   val ssid =
       remember(isEditable, group, state.ssid) {
@@ -156,7 +156,57 @@ private fun ConnectionInstructions(
 
   val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
   val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
+  val bandName = remember(state.band) { state.band?.name ?: "--" }
 
+  return remember(
+      ssid,
+      password,
+      port,
+      ip,
+      bandName,
+      onSsidChanged,
+      onPasswordChanged,
+      onPortChanged,
+  ) {
+    {
+      item {
+        NetworkInformation(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            isEditable = isEditable,
+            ssid = ssid,
+            password = password,
+            port = port,
+            ip = ip,
+            bandName = bandName,
+            onSsidChanged = onSsidChanged,
+            onPasswordChanged = onPasswordChanged,
+            onPortChanged = onPortChanged,
+        )
+      }
+
+      item {
+        ConnectionInstructions(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            isEditable = isEditable,
+            ssid = ssid,
+            password = password,
+            port = port,
+            ip = ip,
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun ConnectionInstructions(
+    modifier: Modifier = Modifier,
+    isEditable: Boolean,
+    ssid: String,
+    password: String,
+    port: String,
+    ip: String,
+) {
   AnimatedVisibility(
       visible = !isEditable,
       modifier = modifier,
@@ -223,25 +273,16 @@ private fun ConnectionInstructions(
 @Composable
 private fun NetworkInformation(
     modifier: Modifier = Modifier,
-    state: StatusViewState,
     isEditable: Boolean,
+    ssid: String,
+    password: String,
+    port: String,
+    ip: String,
+    bandName: String,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
 ) {
-  val group = state.group
-  val ssid =
-      remember(isEditable, group, state.ssid) {
-        if (isEditable) state.ssid else group?.ssid ?: "--"
-      }
-  val password =
-      remember(isEditable, group, state.password) {
-        if (isEditable) state.password else group?.password ?: "--"
-      }
-
-  val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
-  val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
-  val bandName = remember(state.band) { state.band?.name ?: "--" }
 
   Crossfade(
       modifier = modifier,
@@ -250,12 +291,14 @@ private fun NetworkInformation(
     Column {
       if (editable) {
         Editor(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "SSID",
             value = ssid,
             onChange = onSsidChanged,
         )
 
         Editor(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "PASSWORD",
             value = password,
             onChange = onPasswordChanged,
@@ -266,6 +309,7 @@ private fun NetworkInformation(
         )
 
         Editor(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "PORT",
             value = port,
             onChange = onPortChanged,
@@ -276,11 +320,13 @@ private fun NetworkInformation(
         )
       } else {
         Item(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "SSID",
             value = ssid,
         )
 
         Item(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "PASSWORD",
             value = password,
         )
@@ -292,11 +338,13 @@ private fun NetworkInformation(
         )
 
         Item(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "PORT",
             value = port,
         )
 
         Item(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "BAND",
             value = bandName,
         )
