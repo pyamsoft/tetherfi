@@ -46,7 +46,7 @@ class StatusFragment : Fragment() {
             onStart = { ProxyService.start(ctx) },
             onStop = { ProxyService.stop(ctx) },
             onRequestPermissions = { permissions ->
-              Timber.d("Requesting permission for WiDi network")
+              Timber.d("Requesting permission for WiDi network: $permissions")
               permissionCallback.requireNotNull().launch(permissions.toTypedArray())
             },
         )

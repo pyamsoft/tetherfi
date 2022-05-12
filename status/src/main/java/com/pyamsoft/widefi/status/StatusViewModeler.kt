@@ -26,7 +26,7 @@ internal constructor(
       onStop: () -> Unit,
       onRequestPermissions: (List<String>) -> Unit,
   ) {
-    if (permissions.canCreateWiDiNetwork()) {
+    if (!permissions.canCreateWiDiNetwork()) {
       onRequestPermissions(permissions.requiredPermissions())
       return
     }
