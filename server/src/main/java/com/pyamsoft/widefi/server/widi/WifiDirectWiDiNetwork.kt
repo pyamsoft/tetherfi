@@ -92,7 +92,7 @@ internal constructor(
 
   @CheckResult
   private suspend fun getConfiguration(): WifiP2pConfig? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    return if (ServerDefaults.canUseCustomConfig()) {
       WifiP2pConfig.Builder()
           .setNetworkName(ServerDefaults.asSsid(getPreferredSsid()))
           .setPassphrase(getPreferredPassword())
@@ -109,7 +109,7 @@ internal constructor(
       config: WifiP2pConfig,
       listener: WifiP2pManager.ActionListener,
   ) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (ServerDefaults.canUseCustomConfig()) {
       wifiP2PManager.createGroup(
           channel,
           config,

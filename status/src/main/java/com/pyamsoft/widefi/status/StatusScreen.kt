@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.status.RunningStatus
 
 @Composable
@@ -136,6 +137,7 @@ private fun prepareLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
 ): LazyListScope.() -> Unit {
+  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
       remember(state.wiDiStatus) {
         when (state.wiDiStatus) {
@@ -146,17 +148,43 @@ private fun prepareLoadedContent(
 
   val group = state.group
   val ssid =
-      remember(isEditable, group, state.ssid) {
-        if (isEditable) state.ssid else group?.ssid ?: "--"
+      remember(
+          isEditable,
+          group,
+          state.ssid,
+          canUseCustomConfig,
+      ) {
+        if (isEditable) {
+          if (canUseCustomConfig) {
+            state.ssid
+          } else {
+            "SYSTEM DEFINED SSID"
+          }
+        } else {
+          group?.ssid ?: "NO SSID"
+        }
       }
   val password =
-      remember(isEditable, group, state.password) {
-        if (isEditable) state.password else group?.password ?: "--"
+      remember(
+          isEditable,
+          group,
+          state.password,
+          canUseCustomConfig,
+      ) {
+        if (isEditable) {
+          if (canUseCustomConfig) {
+            state.password
+          } else {
+            "SYSTEM DEFINED PASSWORD"
+          }
+        } else {
+          group?.password ?: "NO PASSWORD"
+        }
       }
 
-  val ip = remember(state.ip) { state.ip.ifBlank { "--" } }
-  val port = remember(state.port) { if (state.port <= 0) "--" else "${state.port}" }
-  val bandName = remember(state.band) { state.band?.name ?: "--" }
+  val ip = remember(state.ip) { state.ip.ifBlank { "NO IP ADDRESS" } }
+  val port = remember(state.port) { if (state.port <= 0) "NO PORT" else "${state.port}" }
+  val bandName = remember(state.band) { state.band?.name ?: "AUTO" }
 
   return remember(
       ssid,
@@ -173,6 +201,7 @@ private fun prepareLoadedContent(
         NetworkInformation(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             isEditable = isEditable,
+            canUseCustomConfig = canUseCustomConfig,
             ssid = ssid,
             password = password,
             port = port,
@@ -274,6 +303,7 @@ private fun ConnectionInstructions(
 private fun NetworkInformation(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
+    canUseCustomConfig: Boolean,
     ssid: String,
     password: String,
     port: String,
@@ -292,6 +322,7 @@ private fun NetworkInformation(
       if (editable) {
         Editor(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            enabled = canUseCustomConfig,
             title = "SSID",
             value = ssid,
             onChange = onSsidChanged,
@@ -299,6 +330,7 @@ private fun NetworkInformation(
 
         Editor(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            enabled = canUseCustomConfig,
             title = "PASSWORD",
             value = password,
             onChange = onPasswordChanged,
@@ -356,6 +388,7 @@ private fun NetworkInformation(
 @Composable
 private fun Editor(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     title: String,
     value: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -365,6 +398,7 @@ private fun Editor(
       modifier = modifier,
   ) {
     TextField(
+        enabled = enabled,
         keyboardOptions = keyboardOptions,
         value = value,
         onValueChange = onChange,

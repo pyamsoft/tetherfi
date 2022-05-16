@@ -1,6 +1,8 @@
 package com.pyamsoft.widefi.status
 
+import android.os.Build
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.status.RunningStatus
@@ -48,10 +50,17 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Main) {
-      s.ssid = preferences.getSsid()
-      s.password = preferences.getPassword()
       s.port = preferences.getPort()
-      s.band = preferences.getNetworkBand()
+
+      if (ServerDefaults.canUseCustomConfig()) {
+        s.ssid = preferences.getSsid()
+        s.password = preferences.getPassword()
+        s.band = preferences.getNetworkBand()
+      } else {
+        s.ssid = ""
+        s.password = ""
+        s.band = null
+      }
 
       s.preferencesLoaded = true
     }
