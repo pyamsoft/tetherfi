@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import androidx.annotation.CheckResult
@@ -73,9 +72,7 @@ internal constructor(
   }
 
   private fun handleDiscoveryChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) {
-      eventBus.send(WidiNetworkEvent.DiscoveryChanged)
-    }
+    scope.launch(context = Dispatchers.IO) { eventBus.send(WidiNetworkEvent.DiscoveryChanged) }
   }
 
   private fun handlePeersChangedAction(intent: Intent) {
@@ -92,8 +89,8 @@ internal constructor(
     }
   }
 
-  override suspend fun onEvent(onEvent: (WidiNetworkEvent) -> Unit) {
-    return eventBus.onEvent { onEvent(it) }
+  override suspend fun onEvent(onEvent: suspend (WidiNetworkEvent) -> Unit) {
+    return eventBus.onEvent(onEvent)
   }
 
   override suspend fun register() {

@@ -4,7 +4,7 @@ import androidx.annotation.CheckResult
 
 interface StatusListener {
 
-  suspend fun onStatus(block: (RunningStatus) -> Unit)
+  suspend fun onStatus(block: suspend (RunningStatus) -> Unit)
 
   @CheckResult fun get(): RunningStatus
 }

@@ -19,7 +19,12 @@ package com.pyamsoft.widefi.error
 import androidx.annotation.CheckResult
 import dagger.Subcomponent
 
-@Subcomponent
+@Subcomponent(
+    modules =
+        [
+            ErrorModule::class,
+        ],
+)
 internal interface ErrorComponent {
 
   fun inject(fragment: ErrorFragment)

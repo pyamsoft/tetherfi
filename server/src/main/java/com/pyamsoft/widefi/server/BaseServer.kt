@@ -12,7 +12,7 @@ protected constructor(
     status.set(RunningStatus.NotRunning)
   }
 
-  final override suspend fun onStatusChanged(block: (RunningStatus) -> Unit) {
+  final override suspend fun onStatusChanged(block: suspend (RunningStatus) -> Unit) {
     return status.onStatus(block)
   }
 

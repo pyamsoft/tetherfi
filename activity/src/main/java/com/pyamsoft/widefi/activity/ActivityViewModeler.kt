@@ -4,6 +4,7 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.widi.WiDiNetwork
 import com.pyamsoft.widefi.ui.ProxyEvent
+import com.pyamsoft.widefi.ui.logging.LogStorage
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,17 +14,21 @@ class ActivityViewModeler
 @Inject
 internal constructor(
     private val state: MutableActivityViewState,
+    private val logStorage: LogStorage<ConnectionEvent>,
     private val network: WiDiNetwork,
 ) : AbstractViewModeler<ActivityViewState>(state) {
 
   fun watchNetworkActivity(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Main) { network.onConnectionEvent { logStorage.submit(it) } }
+
     scope.launch(context = Dispatchers.Main) {
       val s = state
 
-      network.onConnectionEvent { event ->
+      logStorage.onLogEvent { event ->
         when (event) {
           is ConnectionEvent.Clear -> {
             s.events = emptyList()
+            logStorage.clear()
           }
           is ConnectionEvent.Tcp -> {
             val request = event.request

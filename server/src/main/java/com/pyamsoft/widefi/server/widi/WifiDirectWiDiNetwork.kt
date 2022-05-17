@@ -303,11 +303,11 @@ internal constructor(
         }
       }
 
-  override suspend fun onErrorEvent(block: (ErrorEvent) -> Unit) {
+  override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
     return proxy.onErrorEvent(block)
   }
 
-  override suspend fun onConnectionEvent(block: (ConnectionEvent) -> Unit) {
+  override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
     return proxy.onConnectionEvent(block)
   }
 
@@ -365,11 +365,11 @@ internal constructor(
     }
   }
 
-  override suspend fun onWifiDirectEvent(block: (WidiNetworkEvent) -> Unit) {
+  override suspend fun onWifiDirectEvent(block: suspend (WidiNetworkEvent) -> Unit) {
     return receiver.onEvent { block(it) }
   }
 
-  override suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit) {
+  override suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit) {
     return proxy.onStatusChanged(block)
   }
 

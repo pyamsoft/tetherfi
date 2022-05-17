@@ -16,9 +16,9 @@ interface WiDiNetwork : Server {
 
   @CheckResult suspend fun getConnectionInfo(): ConnectionInfo?
 
-  suspend fun onProxyStatusChanged(block: (RunningStatus) -> Unit)
+  suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit)
 
-  suspend fun onWifiDirectEvent(block: (WidiNetworkEvent) -> Unit)
+  suspend fun onWifiDirectEvent(block: suspend (WidiNetworkEvent) -> Unit)
 
   data class GroupInfo
   internal constructor(

@@ -13,7 +13,7 @@ abstract class BaseStatusBroadcaster protected constructor() : StatusBroadcast {
     }
   }
 
-  final override suspend fun onStatus(block: (RunningStatus) -> Unit) {
+  final override suspend fun onStatus(block: suspend (RunningStatus) -> Unit) {
     state.collect { block(it) }
   }
 

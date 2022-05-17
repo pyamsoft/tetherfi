@@ -2,8 +2,8 @@ package com.pyamsoft.widefi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.widefi.core.generateRandomId
 import com.pyamsoft.widefi.server.BaseServer
-import com.pyamsoft.widefi.server.ServerDefaults
 import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
@@ -60,8 +60,8 @@ internal constructor(
     clearJobs()
 
     // Clear busses
-    errorBus.send(ErrorEvent.Clear)
-    connectionBus.send(ConnectionEvent.Clear)
+    errorBus.send(ErrorEvent.Clear(id = generateRandomId()))
+    connectionBus.send(ConnectionEvent.Clear(id = generateRandomId()))
   }
 
   private suspend fun clearJobs() {
@@ -109,11 +109,11 @@ internal constructor(
     }
   }
 
-  override suspend fun onErrorEvent(block: (ErrorEvent) -> Unit) {
+  override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
     return errorBus.onEvent { block(it) }
   }
 
-  override suspend fun onConnectionEvent(block: (ConnectionEvent) -> Unit) {
+  override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
     return connectionBus.onEvent { block(it) }
   }
 

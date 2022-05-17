@@ -1,12 +1,19 @@
 package com.pyamsoft.widefi.server.event
 
-sealed class ConnectionEvent {
+import com.pyamsoft.widefi.core.LogEvent
 
-  object Clear : ConnectionEvent()
+sealed class ConnectionEvent : LogEvent {
+
+  data class Clear(
+      override val id: String,
+  ) : ConnectionEvent()
 
   data class Tcp(
+      override val id: String,
       val request: ProxyRequest,
   ) : ConnectionEvent()
 
-  object Udp : ConnectionEvent()
+  data class Udp(
+      override val id: String,
+  ) : ConnectionEvent()
 }

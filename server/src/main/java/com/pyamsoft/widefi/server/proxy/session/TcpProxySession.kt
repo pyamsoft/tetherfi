@@ -5,6 +5,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.widefi.core.generateRandomId
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
 import com.pyamsoft.widefi.server.event.ProxyRequest
@@ -17,6 +18,7 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
+import io.ktor.util.generateNonce
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
@@ -309,6 +311,7 @@ internal constructor(
         Timber.e(e, "${proxyType.name} Error during Internet exchange")
         errorBus.send(
             ErrorEvent.Tcp(
+                id = generateRandomId(),
                 request = request,
                 throwable = e,
             ),
@@ -332,6 +335,7 @@ internal constructor(
         Timber.w("${proxyType.name} $msg")
         errorBus.send(
             ErrorEvent.Tcp(
+                id = generateRandomId(),
                 request = request,
                 throwable = RuntimeException(msg),
             ),
@@ -349,6 +353,7 @@ internal constructor(
         Timber.d("Log connection: $request")
         connectionBus.send(
             ConnectionEvent.Tcp(
+                id = generateRandomId(),
                 request = request,
             ),
         )
@@ -368,6 +373,7 @@ internal constructor(
         Timber.e(e, "${proxyType.name} Error during connect to internet: $request")
         errorBus.send(
             ErrorEvent.Tcp(
+                id = generateRandomId(),
                 request = request,
                 throwable = e,
             ),
