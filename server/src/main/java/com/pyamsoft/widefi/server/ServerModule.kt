@@ -126,7 +126,7 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     @ServerInternalApi
-    internal fun bindActivityLogStorage(): LogStorage<ConnectionEvent> {
+    internal fun provideActivityLogStorage(): LogStorage<ConnectionEvent> {
       return ApplicationLogStorage()
     }
 
@@ -134,7 +134,7 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     @ServerInternalApi
-    internal fun bindErrorLogStorage(): LogStorage<ErrorEvent> {
+    internal fun provideErrorLogStorage(): LogStorage<ErrorEvent> {
       return ApplicationLogStorage()
     }
 
