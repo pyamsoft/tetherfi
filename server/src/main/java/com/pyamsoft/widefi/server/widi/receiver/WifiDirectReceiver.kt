@@ -8,6 +8,7 @@ import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.widefi.server.ServerInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,22 +30,6 @@ internal constructor(
 
   private var registered = false
 
-  private fun handleStateChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) {
-      when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
-        WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
-          Timber.d("Wifi P2P Enabled")
-          eventBus.send(WidiNetworkEvent.WifiEnabled)
-        }
-        WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
-          Timber.d("Wifi P2P Disabled")
-          eventBus.send(WidiNetworkEvent.WifiDisabled)
-        }
-        else -> Timber.w("Unknown Wifi p2p state: $p2pState")
-      }
-    }
-  }
-
   @CheckResult
   private fun resolveWifiGroupIp(intent: Intent): String {
     val p2pInfo: WifiP2pInfo? = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
@@ -64,29 +49,37 @@ internal constructor(
     return ip
   }
 
-  private fun handleConnectionChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) {
-      val ip = resolveWifiGroupIp(intent)
-      eventBus.send(WidiNetworkEvent.ConnectionChanged(ip = ip))
+  private suspend fun handleStateChangedAction(intent: Intent) {
+    when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
+      WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
+        Timber.d("Wifi P2P Enabled")
+        eventBus.send(WidiNetworkEvent.WifiEnabled)
+      }
+      WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
+        Timber.d("Wifi P2P Disabled")
+        eventBus.send(WidiNetworkEvent.WifiDisabled)
+      }
+      else -> Timber.w("Unknown Wifi p2p state: $p2pState")
     }
   }
 
-  private fun handleDiscoveryChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) { eventBus.send(WidiNetworkEvent.DiscoveryChanged) }
+  private suspend fun handleConnectionChangedAction(intent: Intent) {
+    val ip = resolveWifiGroupIp(intent)
+    eventBus.send(WidiNetworkEvent.ConnectionChanged(ip = ip))
   }
 
-  private fun handlePeersChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) {
-      Timber.d("Peers changed!")
-      eventBus.send(WidiNetworkEvent.PeersChanged)
-    }
+  private suspend fun handleDiscoveryChangedAction(intent: Intent) {
+    eventBus.send(WidiNetworkEvent.DiscoveryChanged)
   }
 
-  private fun handleThisDeviceChangedAction(intent: Intent) {
-    scope.launch(context = Dispatchers.IO) {
-      Timber.d("This Device changed!")
-      eventBus.send(WidiNetworkEvent.ThisDeviceChanged)
-    }
+  private suspend fun handlePeersChangedAction(intent: Intent) {
+    Timber.d("Peers changed!")
+    eventBus.send(WidiNetworkEvent.PeersChanged)
+  }
+
+  private suspend fun handleThisDeviceChangedAction(intent: Intent) {
+    Timber.d("This Device changed!")
+    eventBus.send(WidiNetworkEvent.ThisDeviceChanged)
   }
 
   override suspend fun onEvent(onEvent: suspend (WidiNetworkEvent) -> Unit) {
@@ -114,14 +107,28 @@ internal constructor(
   }
 
   override fun onReceive(context: Context, intent: Intent) {
-    when (val action = intent.action) {
-      WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)
-      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> handleConnectionChangedAction(intent)
-      WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> handleDiscoveryChangedAction(intent)
-      WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChangedAction(intent)
-      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> handleThisDeviceChangedAction(intent)
-      else -> {
-        Timber.w("Unhandled intent action: $action")
+    // Go async in case scope work takes a long time
+    val pending = goAsync()
+    scope.launch(context = Dispatchers.IO) {
+      Enforcer.assertOffMainThread()
+      try {
+        when (val action = intent.action) {
+          WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)
+          WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> handleConnectionChangedAction(intent)
+          WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION -> handleDiscoveryChangedAction(intent)
+          WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChangedAction(intent)
+          WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION ->
+              handleThisDeviceChangedAction(intent)
+          else -> {
+            Timber.w("Unhandled intent action: $action")
+          }
+        }
+      } finally {
+        withContext(context = Dispatchers.Main) {
+          Enforcer.assertOnMainThread()
+          // Mark BR as finished
+          pending.finish()
+        }
       }
     }
   }

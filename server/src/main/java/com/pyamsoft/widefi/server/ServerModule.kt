@@ -127,7 +127,7 @@ abstract class ServerModule {
     @Singleton
     @ServerInternalApi
     internal fun bindActivityLogStorage(): LogStorage<ConnectionEvent> {
-      return object : ApplicationLogStorage<ConnectionEvent>() {}
+      return ApplicationLogStorage()
     }
 
     @Provides
@@ -135,7 +135,7 @@ abstract class ServerModule {
     @Singleton
     @ServerInternalApi
     internal fun bindErrorLogStorage(): LogStorage<ErrorEvent> {
-      return object : ApplicationLogStorage<ErrorEvent>() {}
+      return ApplicationLogStorage()
     }
 
     @Provides
