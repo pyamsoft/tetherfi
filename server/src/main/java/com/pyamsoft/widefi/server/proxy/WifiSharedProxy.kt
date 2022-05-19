@@ -8,6 +8,7 @@ import com.pyamsoft.widefi.server.ServerInternalApi
 import com.pyamsoft.widefi.server.ServerPreferences
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
+import com.pyamsoft.widefi.server.logging.LogStorage
 import com.pyamsoft.widefi.server.proxy.connector.ProxyManager
 import com.pyamsoft.widefi.server.status.RunningStatus
 import javax.inject.Inject
@@ -27,6 +28,8 @@ internal class WifiSharedProxy
 @Inject
 internal constructor(
     private val preferences: ServerPreferences,
+    @ServerInternalApi private val activityLogStorage: LogStorage<ConnectionEvent>,
+    @ServerInternalApi private val errorLogStorage: LogStorage<ErrorEvent>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
@@ -38,7 +41,13 @@ internal constructor(
   private val jobs = mutableListOf<ProxyJob>()
 
   /** We own our own scope here because the proxy lifespan is separate */
-  private val scope by lazy { CoroutineScope(context = dispatcher) }
+  private val scope = CoroutineScope(context = dispatcher)
+
+  init {
+    scope.launch(context = dispatcher) { connectionBus.onEvent { activityLogStorage.submit(it) } }
+
+    scope.launch(context = dispatcher) { errorBus.onEvent { errorLogStorage.submit(it) } }
+  }
 
   /** Get the port for the proxy */
   @CheckResult
@@ -62,6 +71,10 @@ internal constructor(
     // Clear busses
     errorBus.send(ErrorEvent.Clear(id = generateRandomId()))
     connectionBus.send(ConnectionEvent.Clear(id = generateRandomId()))
+
+    // Clear storage
+    activityLogStorage.clear()
+    errorLogStorage.clear()
   }
 
   private suspend fun clearJobs() {
@@ -110,11 +123,11 @@ internal constructor(
   }
 
   override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
-    return errorBus.onEvent { block(it) }
+    return errorLogStorage.onLogEvent(block)
   }
 
   override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
-    return connectionBus.onEvent { block(it) }
+    return activityLogStorage.onLogEvent(block)
   }
 
   private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {

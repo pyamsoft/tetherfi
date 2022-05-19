@@ -1,11 +1,11 @@
-package com.pyamsoft.widefi.ui.logging
+package com.pyamsoft.widefi.server.logging
 
 import com.pyamsoft.widefi.core.LogEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-abstract class ApplicationLogStorage<T : LogEvent> protected constructor() : LogStorage<T> {
+internal class ApplicationLogStorage<T : LogEvent> internal constructor() : LogStorage<T> {
 
   private val mutex = Mutex()
   private val storage = mutableListOf<T>()

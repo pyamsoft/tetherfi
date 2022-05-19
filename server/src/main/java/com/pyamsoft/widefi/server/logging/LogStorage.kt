@@ -1,4 +1,4 @@
-package com.pyamsoft.widefi.ui.logging
+package com.pyamsoft.widefi.server.logging
 
 import com.pyamsoft.widefi.core.LogEvent
 

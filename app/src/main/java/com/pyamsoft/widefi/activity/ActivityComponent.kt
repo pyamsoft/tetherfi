@@ -19,12 +19,7 @@ package com.pyamsoft.widefi.activity
 import androidx.annotation.CheckResult
 import dagger.Subcomponent
 
-@Subcomponent(
-    modules =
-        [
-            ActivityModule::class,
-        ],
-)
+@Subcomponent
 internal interface ActivityComponent {
 
   fun inject(fragment: ActivityFragment)

@@ -4,6 +4,8 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.widefi.server.event.ConnectionEvent
 import com.pyamsoft.widefi.server.event.ErrorEvent
+import com.pyamsoft.widefi.server.logging.ApplicationLogStorage
+import com.pyamsoft.widefi.server.logging.LogStorage
 import com.pyamsoft.widefi.server.permission.PermissionGuard
 import com.pyamsoft.widefi.server.permission.PermissionGuardImpl
 import com.pyamsoft.widefi.server.proxy.SharedProxy
@@ -63,9 +65,7 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindWidiReceiver(
-      impl: WifiDirectReceiver
-  ): WiDiReceiver
+  internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
 
   @Binds
   @CheckResult
@@ -120,6 +120,22 @@ abstract class ServerModule {
     @ServerInternalApi
     internal fun provideProxyDebug(): Boolean {
       return false
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    @ServerInternalApi
+    internal fun bindActivityLogStorage(): LogStorage<ConnectionEvent> {
+      return object : ApplicationLogStorage<ConnectionEvent>() {}
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    @ServerInternalApi
+    internal fun bindErrorLogStorage(): LogStorage<ErrorEvent> {
+      return object : ApplicationLogStorage<ErrorEvent>() {}
     }
 
     @Provides
