@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.ui.event.ProxyEventItem
 
@@ -40,6 +41,7 @@ fun ErrorScreen(
             key = { it.host },
         ) { event ->
           ProxyEventItem(
+              modifier = Modifier.padding(bottom = 8.dp),
               event = event,
               color = MaterialTheme.colors.error,
           )

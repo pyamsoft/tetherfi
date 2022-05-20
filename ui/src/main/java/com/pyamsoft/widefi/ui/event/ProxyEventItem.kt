@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.widefi.ui.ProxyEvent
 
@@ -28,7 +29,10 @@ fun ProxyEventItem(
   ) {
     Text(
         text = host,
-        style = MaterialTheme.typography.h6,
+        style =
+            MaterialTheme.typography.h6.copy(
+                color = color,
+            ),
     )
 
     Column {
@@ -36,6 +40,7 @@ fun ProxyEventItem(
         val url = c.first
         val methodMap = c.second
         ProxyEventItemUrl(
+            modifier = Modifier.padding(start = 16.dp),
             url = url,
             methodMap = methodMap,
             color = color,
@@ -60,7 +65,7 @@ private fun ProxyEventItemUrl(
     Text(
         text = url,
         style =
-            MaterialTheme.typography.body2.copy(
+            MaterialTheme.typography.body1.copy(
                 fontWeight = FontWeight.Bold,
                 color = color,
             ),
@@ -70,6 +75,7 @@ private fun ProxyEventItemUrl(
       val method = row.first
       val count = row.second
       ProxyEventItemMethod(
+          modifier = Modifier.padding(start = 16.dp),
           method = method,
           count = count,
           color = color,
@@ -85,25 +91,24 @@ private fun ProxyEventItemMethod(
     count: Int,
     color: Color,
 ) {
+
+  val style =
+      MaterialTheme.typography.caption.copy(
+          color = color,
+      )
+
   Row(
       modifier = modifier,
       verticalAlignment = Alignment.CenterVertically,
   ) {
     Text(
         text = method,
-        style =
-            MaterialTheme.typography.body2.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = color,
-            ),
+        style = style,
     )
     Text(
         modifier = Modifier.padding(start = MaterialTheme.keylines.content),
         text = "$count",
-        style =
-            MaterialTheme.typography.body2.copy(
-                color = color,
-            ),
+        style = style,
     )
   }
 }
