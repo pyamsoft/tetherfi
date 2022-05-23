@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,10 +13,13 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -221,6 +225,7 @@ private fun prepareLoadedContent(
         BatteryInstructions(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             show = showInstructions,
+            state = state,
             onOpenBatterySettings = onOpenBatterySettings,
         )
       }
@@ -243,8 +248,11 @@ private fun prepareLoadedContent(
 private fun BatteryInstructions(
     modifier: Modifier = Modifier,
     show: Boolean,
+    state: StatusViewState,
     onOpenBatterySettings: () -> Unit,
 ) {
+  val isIgnored = state.isBatteryOptimizationsIgnored
+
   AnimatedVisibility(
       visible = show,
       modifier = modifier,
@@ -262,13 +270,31 @@ private fun BatteryInstructions(
           style = MaterialTheme.typography.body1,
       )
 
-      Button(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          onClick = onOpenBatterySettings,
-      ) {
-        Text(
-            text = "Open Battery Settings",
-        )
+      if (isIgnored) {
+        Row(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Icon(
+              modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
+              imageVector = Icons.Filled.CheckCircle,
+              contentDescription = "Battery Optimizations Ignored",
+              tint = Color.Green,
+          )
+          Text(
+              text = "Battery Optimizations Ignored.",
+              style = MaterialTheme.typography.body1,
+          )
+        }
+      } else {
+        Button(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+            onClick = onOpenBatterySettings,
+        ) {
+          Text(
+              text = "Open Battery Settings",
+          )
+        }
       }
     }
   }

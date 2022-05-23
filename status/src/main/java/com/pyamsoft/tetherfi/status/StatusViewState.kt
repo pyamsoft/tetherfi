@@ -22,6 +22,8 @@ interface StatusViewState : UiViewState {
   val band: ServerNetworkBand?
   val ip: String
   val port: Int
+
+  val isBatteryOptimizationsIgnored: Boolean
 }
 
 internal class MutableStatusViewState @Inject internal constructor() : StatusViewState {
@@ -34,4 +36,5 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
   override var band by mutableStateOf<ServerNetworkBand?>(null)
   override var ip by mutableStateOf("")
   override var port by mutableStateOf(0)
+  override var isBatteryOptimizationsIgnored by mutableStateOf(false)
 }

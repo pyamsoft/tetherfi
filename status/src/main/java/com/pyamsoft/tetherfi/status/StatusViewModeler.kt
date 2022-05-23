@@ -1,9 +1,9 @@
 package com.pyamsoft.tetherfi.status
 
-import android.os.Build
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
@@ -21,6 +21,7 @@ internal constructor(
     private val state: MutableStatusViewState,
     private val network: WiDiNetwork,
     private val permissions: PermissionGuard,
+    private val batteryOptimizer: BatteryOptimizer,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
   private fun toggleProxyState(
@@ -62,7 +63,14 @@ internal constructor(
         s.band = null
       }
 
+      s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
       s.preferencesLoaded = true
+    }
+  }
+
+  fun refreshSystemInfo(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Main) {
+      state.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
     }
   }
 

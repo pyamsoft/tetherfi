@@ -2,6 +2,8 @@ package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
+import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.logging.ApplicationLogStorage
@@ -55,6 +57,10 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   internal abstract fun bindWiDiNetwork(impl: WifiDirectWiDiNetwork): WiDiNetwork
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
 
   @Binds
   @IntoSet
