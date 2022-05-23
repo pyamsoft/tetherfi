@@ -23,7 +23,7 @@ android {
   compileSdkVersion rootProject.ext.maxSdk
 
   defaultConfig {
-    applicationId "com.pyamsoft.widefi"
+    applicationId "com.pyamsoft.tetherfi"
     minSdkVersion rootProject.ext.minSdk
     targetSdkVersion rootProject.ext.maxSdk
     versionCode 1

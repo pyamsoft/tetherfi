@@ -1,42 +1,42 @@
-# widefi
+# tetherfi
 
 Internet sharing without Root
 
-[![Get it on Google Play](https://raw.githubusercontent.com/pyamsoft/widefi/main/art/google-play-badge.png)][1]
+[![Get it on Google Play](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/google-play-badge.png)][1]
 
 # What
 
 Share your Android device's Internet connection with other devices without needing Root.
 
-WideFi works by creating a Wi-Fi Direct legacy group and an HTTP proxy server. Devices can
+TetherFi works by creating a Wi-Fi Direct legacy group and an HTTP proxy server. Devices can
 connect to the broadcasted WiFi network by locating the WiFi SSID displayed in the application
 and using the password. Once connected to the network, a device can connect to the Internet by
-setting it's proxy server settings to the server created by the WideFi application at
+setting it's proxy server settings to the server created by the TetherFi application at
 `192.168.49.1` port `8228`.
 
-Please note that WideFi is still a work in progress and not everything will work. For example,
-using WideFi to get an open NAT type on consoles is currently not possible, and WideFi
+Please note that TetherFi is still a work in progress and not everything will work. For example,
+using TetherFi to get an open NAT type on consoles is currently not possible, and TetherFi
 also currently fails to connect correctly to the Playstation Network. General "normal" internet
 browsing should work fine - however it is depedent on the speed and availability of your Android
 device's internet connection.
 
 ## Privacy
 
-WideFi respects your privacy. WideFi is open source, and always will be. WideFi
-will never track you, or sell or share your data. WideFi offers in-app purchases which you
+TetherFi respects your privacy. TetherFi is open source, and always will be. TetherFi
+will never track you, or sell or share your data. TetherFi offers in-app purchases which you
 may purchase to support the developer. These purchases are never required to use the application
 or any features.
 
-**PLEASE NOTE:** WideFi is **not a fully FOSS application.** This is due to the fact that it
+**PLEASE NOTE:** TetherFi is **not a fully FOSS application.** This is due to the fact that it
 relies on a proprietary In-App Billing library for in-app purchases in order to stay policy
 compliant with the leading marketplace.
 
 ## Development
 
-WideFi is developed in the open on GitHub at:
+TetherFi is developed in the open on GitHub at:
 
 ```
-https://github.com/pyamsoft/widefi
+https://github.com/pyamsoft/tetherfi
 ```
 
 If you know a few things about Android programming and are wanting to help
@@ -49,7 +49,7 @@ Please post any issues with the code in the Issues section on GitHub. Pull Reque
 will be accepted on GitHub only after extensive reading and as long as the request
 goes in line with the design of the application.
 
-[1]: https://play.google.com/store/apps/details?id=com.pyamsoft.widefi
+[1]: https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi
 
 ## License
 

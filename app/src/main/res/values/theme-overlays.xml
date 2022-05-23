@@ -16,8 +16,8 @@
 
 <resources>
 
-    <style name="ThemeOverlay.WideFi.Dialog" parent="@style/Custom.ThemeOverlay.WideFi.Dialog" />
+    <style name="ThemeOverlay.TetherFi.Dialog" parent="@style/Custom.ThemeOverlay.TetherFi.Dialog" />
 
-    <style name="ThemeOverlay.WideFi.Dialog.Alert" parent="@style/Custom.ThemeOverlay.WideFi.Dialog.Alert" />
+    <style name="ThemeOverlay.TetherFi.Dialog.Alert" parent="@style/Custom.ThemeOverlay.TetherFi.Dialog.Alert" />
 
 </resources>

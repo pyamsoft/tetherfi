@@ -17,13 +17,13 @@
 <resources>
 
 
-    <style name="Custom.ThemeOverlay.WideFi.Dialog" parent="@style/Base.ThemeOverlay.WideFi.Dialog">
+    <style name="Custom.ThemeOverlay.TetherFi.Dialog" parent="@style/Base.ThemeOverlay.TetherFi.Dialog">
         <item name="dialogCornerRadius">16dp</item>
 
         <item name="android:windowBackground">@drawable/dialog_background</item>
     </style>
 
-    <style name="Custom.ThemeOverlay.WideFi.Dialog.Alert" parent="@style/Base.ThemeOverlay.WideFi.Dialog.Alert">
+    <style name="Custom.ThemeOverlay.TetherFi.Dialog.Alert" parent="@style/Base.ThemeOverlay.TetherFi.Dialog.Alert">
         <item name="dialogCornerRadius">16dp</item>
 
         <item name="android:windowBackground">@drawable/dialog_background</item>
