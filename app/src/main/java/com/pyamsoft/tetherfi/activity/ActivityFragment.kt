@@ -21,7 +21,7 @@ import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.WidefiTheme
+import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
 import javax.inject.Inject
 
@@ -52,7 +52,7 @@ class ActivityFragment : Fragment() {
 
       setContent {
         vm.Render { state ->
-          act.WidefiTheme(themeProvider) {
+          act.TetherFiTheme(themeProvider) {
             CompositionLocalProvider(LocalWindowInsets provides windowInsets) {
               ActivityScreen(
                   modifier = Modifier.fillMaxSize(),

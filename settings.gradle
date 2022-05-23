@@ -1,4 +1,4 @@
-rootProject.name = "Widefi"
+rootProject.name = "TetherFi"
 include ':app'
 include ':server'
 include ':service'

@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.IBinder
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
-import com.pyamsoft.tetherfi.WidefiComponent
+import com.pyamsoft.tetherfi.TetherFiComponent
 import javax.inject.Inject
 
 internal class ProxyService internal constructor() : Service() {
@@ -20,7 +20,7 @@ internal class ProxyService internal constructor() : Service() {
 
   override fun onCreate() {
     super.onCreate()
-    Injector.obtainFromApplication<WidefiComponent>(application).inject(this)
+    Injector.obtainFromApplication<TetherFiComponent>(application).inject(this)
 
     launcher.requireNotNull().start(service = this)
   }

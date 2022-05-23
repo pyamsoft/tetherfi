@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Theme.Widefi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.TetherFi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>

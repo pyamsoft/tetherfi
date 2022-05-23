@@ -24,12 +24,12 @@ import javax.inject.Singleton
 @Component(
     modules =
         [
-            WidefiComponent.Provider::class,
+            TetherFiComponent.Provider::class,
             ServerModule::class,
             ServiceModule::class,
         ],
 )
-internal interface WidefiComponent {
+internal interface TetherFiComponent {
 
   @CheckResult fun plusMain(): MainComponent.Factory
 
@@ -44,7 +44,7 @@ internal interface WidefiComponent {
         @Named("debug") @BindsInstance debug: Boolean,
         @BindsInstance lazyImageLoader: Lazy<ImageLoader>,
         @BindsInstance theming: Theming,
-    ): WidefiComponent
+    ): TetherFiComponent
   }
 
   @Module

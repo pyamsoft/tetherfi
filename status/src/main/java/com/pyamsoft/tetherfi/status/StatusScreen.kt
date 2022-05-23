@@ -36,6 +36,7 @@ fun StatusScreen(
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
+    onOpenBatterySettings: () -> Unit,
 ) {
   val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
@@ -66,6 +67,7 @@ fun StatusScreen(
           onSsidChanged = onSsidChanged,
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
+          onOpenBatterySettings = onOpenBatterySettings,
       )
 
   Scaffold(
@@ -136,6 +138,7 @@ private fun prepareLoadedContent(
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
+    onOpenBatterySettings: () -> Unit,
 ): LazyListScope.() -> Unit {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
@@ -185,6 +188,7 @@ private fun prepareLoadedContent(
   val ip = remember(state.ip) { state.ip.ifBlank { "NO IP ADDRESS" } }
   val port = remember(state.port) { if (state.port <= 0) "NO PORT" else "${state.port}" }
   val bandName = remember(state.band) { state.band?.name ?: "AUTO" }
+  val showInstructions = remember(isEditable) { !isEditable }
 
   return remember(
       ssid,
@@ -214,9 +218,17 @@ private fun prepareLoadedContent(
       }
 
       item {
+        BatteryInstructions(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            show = showInstructions,
+            onOpenBatterySettings = onOpenBatterySettings,
+        )
+      }
+
+      item {
         ConnectionInstructions(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
-            isEditable = isEditable,
+            show = showInstructions,
             ssid = ssid,
             password = password,
             port = port,
@@ -228,21 +240,56 @@ private fun prepareLoadedContent(
 }
 
 @Composable
+private fun BatteryInstructions(
+    modifier: Modifier = Modifier,
+    show: Boolean,
+    onOpenBatterySettings: () -> Unit,
+) {
+  AnimatedVisibility(
+      visible = show,
+      modifier = modifier,
+  ) {
+    Column {
+      Text(
+          text = "How to Improve Performance",
+          style = MaterialTheme.typography.h6,
+      )
+
+      Text(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          text =
+              "You can disable Android Battery Optimizations to ensure that the TetherFi proxy server is running at full performance.",
+          style = MaterialTheme.typography.body1,
+      )
+
+      Button(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+          onClick = onOpenBatterySettings,
+      ) {
+        Text(
+            text = "Open Battery Settings",
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun ConnectionInstructions(
     modifier: Modifier = Modifier,
-    isEditable: Boolean,
+    show: Boolean,
     ssid: String,
     password: String,
     port: String,
     ip: String,
 ) {
   AnimatedVisibility(
-      visible = !isEditable,
+      visible = show,
       modifier = modifier,
   ) {
     Column {
       Text(
-          text = "How to connect",
+          text = "How to Connect",
           style = MaterialTheme.typography.h6,
       )
 

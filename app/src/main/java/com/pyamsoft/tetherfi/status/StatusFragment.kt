@@ -1,7 +1,10 @@
 package com.pyamsoft.tetherfi.status
 
+import android.content.ComponentName
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.insets.LocalWindowInsets
@@ -23,7 +27,8 @@ import com.pyamsoft.pydroid.ui.theme.asThemeProvider
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.WidefiTheme
+import com.pyamsoft.tetherfi.TetherFiTheme
+import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.service.ProxyService
 import javax.inject.Inject
@@ -79,6 +84,13 @@ class StatusFragment : Fragment() {
         )
   }
 
+  private fun handleOpenBatterySettings() {
+    val act = requireActivity()
+    val intent =
+        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, "package:${act.packageName}".toUri())
+    act.startActivity(intent)
+  }
+
   override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
@@ -99,7 +111,7 @@ class StatusFragment : Fragment() {
 
       setContent {
         vm.Render { state ->
-          act.WidefiTheme(themeProvider) {
+          act.TetherFiTheme(themeProvider) {
             CompositionLocalProvider(LocalWindowInsets provides windowInsets) {
               StatusScreen(
                   modifier = Modifier.fillMaxSize(),
@@ -108,6 +120,7 @@ class StatusFragment : Fragment() {
                   onSsidChanged = { handleSsidChanged(it) },
                   onPasswordChanged = { handlePasswordChanged(it) },
                   onPortChanged = { handlePortChanged(it) },
+                  onOpenBatterySettings = { handleOpenBatterySettings() },
               )
             }
           }

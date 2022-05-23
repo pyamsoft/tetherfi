@@ -11,7 +11,7 @@ import com.pyamsoft.pydroid.util.isDebugMode
 private const val PRIVACY_POLICY_URL = ""
 private const val TERMS_CONDITIONS_URL = ""
 
-class Widefi : Application() {
+class TetherFi : Application() {
 
   // Lazy so we ensure only one creation
   private val component by
@@ -32,7 +32,7 @@ class Widefi : Application() {
                 version = BuildConfig.VERSION_CODE,
                 logger = createLogger(),
                 theme = { activity, themeProvider, content ->
-                  activity.WidefiTheme(
+                  activity.TetherFiTheme(
                       themeProvider = themeProvider,
                       content = content,
                   )
@@ -46,8 +46,8 @@ class Widefi : Application() {
   private fun createComponent(
       provider: ModuleProvider,
       lazyImageLoader: Lazy<ImageLoader>,
-  ): WidefiComponent {
-    return DaggerWidefiComponent.factory()
+  ): TetherFiComponent {
+    return DaggerTetherFiComponent.factory()
         .create(
             application = this,
             debug = isDebugMode(),
@@ -64,7 +64,7 @@ class Widefi : Application() {
 
   @CheckResult
   private fun fallbackGetSystemService(name: String): Any? {
-    return if (name == WidefiComponent::class.java.name) component
+    return if (name == TetherFiComponent::class.java.name) component
     else {
       provideModuleDependencies(name) ?: super.getSystemService(name)
     }

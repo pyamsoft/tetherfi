@@ -15,8 +15,8 @@ import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.WidefiComponent
-import com.pyamsoft.tetherfi.WidefiTheme
+import com.pyamsoft.tetherfi.TetherFiComponent
+import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.ActivityMainBinding
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import javax.inject.Inject
@@ -57,7 +57,7 @@ class MainActivity : PYDroidActivity() {
     setContentView(binding.root)
 
     injector =
-        Injector.obtainFromApplication<WidefiComponent>(this)
+        Injector.obtainFromApplication<TetherFiComponent>(this)
             .plusMain()
             .create(
                 activity = this,
@@ -79,7 +79,7 @@ class MainActivity : PYDroidActivity() {
         val theme = state.theme
 
         SystemBars()
-        WidefiTheme(theme) {
+        TetherFiTheme(theme) {
           ProvideWindowInsets {
             Box(
                 contentAlignment = Alignment.TopCenter,

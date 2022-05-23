@@ -21,7 +21,7 @@ import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.ui.util.show
-import com.pyamsoft.tetherfi.WidefiTheme
+import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.DialogSettingsBinding
 import com.pyamsoft.tetherfi.main.MainComponent
 import javax.inject.Inject
@@ -49,7 +49,7 @@ class SettingsDialog : AppCompatDialogFragment() {
     val themeProvider = ThemeProvider { theming.requireNotNull().isDarkTheme(act) }
 
     binding.dialogComposeTop.setContent {
-      act.WidefiTheme(themeProvider) {
+      act.TetherFiTheme(themeProvider) {
         SettingsToolbar(
             modifier = Modifier.fillMaxWidth().onSizeChanged { vm.handleTopBarHeight(it.height) },
             onClose = { dismiss() },

@@ -72,18 +72,18 @@ private fun themeShapes(): Shapes {
 }
 
 @Composable
-fun Activity.WidefiTheme(
+fun Activity.TetherFiTheme(
     themeProvider: ThemeProvider,
     content: @Composable () -> Unit,
 ) {
-  this.WidefiTheme(
+  this.TetherFiTheme(
       theme = if (themeProvider.isDarkTheme()) Theming.Mode.DARK else Theming.Mode.LIGHT,
       content = content,
   )
 }
 
 @Composable
-fun Activity.WidefiTheme(
+fun Activity.TetherFiTheme(
     theme: Theming.Mode,
     content: @Composable () -> Unit,
 ) {
