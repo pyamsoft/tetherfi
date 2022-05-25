@@ -493,11 +493,11 @@ private fun BatteryInstructions(
               Icon(
                   modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
                   imageVector = Icons.Filled.CheckCircle,
-                  contentDescription = "Battery Optimizations Ignored",
+                  contentDescription = "Battery Optimizations Disabled",
                   tint = Color.Green,
               )
               Text(
-                  text = "Battery Optimizations Ignored.",
+                  text = "Battery Optimizations Disabled",
                   style = MaterialTheme.typography.body1,
               )
             }

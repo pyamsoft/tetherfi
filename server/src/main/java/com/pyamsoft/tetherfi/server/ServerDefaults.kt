@@ -12,7 +12,7 @@ object ServerDefaults {
   @JvmStatic
   @CheckResult
   fun asSsid(ssid: String): String {
-    return "DIRECT-WF-${ssid}"
+    return "DIRECT-TF-${ssid}"
   }
 
   @CheckResult
