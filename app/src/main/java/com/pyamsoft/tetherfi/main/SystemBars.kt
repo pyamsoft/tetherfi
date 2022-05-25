@@ -27,7 +27,7 @@ internal fun SystemBars() {
   SideEffect {
     controller.setSystemBarsColor(
         color = Color.Transparent,
-        darkIcons = false,
+        darkIcons = true,
         isNavigationBarContrastEnforced = false,
     )
   }

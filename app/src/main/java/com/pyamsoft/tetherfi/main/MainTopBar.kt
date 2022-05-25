@@ -53,7 +53,7 @@ internal fun MainTopBar(
       elevation = ZeroElevation,
   ) {
     Surface(
-        contentColor = Color.White,
+        contentColor = MaterialTheme.colors.onPrimary,
         color = MaterialTheme.colors.primary,
         shape =
             MaterialTheme.shapes.medium.copy(
