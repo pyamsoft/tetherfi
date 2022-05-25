@@ -7,9 +7,8 @@ import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
 import com.pyamsoft.pydroid.ui.ModuleProvider
 import com.pyamsoft.pydroid.ui.PYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
-
-private const val PRIVACY_POLICY_URL = ""
-private const val TERMS_CONDITIONS_URL = ""
+import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
+import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
 
 class TetherFi : Application() {
 
