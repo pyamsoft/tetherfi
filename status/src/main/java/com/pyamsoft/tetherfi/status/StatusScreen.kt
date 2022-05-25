@@ -189,14 +189,14 @@ private fun PermissionExplanationDialog(
         text = {
           Column {
             Text(
-                text = "$appName needs LOCATION permission to create a Wi-Fi Group",
+                text = "$appName needs PRECISE LOCATION permission to create a Wi-Fi Group",
                 style = MaterialTheme.typography.body1,
             )
 
             Text(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.content),
                 text =
-                    "$appName will not use your LOCATION for anything else but Wi-Fi Group creation.",
+                    "$appName will not use your location for anything else but Wi-Fi Group creation.",
                 style = MaterialTheme.typography.body1,
             )
 
