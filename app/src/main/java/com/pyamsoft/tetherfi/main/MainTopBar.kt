@@ -12,6 +12,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.statusBarsHeight
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
@@ -89,6 +92,13 @@ internal fun MainTopBar(
             modifier = modifier,
             backgroundColor = Color.Transparent,
             selectedTabIndex = index,
+            indicator = { tabPositions ->
+              TabRowDefaults.Indicator(
+                  modifier = Modifier.tabIndicatorOffset(tabPositions[index]),
+                  height = 4.dp,
+                  color = MaterialTheme.colors.secondary,
+              )
+            },
         ) {
           tabs.forEach { tab ->
             ScreenTab(
