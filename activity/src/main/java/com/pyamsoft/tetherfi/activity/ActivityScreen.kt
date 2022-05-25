@@ -11,6 +11,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.event.ProxyEventItem
 
@@ -18,6 +19,7 @@ import com.pyamsoft.tetherfi.ui.event.ProxyEventItem
 fun ActivityScreen(
     modifier: Modifier = Modifier,
     state: ActivityViewState,
+    imageLoader: ImageLoader,
 ) {
   val events = state.events
 
@@ -35,15 +37,28 @@ fun ActivityScreen(
           style = MaterialTheme.typography.h5,
       )
 
-      LazyColumn {
-        items(
-            items = events,
-            key = { it.host },
-        ) { event ->
-          ProxyEventItem(
-              modifier = Modifier.padding(bottom = 8.dp),
-              event = event,
-          )
+      if (events.isEmpty()) {
+        EmptyActivityScreen(
+            imageLoader = imageLoader,
+            bottomContent = {
+              Text(
+                  modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+                  text = "No activity yet, connect a device!",
+                  style = MaterialTheme.typography.h6,
+              )
+            },
+        )
+      } else {
+        LazyColumn {
+          items(
+              items = events,
+              key = { it.host },
+          ) { event ->
+            ProxyEventItem(
+                modifier = Modifier.padding(bottom = 8.dp),
+                event = event,
+            )
+          }
         }
       }
     }

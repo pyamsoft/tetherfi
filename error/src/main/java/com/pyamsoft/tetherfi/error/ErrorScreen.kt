@@ -11,6 +11,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.event.ProxyEventItem
 
@@ -18,6 +19,7 @@ import com.pyamsoft.tetherfi.ui.event.ProxyEventItem
 fun ErrorScreen(
     modifier: Modifier = Modifier,
     state: ErrorViewState,
+    imageLoader: ImageLoader,
 ) {
   val events = state.events
 
@@ -35,16 +37,29 @@ fun ErrorScreen(
           style = MaterialTheme.typography.h5,
       )
 
-      LazyColumn {
-        items(
-            items = events,
-            key = { it.host },
-        ) { event ->
-          ProxyEventItem(
-              modifier = Modifier.padding(bottom = 8.dp),
-              event = event,
-              color = MaterialTheme.colors.error,
-          )
+      if (events.isEmpty()) {
+        EmptyErrorsScreen(
+            imageLoader = imageLoader,
+            bottomContent = {
+              Text(
+                  modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+                  text = "No errors, everything looks good!",
+                  style = MaterialTheme.typography.h6,
+              )
+            },
+        )
+      } else {
+        LazyColumn {
+          items(
+              items = events,
+              key = { it.host },
+          ) { event ->
+            ProxyEventItem(
+                modifier = Modifier.padding(bottom = 8.dp),
+                event = event,
+                color = MaterialTheme.colors.error,
+            )
+          }
         }
       }
     }
