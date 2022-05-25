@@ -48,10 +48,6 @@ class StatusFragment : Fragment() {
             scope = viewLifecycleOwner.lifecycleScope,
             onStart = { ProxyService.start(ctx) },
             onStop = { ProxyService.stop(ctx) },
-            onRequestPermissions = { permissions ->
-              Timber.d("Requesting permission for WiDi network: $permissions")
-              permissionCallback.requireNotNull().launch(permissions.toTypedArray())
-            },
         )
   }
 
@@ -82,21 +78,43 @@ class StatusFragment : Fragment() {
         )
   }
 
-  private fun handleOpenBatterySettings() {
+  private fun safeOpenSettingsIntent(action: String) {
     val act = requireActivity()
 
     // Try specific first, may fail on some devices
     try {
-      val intent =
-          Intent(
-              Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
-              "package:${act.packageName}".toUri())
+      val intent = Intent(action, "package:${act.packageName}".toUri())
       act.startActivity(intent)
     } catch (e: Throwable) {
-      Timber.e(e, "Failed specific intent for Battery Optimization, try general")
-      val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+      Timber.e(e, "Failed specific intent for $action")
+      val intent = Intent(action)
       act.startActivity(intent)
     }
+  }
+
+  private fun handleOpenBatterySettings() {
+    safeOpenSettingsIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+  }
+
+  private fun handleRequestPermissions() {
+    viewModel.requireNotNull().also { vm ->
+      // Close dialog
+      vm.handlePermissionsExplained()
+
+      // Request permissions
+      vm.handleRequestPermissions { permissions ->
+        Timber.d("Requesting permission for WiDi network: $permissions")
+        permissionCallback.requireNotNull().launch(permissions.toTypedArray())
+      }
+    }
+  }
+
+  private fun handleOpenApplicationSettings() {
+    // Close dialog
+    viewModel.requireNotNull().handlePermissionsExplained()
+
+    // Open settings
+    safeOpenSettingsIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
   }
 
   override fun onCreateView(
@@ -131,6 +149,9 @@ class StatusFragment : Fragment() {
                   onPasswordChanged = { handlePasswordChanged(it) },
                   onPortChanged = { handlePortChanged(it) },
                   onOpenBatterySettings = { handleOpenBatterySettings() },
+                  onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
+                  onRequestPermissions = { handleRequestPermissions() },
+                  onOpenPermissionSettings = { handleOpenApplicationSettings() },
               )
             }
           }
@@ -164,6 +185,8 @@ class StatusFragment : Fragment() {
           if (hasPermission) {
             Timber.d("All permissions are granted, toggle proxy again!")
             handleToggleProxy()
+          } else {
+            Timber.w("Permissions not granted, cannot toggle proxy")
           }
         }
   }

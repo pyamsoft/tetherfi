@@ -27,10 +27,9 @@ internal constructor(
   private fun toggleProxyState(
       onStart: () -> Unit,
       onStop: () -> Unit,
-      onRequestPermissions: (List<String>) -> Unit,
   ) {
     if (!permissions.canCreateWiDiNetwork()) {
-      onRequestPermissions(permissions.requiredPermissions())
+      state.explainPermissions = true
       return
     }
 
@@ -78,6 +77,10 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) { state.group = network.getGroupInfo() }
   }
 
+  fun handlePermissionsExplained() {
+    state.explainPermissions = false
+  }
+
   fun watchStatusUpdates(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       network.onProxyStatusChanged { state.proxyStatus = it }
@@ -104,9 +107,7 @@ internal constructor(
           is WidiNetworkEvent.WifiDisabled -> {
             Timber.d("Wifi P2P Disabled, refresh group info")
             refreshGroupInfo(scope = scope)
-            network.stop {
-              Timber.d("Proxy stopped after WiFi P2P disabled")
-            }
+            network.stop { Timber.d("Proxy stopped after WiFi P2P disabled") }
           }
           is WidiNetworkEvent.WifiEnabled -> {
             Timber.d("Wifi P2P Enabled, refresh group info")
@@ -125,14 +126,16 @@ internal constructor(
       scope: CoroutineScope,
       onStart: () -> Unit,
       onStop: () -> Unit,
-      onRequestPermissions: (List<String>) -> Unit,
   ) {
     toggleProxyState(
         onStart = onStart,
         onStop = onStop,
-        onRequestPermissions = onRequestPermissions,
     )
     refreshGroupInfo(scope = scope)
+  }
+
+  fun handleRequestPermissions(onRequest: (List<String>) -> Unit) {
+    onRequest(permissions.requiredPermissions())
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
