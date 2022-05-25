@@ -28,17 +28,21 @@ internal constructor(
       onStart: () -> Unit,
       onStop: () -> Unit,
   ) {
-    if (!permissions.canCreateWiDiNetwork()) {
-      state.explainPermissions = true
+    val s = state
+    val requiresPermissions = !permissions.canCreateWiDiNetwork()
+
+    s.requiresPermissions = requiresPermissions
+    if (requiresPermissions) {
+      s.explainPermissions = true
       return
     }
 
-    when (val s = network.getCurrentStatus()) {
+    when (val status = network.getCurrentStatus()) {
       is RunningStatus.NotRunning -> network.start(onStart)
       is RunningStatus.Running -> network.stop(onStop)
       is RunningStatus.Error -> network.stop(onStop)
       else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $s")
+        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
   }

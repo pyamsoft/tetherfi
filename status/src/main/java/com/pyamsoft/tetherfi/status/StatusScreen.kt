@@ -134,7 +134,6 @@ fun StatusScreen(
                 .padding(horizontal = MaterialTheme.keylines.content),
         ) {
           DisplayStatus(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
               title = "Tethering Network Status:",
               status = wiDiStatus,
           )
@@ -207,6 +206,9 @@ private fun PermissionExplanationDialog(
         },
         buttons = {
           Row(
+              modifier =
+                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                      .padding(bottom = MaterialTheme.keylines.baseline),
               verticalAlignment = Alignment.CenterVertically,
           ) {
             TextButton(
@@ -345,6 +347,7 @@ private fun prepareLoadedContent(
         }
       }
 
+  val showPermissionMessage = state.requiresPermissions
   val showErrorHintMessage = remember(state.wiDiStatus) { state.wiDiStatus is RunningStatus.Error }
 
   val group = state.group
@@ -389,6 +392,8 @@ private fun prepareLoadedContent(
   val showInstructions = remember(isEditable) { !isEditable }
 
   return remember(
+      appName,
+      showPermissionMessage,
       showErrorHintMessage,
       ssid,
       password,
@@ -405,6 +410,8 @@ private fun prepareLoadedContent(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             isEditable = isEditable,
             canUseCustomConfig = canUseCustomConfig,
+            appName = appName,
+            showPermissionMessage = showPermissionMessage,
             showErrorHintMessage = showErrorHintMessage,
             ssid = ssid,
             password = password,
@@ -652,6 +659,8 @@ private fun ConnectionInstructions(
 private fun NetworkInformation(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
+    appName: String,
+    showPermissionMessage: Boolean,
     showErrorHintMessage: Boolean,
     canUseCustomConfig: Boolean,
     ssid: String,
@@ -672,13 +681,33 @@ private fun NetworkInformation(
       AnimatedVisibility(
           visible = showErrorHintMessage,
       ) {
-        Text(
-            text = "Try toggling this device's Wi-Fi off and on, then try again.",
-            style =
-                MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.error,
-                ),
-        )
+        Box(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+        ) {
+          Text(
+              text = "Try toggling this device's Wi-Fi off and on, then try again.",
+              style =
+                  MaterialTheme.typography.body1.copy(
+                      color = MaterialTheme.colors.error,
+                  ),
+          )
+        }
+      }
+
+      AnimatedVisibility(
+          visible = showPermissionMessage,
+      ) {
+        Box(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+        ) {
+          Text(
+              text = "$appName requires permissions: Click the button and grant permissions",
+              style =
+                  MaterialTheme.typography.caption.copy(
+                      color = MaterialTheme.colors.error,
+                  ),
+          )
+        }
       }
 
       if (editable) {

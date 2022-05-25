@@ -24,6 +24,7 @@ interface StatusViewState : UiViewState {
   val ip: String
   val port: Int
 
+  val requiresPermissions: Boolean
   val explainPermissions: Boolean
   val isBatteryOptimizationsIgnored: Boolean
 }
@@ -41,6 +42,7 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
   override var ip by mutableStateOf("")
   override var port by mutableStateOf(0)
 
+  override var requiresPermissions by mutableStateOf(false)
   override var explainPermissions by mutableStateOf(false)
   override var isBatteryOptimizationsIgnored by mutableStateOf(false)
 }
