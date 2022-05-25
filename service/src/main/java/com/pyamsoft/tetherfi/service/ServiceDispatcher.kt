@@ -91,6 +91,7 @@ internal constructor(
         .setSilent(true)
         .setContentIntent(getActivityPendingIntent())
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
+        .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
   }
 
   override fun build(
