@@ -20,7 +20,7 @@ fun SettingsToolbar(
   Surface(
       modifier = modifier,
       elevation = AppBarDefaults.TopAppBarElevation,
-      contentColor = Color.White,
+      contentColor = MaterialTheme.colors.onPrimary,
       color = MaterialTheme.colors.primary,
       shape =
           MaterialTheme.shapes.medium.copy(
