@@ -20,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import com.google.accompanist.insets.statusBarsHeight
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
+import com.pyamsoft.tetherfi.R
 
 @JvmOverloads
 @Composable
@@ -70,7 +72,7 @@ internal fun MainTopBar(
             contentColor = LocalContentColor.current,
             title = {
               Text(
-                  text = "TetherFi",
+                  text = stringResource(R.string.app_name),
               )
             },
             actions = {

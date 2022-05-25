@@ -102,11 +102,14 @@ internal constructor(
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.WifiDisabled -> {
-            Timber.d("Wifi Disabled, refresh group info")
+            Timber.d("Wifi P2P Disabled, refresh group info")
             refreshGroupInfo(scope = scope)
+            network.stop {
+              Timber.d("Proxy stopped after WiFi P2P disabled")
+            }
           }
           is WidiNetworkEvent.WifiEnabled -> {
-            Timber.d("Wifi Enabled, refresh group info")
+            Timber.d("Wifi P2P Enabled, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.DiscoveryChanged -> {

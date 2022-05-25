@@ -10,6 +10,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +24,7 @@ internal class WifiDirectReceiver
 @Inject
 internal constructor(
     private val context: Context,
+    private val shutdownBus: EventBus<OnShutdownEvent>,
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
 ) : BroadcastReceiver(), WiDiReceiver {
 
@@ -58,6 +60,7 @@ internal constructor(
       WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
         Timber.d("Wifi P2P Disabled")
         eventBus.send(WidiNetworkEvent.WifiDisabled)
+        shutdownBus.send(OnShutdownEvent)
       }
       else -> Timber.w("Unknown Wifi p2p state: $p2pState")
     }

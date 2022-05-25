@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.insets.LocalWindowInsets
@@ -83,8 +84,19 @@ class StatusFragment : Fragment() {
 
   private fun handleOpenBatterySettings() {
     val act = requireActivity()
-    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-    act.startActivity(intent)
+
+    // Try specific first, may fail on some devices
+    try {
+      val intent =
+          Intent(
+              Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
+              "package:${act.packageName}".toUri())
+      act.startActivity(intent)
+    } catch (e: Throwable) {
+      Timber.e(e, "Failed specific intent for Battery Optimization, try general")
+      val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+      act.startActivity(intent)
+    }
   }
 
   override fun onCreateView(
@@ -96,6 +108,7 @@ class StatusFragment : Fragment() {
     Injector.obtainFromActivity<MainComponent>(act).plusStatus().create().inject(this)
 
     val vm = viewModel.requireNotNull()
+    val appName = act.getString(R.string.app_name)
 
     val themeProvider = act.asThemeProvider(theming.requireNotNull())
     return ComposeView(act).apply {
@@ -112,6 +125,7 @@ class StatusFragment : Fragment() {
               StatusScreen(
                   modifier = Modifier.fillMaxSize(),
                   state = state,
+                  appName = appName,
                   onToggle = { handleToggleProxy() },
                   onSsidChanged = { handleSsidChanged(it) },
                   onPasswordChanged = { handlePasswordChanged(it) },

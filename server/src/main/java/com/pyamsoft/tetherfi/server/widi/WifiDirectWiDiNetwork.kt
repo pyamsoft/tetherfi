@@ -154,7 +154,7 @@ internal constructor(
       }
 
   @CheckResult
-  private suspend fun removeGroup(channel: WifiP2pManager.Channel): RunningStatus =
+  private suspend fun removeGroup(channel: WifiP2pManager.Channel): Unit =
       withContext(context = Dispatchers.Main) {
         Timber.d("Stop existing network")
 
@@ -165,13 +165,16 @@ internal constructor(
                 override fun onSuccess() {
                   Timber.d("Wifi P2P Channel is removed")
                   closeSilent(channel)
-                  cont.resume(RunningStatus.NotRunning)
+                  cont.resume(Unit)
                 }
 
                 override fun onFailure(reason: Int) {
                   val msg = "Failed to stop network: ${reasonToString(reason)}"
                   Timber.w(msg)
-                  cont.resume(RunningStatus.Error(msg))
+
+                  Timber.d("Close Group failed but continue teardown anyway")
+                  closeSilent(channel)
+                  cont.resume(Unit)
                 }
               },
           )
@@ -235,22 +238,22 @@ internal constructor(
     Timber.d("Shutting down wifi network")
     status.set(RunningStatus.Stopping)
 
-    val runningStatus = removeGroup(channel)
-    if (runningStatus == RunningStatus.NotRunning) {
-      mutex.withLock {
-        Timber.d("Clear wifi channel")
-        wifiChannel = null
+    // This may fail if WiFi is off, but thats fine since if WiFi is off, the system has already
+    // cleaned us up.
+    removeGroup(channel)
 
-        Timber.d("Unregister wifi receiver")
-        receiver.unregister()
-      }
-      Timber.d("Stop proxy when wifi network removed")
-      proxy.stop()
-    } else {
-      Timber.w("Group failed removal, stop proxy anyway")
-      proxy.stop()
+    mutex.withLock {
+      Timber.d("Clear wifi channel")
+      wifiChannel = null
+
+      Timber.d("Unregister wifi receiver")
+      receiver.unregister()
     }
-    status.set(runningStatus)
+
+    Timber.d("Stop proxy when wifi network removed")
+    proxy.stop()
+
+    status.set(RunningStatus.NotRunning)
     onStop()
   }
 
@@ -259,13 +262,10 @@ internal constructor(
   private suspend fun resolveCurrentGroup(channel: WifiP2pManager.Channel): WiDiNetwork.GroupInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
-          Timber.d("Get current group info")
-
           wifiP2PManager.requestGroupInfo(
               channel,
           ) { group ->
             if (group == null) {
-              Timber.w("Group info was null from P2PManager")
               cont.resume(null)
             } else {
               cont.resume(
@@ -289,7 +289,6 @@ internal constructor(
               channel,
           ) { conn ->
             if (conn == null) {
-              Timber.w("Connection Info info was null from P2PManager")
               cont.resume(null)
             } else {
               cont.resume(
@@ -342,6 +341,7 @@ internal constructor(
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
+      Timber.d("Starting Wi-Fi Direct Network...")
       try {
         stopNetwork()
         startNetwork(onStart)
@@ -356,6 +356,7 @@ internal constructor(
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
+      Timber.d("Stopping Wi-Fi Direct Network...")
       try {
         stopNetwork(onStop)
       } catch (e: Throwable) {

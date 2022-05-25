@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.status
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -22,12 +24,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -35,6 +40,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 @Composable
 fun StatusScreen(
     modifier: Modifier = Modifier,
+    appName: String,
     state: StatusViewState,
     onToggle: () -> Unit,
     onSsidChanged: (String) -> Unit,
@@ -42,7 +48,6 @@ fun StatusScreen(
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
 ) {
-  val proxyStatus = state.proxyStatus
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
 
@@ -56,10 +61,10 @@ fun StatusScreen(
   val buttonText =
       remember(wiDiStatus) {
         when (wiDiStatus) {
-          is RunningStatus.Error -> "TetherFi Error"
-          is RunningStatus.NotRunning -> "Turn TetherFi ON"
-          is RunningStatus.Running -> "Turn TetherFi OFF"
-          else -> "TetherFi is thinking..."
+          is RunningStatus.Error -> "$appName Error"
+          is RunningStatus.NotRunning -> "Turn $appName ON"
+          is RunningStatus.Running -> "Turn $appName OFF"
+          else -> "$appName is thinking..."
         }
       }
 
@@ -67,6 +72,7 @@ fun StatusScreen(
 
   val loadedContent =
       prepareLoadedContent(
+          appName = appName,
           state = state,
           onSsidChanged = onSsidChanged,
           onPasswordChanged = onPasswordChanged,
@@ -105,13 +111,8 @@ fun StatusScreen(
         ) {
           DisplayStatus(
               modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              title = "WiFi Network Status:",
+              title = "Tethering Network Status:",
               status = wiDiStatus,
-          )
-
-          DisplayStatus(
-              title = "Proxy Status:",
-              status = proxyStatus,
           )
         }
       }
@@ -138,6 +139,7 @@ fun StatusScreen(
 @Composable
 @CheckResult
 private fun prepareLoadedContent(
+    appName: String,
     state: StatusViewState,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -152,6 +154,8 @@ private fun prepareLoadedContent(
           else -> true
         }
       }
+
+  val showErrorHintMessage = remember(state.wiDiStatus) { state.wiDiStatus is RunningStatus.Error }
 
   val group = state.group
   val ssid =
@@ -195,6 +199,7 @@ private fun prepareLoadedContent(
   val showInstructions = remember(isEditable) { !isEditable }
 
   return remember(
+      showErrorHintMessage,
       ssid,
       password,
       port,
@@ -210,6 +215,7 @@ private fun prepareLoadedContent(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             isEditable = isEditable,
             canUseCustomConfig = canUseCustomConfig,
+            showErrorHintMessage = showErrorHintMessage,
             ssid = ssid,
             password = password,
             port = port,
@@ -225,6 +231,7 @@ private fun prepareLoadedContent(
         BatteryInstructions(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             show = showInstructions,
+            appName = appName,
             state = state,
             onOpenBatterySettings = onOpenBatterySettings,
         )
@@ -247,53 +254,73 @@ private fun prepareLoadedContent(
 @Composable
 private fun BatteryInstructions(
     modifier: Modifier = Modifier,
+    appName: String,
     show: Boolean,
     state: StatusViewState,
     onOpenBatterySettings: () -> Unit,
 ) {
   val isIgnored = state.isBatteryOptimizationsIgnored
 
+  val (showing, setShowing) = rememberSaveable { mutableStateOf(false) }
+
   AnimatedVisibility(
       visible = show,
       modifier = modifier,
   ) {
     Column {
-      Text(
-          text = "How to Improve Performance",
-          style = MaterialTheme.typography.h6,
-      )
+      OutlinedButton(
+          onClick = { setShowing(!showing) },
+      ) {
+        Text(
+            text = "How to Improve Performance",
+            style = MaterialTheme.typography.h6,
+        )
+      }
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text =
-              "You can disable Android Battery Optimizations to ensure that the TetherFi proxy server is running at full performance.",
-          style = MaterialTheme.typography.body1,
-      )
-
-      if (isIgnored) {
-        Row(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Icon(
-              modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
-              imageVector = Icons.Filled.CheckCircle,
-              contentDescription = "Battery Optimizations Ignored",
-              tint = Color.Green,
-          )
+      AnimatedVisibility(
+          visible = showing,
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.baseline)
+                  .border(
+                      width = 1.dp,
+                      color = MaterialTheme.colors.onBackground,
+                      shape = MaterialTheme.shapes.medium,
+                  )
+                  .padding(all = MaterialTheme.keylines.content),
+      ) {
+        Column {
           Text(
-              text = "Battery Optimizations Ignored.",
+              text =
+                  "You can disable Android Battery Optimizations to ensure that the $appName proxy server is running at full performance.",
               style = MaterialTheme.typography.body1,
           )
-        }
-      } else {
-        Button(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-            onClick = onOpenBatterySettings,
-        ) {
-          Text(
-              text = "Open Battery Settings",
-          )
+
+          if (isIgnored) {
+            Row(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+              Icon(
+                  modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
+                  imageVector = Icons.Filled.CheckCircle,
+                  contentDescription = "Battery Optimizations Ignored",
+                  tint = Color.Green,
+              )
+              Text(
+                  text = "Battery Optimizations Ignored.",
+                  style = MaterialTheme.typography.body1,
+              )
+            }
+          } else {
+            Button(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                onClick = onOpenBatterySettings,
+            ) {
+              Text(
+                  text = "Open Battery Settings",
+              )
+            }
+          }
         }
       }
     }
@@ -309,65 +336,124 @@ private fun ConnectionInstructions(
     port: String,
     ip: String,
 ) {
+  val (showing, setShowing) = rememberSaveable { mutableStateOf(false) }
+
   AnimatedVisibility(
       visible = show,
       modifier = modifier,
   ) {
     Column {
-      Text(
-          text = "How to Connect",
-          style = MaterialTheme.typography.h6,
-      )
+      OutlinedButton(
+          onClick = { setShowing(!showing) },
+      ) {
+        Text(
+            text = "How to Connect",
+            style = MaterialTheme.typography.h6,
+        )
+      }
+      AnimatedVisibility(
+          visible = showing,
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.baseline)
+                  .border(
+                      width = 1.dp,
+                      color = MaterialTheme.colors.onBackground,
+                      shape = MaterialTheme.shapes.medium,
+                  )
+                  .padding(all = MaterialTheme.keylines.content),
+      ) {
+        Column {
+          Text(
+              text =
+                  "First, make sure this device (Device 1) has an active connection to the Internet. You will be sharing this device's connection, so if this device cannot access the Internet, nothing can.",
+              style = MaterialTheme.typography.body1,
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text =
-              "First, make sure this device (Device 1) has an active connection to the Internet. You will be sharing this device's connection, so if this device cannot access the Internet, nothing can.",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+              text =
+                  "On the device you want to connect (Device 2) to the Internet, go to the Wi-Fi settings.",
+              style = MaterialTheme.typography.body1,
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text =
-              "Then, on the device you want to connect (Device 2) to the Internet, go to the Wi-Fi settings. In the Wi-Fi network settings, connect to the network labeled: \"${ssid}\"",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
+              text = "This may be in a different place depending on your device.",
+              style = MaterialTheme.typography.caption,
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text = "Connect to the \"${ssid}\" network using the password: \"${password}\"",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+              text = "Connect Device 2 to the network:",
+              style =
+                  MaterialTheme.typography.body2.copy(
+                      fontWeight = FontWeight.Bold,
+                  ),
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text =
-              "Once you are connected to the network, you will need to go to the Proxy settings (Device 2), and set the following proxy information as an HTTP and HTTPS proxy.",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              text = "Name: $ssid",
+              style = MaterialTheme.typography.body1,
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text = "Proxy URL/Hostname: $ip",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              text = "Password: $password",
+              style = MaterialTheme.typography.body1,
+          )
 
-      Text(
-          text = "Proxy Port: $port",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+              text =
+                  "You may get a message that Device 2 does not have Internet, but is connected to a network. You will need to now go to the Proxy Network settings page for Device 2.",
+              style = MaterialTheme.typography.body1,
+          )
 
-      Text(
-          text = "Leave blank any Proxy username or password or authentication information.",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
+              text = "This may be in a different place depending on your device.",
+              style = MaterialTheme.typography.caption,
+          )
 
-      Text(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          text =
-              "Once the network is connected and the proxy information has been set, you should be able to access the Internet on Device 2! You may need to setup Proxy settings for individual applications on Device 2, as every application is different.",
-          style = MaterialTheme.typography.body1,
-      )
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+              text = "Set Proxy Network for Device 2:",
+              style =
+                  MaterialTheme.typography.body2.copy(
+                      fontWeight = FontWeight.Bold,
+                  ),
+          )
+
+          Text(
+              text = "Proxy URL/Hostname: $ip",
+              style = MaterialTheme.typography.body1,
+          )
+
+          Text(
+              text = "Proxy Port: $port",
+              style = MaterialTheme.typography.body1,
+          )
+
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
+              text = "Leave everything else blank!",
+              style = MaterialTheme.typography.caption,
+          )
+
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+              text =
+                  "Turn the Wi-Fi off on Device 2, and then back on again. It should automatically connect to the network shared by Device 1",
+              style = MaterialTheme.typography.body1,
+          )
+
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+              text =
+                  "You should now have an Internet connection on Device 2! You can go to the Activity or Error screens in this application to see any information about your network connections.",
+              style = MaterialTheme.typography.body1,
+          )
+        }
+      }
     }
   }
 }
@@ -376,6 +462,7 @@ private fun ConnectionInstructions(
 private fun NetworkInformation(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
+    showErrorHintMessage: Boolean,
     canUseCustomConfig: Boolean,
     ssid: String,
     password: String,
@@ -392,11 +479,23 @@ private fun NetworkInformation(
       targetState = isEditable,
   ) { editable ->
     Column {
+      AnimatedVisibility(
+          visible = showErrorHintMessage,
+      ) {
+        Text(
+            text = "Try toggling this device's Wi-Fi off and on, then try again.",
+            style =
+                MaterialTheme.typography.body1.copy(
+                    color = MaterialTheme.colors.error,
+                ),
+        )
+      }
+
       if (editable) {
         Editor(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
-            title = "SSID",
+            title = "NAME",
             value = ssid,
             onChange = onSsidChanged,
         )
@@ -426,7 +525,7 @@ private fun NetworkInformation(
       } else {
         Item(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            title = "SSID",
+            title = "NAME",
             value = ssid,
         )
 
@@ -501,10 +600,11 @@ private fun DisplayStatus(
         }
       }
 
+  val errorColor = MaterialTheme.colors.error
   val color =
-      remember(status) {
+      remember(status, errorColor) {
         when (status) {
-          is RunningStatus.Error -> Color.Red
+          is RunningStatus.Error -> errorColor
           is RunningStatus.NotRunning -> Color.Unspecified
           is RunningStatus.Running -> Color.Green
           is RunningStatus.Starting -> Color.Cyan
