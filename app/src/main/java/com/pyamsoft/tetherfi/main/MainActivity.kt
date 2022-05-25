@@ -30,7 +30,7 @@ class MainActivity : PYDroidActivity() {
   private var viewBinding: ActivityMainBinding? = null
   private var injector: MainComponent? = null
 
-  override val applicationIcon = R.mipmap.ic_launcher_round
+  override val applicationIcon = R.mipmap.ic_launcher
 
   override val changelog = buildChangeLog {
     feature("Initial Release!")
