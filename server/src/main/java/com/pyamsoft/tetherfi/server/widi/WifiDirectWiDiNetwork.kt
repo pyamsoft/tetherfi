@@ -169,8 +169,7 @@ internal constructor(
                 }
 
                 override fun onFailure(reason: Int) {
-                  val msg = "Failed to stop network: ${reasonToString(reason)}"
-                  Timber.w(msg)
+                  Timber.w("Failed to stop network: ${reasonToString(reason)}")
 
                   Timber.d("Close Group failed but continue teardown anyway")
                   closeSilent(channel)
@@ -206,10 +205,10 @@ internal constructor(
           mutex.withLock {
             Timber.d("Store WiFi channel")
             wifiChannel = channel
-
-            Timber.d("Register wifi receiver")
-            receiver.register()
           }
+
+          Timber.d("Register wifi receiver")
+          receiver.register()
 
           Timber.d("Network started, start proxy")
           proxy.start()
@@ -217,12 +216,21 @@ internal constructor(
           onStart()
         } else {
           Timber.w("Group failed creation, stop proxy")
-          proxy.stop()
-          Timber.d("Proxy stopped!")
+          completeStop { Timber.d("Stopped proxy because group failed creation") }
         }
 
         status.set(runningStatus)
       }
+
+  private suspend fun completeStop(onStop: () -> Unit) {
+    Timber.d("Unregister wifi receiver")
+    receiver.unregister()
+
+    Timber.d("Stop proxy when wifi network removed")
+    proxy.stop()
+
+    onStop()
+  }
 
   private suspend fun stopNetwork(onStop: () -> Unit = {}) {
     Enforcer.assertOffMainThread()
@@ -230,8 +238,10 @@ internal constructor(
     val channel = getChannel()
 
     if (channel == null) {
-      status.set(RunningStatus.NotRunning)
-      onStop()
+      completeStop {
+        status.set(RunningStatus.NotRunning)
+        onStop()
+      }
       return
     }
 
@@ -245,16 +255,12 @@ internal constructor(
     mutex.withLock {
       Timber.d("Clear wifi channel")
       wifiChannel = null
-
-      Timber.d("Unregister wifi receiver")
-      receiver.unregister()
     }
 
-    Timber.d("Stop proxy when wifi network removed")
-    proxy.stop()
-
-    status.set(RunningStatus.NotRunning)
-    onStop()
+    completeStop {
+      status.set(RunningStatus.NotRunning)
+      onStop()
+    }
   }
 
   @CheckResult
