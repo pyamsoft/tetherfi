@@ -99,14 +99,14 @@ internal constructor(
                   }
               is MainView.Status ->
                   when (oldPage) {
-                    is MainView.Activity, is MainView.Errors ->
-                        R.anim.slide_in_left to R.anim.slide_out_right
+                    is MainView.Activity,
+                    is MainView.Errors -> R.anim.slide_in_left to R.anim.slide_out_right
                     is MainView.Status -> null
                   }
               is MainView.Errors ->
                   when (oldPage) {
-                    is MainView.Status, is MainView.Activity ->
-                        R.anim.slide_in_right to R.anim.slide_out_left
+                    is MainView.Status,
+                    is MainView.Activity -> R.anim.slide_in_right to R.anim.slide_out_left
                     is MainView.Errors -> null
                   }
             }

@@ -15,7 +15,8 @@ internal constructor(
     @ServiceInternalApi private val notifier: Notifier,
 ) : NotificationLauncher {
   override fun start(service: Service) {
-    notifier.startForeground(
+    notifier
+        .startForeground(
             service = service,
             id = NOTIFICATION_ID,
             channelInfo = CHANNEL_INFO,

@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.server.widi
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.Server
-import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 

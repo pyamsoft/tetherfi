@@ -137,8 +137,7 @@ private fun onTextClicked(
     start: Int,
 ) {
   val url =
-      illustration
-          .text
+      illustration.text
           .getStringAnnotations(
               tag = EMPTY_ATTRIBUTION_TAG,
               start = start,

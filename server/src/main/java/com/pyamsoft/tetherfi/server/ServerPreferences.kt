@@ -19,5 +19,4 @@ interface ServerPreferences {
   @CheckResult suspend fun getNetworkBand(): ServerNetworkBand
 
   suspend fun setNetworkBand(band: ServerNetworkBand)
-
 }

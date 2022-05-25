@@ -50,8 +50,7 @@ internal interface TetherFiComponent {
   @Module
   abstract class Provider {
 
-    @Binds
-    internal abstract fun bindPreferences(impl: PreferencesImpl): ServerPreferences
+    @Binds internal abstract fun bindPreferences(impl: PreferencesImpl): ServerPreferences
 
     @Module
     companion object {

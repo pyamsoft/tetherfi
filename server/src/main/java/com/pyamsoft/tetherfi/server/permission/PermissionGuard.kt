@@ -6,6 +6,5 @@ interface PermissionGuard {
 
   @CheckResult fun canCreateWiDiNetwork(): Boolean
 
-  @CheckResult
-  fun requiredPermissions(): List<String>
+  @CheckResult fun requiredPermissions(): List<String>
 }

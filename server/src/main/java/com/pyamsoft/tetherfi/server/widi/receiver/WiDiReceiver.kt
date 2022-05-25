@@ -7,5 +7,4 @@ internal interface WiDiReceiver {
   suspend fun register()
 
   suspend fun unregister()
-
 }
