@@ -11,6 +11,12 @@ internal class ApplicationLogStorage<T : LogEvent> internal constructor() : LogS
   private val storage = mutableListOf<T>()
   private val latest = MutableStateFlow<T?>(null)
 
+  private suspend fun handleClearEvent(event: T) {
+    if (event.clear) {
+      clear()
+    }
+  }
+
   override suspend fun onLogEvent(block: suspend (T) -> Unit) {
     mutex.withLock {
       for (event in storage) {
@@ -21,6 +27,8 @@ internal class ApplicationLogStorage<T : LogEvent> internal constructor() : LogS
     latest.collect { event ->
       if (event != null) {
         block(event)
+
+        handleClearEvent(event)
       }
     }
   }
