@@ -24,29 +24,6 @@ internal constructor(
     private val batteryOptimizer: BatteryOptimizer,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
-  private fun toggleProxyState(
-      onStart: () -> Unit,
-      onStop: () -> Unit,
-  ) {
-    val s = state
-    val requiresPermissions = !permissions.canCreateWiDiNetwork()
-
-    s.requiresPermissions = requiresPermissions
-    if (requiresPermissions) {
-      s.explainPermissions = true
-      return
-    }
-
-    when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> network.start(onStart)
-      is RunningStatus.Running -> network.stop(onStop)
-      is RunningStatus.Error -> network.stop(onStop)
-      else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
-      }
-    }
-  }
-
   fun loadPreferences(scope: CoroutineScope) {
     val s = state
     if (s.preferencesLoaded) {
@@ -131,10 +108,30 @@ internal constructor(
       onStart: () -> Unit,
       onStop: () -> Unit,
   ) {
-    toggleProxyState(
-        onStart = onStart,
-        onStop = onStop,
-    )
+    val s = state
+    val requiresPermissions = !permissions.canCreateWiDiNetwork()
+
+    // Refresh these state bits
+    s.requiresPermissions = requiresPermissions
+    s.explainPermissions = requiresPermissions
+
+    // Collapse instructions by default
+    s.isConnectionInstructionExpanded = false
+    s.isBatteryInstructionExpanded = false
+
+    if (requiresPermissions) {
+      return
+    }
+
+    when (val status = network.getCurrentStatus()) {
+      is RunningStatus.NotRunning -> network.start(onStart)
+      is RunningStatus.Running -> network.stop(onStop)
+      is RunningStatus.Error -> network.stop(onStop)
+      else -> {
+        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
+      }
+    }
+
     refreshGroupInfo(scope = scope)
   }
 
@@ -158,5 +155,13 @@ internal constructor(
       state.port = portValue
       scope.launch(context = Dispatchers.Main) { preferences.setPort(portValue) }
     }
+  }
+
+  fun handleToggleConnectionInstructions() {
+    state.isConnectionInstructionExpanded = !state.isConnectionInstructionExpanded
+  }
+
+  fun handleToggleBatteryInstructions() {
+    state.isBatteryInstructionExpanded = !state.isBatteryInstructionExpanded
   }
 }

@@ -29,9 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -64,6 +62,8 @@ fun StatusScreen(
     onOpenBatterySettings: () -> Unit,
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
+    onToggleBatteryInstructions: () -> Unit,
+    onToggleConnectionInstructions: () -> Unit,
 ) {
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
@@ -95,6 +95,8 @@ fun StatusScreen(
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
           onOpenBatterySettings = onOpenBatterySettings,
+          onToggleBatteryInstructions = onToggleBatteryInstructions,
+          onToggleConnectionInstructions = onToggleConnectionInstructions,
       )
 
   Scaffold(
@@ -319,8 +321,7 @@ private fun onTextClicked(
     uriHandler: UriHandler,
     start: Int,
 ) {
-  text
-      .getStringAnnotations(
+  text.getStringAnnotations(
           tag = uriTag,
           start = start,
           end = start + linkText.length,
@@ -338,14 +339,14 @@ private fun prepareLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
+    onToggleBatteryInstructions: () -> Unit,
+    onToggleConnectionInstructions: () -> Unit,
 ): LazyListScope.() -> Unit {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
       remember(state.wiDiStatus) {
         when (state.wiDiStatus) {
-          is RunningStatus.Running,
-          is RunningStatus.Starting,
-          is RunningStatus.Stopping -> false
+          is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
           else -> true
         }
       }
@@ -406,6 +407,11 @@ private fun prepareLoadedContent(
       onSsidChanged,
       onPasswordChanged,
       onPortChanged,
+      state.isConnectionInstructionExpanded,
+      state.isBatteryInstructionExpanded,
+      state.isBatteryOptimizationsIgnored,
+      onToggleBatteryInstructions,
+      onToggleConnectionInstructions,
   ) {
     {
       item {
@@ -432,8 +438,10 @@ private fun prepareLoadedContent(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             show = showInstructions,
             appName = appName,
-            state = state,
+            showing = state.isBatteryInstructionExpanded,
+            isIgnored = state.isBatteryOptimizationsIgnored,
             onOpenBatterySettings = onOpenBatterySettings,
+            onToggleBatteryInstructions = onToggleBatteryInstructions,
         )
       }
 
@@ -441,10 +449,12 @@ private fun prepareLoadedContent(
         ConnectionInstructions(
             modifier = Modifier.padding(MaterialTheme.keylines.content),
             show = showInstructions,
+            showing = state.isConnectionInstructionExpanded,
             ssid = ssid,
             password = password,
             port = port,
             ip = ip,
+            onToggleConnectionInstructions = onToggleConnectionInstructions,
         )
       }
     }
@@ -456,20 +466,18 @@ private fun BatteryInstructions(
     modifier: Modifier = Modifier,
     appName: String,
     show: Boolean,
-    state: StatusViewState,
+    showing: Boolean,
+    isIgnored: Boolean,
     onOpenBatterySettings: () -> Unit,
+    onToggleBatteryInstructions: () -> Unit,
 ) {
-  val isIgnored = state.isBatteryOptimizationsIgnored
-
-  val (showing, setShowing) = rememberSaveable { mutableStateOf(false) }
-
   AnimatedVisibility(
       visible = show,
       modifier = modifier,
   ) {
     Column {
       OutlinedButton(
-          onClick = { setShowing(!showing) },
+          onClick = onToggleBatteryInstructions,
       ) {
         Text(
             text = "How to Improve Performance",
@@ -531,20 +539,20 @@ private fun BatteryInstructions(
 private fun ConnectionInstructions(
     modifier: Modifier = Modifier,
     show: Boolean,
+    showing: Boolean,
     ssid: String,
     password: String,
     port: String,
     ip: String,
+    onToggleConnectionInstructions: () -> Unit,
 ) {
-  val (showing, setShowing) = rememberSaveable { mutableStateOf(false) }
-
   AnimatedVisibility(
       visible = show,
       modifier = modifier,
   ) {
     Column {
       OutlinedButton(
-          onClick = { setShowing(!showing) },
+          onClick = onToggleConnectionInstructions,
       ) {
         Text(
             text = "How to Connect",

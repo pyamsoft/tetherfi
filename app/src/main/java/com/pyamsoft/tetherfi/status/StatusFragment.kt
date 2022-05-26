@@ -152,6 +152,8 @@ class StatusFragment : Fragment() {
                   onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
                   onRequestPermissions = { handleRequestPermissions() },
                   onOpenPermissionSettings = { handleOpenApplicationSettings() },
+                  onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
+                  onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
               )
             }
           }

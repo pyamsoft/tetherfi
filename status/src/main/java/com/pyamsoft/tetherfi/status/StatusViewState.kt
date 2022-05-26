@@ -28,6 +28,9 @@ interface StatusViewState : UiViewState {
   val requiresPermissions: Boolean
   val explainPermissions: Boolean
   val isBatteryOptimizationsIgnored: Boolean
+
+  val isBatteryInstructionExpanded: Boolean
+  val isConnectionInstructionExpanded: Boolean
 }
 
 @ActivityScope
@@ -47,4 +50,7 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
   override var requiresPermissions by mutableStateOf(false)
   override var explainPermissions by mutableStateOf(false)
   override var isBatteryOptimizationsIgnored by mutableStateOf(false)
+
+  override var isBatteryInstructionExpanded by mutableStateOf(false)
+  override var isConnectionInstructionExpanded by mutableStateOf(false)
 }
