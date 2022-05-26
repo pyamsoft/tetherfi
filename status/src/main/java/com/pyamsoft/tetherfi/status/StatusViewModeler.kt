@@ -43,7 +43,6 @@ internal constructor(
         s.band = null
       }
 
-      s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
       s.preferencesLoaded = true
     }
   }
