@@ -84,9 +84,8 @@ internal constructor(
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredBand(): Int {
     return when (preferences.getNetworkBand()) {
-      ServerNetworkBand.AUTO -> WifiP2pConfig.GROUP_OWNER_BAND_AUTO
-      ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
       ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
+      ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
     }
   }
 
