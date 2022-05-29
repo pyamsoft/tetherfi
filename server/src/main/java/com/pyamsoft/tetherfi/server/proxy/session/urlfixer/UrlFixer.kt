@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session
+package com.pyamsoft.tetherfi.server.proxy.session.urlfixer
 
 import androidx.annotation.CheckResult
 

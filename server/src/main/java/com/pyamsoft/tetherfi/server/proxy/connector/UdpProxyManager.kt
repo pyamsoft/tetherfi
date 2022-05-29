@@ -4,7 +4,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.UdpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram

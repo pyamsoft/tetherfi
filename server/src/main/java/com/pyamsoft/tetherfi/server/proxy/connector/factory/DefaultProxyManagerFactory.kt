@@ -7,8 +7,8 @@ import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
-import com.pyamsoft.tetherfi.server.proxy.session.UdpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher

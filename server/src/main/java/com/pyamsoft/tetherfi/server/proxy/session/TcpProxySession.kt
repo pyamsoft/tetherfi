@@ -11,6 +11,8 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
+import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.InetSocketAddress
@@ -36,9 +38,14 @@ internal constructor(
     private val errorBus: EventBus<ErrorEvent>,
     private val connectionBus: EventBus<ConnectionEvent>,
     private val memPool: MemPool<ByteArray>,
-    private val urlFixers: Set<UrlFixer>,
+    urlFixers: Set<UrlFixer>,
     proxyDebug: Boolean,
-) : BaseProxySession<TcpProxyOptions>(SharedProxy.Type.TCP, proxyDebug) {
+) :
+    BaseProxySession<TcpProxyOptions>(
+        SharedProxy.Type.TCP,
+        urlFixers,
+        proxyDebug,
+    ) {
 
   /**
    * Parse the first line of content which may be a connect call
@@ -194,19 +201,6 @@ internal constructor(
   }
 
   /**
-   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
-   * very specific cases is correct
-   */
-  @CheckResult
-  private fun String.fixSpecialBuggyUrls(): String {
-    var result = this
-    for (fixer in urlFixers) {
-      result = fixer.fix(result)
-    }
-    return result
-  }
-
-  /**
    * HTTPS Connections are encrypted and so we cannot see anything further past the initial CONNECT
    * call.
    *
@@ -342,7 +336,7 @@ internal constructor(
   override suspend fun exchange(data: TcpProxyOptions) {
     Enforcer.assertOffMainThread()
 
-    val proxy = data.proxyConnection
+    val proxy = data.proxy
     val proxyInput = proxy.openReadChannel()
     val proxyOutput = proxy.openWriteChannel(autoFlush = true)
 
@@ -364,7 +358,7 @@ internal constructor(
       }
 
       connectToInternet(request).use { internet ->
-          debugLog { "${proxyType.name} Proxy to: $request" }
+        debugLog { "${proxyType.name} Proxy to: $request" }
 
         // Log connection
         connectionBus.send(
@@ -412,6 +406,8 @@ internal constructor(
 
   companion object {
 
+    private const val LINE_ENDING = "\r\n"
+
     /**
      * Check if this is an HTTPS connection
      *
@@ -425,6 +421,30 @@ internal constructor(
     /** Write a generic error back to the client socket because something has gone wrong */
     private suspend fun writeError(output: ByteWriteChannel) {
       proxyResponse(output, "HTTP/1.1 502 Bad Gateway")
+    }
+
+    /**
+     * Respond to the client with a message string
+     *
+     * Properly line-ended with flushed output
+     */
+    private suspend fun proxyResponse(output: ByteWriteChannel, response: String) {
+      output.apply {
+        writeFully(writeMessageAndAwaitMore(response))
+        writeFully(LINE_ENDING.encodeToByteArray())
+        flush()
+      }
+    }
+
+    /**
+     * Convert a message string into a byte array
+     *
+     * Correctly end the line with return and newline
+     */
+    @CheckResult
+    private fun writeMessageAndAwaitMore(message: String): ByteArray {
+      val msg = if (message.endsWith(LINE_ENDING)) message else "${message}${LINE_ENDING}"
+      return msg.encodeToByteArray()
     }
   }
 }

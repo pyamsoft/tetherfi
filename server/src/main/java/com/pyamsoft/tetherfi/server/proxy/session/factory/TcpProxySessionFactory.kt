@@ -5,9 +5,9 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.TcpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
 import javax.inject.Inject
 import javax.inject.Singleton
