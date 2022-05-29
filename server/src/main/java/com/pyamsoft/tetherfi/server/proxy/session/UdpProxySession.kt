@@ -122,9 +122,4 @@ internal constructor(
         port,
     )
   }
-
-  private data class DestinationInfo(
-      val hostName: String,
-      val port: Int,
-  )
 }

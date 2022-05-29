@@ -74,7 +74,7 @@ internal constructor(
       val urlData = getUrlAndPort(methodData.url)
       ProxyRequest(
           url = methodData.url,
-          host = urlData.host,
+          host = urlData.hostName,
           method = methodData.method,
           port = urlData.port,
           version = methodData.version,
@@ -92,7 +92,7 @@ internal constructor(
    * If the URL does not include the port, determine it from the protocol or just assume it is HTTP
    */
   @CheckResult
-  private fun getUrlAndPort(possiblyProtocolAndHostAndPort: String): UrlData {
+  private fun getUrlAndPort(possiblyProtocolAndHostAndPort: String): DestinationInfo {
     var host: String
     var protocol: String
     var port = -1
@@ -162,10 +162,10 @@ internal constructor(
       port = if (protocol.startsWith("https")) 443 else 80
     }
 
-    return UrlData(
+    return DestinationInfo(
         // Just in-case we missed a slash, a name with a slash is not a valid hostname
         // its actually a host with a file path of ROOT, which is bad
-        host = host.trimEnd('/'),
+        hostName = host.trimEnd('/'),
         port = port,
     )
   }
@@ -397,11 +397,6 @@ internal constructor(
       val url: String,
       val method: String,
       val version: String,
-  )
-
-  private data class UrlData(
-      val host: String,
-      val port: Int,
   )
 
   companion object {

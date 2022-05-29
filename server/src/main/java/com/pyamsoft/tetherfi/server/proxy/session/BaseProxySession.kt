@@ -45,4 +45,10 @@ protected constructor(
     }
     return result
   }
+
+  protected data class DestinationInfo
+  internal constructor(
+      val hostName: String,
+      val port: Int,
+  )
 }
