@@ -5,8 +5,8 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.UdpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import javax.inject.Inject
 import javax.inject.Singleton

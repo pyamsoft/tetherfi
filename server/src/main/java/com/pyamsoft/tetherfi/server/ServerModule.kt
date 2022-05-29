@@ -17,14 +17,14 @@ import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
-import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
-import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.factory.TcpProxySessionFactory
 import com.pyamsoft.tetherfi.server.proxy.session.factory.UdpProxySessionFactory
 import com.pyamsoft.tetherfi.server.proxy.session.mempool.ByteArrayMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
+import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WifiDirectWiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver

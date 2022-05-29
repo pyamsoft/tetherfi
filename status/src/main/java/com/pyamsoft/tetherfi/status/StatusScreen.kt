@@ -321,7 +321,8 @@ private fun onTextClicked(
     uriHandler: UriHandler,
     start: Int,
 ) {
-  text.getStringAnnotations(
+  text
+      .getStringAnnotations(
           tag = uriTag,
           start = start,
           end = start + linkText.length,
@@ -346,7 +347,9 @@ private fun prepareLoadedContent(
   val isEditable =
       remember(state.wiDiStatus) {
         when (state.wiDiStatus) {
-          is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
+          is RunningStatus.Running,
+          is RunningStatus.Starting,
+          is RunningStatus.Stopping -> false
           else -> true
         }
       }
