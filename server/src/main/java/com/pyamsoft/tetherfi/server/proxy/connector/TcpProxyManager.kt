@@ -4,6 +4,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
@@ -19,7 +20,7 @@ internal class TcpProxyManager
 internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
-    private val factory: ProxySession.Factory<Socket>,
+    private val factory: ProxySession.Factory<TcpProxyOptions>,
     proxyDebug: Boolean,
 ) :
     BaseProxyManager<ServerSocket, Socket>(
@@ -50,10 +51,15 @@ internal constructor(
     }
   }
 
-  override suspend fun runSession(client: Socket) {
+  override suspend fun runSession(server: ServerSocket, client: Socket) {
     val session = factory.create()
     try {
-      session.exchange(client)
+      session.exchange(
+          data =
+              TcpProxyOptions(
+                  proxyConnection = client,
+              ),
+      )
     } catch (e: Throwable) {
       e.ifNotCancellation { Timber.e(e, "${proxyType.name} Error during session") }
     }

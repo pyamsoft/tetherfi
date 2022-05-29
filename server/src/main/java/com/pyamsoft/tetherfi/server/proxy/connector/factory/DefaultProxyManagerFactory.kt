@@ -7,8 +7,8 @@ import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import io.ktor.network.sockets.Datagram
-import io.ktor.network.sockets.Socket
+import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.UdpProxyOptions
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,8 +19,8 @@ internal class DefaultProxyManagerFactory
 internal constructor(
     @ServerInternalApi private val proxyDebug: Boolean,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
-    @ServerInternalApi private val tcpSessionFactory: ProxySession.Factory<Socket>,
-    @ServerInternalApi private val udpSessionFactory: ProxySession.Factory<Datagram>,
+    @ServerInternalApi private val tcpSessionFactory: ProxySession.Factory<TcpProxyOptions>,
+    @ServerInternalApi private val udpSessionFactory: ProxySession.Factory<UdpProxyOptions>,
 ) : ProxyManager.Factory {
 
   @CheckResult

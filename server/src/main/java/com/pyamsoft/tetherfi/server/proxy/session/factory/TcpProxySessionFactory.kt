@@ -5,10 +5,10 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
-import io.ktor.network.sockets.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -24,9 +24,9 @@ internal constructor(
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
     @ServerInternalApi private val memPool: MemPool<ByteArray>
-) : ProxySession.Factory<Socket> {
+) : ProxySession.Factory<TcpProxyOptions> {
 
-  override fun create(): ProxySession<Socket> {
+  override fun create(): ProxySession<TcpProxyOptions> {
     return TcpProxySession(
         dispatcher = dispatcher,
         errorBus = errorBus,

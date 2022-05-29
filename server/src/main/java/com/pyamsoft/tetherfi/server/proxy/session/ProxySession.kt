@@ -2,12 +2,12 @@ package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
 
-internal interface ProxySession<CS : Any> {
+internal interface ProxySession<T : Any> {
 
-  suspend fun exchange(proxy: CS)
+  suspend fun exchange(data: T)
 
-  interface Factory<CS : Any> {
+  interface Factory<T : Any> {
 
-    @CheckResult fun create(): ProxySession<CS>
+    @CheckResult fun create(): ProxySession<T>
   }
 }

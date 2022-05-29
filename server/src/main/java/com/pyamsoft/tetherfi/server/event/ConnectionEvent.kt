@@ -17,6 +17,8 @@ sealed class ConnectionEvent : LogEvent {
 
   data class Udp(
       override val id: String,
+      val hostName: String,
+      val port: Int,
       override val clear: Boolean = false,
   ) : ConnectionEvent()
 }

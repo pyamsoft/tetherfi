@@ -53,7 +53,7 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
     try {
       whileServerAlive(server) { s ->
         try {
-          runSession(s)
+          runSession(server, s)
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e, "Error during ${proxyType.name} session communication")
@@ -70,7 +70,7 @@ internal abstract class BaseProxyManager<SS : ASocket, CS : Any>(
 
   protected abstract suspend fun closeSession(client: CS)
 
-  @CheckResult protected abstract suspend fun runSession(client: CS)
+  @CheckResult protected abstract suspend fun runSession(server: SS, client: CS)
 
   @CheckResult protected abstract suspend fun acceptClient(server: SS): CS
 

@@ -22,4 +22,11 @@ protected constructor(
       Timber.w(message())
     }
   }
+
+  /** Log only when session is in debug mode */
+  protected inline fun errorLog(throwable: Throwable, message: () -> String) {
+    if (proxyDebug) {
+      Timber.e(throwable, message())
+    }
+  }
 }

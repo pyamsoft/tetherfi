@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class TcpProxySession
 internal constructor(
@@ -39,7 +38,7 @@ internal constructor(
     private val memPool: MemPool<ByteArray>,
     private val urlFixers: Set<UrlFixer>,
     proxyDebug: Boolean,
-) : BaseProxySession<Socket>(SharedProxy.Type.TCP, proxyDebug) {
+) : BaseProxySession<TcpProxyOptions>(SharedProxy.Type.TCP, proxyDebug) {
 
   /**
    * Parse the first line of content which may be a connect call
@@ -307,69 +306,7 @@ internal constructor(
       debugLog { "Done with proxy request: $request" }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        Timber.e(e, "${proxyType.name} Error during Internet exchange")
-        errorBus.send(
-            ErrorEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-                throwable = e,
-            ),
-        )
-        writeError(proxyOutput)
-      }
-    }
-  }
-
-  override suspend fun exchange(proxy: Socket) {
-    Enforcer.assertOffMainThread()
-
-    val proxyInput = proxy.openReadChannel()
-    val proxyOutput = proxy.openWriteChannel(autoFlush = true)
-
-    val request = parseRequest(proxyInput)
-
-    try {
-      if (request == null) {
-        val msg = "Could not parse proxy request"
-        Timber.w("${proxyType.name} $msg")
-        errorBus.send(
-            ErrorEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-                throwable = RuntimeException(msg),
-            ),
-        )
-        writeError(proxyOutput)
-        return
-      }
-
-      debugLog { "${proxyType.name} Proxy to: $request" }
-
-      connectToInternet(request).use { internet ->
-        debugLog { "Connect to internet: $request" }
-
-        // Log connection
-        Timber.d("Log connection: $request")
-        connectionBus.send(
-            ConnectionEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-            ),
-        )
-
-        val internetInput = internet.openReadChannel()
-        val internetOutput = internet.openWriteChannel(autoFlush = true)
-        exchangeInternet(
-            proxyInput = proxyInput,
-            proxyOutput = proxyOutput,
-            internetInput = internetInput,
-            internetOutput = internetOutput,
-            request = request,
-        )
-      }
-    } catch (e: Throwable) {
-      e.ifNotCancellation {
-        Timber.e(e, "${proxyType.name} Error during connect to internet: $request")
+        errorLog(e) { "${proxyType.name} Error during Internet exchange" }
         errorBus.send(
             ErrorEvent.Tcp(
                 id = generateRandomId(),
@@ -402,6 +339,77 @@ internal constructor(
         )
   }
 
+  override suspend fun exchange(data: TcpProxyOptions) {
+    Enforcer.assertOffMainThread()
+
+    val proxy = data.proxyConnection
+    val proxyInput = proxy.openReadChannel()
+    val proxyOutput = proxy.openWriteChannel(autoFlush = true)
+
+    val request = parseRequest(proxyInput)
+
+    try {
+      if (request == null) {
+        val msg = "Could not parse proxy request"
+        warnLog { "${proxyType.name} $msg" }
+        errorBus.send(
+            ErrorEvent.Tcp(
+                id = generateRandomId(),
+                request = request,
+                throwable = RuntimeException(msg),
+            ),
+        )
+        writeError(proxyOutput)
+        return
+      }
+
+      connectToInternet(request).use { internet ->
+          debugLog { "${proxyType.name} Proxy to: $request" }
+
+        // Log connection
+        connectionBus.send(
+            ConnectionEvent.Tcp(
+                id = generateRandomId(),
+                request = request,
+            ),
+        )
+
+        val internetInput = internet.openReadChannel()
+        val internetOutput = internet.openWriteChannel(autoFlush = true)
+        exchangeInternet(
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            internetInput = internetInput,
+            internetOutput = internetOutput,
+            request = request,
+        )
+      }
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        errorLog(e) { "${proxyType.name} Error during connect to internet: $request" }
+        errorBus.send(
+            ErrorEvent.Tcp(
+                id = generateRandomId(),
+                request = request,
+                throwable = e,
+            ),
+        )
+        writeError(proxyOutput)
+      }
+    }
+  }
+
+  private data class MethodData(
+      val url: String,
+      val method: String,
+      val version: String,
+  )
+
+  private data class UrlData(
+      val host: String,
+      val port: Int,
+  )
+
   companion object {
 
     /**
@@ -419,15 +427,4 @@ internal constructor(
       proxyResponse(output, "HTTP/1.1 502 Bad Gateway")
     }
   }
-
-  private data class MethodData(
-      val url: String,
-      val method: String,
-      val version: String,
-  )
-
-  private data class UrlData(
-      val host: String,
-      val port: Int,
-  )
 }

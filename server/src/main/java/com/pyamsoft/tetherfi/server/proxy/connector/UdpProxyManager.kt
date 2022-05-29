@@ -4,6 +4,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.UdpProxyOptions
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
@@ -19,7 +20,7 @@ internal class UdpProxyManager
 internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
-    private val factory: ProxySession.Factory<Datagram>,
+    private val factory: ProxySession.Factory<UdpProxyOptions>,
     proxyDebug: Boolean,
 ) :
     BaseProxyManager<BoundDatagramSocket, Datagram>(
@@ -49,10 +50,16 @@ internal constructor(
     }
   }
 
-  override suspend fun runSession(client: Datagram) {
+  override suspend fun runSession(server: BoundDatagramSocket, client: Datagram) {
     val session = factory.create()
     try {
-      session.exchange(client)
+      session.exchange(
+          data =
+              UdpProxyOptions(
+                  sender = { server.send(it) },
+                  packet = client,
+              ),
+      )
     } catch (e: Throwable) {
       e.ifNotCancellation { Timber.e(e, "${proxyType.name} Error during session") }
     }

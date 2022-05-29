@@ -19,6 +19,8 @@ sealed class ErrorEvent : LogEvent {
   data class Udp(
       override val id: String,
       val throwable: Throwable,
+      val hostName: String,
+      val port: Int,
       override val clear: Boolean = false,
   ) : ErrorEvent()
 }

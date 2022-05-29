@@ -17,6 +17,8 @@ import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.UdpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.factory.TcpProxySessionFactory
 import com.pyamsoft.tetherfi.server.proxy.session.factory.UdpProxySessionFactory
@@ -32,8 +34,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import io.ktor.network.sockets.Datagram
-import io.ktor.network.sockets.Socket
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -93,14 +93,14 @@ abstract class ServerModule {
   @ServerInternalApi
   internal abstract fun bindTcpProxySessionFactory(
       impl: TcpProxySessionFactory
-  ): ProxySession.Factory<Socket>
+  ): ProxySession.Factory<TcpProxyOptions>
 
   @Binds
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindUdpProxySessionFactory(
       impl: UdpProxySessionFactory
-  ): ProxySession.Factory<Datagram>
+  ): ProxySession.Factory<UdpProxyOptions>
 
   @Module
   companion object {
