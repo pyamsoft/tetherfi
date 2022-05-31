@@ -28,6 +28,7 @@ import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
+import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.service.ProxyService
 import javax.inject.Inject
 import timber.log.Timber
@@ -100,6 +101,15 @@ class StatusFragment : Fragment() {
     viewModel.requireNotNull().handleToggleProxyWakelock(scope = viewLifecycleOwner.lifecycleScope)
   }
 
+  private fun handleChangeBand(band: ServerNetworkBand) {
+    viewModel
+        .requireNotNull()
+        .handleChangeBand(
+            scope = viewLifecycleOwner.lifecycleScope,
+            band = band,
+        )
+  }
+
   private fun handleRequestPermissions() {
     viewModel.requireNotNull().also { vm ->
       // Close dialog
@@ -159,6 +169,7 @@ class StatusFragment : Fragment() {
                   onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
                   onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
                   onToggleKeepWakeLock = { handleToggleProxyWakelock() },
+                  onSelectBand = { handleChangeBand(it) },
               )
             }
           }

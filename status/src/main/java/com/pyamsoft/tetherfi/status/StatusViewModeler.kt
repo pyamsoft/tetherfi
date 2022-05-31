@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.ServerDefaults
+import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
@@ -166,16 +167,13 @@ internal constructor(
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {
-    // Immediate UI update
     val s = state
     s.keepWakeLock = !s.keepWakeLock
+    scope.launch(context = Dispatchers.Main) { preferences.setWakeLock(s.keepWakeLock) }
+  }
 
-    scope.launch(context = Dispatchers.Main) {
-      // Set preferences
-      preferences.setWakeLock(s.keepWakeLock)
-
-      // Just to ensure it has taken effect, sync with preferences
-      s.keepWakeLock = preferences.keepWakeLock()
-    }
+  fun handleChangeBand(scope: CoroutineScope, band: ServerNetworkBand) {
+    state.band = band
+    scope.launch(context = Dispatchers.Main) { preferences.setNetworkBand(band) }
   }
 }
