@@ -22,11 +22,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -62,6 +64,7 @@ fun StatusScreen(
     onOpenBatterySettings: () -> Unit,
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
+    onToggleKeepWakeLock: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
 ) {
@@ -97,6 +100,7 @@ fun StatusScreen(
           onOpenBatterySettings = onOpenBatterySettings,
           onToggleBatteryInstructions = onToggleBatteryInstructions,
           onToggleConnectionInstructions = onToggleConnectionInstructions,
+          onToggleKeepWakeLock = onToggleKeepWakeLock,
       )
 
   Scaffold(
@@ -321,8 +325,7 @@ private fun onTextClicked(
     uriHandler: UriHandler,
     start: Int,
 ) {
-  text
-      .getStringAnnotations(
+  text.getStringAnnotations(
           tag = uriTag,
           start = start,
           end = start + linkText.length,
@@ -342,14 +345,13 @@ private fun prepareLoadedContent(
     onOpenBatterySettings: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
+    onToggleKeepWakeLock: () -> Unit,
 ): LazyListScope.() -> Unit {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
       remember(state.wiDiStatus) {
         when (state.wiDiStatus) {
-          is RunningStatus.Running,
-          is RunningStatus.Starting,
-          is RunningStatus.Stopping -> false
+          is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
           else -> true
         }
       }
@@ -397,6 +399,7 @@ private fun prepareLoadedContent(
   val port = remember(state.port) { if (state.port <= 0) "NO PORT" else "${state.port}" }
   val bandName = remember(state.band) { state.band?.name ?: "AUTO" }
   val showInstructions = remember(isEditable) { !isEditable }
+  val keepWakeLock = state.keepWakeLock
 
   return remember(
       appName,
@@ -415,6 +418,8 @@ private fun prepareLoadedContent(
       state.isBatteryOptimizationsIgnored,
       onToggleBatteryInstructions,
       onToggleConnectionInstructions,
+      keepWakeLock,
+      onToggleKeepWakeLock,
   ) {
     {
       item {
@@ -429,10 +434,12 @@ private fun prepareLoadedContent(
             password = password,
             port = port,
             ip = ip,
+            keepWakeLock = state.keepWakeLock,
             bandName = bandName,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
             onPortChanged = onPortChanged,
+            onToggleKeepWakeLock = onToggleKeepWakeLock,
         )
       }
 
@@ -443,6 +450,7 @@ private fun prepareLoadedContent(
             appName = appName,
             showing = state.isBatteryInstructionExpanded,
             isIgnored = state.isBatteryOptimizationsIgnored,
+            keepWakeLock = state.keepWakeLock,
             onOpenBatterySettings = onOpenBatterySettings,
             onToggleBatteryInstructions = onToggleBatteryInstructions,
         )
@@ -471,6 +479,7 @@ private fun BatteryInstructions(
     show: Boolean,
     showing: Boolean,
     isIgnored: Boolean,
+    keepWakeLock: Boolean,
     onOpenBatterySettings: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
 ) {
@@ -531,6 +540,28 @@ private fun BatteryInstructions(
                   text = "Open Battery Settings",
               )
             }
+          }
+
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+              text = "You can keep the CPU on to ensure smooth proxy network performance",
+              style = MaterialTheme.typography.body1,
+          )
+
+          Row(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            Icon(
+                modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
+                imageVector = if (keepWakeLock) Icons.Filled.CheckCircle else Icons.Filled.Close,
+                contentDescription = if (keepWakeLock) "CPU kept on" else "CPU not kept on",
+                tint = if (keepWakeLock) Color.Green else Color.Red,
+            )
+            Text(
+                text = if (keepWakeLock) "CPU kept on" else "CPU not kept on",
+                style = MaterialTheme.typography.body1,
+            )
           }
         }
       }
@@ -681,10 +712,12 @@ private fun NetworkInformation(
     password: String,
     port: String,
     ip: String,
+    keepWakeLock: Boolean,
     bandName: String,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
+    onToggleKeepWakeLock: () -> Unit,
 ) {
 
   Crossfade(
@@ -755,6 +788,19 @@ private fun NetworkInformation(
                     keyboardType = KeyboardType.Number,
                 ),
         )
+
+        Row(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Switch(
+              checked = keepWakeLock,
+              onCheckedChange = { onToggleKeepWakeLock() },
+          )
+          Text(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+              text = "Keep CPU awake to improve performance")
+        }
       } else {
         Item(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -784,6 +830,12 @@ private fun NetworkInformation(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             title = "BAND",
             value = bandName,
+        )
+
+        Item(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            title = "KEEP CPU AWAKE",
+            value = if (keepWakeLock) "ON" else "OFF",
         )
       }
     }

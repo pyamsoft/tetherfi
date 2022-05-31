@@ -10,6 +10,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.tetherfi.TetherFiComponent
 import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

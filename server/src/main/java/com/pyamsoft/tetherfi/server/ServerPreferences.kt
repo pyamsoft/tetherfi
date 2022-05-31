@@ -4,6 +4,10 @@ import androidx.annotation.CheckResult
 
 interface ServerPreferences {
 
+  @CheckResult suspend fun keepWakeLock(): Boolean
+
+  suspend fun setWakeLock(keep: Boolean)
+
   @CheckResult suspend fun getSsid(): String
 
   suspend fun setSsid(ssid: String)

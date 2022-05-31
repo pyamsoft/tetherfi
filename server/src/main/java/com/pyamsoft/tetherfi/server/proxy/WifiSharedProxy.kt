@@ -1,17 +1,14 @@
 package com.pyamsoft.tetherfi.server.proxy
 
-import android.content.Context
-import android.os.PowerManager
 import androidx.annotation.CheckResult
-import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.generateRandomId
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -31,7 +28,6 @@ import timber.log.Timber
 internal class WifiSharedProxy
 @Inject
 internal constructor(
-    private val context: Context,
     private val preferences: ServerPreferences,
     @ServerInternalApi private val activityLogStorage: LogStorage<ConnectionEvent>,
     @ServerInternalApi private val errorLogStorage: LogStorage<ErrorEvent>,
@@ -39,11 +35,9 @@ internal constructor(
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
     @ServerInternalApi private val factory: ProxyManager.Factory,
+    private val locker: Locker,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
-
-  private val powerManager by lazy { context.getSystemService<PowerManager>().requireNotNull() }
-  private var wakeLock: PowerManager.WakeLock? = null
 
   private val mutex = Mutex()
   private val jobs = mutableListOf<ProxyJob>()
@@ -73,15 +67,6 @@ internal constructor(
     return ProxyJob(type = type, job = job)
   }
 
-  private fun releaseWakelock() {
-    val w = wakeLock
-    if (w != null) {
-      Timber.d("Releasing partial CPU wake lock $WAKE_LOCK_TAG")
-      w.release()
-    }
-    wakeLock = null
-  }
-
   private suspend fun shutdown() {
     try {
       clearJobs()
@@ -94,7 +79,8 @@ internal constructor(
       activityLogStorage.clear()
       errorLogStorage.clear()
     } finally {
-      mutex.withLock { releaseWakelock() }
+      // Release wakelock
+      locker.release()
     }
   }
 
@@ -129,12 +115,8 @@ internal constructor(
           Timber.d("Started proxy server on port: $port")
           status.set(RunningStatus.Running)
 
-          mutex.withLock {
-            releaseWakelock()
-
-            Timber.d("Acquire a partial CPU wake lock $WAKE_LOCK_TAG")
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
-          }
+          // Acquire wake lock
+          locker.acquire()
         }
       } catch (e: Throwable) {
         Timber.e(e, "Error when running the proxy, shut it all down")
@@ -174,8 +156,4 @@ internal constructor(
       val type: SharedProxy.Type,
       val job: Job,
   )
-
-  companion object {
-    private const val WAKE_LOCK_TAG = "com.pyamsoft.tetherfi:PROXY_WAKE_LOCK"
-  }
 }

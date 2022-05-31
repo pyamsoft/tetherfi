@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncherImpl
+import com.pyamsoft.tetherfi.service.notification.ServiceDispatcher
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

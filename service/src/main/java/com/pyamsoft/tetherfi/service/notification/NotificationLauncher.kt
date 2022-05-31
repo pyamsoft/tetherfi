@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.service
+package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
 

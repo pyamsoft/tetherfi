@@ -1,9 +1,10 @@
-package com.pyamsoft.tetherfi.service
+package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
+import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
 import timber.log.Timber

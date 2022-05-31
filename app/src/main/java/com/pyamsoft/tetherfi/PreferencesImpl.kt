@@ -15,13 +15,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Singleton
-internal class PreferencesImpl @Inject internal constructor(context: Context) : ServerPreferences {
+internal class PreferencesImpl
+@Inject
+internal constructor(
+    context: Context,
+) : ServerPreferences {
 
   private val preferences by lazy {
     PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
   }
 
   private val fallbackPassword by lazy(LazyThreadSafetyMode.NONE) { generateRandomPassword() }
+
+  override suspend fun keepWakeLock(): Boolean =
+      withContext(context = Dispatchers.IO) {
+        Enforcer.assertOffMainThread()
+
+        return@withContext preferences.getBoolean(WAKE_LOCK, false)
+      }
+
+  override suspend fun setWakeLock(keep: Boolean) =
+      withContext(context = Dispatchers.IO) {
+        Enforcer.assertOffMainThread()
+
+        preferences.edit { putBoolean(WAKE_LOCK, keep) }
+      }
 
   override suspend fun getSsid(): String =
       withContext(context = Dispatchers.IO) {
@@ -94,6 +112,8 @@ internal class PreferencesImpl @Inject internal constructor(context: Context) : 
     private const val PASSWORD = "key_password_1"
     private const val PORT = "key_port_1"
     private const val NETWORK_BAND = "key_network_band_1"
+
+    private const val WAKE_LOCK = "key_wake_lock_1"
 
     private const val ALL_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

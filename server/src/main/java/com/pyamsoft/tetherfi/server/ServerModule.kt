@@ -8,6 +8,8 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
+import com.pyamsoft.tetherfi.server.lock.LockerImpl
 import com.pyamsoft.tetherfi.server.logging.ApplicationLogStorage
 import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
@@ -47,6 +49,8 @@ abstract class ServerModule {
   internal abstract fun bindShutdownConsumer(
       impl: EventBus<OnShutdownEvent>
   ): EventConsumer<OnShutdownEvent>
+
+  @Binds internal abstract fun bindLocker(impl: LockerImpl): Locker
 
   @Binds
   @CheckResult

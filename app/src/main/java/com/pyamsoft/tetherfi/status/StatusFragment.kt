@@ -96,6 +96,10 @@ class StatusFragment : Fragment() {
     safeOpenSettingsIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
   }
 
+  private fun handleToggleProxyWakelock() {
+    viewModel.requireNotNull().handleToggleProxyWakelock(scope = viewLifecycleOwner.lifecycleScope)
+  }
+
   private fun handleRequestPermissions() {
     viewModel.requireNotNull().also { vm ->
       // Close dialog
@@ -154,6 +158,7 @@ class StatusFragment : Fragment() {
                   onOpenPermissionSettings = { handleOpenApplicationSettings() },
                   onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
                   onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
+                  onToggleKeepWakeLock = { handleToggleProxyWakelock() },
               )
             }
           }

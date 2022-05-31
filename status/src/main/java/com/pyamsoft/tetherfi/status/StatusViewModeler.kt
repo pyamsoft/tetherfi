@@ -32,6 +32,7 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       s.port = preferences.getPort()
+      s.keepWakeLock = preferences.keepWakeLock()
 
       if (ServerDefaults.canUseCustomConfig()) {
         s.ssid = preferences.getSsid()
@@ -162,5 +163,19 @@ internal constructor(
 
   fun handleToggleBatteryInstructions() {
     state.isBatteryInstructionExpanded = !state.isBatteryInstructionExpanded
+  }
+
+  fun handleToggleProxyWakelock(scope: CoroutineScope) {
+    // Immediate UI update
+    val s = state
+    s.keepWakeLock = !s.keepWakeLock
+
+    scope.launch(context = Dispatchers.Main) {
+      // Set preferences
+      preferences.setWakeLock(s.keepWakeLock)
+
+      // Just to ensure it has taken effect, sync with preferences
+      s.keepWakeLock = preferences.keepWakeLock()
+    }
   }
 }
