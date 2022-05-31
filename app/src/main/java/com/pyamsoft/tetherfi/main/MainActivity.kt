@@ -33,8 +33,9 @@ class MainActivity : PYDroidActivity() {
   override val applicationIcon = R.mipmap.ic_launcher
 
   override val changelog = buildChangeLog {
-    feature("Initial Release!")
-    feature("Create local WiFi networks to share your device's Internet")
+    feature("Allow changing between Wi-Fi frequency bands")
+    feature("Optionally improve performance by keeping a partial CPU wakelock")
+    feature("Initial support for UDP traffic in proxy")
   }
 
   private fun handleOpenApplicationSettings() {
