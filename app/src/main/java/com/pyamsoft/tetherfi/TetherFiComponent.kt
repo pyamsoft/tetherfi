@@ -12,6 +12,7 @@ import com.pyamsoft.tetherfi.server.ServerModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ProxyService
 import com.pyamsoft.tetherfi.service.ServiceModule
+import com.pyamsoft.tetherfi.service.ServicePreferences
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
@@ -51,6 +52,8 @@ internal interface TetherFiComponent {
   abstract class Provider {
 
     @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
+
+    @Binds internal abstract fun bindServicePreferences(impl: PreferencesImpl): ServicePreferences
 
     @Module
     companion object {

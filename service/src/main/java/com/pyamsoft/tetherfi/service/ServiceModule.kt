@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
+import com.pyamsoft.tetherfi.service.lock.Locker
+import com.pyamsoft.tetherfi.service.lock.LockerImpl
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncherImpl
 import com.pyamsoft.tetherfi.service.notification.ServiceDispatcher
@@ -22,6 +24,8 @@ abstract class ServiceModule {
   internal abstract fun bindServiceDispatcher(impl: ServiceDispatcher): NotifyDispatcher<*>
 
   @Binds internal abstract fun bindLauncher(impl: NotificationLauncherImpl): NotificationLauncher
+
+  @Binds internal abstract fun bindLocker(impl: LockerImpl): Locker
 
   @Module
   companion object {

@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.lock
+package com.pyamsoft.tetherfi.service.lock
 
 interface Locker {
 

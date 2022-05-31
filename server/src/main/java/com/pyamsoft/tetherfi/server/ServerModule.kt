@@ -8,8 +8,6 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
-import com.pyamsoft.tetherfi.server.lock.Locker
-import com.pyamsoft.tetherfi.server.lock.LockerImpl
 import com.pyamsoft.tetherfi.server.logging.ApplicationLogStorage
 import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
@@ -28,6 +26,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.WifiDirectWiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
@@ -50,8 +49,6 @@ abstract class ServerModule {
       impl: EventBus<OnShutdownEvent>
   ): EventConsumer<OnShutdownEvent>
 
-  @Binds internal abstract fun bindLocker(impl: LockerImpl): Locker
-
   @Binds
   @CheckResult
   @ServerInternalApi
@@ -69,6 +66,10 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   internal abstract fun bindWiDiNetwork(impl: WifiDirectWiDiNetwork): WiDiNetwork
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindWiDiNetworkStatus(impl: WifiDirectWiDiNetwork): WiDiNetworkStatus
 
   @Binds
   @CheckResult

@@ -8,14 +8,14 @@ import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
 
 @Stable
 interface StatusViewState : UiViewState {
   val preferencesLoaded: Boolean
 
-  val group: WiDiNetwork.GroupInfo?
+  val group: WiDiNetworkStatus.GroupInfo?
   val wiDiStatus: RunningStatus
   val proxyStatus: RunningStatus
 
@@ -39,7 +39,7 @@ interface StatusViewState : UiViewState {
 internal class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override var preferencesLoaded by mutableStateOf(false)
 
-  override var group by mutableStateOf<WiDiNetwork.GroupInfo?>(null)
+  override var group by mutableStateOf<WiDiNetworkStatus.GroupInfo?>(null)
   override var wiDiStatus by mutableStateOf<RunningStatus>(RunningStatus.NotRunning)
   override var proxyStatus by mutableStateOf<RunningStatus>(RunningStatus.NotRunning)
 

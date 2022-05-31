@@ -8,6 +8,7 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -19,7 +20,7 @@ internal class PreferencesImpl
 @Inject
 internal constructor(
     context: Context,
-) : ServerPreferences {
+) : ServerPreferences, ServicePreferences {
 
   private val preferences by lazy {
     PreferenceManager.getDefaultSharedPreferences(context.applicationContext)

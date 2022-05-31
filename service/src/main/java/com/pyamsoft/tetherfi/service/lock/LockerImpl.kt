@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.lock
+package com.pyamsoft.tetherfi.service.lock
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,7 +6,7 @@ import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ internal class LockerImpl
 @Inject
 internal constructor(
     context: Context,
-    private val preferences: ServerPreferences,
+    private val preferences: ServicePreferences,
 ) : Locker {
 
   private val wakeLock by lazy {
@@ -36,7 +36,9 @@ internal constructor(
   private suspend fun acquireWakelock() {
     mutex.withLock {
       if (!acquired) {
+        Timber.d("####################################")
         Timber.d("Acquire CPU wakelock: $WAKE_LOCK_TAG")
+        Timber.d("####################################")
         wakeLock.acquire()
         acquired = true
       }
@@ -46,7 +48,9 @@ internal constructor(
   private suspend fun releaseWakelock() {
     mutex.withLock {
       if (acquired) {
+        Timber.d("####################################")
         Timber.d("Release CPU wakelock: $WAKE_LOCK_TAG")
+        Timber.d("####################################")
         wakeLock.release()
         acquired = false
       }

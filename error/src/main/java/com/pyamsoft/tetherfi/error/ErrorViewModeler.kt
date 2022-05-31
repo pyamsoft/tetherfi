@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.error
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ProxyEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +15,7 @@ class ErrorViewModeler
 @Inject
 internal constructor(
     private val state: MutableErrorViewState,
-    private val network: WiDiNetwork,
+    private val network: WiDiNetworkStatus,
 ) : AbstractViewModeler<ErrorViewState>(state) {
 
   fun watchNetworkActivity(scope: CoroutineScope) {

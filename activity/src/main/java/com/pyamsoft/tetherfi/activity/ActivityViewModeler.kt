@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.activity
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ProxyEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -13,7 +14,7 @@ class ActivityViewModeler
 @Inject
 internal constructor(
     private val state: MutableActivityViewState,
-    private val network: WiDiNetwork,
+    private val network: WiDiNetworkStatus,
 ) : AbstractViewModeler<ActivityViewState>(state) {
 
   fun watchNetworkActivity(scope: CoroutineScope) {

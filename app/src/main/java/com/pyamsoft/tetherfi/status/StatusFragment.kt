@@ -42,13 +42,13 @@ class StatusFragment : Fragment() {
   private var compose: ViewWindowInsetObserver? = null
 
   private fun handleToggleProxy() {
-    val ctx = requireContext()
+    val act = requireActivity()
     viewModel
         .requireNotNull()
         .handleToggleProxy(
             scope = viewLifecycleOwner.lifecycleScope,
-            onStart = { ProxyService.start(ctx) },
-            onStop = { ProxyService.stop(ctx) },
+            onStart = { ProxyService.start(act) },
+            onStop = { ProxyService.stop(act) },
         )
   }
 
@@ -182,9 +182,11 @@ class StatusFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     viewModel.requireNotNull().also { vm ->
       vm.restoreState(savedInstanceState)
-      vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope)
       vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
       vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope)
+      vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope) {
+        ProxyService.stop(requireActivity())
+      }
     }
 
     // Register here to watch for permissions
