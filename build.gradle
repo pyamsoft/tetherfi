@@ -65,7 +65,7 @@ buildscript {
     coil = "2.1.0"
 
     // AndroidX
-    core = "1.7.0"
+    core = "1.8.0"
     fragment = "1.4.1"
     appCompat = "1.4.1"
 
