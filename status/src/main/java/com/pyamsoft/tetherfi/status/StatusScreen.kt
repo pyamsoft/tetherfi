@@ -806,6 +806,7 @@ private fun NetworkInformation(
               for (b in bands) {
                 val selected = remember(b, band) { b == band }
                 Row(
+                    modifier = Modifier.clickable { onSelectBand(b) },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                   RadioButton(
@@ -814,9 +815,7 @@ private fun NetworkInformation(
                   )
 
                   Text(
-                      modifier =
-                          Modifier.clickable { onSelectBand(b) }
-                              .padding(start = MaterialTheme.keylines.baseline),
+                      modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
                       text = b.description,
                       style = MaterialTheme.typography.caption,
                   )
