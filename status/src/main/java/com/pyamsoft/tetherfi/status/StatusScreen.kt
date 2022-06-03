@@ -4,6 +4,7 @@ import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -813,7 +814,9 @@ private fun NetworkInformation(
                   )
 
                   Text(
-                      modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+                      modifier =
+                          Modifier.clickable { onSelectBand(b) }
+                              .padding(start = MaterialTheme.keylines.baseline),
                       text = b.description,
                       style = MaterialTheme.typography.caption,
                   )
