@@ -35,7 +35,8 @@ internal class ProxyService internal constructor() : Service() {
   private val scope = MainScope()
 
   private var shutdownJob: Job? = null
-  private var statusJob: Job? = null
+  private var widiStatusJob: Job? = null
+  private var proxyStatusJob: Job? = null
 
   private suspend fun acquireCpuWakeLock() {
     Timber.d("Attempt to claim CPU wakelock")
@@ -64,17 +65,24 @@ internal class ProxyService internal constructor() : Service() {
         }
 
     // Watch status of network
-    statusJob?.cancel()
-    statusJob =
+    widiStatusJob?.cancel()
+    widiStatusJob =
         scope.launch(context = Dispatchers.Main) {
-          status.requireNotNull().onStatusChanged { s ->
+          status.requireNotNull().onStatusChanged { s -> Timber.d("Server status changed: $s") }
+        }
+
+    // Watch status of proxy
+    proxyStatusJob?.cancel()
+    proxyStatusJob =
+        scope.launch(context = Dispatchers.Main) {
+          status.requireNotNull().onProxyStatusChanged { s ->
             when (s) {
               is RunningStatus.Running -> {
-                Timber.d("WiDi Network started!")
+                Timber.d("Proxy Server started!")
                 // Acquire wake lock
                 acquireCpuWakeLock()
               }
-              else -> Timber.d("Server status changed: $s")
+              else -> Timber.d("Proxy status changed: $s")
             }
           }
         }
@@ -120,8 +128,11 @@ internal class ProxyService internal constructor() : Service() {
     shutdownJob?.cancel()
     shutdownJob = null
 
-    statusJob?.cancel()
-    statusJob = null
+    widiStatusJob?.cancel()
+    widiStatusJob = null
+
+    proxyStatusJob?.cancel()
+    proxyStatusJob = null
 
     // Clear
     shutdownBus = null
