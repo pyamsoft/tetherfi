@@ -68,4 +68,5 @@ dependencies {
   kapt "com.google.dagger:dagger-compiler:$dagger"
 
   api project(":core")
+  api project(":server")
 }

@@ -18,6 +18,7 @@ import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.NotifyData
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
 import com.pyamsoft.pydroid.notify.NotifyId
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.R
 import javax.inject.Inject
 import javax.inject.Named
@@ -31,7 +32,7 @@ internal constructor(
     private val context: Context,
     private val activityClass: Class<out Activity>,
     @StringRes @Named("app_name") private val appNameRes: Int,
-) : NotifyDispatcher<NotificationData> {
+) : NotifyDispatcher<ServerNotificationData> {
 
   private val channelCreator by lazy {
     context.applicationContext.getSystemService<NotificationManager>().requireNotNull()
@@ -95,20 +96,31 @@ internal constructor(
         .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
   }
 
+  @CheckResult
+  private fun resolveContentText(status: RunningStatus): String {
+    return when (status) {
+      is RunningStatus.Error -> "Hotspot Error, click to restart hotspot"
+      is RunningStatus.NotRunning -> "Hotspot preparing..."
+      is RunningStatus.Running -> "Hotspot Ready, click to view connection instructions"
+      is RunningStatus.Starting -> "Hotspot starting..."
+      is RunningStatus.Stopping -> "Hotspot stopping..."
+    }
+  }
+
   override fun build(
       id: NotifyId,
       channelInfo: NotifyChannelInfo,
-      notification: NotificationData
+      notification: ServerNotificationData
   ): Notification {
     guaranteeNotificationChannelExists(channelInfo)
     return createNotificationBuilder(channelInfo)
         .setContentTitle(context.getString(appNameRes))
-        .setContentText("TetherFi Proxy Server")
+        .setContentText(resolveContentText(notification.status))
         .build()
   }
 
   override fun canShow(notification: NotifyData): Boolean {
-    return notification is NotificationData
+    return notification is ServerNotificationData
   }
 
   companion object {
