@@ -41,6 +41,8 @@ internal constructor(
         Timber.d("####################################")
         wakeLock.acquire()
         acquired = true
+      } else {
+        Timber.w("Cannot claim: Already acquired wakelock!!")
       }
     }
   }
@@ -53,6 +55,8 @@ internal constructor(
         Timber.d("####################################")
         wakeLock.release()
         acquired = false
+      } else {
+        Timber.w("Cannot release: Never acquired wakelock!")
       }
     }
   }
