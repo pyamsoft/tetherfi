@@ -43,6 +43,11 @@ internal class ProxyService internal constructor() : Service() {
     locker.requireNotNull().acquire()
   }
 
+  private suspend fun releaseCpuWakeLock() {
+    Timber.d("Attempt to release CPU wakelock")
+    locker.requireNotNull().release()
+  }
+
   override fun onBind(intent: Intent?): IBinder? {
     return null
   }
@@ -68,7 +73,16 @@ internal class ProxyService internal constructor() : Service() {
     widiStatusJob?.cancel()
     widiStatusJob =
         scope.launch(context = Dispatchers.Main) {
-          status.requireNotNull().onStatusChanged { s -> Timber.d("Server status changed: $s") }
+          status.requireNotNull().onStatusChanged { s ->
+            when (s) {
+              is RunningStatus.Error -> {
+                Timber.w("Server Server Error: ${s.message}")
+                // Release wakelock
+                releaseCpuWakeLock()
+              }
+              else -> Timber.d("Server status changed: $s")
+            }
+          }
         }
 
     // Watch status of proxy
@@ -81,6 +95,11 @@ internal class ProxyService internal constructor() : Service() {
                 Timber.d("Proxy Server started!")
                 // Acquire wake lock
                 acquireCpuWakeLock()
+              }
+              is RunningStatus.Error -> {
+                Timber.w("Proxy Server Error: ${s.message}")
+                // Release wakelock
+                releaseCpuWakeLock()
               }
               else -> Timber.d("Proxy status changed: $s")
             }
@@ -107,7 +126,7 @@ internal class ProxyService internal constructor() : Service() {
     val widi = network
     if (widi != null) {
       scope.launch(context = Dispatchers.Main) {
-        Timber.d("Stop WiDi network")
+        Timber.d("Destroy WiDi network")
         widi.stop()
       }
     }
@@ -116,7 +135,7 @@ internal class ProxyService internal constructor() : Service() {
     val lock = locker
     if (lock != null) {
       scope.launch(context = Dispatchers.Main) {
-        Timber.d("Attempt to release CPU wakelock")
+        Timber.d("Destroy CPU wakelock")
         lock.release()
       }
     }
