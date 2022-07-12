@@ -17,6 +17,7 @@ import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
+import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.theme.ThemeProvider
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.util.dispose
@@ -24,9 +25,10 @@ import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
+import com.pyamsoft.tetherfi.main.MainView
 import javax.inject.Inject
 
-class ActivityFragment : Fragment() {
+class ActivityFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   @JvmField @Inject internal var viewModel: ActivityViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
@@ -97,6 +99,10 @@ class ActivityFragment : Fragment() {
     theming = null
     viewModel = null
     imageLoader = null
+  }
+
+  override fun getScreenId(): MainView {
+    return MainView.Activity
   }
 
   companion object {

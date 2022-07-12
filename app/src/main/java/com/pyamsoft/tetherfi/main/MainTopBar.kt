@@ -34,7 +34,9 @@ import com.pyamsoft.tetherfi.R
 internal fun MainTopBar(
     modifier: Modifier = Modifier,
     currentTab: MainView,
-    onTabUpdated: (MainView) -> Unit,
+    onLoadStatus: () -> Unit,
+    onLoadActivity: () -> Unit,
+    onLoadError: () -> Unit,
     onSettingsOpen: () -> Unit,
 ) {
   val tabs = remember {
@@ -100,13 +102,23 @@ internal fun MainTopBar(
               )
             },
         ) {
-          tabs.forEach { tab ->
-            ScreenTab(
-                current = currentTab,
-                tab = tab,
-                onTabUpdated = onTabUpdated,
-            )
-          }
+          ScreenTab(
+              current = currentTab,
+              tab = MainView.Status,
+              onTabUpdated = onLoadStatus,
+          )
+
+          ScreenTab(
+              current = currentTab,
+              tab = MainView.Activity,
+              onTabUpdated = onLoadActivity,
+          )
+
+          ScreenTab(
+              current = currentTab,
+              tab = MainView.Errors,
+              onTabUpdated = onLoadError,
+          )
         }
       }
     }
@@ -118,12 +130,12 @@ private fun ScreenTab(
     modifier: Modifier = Modifier,
     tab: MainView,
     current: MainView,
-    onTabUpdated: (MainView) -> Unit,
+    onTabUpdated: () -> Unit,
 ) {
   Tab(
       modifier = modifier,
       selected = tab == current,
-      onClick = { onTabUpdated(tab) },
+      onClick = { onTabUpdated() },
   ) {
     Text(
         modifier = Modifier.padding(vertical = MaterialTheme.keylines.typography),

@@ -88,7 +88,9 @@ class MainActivity : PYDroidActivity() {
               screen?.let { s ->
                 MainTopBar(
                     currentTab = s,
-                    onTabUpdated = { navi.navigateTo(it.asScreen()) },
+                    onLoadStatus = { navi.navigateTo(MainView.Status) },
+                    onLoadActivity = { navi.navigateTo(MainView.Activity) },
+                    onLoadError = { navi.navigateTo(MainView.Errors) },
                     onSettingsOpen = { handleOpenApplicationSettings() },
                 )
               }
@@ -100,7 +102,7 @@ class MainActivity : PYDroidActivity() {
 
     vm.handleSyncDarkTheme(this)
     navi.restoreState(savedInstanceState)
-    navi.loadIfEmpty { MainView.Status.asScreen() }
+    navi.loadIfEmpty { MainView.Status }
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

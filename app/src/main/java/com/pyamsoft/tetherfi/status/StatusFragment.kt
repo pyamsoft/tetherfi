@@ -21,6 +21,7 @@ import com.google.accompanist.insets.LocalWindowInsets
 import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
+import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.theme.asThemeProvider
 import com.pyamsoft.pydroid.ui.util.dispose
@@ -28,12 +29,13 @@ import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
+import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.service.ProxyService
 import javax.inject.Inject
 import timber.log.Timber
 
-class StatusFragment : Fragment() {
+class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
@@ -236,6 +238,10 @@ class StatusFragment : Fragment() {
 
     theming = null
     viewModel = null
+  }
+
+  override fun getScreenId(): MainView {
+    return MainView.Status
   }
 
   companion object {

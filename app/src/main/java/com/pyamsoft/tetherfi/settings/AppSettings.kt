@@ -12,12 +12,13 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
+import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.preference.Preferences
 import com.pyamsoft.pydroid.ui.settings.SettingsFragment
 import com.pyamsoft.tetherfi.main.MainComponent
 import javax.inject.Inject
 
-internal class AppSettings : SettingsFragment() {
+internal class AppSettings : SettingsFragment(), FragmentNavigator.Screen<SettingsPage> {
 
   override val hideClearAll: Boolean = false
 
@@ -75,6 +76,10 @@ internal class AppSettings : SettingsFragment() {
     val density = LocalDensity.current
     val height = state.topBarOffset
     return remember(density, height) { density.run { height.toDp() } }
+  }
+
+  override fun getScreenId(): SettingsPage {
+    return SettingsPage.Settings
   }
 
   companion object {

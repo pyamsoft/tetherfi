@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.os.Bundle
+import androidx.annotation.AnimRes
 import androidx.annotation.CheckResult
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
@@ -24,7 +24,6 @@ import androidx.fragment.app.FragmentTransaction
 import com.pyamsoft.pydroid.arch.UiSavedStateReader
 import com.pyamsoft.pydroid.arch.UiSavedStateWriter
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
-import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.activity.ActivityFragment
 import com.pyamsoft.tetherfi.error.ErrorFragment
@@ -38,95 +37,77 @@ internal constructor(
     @IdRes fragmentContainerId: Int,
 ) : FragmentNavigator<MainView>(activity, fragmentContainerId) {
 
-  override fun restoreState(savedInstanceState: UiSavedStateReader) {
-    val s = savedInstanceState.get<String>(KEY_SCREEN_ID)
-    if (s != null) {
-      val restored =
-          when (s) {
-            MainView.Status::class.java.name -> MainView.Status
-            MainView.Errors::class.java.name -> MainView.Errors
-            MainView.Activity::class.java.name -> MainView.Activity
-            else -> throw IllegalArgumentException("Unable to restore screen: $s")
-          }
-      updateCurrentScreen(restored)
-    }
-  }
+  override fun onRestoreState(savedInstanceState: UiSavedStateReader) {}
 
-  override fun saveState(outState: UiSavedStateWriter) {
-    val s = currentScreen()
-    if (s != null) {
-      outState.put(KEY_SCREEN_ID, s::class.java.name)
-    } else {
-      outState.remove<String>(KEY_SCREEN_ID)
-    }
-  }
+  override fun onSaveState(outState: UiSavedStateWriter) {}
+
+  override fun produceFragmentForScreen(screen: MainView): Fragment =
+      when (screen) {
+        MainView.Activity -> ActivityFragment.newInstance()
+        MainView.Errors -> ErrorFragment.newInstance()
+        MainView.Status -> StatusFragment.newInstance()
+      }
 
   override fun performFragmentTransaction(
       container: Int,
-      data: FragmentTag,
-      newScreen: Navigator.Screen<MainView>,
-      previousScreen: MainView?
+      newScreen: Fragment,
+      previousScreen: Fragment?
   ) {
     commitNow {
-      decideAnimationForPage(newScreen.screen, previousScreen)
-      replace(container, data.fragment(newScreen.arguments), data.tag)
+      decideAnimationForPage(newScreen, previousScreen)
+      replace(container, newScreen, newScreen::class.java.name)
     }
-  }
-
-  override fun provideFragmentTagMap(): Map<MainView, FragmentTag> {
-    return mapOf(
-        MainView.Status to createFragmentTag("StatusFragment") { StatusFragment.newInstance() },
-        MainView.Activity to
-            createFragmentTag("ActivityFragment") { ActivityFragment.newInstance() },
-        MainView.Errors to createFragmentTag("ErrorFragment") { ErrorFragment.newInstance() },
-    )
   }
 
   companion object {
 
-    private const val KEY_SCREEN_ID = "key_screen_id"
+    private data class FragmentAnimation(
+        @AnimRes val enter: Int,
+        @AnimRes val exit: Int,
+    )
 
-    private fun FragmentTransaction.decideAnimationForPage(newPage: MainView, oldPage: MainView?) {
+    @CheckResult
+    private infix fun Int.then(exit: Int): FragmentAnimation {
+      return FragmentAnimation(
+          enter = this,
+          exit = exit,
+      )
+    }
+
+    private fun FragmentTransaction.decideAnimationForPage(
+        newPage: Fragment,
+        oldPage: Fragment?,
+    ) {
       val animations =
-          if (oldPage == null) R.anim.fragment_open_enter to R.anim.fragment_open_exit
-          else {
-            when (newPage) {
-              is MainView.Activity ->
-                  when (oldPage) {
-                    is MainView.Status -> R.anim.slide_in_right to R.anim.slide_out_left
-                    is MainView.Errors -> R.anim.slide_in_left to R.anim.slide_out_right
-                    is MainView.Activity -> null
-                  }
-              is MainView.Status ->
-                  when (oldPage) {
-                    is MainView.Activity,
-                    is MainView.Errors -> R.anim.slide_in_left to R.anim.slide_out_right
-                    is MainView.Status -> null
-                  }
-              is MainView.Errors ->
-                  when (oldPage) {
-                    is MainView.Status,
-                    is MainView.Activity -> R.anim.slide_in_right to R.anim.slide_out_left
-                    is MainView.Errors -> null
-                  }
-            }
+          when (newPage) {
+            is StatusFragment ->
+                when (oldPage) {
+                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
+                  is ActivityFragment, is ErrorFragment ->
+                      R.anim.slide_in_left then R.anim.slide_out_right
+                  else -> null
+                }
+            is ActivityFragment ->
+                when (oldPage) {
+                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
+                  is StatusFragment -> R.anim.slide_in_right then R.anim.slide_out_left
+                  is ErrorFragment -> R.anim.slide_in_left then R.anim.slide_out_right
+                  else -> null
+                }
+            is ErrorFragment ->
+                when (oldPage) {
+                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
+                  is StatusFragment, is ActivityFragment ->
+                      R.anim.slide_in_right then R.anim.slide_out_left
+                  else -> null
+                }
+            else -> null
           }
 
       if (animations != null) {
-        val (enter, exit) = animations
+        val enter = animations.enter
+        val exit = animations.exit
         setCustomAnimations(enter, exit, enter, exit)
-      }
-    }
-
-    @JvmStatic
-    @CheckResult
-    private inline fun createFragmentTag(
-        tag: String,
-        crossinline fragment: (arguments: Bundle?) -> Fragment,
-    ): FragmentTag {
-      return object : FragmentTag {
-        override val fragment: (arguments: Bundle?) -> Fragment = { fragment(it) }
-        override val tag: String = tag
       }
     }
   }

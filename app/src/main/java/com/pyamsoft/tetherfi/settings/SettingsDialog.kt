@@ -68,7 +68,7 @@ class SettingsDialog : AppCompatDialogFragment() {
 
     navigator.requireNotNull().also { n ->
       n.restoreState(savedInstanceState)
-      n.loadIfEmpty { SettingsPage.Settings.asScreen() }
+      n.loadIfEmpty { SettingsPage.Settings }
     }
   }
 
