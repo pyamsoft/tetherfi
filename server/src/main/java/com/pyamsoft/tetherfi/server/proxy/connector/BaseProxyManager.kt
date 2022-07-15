@@ -59,7 +59,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
   @CheckResult protected abstract suspend fun CoroutineScope.newSession(server: S)
 
-  @CheckResult protected abstract fun openServer(): S
+  @CheckResult protected abstract suspend fun openServer(): S
 
-  @CheckResult protected abstract fun onServerClosed()
+  @CheckResult protected abstract suspend fun onServerClosed()
 }

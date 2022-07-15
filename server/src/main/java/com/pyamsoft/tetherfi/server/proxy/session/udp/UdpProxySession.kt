@@ -10,16 +10,13 @@ import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
-import com.pyamsoft.tetherfi.server.proxy.tagSocket
-import io.ktor.network.selector.ActorSelectorManager
-import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.DatagramWriteChannel
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
-import io.ktor.network.sockets.aSocket
 import io.ktor.utils.io.core.ByteReadPacket
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +38,23 @@ internal constructor(
         urlFixers,
         proxyDebug,
     ) {
+
+  @CheckResult
+  private fun resolveDestinationInfo(address: SocketAddress): DestinationInfo {
+    // Pull out the original packet's address data
+    if (address !is InetSocketAddress) {
+      throw IllegalArgumentException("UDP Proxy does not handle Unix sockets")
+    }
+
+    // Run URL fixers over the hostname url
+    val fixedHostName = address.hostname.fixSpecialBuggyUrls()
+    val port = address.port
+
+    return DestinationInfo(
+        hostName = fixedHostName,
+        port = port,
+    )
+  }
 
   @CheckResult
   private fun craftSendPacket(
@@ -93,62 +107,14 @@ internal constructor(
     }
   }
 
-  @CheckResult
-  private fun connectToInternet(info: DestinationInfo): ConnectedDatagramSocket {
-    // Tag sockets for Android O strict mode
-    tagSocket()
-
-    // We dont actually use the socket tls() method here since we are not a TLS server
-
-    val remote =
-        InetSocketAddress(
-            hostname = info.hostName,
-            port = info.port,
-        )
-
-    return aSocket(ActorSelectorManager(context = dispatcher)).udp().connect(remoteAddress = remote)
-  }
-
-  @CheckResult
-  private fun resolveDestinationInfo(address: SocketAddress): DestinationInfo {
-    // Pull out the original packet's address data
-    if (address !is InetSocketAddress) {
-      throw IllegalArgumentException("UDP Proxy does not handle Unix sockets")
-    }
-
-    // Run URL fixers over the hostname url
-    val fixedHostName = address.hostname.fixSpecialBuggyUrls()
-    val port = address.port
-
-    return DestinationInfo(
-        hostName = fixedHostName,
-        port = port,
-    )
-  }
-
   override suspend fun exchange(data: UdpProxyData) {
     Enforcer.assertOffMainThread()
-    //
-    //    val packet = data.initialPacket
-    //
-    //    // Resolve destination info from original packet
-    //    val destination = resolveDestinationInfo(packet.address)
-    //    val hostName = destination.hostName
-    //    val port = destination.port
-    //
-    //    // Craft the send packet from the data
-    //    val sendPacket =
-    //        craftSendPacket(
-    //            packet.packet,
-    //            hostName,
-    //            port,
-    //        )
-    //
-    //    sendPacketToDestination(
-    //        data.proxyCommunicator,
-    //        sendPacket,
-    //        hostName,
-    //        port,
-    //    )
+
+    val packet = data.initialPacket
+
+    // Resolve destination info from original packet
+    val destination = resolveDestinationInfo(packet.address)
   }
+
+  override suspend fun finish() {}
 }

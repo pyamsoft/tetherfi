@@ -59,7 +59,7 @@ internal constructor(
     }
   }
 
-  override fun openServer(): ServerSocket {
+  override suspend fun openServer(): ServerSocket {
     return aSocket(ActorSelectorManager(context = dispatcher))
         .tcp()
         .bind(
@@ -81,8 +81,10 @@ internal constructor(
     scope.launch(context = dispatcher) { runClientSession(client) }
   }
 
-  override fun onServerClosed() {
-    ensureMemPool().dispose()
+  override suspend fun onServerClosed() {
+    session.finish()
+
+    pool?.dispose()
     pool = null
   }
 }

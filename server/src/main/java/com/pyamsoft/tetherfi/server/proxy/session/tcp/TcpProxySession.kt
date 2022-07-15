@@ -12,6 +12,7 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
@@ -401,6 +402,8 @@ internal constructor(
       }
     }
   }
+
+  override fun finish() {}
 
   private data class MethodData(
       val url: String,

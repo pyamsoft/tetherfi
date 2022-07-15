@@ -11,6 +11,7 @@ import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.aSocket
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal class UdpProxyManager
@@ -39,7 +40,7 @@ internal constructor(
     }
   }
 
-  override fun openServer(): BoundDatagramSocket {
+  override suspend fun openServer(): BoundDatagramSocket {
     return aSocket(ActorSelectorManager(context = dispatcher))
         .udp()
         .bind(
@@ -53,14 +54,16 @@ internal constructor(
   override suspend fun CoroutineScope.newSession(server: BoundDatagramSocket) {
     Enforcer.assertOffMainThread()
 
+    val scope = this
+
     // UDP is a stateless connection, so as long as we are not blocking things, we can use a single
     // Proxy connection for all UDP sessions
     val datagram = server.receive()
 
-    // Run client sessions (client sessions will launch new coroutines for remote connections if
-    // needed)
-    runClientSession(server, datagram)
+    scope.launch(context = dispatcher) { runClientSession(server, datagram) }
   }
 
-  override fun onServerClosed() {}
+  override suspend fun onServerClosed() {
+    session.finish()
+  }
 }
