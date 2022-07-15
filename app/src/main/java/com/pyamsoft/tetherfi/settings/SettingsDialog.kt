@@ -94,7 +94,7 @@ class SettingsDialog : AppCompatDialogFragment() {
 
   companion object {
 
-    private const val TAG = "SettingsDialog"
+    private val TAG = SettingsDialog::class.java.name
 
     @JvmStatic
     @CheckResult

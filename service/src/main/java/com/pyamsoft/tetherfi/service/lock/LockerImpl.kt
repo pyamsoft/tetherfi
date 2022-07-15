@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.service.lock
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.PowerManager
+import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -24,12 +25,14 @@ internal constructor(
     private val preferences: ServicePreferences,
 ) : Locker {
 
+  private val wakeLockTag = getWakeLockTag(context.packageName)
+  private val mutex = Mutex()
+
   private val wakeLock by lazy {
     val powerManager = context.getSystemService<PowerManager>().requireNotNull()
-    return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
+    return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, wakeLockTag)
   }
 
-  private val mutex = Mutex()
   private var acquired = false
 
   @SuppressLint("WakelockTimeout")
@@ -37,7 +40,7 @@ internal constructor(
     mutex.withLock {
       if (!acquired) {
         Timber.d("####################################")
-        Timber.d("Acquire CPU wakelock: $WAKE_LOCK_TAG")
+        Timber.d("Acquire CPU wakelock: $wakeLockTag")
         Timber.d("####################################")
         wakeLock.acquire()
         acquired = true
@@ -51,7 +54,7 @@ internal constructor(
     mutex.withLock {
       if (acquired) {
         Timber.d("####################################")
-        Timber.d("Release CPU wakelock: $WAKE_LOCK_TAG")
+        Timber.d("Release CPU wakelock: $wakeLockTag")
         Timber.d("####################################")
         wakeLock.release()
         acquired = false
@@ -80,6 +83,11 @@ internal constructor(
       }
 
   companion object {
-    private const val WAKE_LOCK_TAG = "com.pyamsoft.tetherfi:PROXY_WAKE_LOCK"
+
+    @JvmStatic
+    @CheckResult
+    private fun getWakeLockTag(name: String): String {
+      return "${name}:PROXY_WAKE_LOCK"
+    }
   }
 }
