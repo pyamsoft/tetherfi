@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session
+package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
@@ -6,12 +6,14 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.generateRandomId
+import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
-import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
@@ -26,22 +28,26 @@ import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
 import java.net.URI
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+@Singleton
 internal class TcpProxySession
+@Inject
 internal constructor(
-    private val dispatcher: CoroutineDispatcher,
-    private val errorBus: EventBus<ErrorEvent>,
-    private val connectionBus: EventBus<ConnectionEvent>,
-    private val memPool: MemPool<ByteArray>,
-    urlFixers: Set<UrlFixer>,
-    proxyDebug: Boolean,
+    // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
+    @ServerInternalApi urlFixers: MutableSet<UrlFixer>,
+    @ServerInternalApi proxyDebug: Boolean,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
+    @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
+    @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
 ) :
-    BaseProxySession<TcpProxyOptions>(
+    BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
         urlFixers,
         proxyDebug,
@@ -243,7 +249,11 @@ internal constructor(
     output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
-  private suspend fun CoroutineScope.talk(input: ByteReadChannel, output: ByteWriteChannel) {
+  private suspend fun CoroutineScope.talk(
+      memPool: MemPool<ByteArray>,
+      input: ByteReadChannel,
+      output: ByteWriteChannel
+  ) {
     memPool.use { buffer ->
       while (isActive) {
         val size = input.readAvailable(buffer)
@@ -258,6 +268,7 @@ internal constructor(
   }
 
   private suspend fun exchangeInternet(
+      memPool: MemPool<ByteArray>,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
@@ -284,6 +295,7 @@ internal constructor(
           launch(context = dispatcher) {
             // Send data from the internet back to the proxy in a different thread
             talk(
+                memPool = memPool,
                 input = internetInput,
                 output = proxyOutput,
             )
@@ -291,6 +303,7 @@ internal constructor(
 
       // Send input from the proxy (clients) to the internet on this thread
       talk(
+          memPool = memPool,
           input = proxyInput,
           output = internetOutput,
       )
@@ -313,6 +326,7 @@ internal constructor(
     }
   }
 
+  @CheckResult
   private suspend fun connectToInternet(request: ProxyRequest): Socket {
     // Tag sockets for Android O strict mode
     tagSocket()
@@ -326,22 +340,16 @@ internal constructor(
             port = request.port,
         )
 
-    return aSocket(ActorSelectorManager(context = dispatcher))
-        .tcp()
-        .connect(
-            remoteAddress = remote,
-        )
+    return aSocket(ActorSelectorManager(context = dispatcher)).tcp().connect(remoteAddress = remote)
   }
 
-  override suspend fun exchange(data: TcpProxyOptions) {
+  override suspend fun exchange(data: TcpProxyData) {
     Enforcer.assertOffMainThread()
 
-    val proxy = data.proxy
-    val proxyInput = proxy.openReadChannel()
-    val proxyOutput = proxy.openWriteChannel(autoFlush = true)
+    val proxyInput = data.proxy.openReadChannel()
+    val proxyOutput = data.proxy.openWriteChannel(autoFlush = true)
 
     val request = parseRequest(proxyInput)
-
     try {
       if (request == null) {
         val msg = "Could not parse proxy request"
@@ -359,6 +367,8 @@ internal constructor(
 
       connectToInternet(request).use { internet ->
         debugLog { "${proxyType.name} Proxy to: $request" }
+        val internetInput = internet.openReadChannel()
+        val internetOutput = internet.openWriteChannel(autoFlush = true)
 
         // Log connection
         connectionBus.send(
@@ -368,9 +378,8 @@ internal constructor(
             ),
         )
 
-        val internetInput = internet.openReadChannel()
-        val internetOutput = internet.openWriteChannel(autoFlush = true)
         exchangeInternet(
+            memPool = data.memPool,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             internetInput = internetInput,
@@ -438,7 +447,7 @@ internal constructor(
      */
     @CheckResult
     private fun writeMessageAndAwaitMore(message: String): ByteArray {
-      val msg = if (message.endsWith(LINE_ENDING)) message else "${message}${LINE_ENDING}"
+      val msg = if (message.endsWith(LINE_ENDING)) message else "${message}$LINE_ENDING"
       return msg.encodeToByteArray()
     }
   }

@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session.mempool
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool
 
 import kotlinx.coroutines.sync.withLock
 

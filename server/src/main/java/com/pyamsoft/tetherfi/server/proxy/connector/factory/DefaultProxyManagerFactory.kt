@@ -7,9 +7,11 @@ import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
-import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -19,8 +21,9 @@ internal class DefaultProxyManagerFactory
 internal constructor(
     @ServerInternalApi private val proxyDebug: Boolean,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
-    @ServerInternalApi private val tcpSessionFactory: ProxySession.Factory<TcpProxyOptions>,
-    @ServerInternalApi private val udpSessionFactory: ProxySession.Factory<UdpProxyOptions>,
+    @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
+    @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
+    @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -29,7 +32,8 @@ internal constructor(
         port = port,
         dispatcher = dispatcher,
         proxyDebug = proxyDebug,
-        factory = tcpSessionFactory,
+        session = tcpSession,
+        memPoolProvider = memPoolProvider,
     )
   }
 
@@ -39,7 +43,7 @@ internal constructor(
         port = port,
         dispatcher = dispatcher,
         proxyDebug = proxyDebug,
-        factory = udpSessionFactory,
+        session = udpSession,
     )
   }
 

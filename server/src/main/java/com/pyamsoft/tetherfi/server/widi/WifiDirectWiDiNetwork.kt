@@ -236,10 +236,7 @@ internal constructor(
     val channel = getChannel()
 
     if (channel == null) {
-      completeStop {
-        Timber.w("Stop called without proxy channel, do nothing")
-        status.set(RunningStatus.NotRunning)
-      }
+      completeStop { status.set(RunningStatus.NotRunning) }
       return
     }
 

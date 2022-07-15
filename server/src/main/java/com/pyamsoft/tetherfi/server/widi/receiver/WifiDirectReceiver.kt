@@ -46,19 +46,15 @@ internal constructor(
       return ""
     }
 
-    val ip = address.hostAddress.orEmpty()
-    Timber.d("Host address: $ip")
-    return ip
+    return address.hostAddress.orEmpty()
   }
 
   private suspend fun handleStateChangedAction(intent: Intent) {
     when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
       WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
-        Timber.d("Wifi P2P Enabled")
         eventBus.send(WidiNetworkEvent.WifiEnabled)
       }
       WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
-        Timber.d("Wifi P2P Disabled")
         eventBus.send(WidiNetworkEvent.WifiDisabled)
         shutdownBus.send(OnShutdownEvent)
       }
@@ -76,12 +72,10 @@ internal constructor(
   }
 
   private suspend fun handlePeersChangedAction(intent: Intent) {
-    Timber.d("Peers changed!")
     eventBus.send(WidiNetworkEvent.PeersChanged)
   }
 
   private suspend fun handleThisDeviceChangedAction(intent: Intent) {
-    Timber.d("This Device changed!")
     eventBus.send(WidiNetworkEvent.ThisDeviceChanged)
   }
 

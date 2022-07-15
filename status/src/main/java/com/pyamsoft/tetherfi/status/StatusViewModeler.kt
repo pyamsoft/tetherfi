@@ -76,29 +76,23 @@ internal constructor(
       network.onWifiDirectEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
-            Timber.d("Connection Changed, refresh group info")
             state.ip = event.ip
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
-            Timber.d("This Device Changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.PeersChanged -> {
-            Timber.d("Peers Changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.WifiDisabled -> {
-            Timber.d("Wifi P2P Disabled, refresh group info")
             refreshGroupInfo(scope = scope)
             onStop()
           }
           is WidiNetworkEvent.WifiEnabled -> {
-            Timber.d("Wifi P2P Enabled, refresh group info")
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.DiscoveryChanged -> {
-            Timber.d("Discovery changed, refresh group info")
             refreshGroupInfo(scope = scope)
           }
         }

@@ -1,9 +1,8 @@
-package com.pyamsoft.tetherfi.server.proxy.session.mempool
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool
 
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+// Not singleton since this will be provided each time by a Provider<>
 internal class ByteArrayMemPool @Inject internal constructor() : UnboundedMemPool<ByteArray>() {
 
   override fun make(): ByteArray {

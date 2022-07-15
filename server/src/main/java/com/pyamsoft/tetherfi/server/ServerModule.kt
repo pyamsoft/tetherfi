@@ -17,12 +17,13 @@ import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.factory.TcpProxySessionFactory
-import com.pyamsoft.tetherfi.server.proxy.session.factory.UdpProxySessionFactory
-import com.pyamsoft.tetherfi.server.proxy.session.mempool.ByteArrayMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.mempool.MemPool
-import com.pyamsoft.tetherfi.server.proxy.session.options.TcpProxyOptions
-import com.pyamsoft.tetherfi.server.proxy.session.options.UdpProxyOptions
+import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
@@ -57,7 +58,7 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindByteArrayMemPool(impl: ByteArrayMemPool): MemPool<ByteArray>
+  internal abstract fun bindByteArrayMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
 
   @Binds
   @CheckResult
@@ -96,16 +97,12 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindTcpProxySessionFactory(
-      impl: TcpProxySessionFactory
-  ): ProxySession.Factory<TcpProxyOptions>
+  internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
 
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindUdpProxySessionFactory(
-      impl: UdpProxySessionFactory
-  ): ProxySession.Factory<UdpProxyOptions>
+  internal abstract fun bindUdpProxySession(impl: UdpProxySession): ProxySession<UdpProxyData>
 
   @Module
   companion object {
