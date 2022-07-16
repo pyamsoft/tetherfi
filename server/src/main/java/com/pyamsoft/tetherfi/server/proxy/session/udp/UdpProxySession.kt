@@ -114,6 +114,11 @@ internal constructor(
 
     // Resolve destination info from original packet
     val destination = resolveDestinationInfo(packet.address)
+
+      // TODO We are on our own thread, now we have to
+      // 1 Open or reuse a server-global ConnectedDatagramSocket
+      // 2 Watch the CDS input stream for data
+      // 3 upon CDS input received, proxy it back to the proxySocket via sendPacket()
   }
 
   override suspend fun finish() {}

@@ -403,7 +403,7 @@ internal constructor(
     }
   }
 
-  override fun finish() {}
+  override suspend fun finish() {}
 
   private data class MethodData(
       val url: String,

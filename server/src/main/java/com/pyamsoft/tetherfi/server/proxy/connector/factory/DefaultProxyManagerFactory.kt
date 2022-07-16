@@ -10,7 +10,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.udp.connections.ManagedDatagramConnectionPool
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -25,7 +24,6 @@ internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
-    @ServerInternalApi private val connectionPoolProvider: Provider<ManagedDatagramConnectionPool>,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -46,7 +44,6 @@ internal constructor(
         dispatcher = dispatcher,
         proxyDebug = proxyDebug,
         session = udpSession,
-        connectionPoolProvider = connectionPoolProvider,
     )
   }
 
