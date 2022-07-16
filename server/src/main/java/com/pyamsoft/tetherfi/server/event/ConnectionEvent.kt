@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server.event
 
 import com.pyamsoft.tetherfi.core.LogEvent
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 
 sealed class ConnectionEvent : LogEvent {
 
@@ -11,14 +12,13 @@ sealed class ConnectionEvent : LogEvent {
 
   data class Tcp(
       override val id: String,
-      val request: ProxyRequest,
       override val clear: Boolean = false,
+      val request: ProxyRequest,
   ) : ConnectionEvent()
 
   data class Udp(
       override val id: String,
-      val hostName: String,
-      val port: Int,
       override val clear: Boolean = false,
+      val destination: DestinationInfo,
   ) : ConnectionEvent()
 }

@@ -23,6 +23,8 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedConnectionTracker
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpConnectionTracker
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
@@ -58,6 +60,11 @@ abstract class ServerModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
+
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindConnectionTracker(impl: UdpConnectionTracker): ManagedConnectionTracker
 
   @Binds
   @CheckResult

@@ -8,6 +8,7 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
@@ -34,7 +35,7 @@ internal constructor(
   private var pool: ManagedMemPool<ByteArray>? = null
 
   @CheckResult
-  private fun ensureMemPool(): ManagedMemPool<ByteArray> {
+  private fun ensureMemPool(): MemPool<ByteArray> {
     pool =
         pool ?: memPoolProvider.get().requireNotNull().also { Timber.d("Provide new MemPool: $it") }
     return pool.requireNotNull()
@@ -47,8 +48,14 @@ internal constructor(
       session.exchange(
           data =
               TcpProxyData(
-                  proxy = client,
-                  memPool = ensureMemPool(),
+                  runtime =
+                      TcpProxyData.Runtime(
+                          proxy = client,
+                      ),
+                  environment =
+                      TcpProxyData.Environment(
+                          memPool = ensureMemPool(),
+                      ),
               ),
       )
     } catch (e: Throwable) {
@@ -82,8 +89,6 @@ internal constructor(
   }
 
   override suspend fun onServerClosed() {
-    session.finish()
-
     pool?.dispose()
     pool = null
   }

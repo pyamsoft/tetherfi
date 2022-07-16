@@ -347,8 +347,11 @@ internal constructor(
   override suspend fun exchange(data: TcpProxyData) {
     Enforcer.assertOffMainThread()
 
-    val proxyInput = data.proxy.openReadChannel()
-    val proxyOutput = data.proxy.openWriteChannel(autoFlush = true)
+    val runtime = data.runtime
+    val environment = data.environment
+
+    val proxyInput = runtime.proxy.openReadChannel()
+    val proxyOutput = runtime.proxy.openWriteChannel(autoFlush = true)
 
     val request = parseRequest(proxyInput)
     try {
@@ -380,7 +383,7 @@ internal constructor(
         )
 
         exchangeInternet(
-            memPool = data.memPool,
+            memPool = environment.memPool,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             internetInput = internetInput,
@@ -402,8 +405,6 @@ internal constructor(
       }
     }
   }
-
-  override suspend fun finish() {}
 
   private data class MethodData(
       val url: String,

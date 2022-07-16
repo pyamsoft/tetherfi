@@ -1,14 +1,19 @@
 package com.pyamsoft.tetherfi.server.proxy.connector
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ConnectionTracker
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedConnectionTracker
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.aSocket
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -19,6 +24,7 @@ internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
     private val session: ProxySession<UdpProxyData>,
+    private val trackerProvider: Provider<ManagedConnectionTracker>,
     proxyDebug: Boolean,
 ) :
     BaseProxyManager<BoundDatagramSocket>(
@@ -26,13 +32,32 @@ internal constructor(
         proxyDebug,
     ) {
 
+  private var tracker: ManagedConnectionTracker? = null
+
+  @CheckResult
+  private fun ensureConnectionTracker(): ConnectionTracker {
+    tracker =
+        tracker
+            ?: trackerProvider.get().requireNotNull().also {
+              Timber.d("Provide new ConnectionTracker: $it")
+            }
+    return tracker.requireNotNull()
+  }
+
   private suspend fun runClientSession(server: BoundDatagramSocket, initialDatagram: Datagram) {
     try {
       session.exchange(
           data =
               UdpProxyData(
-                  proxy = server,
-                  initialPacket = initialDatagram,
+                  runtime =
+                      UdpProxyData.Runtime(
+                          proxy = server,
+                          initialPacket = initialDatagram,
+                      ),
+                  environment =
+                      UdpProxyData.Environment(
+                          tracker = ensureConnectionTracker(),
+                      ),
               ),
       )
     } catch (e: Throwable) {
@@ -64,6 +89,7 @@ internal constructor(
   }
 
   override suspend fun onServerClosed() {
-    session.finish()
+    tracker?.dispose()
+    tracker = null
   }
 }

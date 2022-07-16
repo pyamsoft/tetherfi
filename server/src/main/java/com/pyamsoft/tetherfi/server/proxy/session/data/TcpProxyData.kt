@@ -5,6 +5,17 @@ import io.ktor.network.sockets.Socket
 
 internal data class TcpProxyData
 internal constructor(
-    val proxy: Socket,
-    val memPool: MemPool<ByteArray>,
-) : ProxyData
+    override val runtime: Runtime,
+    override val environment: Environment,
+) : ProxyData<TcpProxyData.Runtime, TcpProxyData.Environment> {
+
+  internal data class Runtime
+  internal constructor(
+      val proxy: Socket,
+  )
+
+  internal data class Environment
+  internal constructor(
+      val memPool: MemPool<ByteArray>,
+  )
+}

@@ -6,8 +6,6 @@ internal interface ProxySession<T : Any> {
 
   suspend fun exchange(data: T)
 
-  suspend fun finish()
-
   interface Factory<T : Any> {
 
     @CheckResult fun create(): ProxySession<T>

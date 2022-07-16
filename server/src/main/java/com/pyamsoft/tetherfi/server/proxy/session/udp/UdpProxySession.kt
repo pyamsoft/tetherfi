@@ -13,14 +13,19 @@ import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
+import io.ktor.network.sockets.BoundDatagramSocket
+import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.DatagramWriteChannel
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
-import io.ktor.utils.io.core.ByteReadPacket
+import io.ktor.network.sockets.isClosed
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 @Singleton
 internal class UdpProxySession
@@ -56,51 +61,67 @@ internal constructor(
     )
   }
 
-  @CheckResult
-  private fun craftSendPacket(
-      packet: ByteReadPacket,
-      hostName: String,
-      port: Int,
-  ): Datagram {
-    return Datagram(
-        packet = packet,
-        address =
-            InetSocketAddress(
-                hostname = hostName,
-                port = port,
+  private suspend fun exchangeInternet(
+      internet: ConnectedDatagramSocket,
+      proxy: BoundDatagramSocket,
+      destination: DestinationInfo,
+  ) = coroutineScope {
+    try {
+      val job =
+          launch(context = dispatcher) {
+            // Loop as long as the job is alive and the connections are alive
+            while (isActive && !internet.isClosed && !proxy.isClosed) {
+              // Receive datagrams from the internet
+              val datagram = internet.receive()
+
+              // Send them back to the proxy
+              proxy.send(datagram)
+            }
+          }
+
+      // Wait for internet communication to finish
+      job.join()
+      debugLog { "Done with proxy request: $destination" }
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        errorLog(e) { "${proxyType.name} Error during Internet exchange" }
+        errorBus.send(
+            ErrorEvent.Udp(
+                id = generateRandomId(),
+                throwable = e,
+                destination = destination,
             ),
-    )
+        )
+      }
+    }
   }
 
-  private suspend fun sendPacketToDestination(
-      sender: DatagramWriteChannel,
+  private suspend fun sendInitialPacket(
+      internet: DatagramWriteChannel,
       packet: Datagram,
-      hostName: String,
-      port: Int,
+      destination: DestinationInfo,
   ) {
-    debugLog { "${proxyType.name} Forward datagram to destination: $hostName $port" }
+    debugLog { "${proxyType.name} Forward datagram to destination: $destination" }
 
     // Log connection
     connectionBus.send(
         ConnectionEvent.Udp(
             id = generateRandomId(),
-            hostName = hostName,
-            port = port,
+            destination = destination,
         ),
     )
 
     // Send the data to the socket
     try {
-      sender.send(packet)
+      internet.send(packet)
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "${proxyType.name} Error during datagram forwarding: $hostName $port" }
+        errorLog(e) { "${proxyType.name} Error during datagram forwarding: $destination" }
         errorBus.send(
             ErrorEvent.Udp(
                 id = generateRandomId(),
-                hostName = hostName,
-                port = port,
                 throwable = e,
+                destination = destination,
             ),
         )
       }
@@ -110,16 +131,29 @@ internal constructor(
   override suspend fun exchange(data: UdpProxyData) {
     Enforcer.assertOffMainThread()
 
-    val packet = data.initialPacket
+    val runtime = data.runtime
+    val environment = data.environment
+
+    val packet = runtime.initialPacket
 
     // Resolve destination info from original packet
     val destination = resolveDestinationInfo(packet.address)
 
-      // TODO We are on our own thread, now we have to
-      // 1 Open or reuse a server-global ConnectedDatagramSocket
-      // 2 Watch the CDS input stream for data
-      // 3 upon CDS input received, proxy it back to the proxySocket via sendPacket()
-  }
+    val tracker = environment.tracker
+    tracker.use(destination) { internet ->
+      // Send the initial packet
+      sendInitialPacket(
+          internet = internet,
+          packet = packet,
+          destination = destination,
+      )
 
-  override suspend fun finish() {}
+      // Open a connection and wait for packets back from the internet destination
+      exchangeInternet(
+          internet = internet,
+          proxy = runtime.proxy,
+          destination = destination,
+      )
+    }
+  }
 }
