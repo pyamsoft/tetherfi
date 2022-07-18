@@ -5,41 +5,52 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
+import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
-import kotlinx.coroutines.CoroutineScope
+import io.ktor.network.sockets.SocketBuilder
+import io.ktor.network.sockets.aSocket
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal abstract class BaseProxyManager<S : ASocket>(
-    protected val proxyType: SharedProxy.Type,
-    protected val proxyDebug: Boolean,
+internal abstract class BaseProxyManager<S : ASocket, I : Any>(
+    private val proxyType: SharedProxy.Type,
+    private val dispatcher: CoroutineDispatcher,
+    private val proxyDebug: Boolean,
+    private val port: Int,
 ) : ProxyManager {
 
   private suspend fun serverLoop(server: S) = coroutineScope {
-    while (isActive) {
-      debugLog { "Awaiting new ${proxyType.name} socket connection..." }
-
+    Enforcer.assertOffMainThread()
+    val scope = this
+    while (scope.isActive) {
       try {
-        newSession(server)
+        val instance = createSession(server)
+        scope.launch(context = dispatcher) {
+          Enforcer.assertOffMainThread()
+          runSession(server, instance)
+        }
       } catch (e: Throwable) {
-        e.ifNotCancellation { Timber.e(e, "Error during ${proxyType.name} session") }
+        e.ifNotCancellation { errorLog(e, "Error running serverLoop") }
       }
     }
   }
 
-  /** Log only when session is in debug mode */
-  protected inline fun debugLog(message: () -> String) {
-    if (proxyDebug) {
-      Timber.d(message())
-    }
+  @CheckResult
+  private fun getServerAddress(port: Int): SocketAddress {
+    return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
 
-  @CheckResult
-  protected fun getServerAddress(port: Int): SocketAddress {
-    return InetSocketAddress(hostname = "0.0.0.0", port = port)
+  protected fun errorLog(error: Throwable, message: String) {
+    Timber.e(error, "${proxyType.name}: $message")
+  }
+
+  protected fun debugLog(message: String) {
+    Timber.d("${proxyType.name}: $message")
   }
 
   override suspend fun loop() {
@@ -48,7 +59,11 @@ internal abstract class BaseProxyManager<S : ASocket>(
     // Tag sockets for Android O strict mode
     tagSocket()
 
-    val server = openServer()
+    val server =
+        openServer(
+            builder = aSocket(ActorSelectorManager(context = dispatcher)),
+            localAddress = getServerAddress(port = port),
+        )
     try {
       serverLoop(server)
     } finally {
@@ -57,9 +72,15 @@ internal abstract class BaseProxyManager<S : ASocket>(
     }
   }
 
-  @CheckResult protected abstract suspend fun CoroutineScope.newSession(server: S)
+  protected abstract suspend fun runSession(server: S, instance: I)
 
-  @CheckResult protected abstract suspend fun openServer(): S
+  @CheckResult protected abstract suspend fun createSession(server: S): I
+
+  @CheckResult
+  protected abstract suspend fun openServer(
+      builder: SocketBuilder,
+      localAddress: SocketAddress,
+  ): S
 
   @CheckResult protected abstract suspend fun onServerClosed()
 }

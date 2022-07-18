@@ -1,7 +1,6 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -10,32 +9,33 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.KeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
-import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
-import io.ktor.network.sockets.aSocket
+import io.ktor.network.sockets.SocketAddress
+import io.ktor.network.sockets.SocketBuilder
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class UdpProxyManager
 internal constructor(
-    private val port: Int,
-    private val dispatcher: CoroutineDispatcher,
     private val session: ProxySession<UdpProxyData>,
     private val connectionProducerProvider:
         Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
     proxyDebug: Boolean,
+    port: Int,
+    dispatcher: CoroutineDispatcher,
 ) :
-    BaseProxyManager<BoundDatagramSocket>(
+    BaseProxyManager<BoundDatagramSocket, Datagram>(
         SharedProxy.Type.UDP,
+        dispatcher,
         proxyDebug,
+        port,
     ) {
 
-  private var connectionProducer: ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>? = null
+  private var connectionProducer:
+      ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>? =
+      null
 
   @CheckResult
   private fun ensureConnectionProducer():
@@ -43,12 +43,27 @@ internal constructor(
     connectionProducer =
         connectionProducer
             ?: connectionProducerProvider.get().requireNotNull().also {
-              Timber.d("Provide new KeyedObjectProvider: $it")
+              debugLog("Provide new ConnectionProducer: $it")
             }
     return connectionProducer.requireNotNull()
   }
 
-  private suspend fun runClientSession(server: BoundDatagramSocket, initialDatagram: Datagram) {
+  override suspend fun openServer(
+      builder: SocketBuilder,
+      localAddress: SocketAddress
+  ): BoundDatagramSocket {
+    return builder
+        .udp()
+        .bind(
+            localAddress = localAddress,
+        )
+  }
+
+  override suspend fun createSession(server: BoundDatagramSocket): Datagram {
+    return server.receive()
+  }
+
+  override suspend fun runSession(server: BoundDatagramSocket, instance: Datagram) {
     try {
       session.exchange(
           data =
@@ -56,7 +71,7 @@ internal constructor(
                   runtime =
                       UdpProxyData.Runtime(
                           proxy = server,
-                          initialPacket = initialDatagram,
+                          initialPacket = instance,
                       ),
                   environment =
                       UdpProxyData.Environment(
@@ -65,31 +80,8 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e, "${proxyType.name} Error during session") }
+      e.ifNotCancellation { errorLog(e, "Error during session") }
     }
-  }
-
-  override suspend fun openServer(): BoundDatagramSocket {
-    return aSocket(ActorSelectorManager(context = dispatcher))
-        .udp()
-        .bind(
-            localAddress =
-                getServerAddress(
-                    port = port,
-                ),
-        )
-  }
-
-  override suspend fun CoroutineScope.newSession(server: BoundDatagramSocket) {
-    Enforcer.assertOffMainThread()
-
-    val scope = this
-
-    // UDP is a stateless connection, so as long as we are not blocking things, we can use a single
-    // Proxy connection for all UDP sessions
-    val datagram = server.receive()
-
-    scope.launch(context = dispatcher) { runClientSession(server, datagram) }
   }
 
   override suspend fun onServerClosed() {
