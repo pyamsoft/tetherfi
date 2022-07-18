@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import timber.log.Timber
 
 internal abstract class BaseProxySession<CS : Any>

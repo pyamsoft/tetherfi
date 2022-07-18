@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy
+package com.pyamsoft.tetherfi.server.proxy.session
 
 import android.net.TrafficStats
 

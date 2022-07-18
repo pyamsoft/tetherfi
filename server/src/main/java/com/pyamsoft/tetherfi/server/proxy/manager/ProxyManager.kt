@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.connector
+package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy

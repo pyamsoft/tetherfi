@@ -9,7 +9,7 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.logging.LogStorage
-import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 import javax.inject.Singleton

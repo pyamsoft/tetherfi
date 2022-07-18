@@ -14,8 +14,8 @@ import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
-import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
-import com.pyamsoft.tetherfi.server.proxy.connector.factory.DefaultProxyManagerFactory
+import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
@@ -27,7 +27,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
-import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.WifiDirectWiDiNetwork

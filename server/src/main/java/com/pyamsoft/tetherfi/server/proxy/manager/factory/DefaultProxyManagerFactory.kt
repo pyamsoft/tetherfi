@@ -1,11 +1,11 @@
-package com.pyamsoft.tetherfi.server.proxy.connector.factory
+package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
-import com.pyamsoft.tetherfi.server.proxy.connector.TcpProxyManager
-import com.pyamsoft.tetherfi.server.proxy.connector.UdpProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData

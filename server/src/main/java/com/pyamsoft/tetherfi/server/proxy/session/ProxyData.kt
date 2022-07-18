@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session.data
+package com.pyamsoft.tetherfi.server.proxy.session
 
 interface ProxyData<R : Any, E : Any> {
 

@@ -1,10 +1,10 @@
-package com.pyamsoft.tetherfi.server.proxy.connector
+package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.tagSocket
+import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
