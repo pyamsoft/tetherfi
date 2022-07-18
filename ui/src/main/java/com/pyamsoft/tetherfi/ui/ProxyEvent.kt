@@ -29,9 +29,10 @@ interface ConnectionTracker {
 private class ConnectionTrackerImpl : ConnectionTracker {
 
   private val connections = mutableMapOf<String, MutableMap<String, Int>>()
+  private var connectionList = listOf<Pair<String, MutableMap<String, Int>>>()
 
   override fun get(): List<Pair<String, Map<String, Int>>> {
-    return connections.toList()
+    return connectionList
   }
 
   @CheckResult
@@ -39,6 +40,7 @@ private class ConnectionTrackerImpl : ConnectionTracker {
     val methodMap = connections.getOrPut(url) { mutableMapOf() }
     val count = methodMap.getOrPut(method) { 0 }
     methodMap[method] = count + 1
+    connectionList = connections.toList()
     return this
   }
 }
