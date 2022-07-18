@@ -19,18 +19,20 @@ import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFac
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
+import com.pyamsoft.tetherfi.server.widi.WiDiConfig
+import com.pyamsoft.tetherfi.server.widi.WiDiConfigImpl
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.WifiDirectWiDiNetwork
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkImpl
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.server.widi.receiver.WifiDirectReceiver
@@ -55,8 +57,31 @@ abstract class ServerModule {
 
   @Binds
   @CheckResult
+  internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindWiDiNetworkStatus(impl: WiDiNetworkImpl): WiDiNetworkStatus
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
+
+  // Internals
+
+  @Binds
+  @CheckResult
   @ServerInternalApi
   internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
+
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
 
   @Binds
   @CheckResult
@@ -69,22 +94,6 @@ abstract class ServerModule {
   internal abstract fun bindUdpProducer(
       impl: UdpKeyedObjectProducer
   ): ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindWiDiNetwork(impl: WifiDirectWiDiNetwork): WiDiNetwork
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindWiDiNetworkStatus(impl: WifiDirectWiDiNetwork): WiDiNetworkStatus
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
 
   @Binds
   @IntoSet

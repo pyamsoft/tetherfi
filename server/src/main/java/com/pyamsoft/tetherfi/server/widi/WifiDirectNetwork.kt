@@ -7,24 +7,13 @@ import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Looper
 import androidx.annotation.CheckResult
-import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
-import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.ServerPreferences
-import com.pyamsoft.tetherfi.server.event.ConnectionEvent
-import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
-import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
@@ -36,16 +25,12 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-@Singleton
-internal class WifiDirectWiDiNetwork
-@Inject
-internal constructor(
-    private val preferences: ServerPreferences,
+internal abstract class WifiDirectNetwork
+protected constructor(
     private val context: Context,
     private val permissionGuard: PermissionGuard,
-    @ServerInternalApi private val proxy: SharedProxy,
-    @ServerInternalApi private val receiver: WiDiReceiver,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
+    private val dispatcher: CoroutineDispatcher,
+    private val config: WiDiConfig,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
@@ -66,40 +51,6 @@ internal constructor(
   @CheckResult
   private suspend fun getChannel(): WifiP2pManager.Channel? {
     return mutex.withLock { wifiChannel }
-  }
-
-  @CheckResult
-  @RequiresApi(Build.VERSION_CODES.Q)
-  private suspend fun getPreferredSsid(): String {
-    return preferences.getSsid()
-  }
-
-  @CheckResult
-  @RequiresApi(Build.VERSION_CODES.Q)
-  private suspend fun getPreferredPassword(): String {
-    return preferences.getPassword()
-  }
-
-  @CheckResult
-  @RequiresApi(Build.VERSION_CODES.Q)
-  private suspend fun getPreferredBand(): Int {
-    return when (preferences.getNetworkBand()) {
-      ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
-      ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
-    }
-  }
-
-  @CheckResult
-  private suspend fun getConfiguration(): WifiP2pConfig? {
-    return if (ServerDefaults.canUseCustomConfig()) {
-      WifiP2pConfig.Builder()
-          .setNetworkName(ServerDefaults.asSsid(getPreferredSsid()))
-          .setPassphrase(getPreferredPassword())
-          .setGroupOperatingBand(getPreferredBand())
-          .build()
-    } else {
-      null
-    }
   }
 
   @SuppressLint("MissingPermission")
@@ -124,7 +75,7 @@ internal constructor(
       withContext(context = Dispatchers.Main) {
         Timber.d("Creating new wifi p2p group")
 
-        val config = getConfiguration()
+        val conf = config.getConfiguration()
 
         return@withContext suspendCoroutine { cont ->
           val listener =
@@ -141,8 +92,8 @@ internal constructor(
                 }
               }
 
-          if (config != null) {
-            createGroupQ(channel, config, listener)
+          if (conf != null) {
+            createGroupQ(channel, conf, listener)
           } else {
             wifiP2PManager.createGroup(
                 channel,
@@ -206,12 +157,8 @@ internal constructor(
             wifiChannel = channel
           }
 
-          Timber.d("Register wifi receiver")
-          receiver.register()
-
-          Timber.d("Network started, start proxy")
-          proxy.start()
-          Timber.d("Proxy started!")
+          Timber.d("Network started")
+          onNetworkStarted()
         } else {
           Timber.w("Group failed creation, stop proxy")
           completeStop { Timber.w("Stopped proxy because group failed creation") }
@@ -221,11 +168,8 @@ internal constructor(
       }
 
   private suspend fun completeStop(onStop: () -> Unit) {
-    Timber.d("Unregister wifi receiver")
-    receiver.unregister()
-
-    Timber.d("Stop proxy when wifi network removed")
-    proxy.stop()
+    Timber.d("Stop when wifi network removed")
+    onNetworkStopped()
 
     onStop()
   }
@@ -305,15 +249,7 @@ internal constructor(
         }
       }
 
-  override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
-    return proxy.onErrorEvent(block)
-  }
-
-  override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
-    return proxy.onConnectionEvent(block)
-  }
-
-  override suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo? =
+  final override suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo? =
       withContext(context = Dispatchers.Main) {
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions for making WiDi network")
@@ -329,7 +265,7 @@ internal constructor(
         return@withContext resolveCurrentGroup(channel)
       }
 
-  override suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo? =
+  final override suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo? =
       withContext(context = Dispatchers.Main) {
         val channel = getChannel()
         if (channel == null) {
@@ -340,7 +276,7 @@ internal constructor(
         return@withContext resolveConnectionInfo(channel)
       }
 
-  override fun start() {
+  final override fun start() {
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
@@ -355,7 +291,7 @@ internal constructor(
     }
   }
 
-  override fun stop() {
+  final override fun stop() {
     scope.launch(context = dispatcher) {
       Enforcer.assertOffMainThread()
 
@@ -369,13 +305,9 @@ internal constructor(
     }
   }
 
-  override suspend fun onWifiDirectEvent(block: suspend (WidiNetworkEvent) -> Unit) {
-    return receiver.onEvent { block(it) }
-  }
+  protected abstract suspend fun onNetworkStarted()
 
-  override suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit) {
-    return proxy.onStatusChanged(block)
-  }
+  protected abstract suspend fun onNetworkStopped()
 
   companion object {
 
