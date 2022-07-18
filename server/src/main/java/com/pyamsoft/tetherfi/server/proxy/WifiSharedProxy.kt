@@ -58,10 +58,10 @@ internal constructor(
 
   @CheckResult
   private fun CoroutineScope.proxyLoop(type: SharedProxy.Type, port: Int): ProxyJob {
-    val tcp = factory.create(type = type, port = port)
+    val manager = factory.create(type = type, port = port)
 
     Timber.d("${type.name} Begin proxy server loop")
-    val job = launch(context = dispatcher) { tcp.loop() }
+    val job = launch(context = dispatcher) { manager.loop() }
     return ProxyJob(type = type, job = job)
   }
 
