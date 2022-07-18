@@ -314,7 +314,7 @@ internal constructor(
       debugLog { "Done with proxy request: $request" }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "${proxyType.name} Error during Internet exchange" }
+        errorLog(e) { "Error during Internet exchange" }
         errorBus.send(
             ErrorEvent.Tcp(
                 id = generateRandomId(),
@@ -357,7 +357,7 @@ internal constructor(
     try {
       if (request == null) {
         val msg = "Could not parse proxy request"
-        warnLog { "${proxyType.name} $msg" }
+        warnLog { msg }
         errorBus.send(
             ErrorEvent.Tcp(
                 id = generateRandomId(),
@@ -370,7 +370,7 @@ internal constructor(
       }
 
       connectToInternet(request).use { internet ->
-        debugLog { "${proxyType.name} Proxy to: $request" }
+        debugLog { "Proxy to: $request" }
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
@@ -393,7 +393,7 @@ internal constructor(
       }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "${proxyType.name} Error during connect to internet: $request" }
+        errorLog(e) { "Error during connect to internet: $request" }
         errorBus.send(
             ErrorEvent.Tcp(
                 id = generateRandomId(),

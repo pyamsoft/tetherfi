@@ -6,7 +6,7 @@ import timber.log.Timber
 
 internal abstract class BaseProxySession<CS : Any>
 protected constructor(
-    protected val proxyType: SharedProxy.Type,
+    private val proxyType: SharedProxy.Type,
     private val urlFixers: Set<UrlFixer>,
     private val proxyDebug: Boolean,
 ) : ProxySession<CS> {
@@ -14,21 +14,21 @@ protected constructor(
   /** Log only when session is in debug mode */
   protected inline fun debugLog(message: () -> String) {
     if (proxyDebug) {
-      Timber.d(message())
+      Timber.d("${proxyType.name}: ${message()}")
     }
   }
 
   /** Log only when session is in debug mode */
   protected inline fun warnLog(message: () -> String) {
     if (proxyDebug) {
-      Timber.w(message())
+      Timber.w("${proxyType.name}: ${message()}")
     }
   }
 
   /** Log only when session is in debug mode */
   protected inline fun errorLog(throwable: Throwable, message: () -> String) {
     if (proxyDebug) {
-      Timber.e(throwable, message())
+      Timber.e(throwable, "${proxyType.name}: ${message()}")
     }
   }
 
@@ -44,5 +44,4 @@ protected constructor(
     }
     return result
   }
-
 }

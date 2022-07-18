@@ -11,8 +11,8 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
-import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
@@ -84,7 +84,7 @@ internal constructor(
       debugLog { "Done with proxy request: $destination" }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "${proxyType.name} Error during Internet exchange" }
+        errorLog(e) { "Error during Internet exchange" }
         errorBus.send(
             ErrorEvent.Udp(
                 id = generateRandomId(),
@@ -102,7 +102,7 @@ internal constructor(
       packet: Datagram,
       destination: DestinationInfo,
   ): Boolean {
-    debugLog { "${proxyType.name} Forward datagram to destination: $destination" }
+    debugLog { "Forward datagram to destination: $destination" }
 
     // Log connection
     connectionBus.send(
@@ -118,7 +118,7 @@ internal constructor(
       return true
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "${proxyType.name} Error during datagram forwarding: $destination" }
+        errorLog(e) { "Error during datagram forwarding: $destination" }
         errorBus.send(
             ErrorEvent.Udp(
                 id = generateRandomId(),
@@ -145,11 +145,14 @@ internal constructor(
     val connections = environment.connectionProducer
     connections.use(destination) { internet ->
       // Send the initial packet
-      if (sendInitialPacket(
-          internet = internet,
-          packet = packet,
-          destination = destination,
-      )) {
+      val isInitialSendSuccess =
+          sendInitialPacket(
+              internet = internet,
+              packet = packet,
+              destination = destination,
+          )
+
+      if (isInitialSendSuccess) {
         // Open a connection and wait for packets back from the internet destination
         exchangeInternet(
             internet = internet,
