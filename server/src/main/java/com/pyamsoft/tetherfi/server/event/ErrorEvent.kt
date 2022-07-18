@@ -7,20 +7,23 @@ sealed class ErrorEvent : LogEvent {
 
   data class Clear(
       override val id: String,
-      override val clear: Boolean = true,
-  ) : ErrorEvent()
+  ) : ErrorEvent() {
+    override val clear: Boolean = true
+  }
 
   data class Tcp(
       override val id: String,
-      override val clear: Boolean = false,
       val request: ProxyRequest?,
       val throwable: Throwable,
-  ) : ErrorEvent()
+  ) : ErrorEvent() {
+    override val clear: Boolean = false
+  }
 
   data class Udp(
       override val id: String,
-      override val clear: Boolean = false,
       val throwable: Throwable,
       val destination: DestinationInfo,
-  ) : ErrorEvent()
+  ) : ErrorEvent() {
+    override val clear: Boolean = false
+  }
 }

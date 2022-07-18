@@ -7,18 +7,21 @@ sealed class ConnectionEvent : LogEvent {
 
   data class Clear(
       override val id: String,
-      override val clear: Boolean = true,
-  ) : ConnectionEvent()
+  ) : ConnectionEvent() {
+    override val clear: Boolean = true
+  }
 
   data class Tcp(
       override val id: String,
-      override val clear: Boolean = false,
       val request: ProxyRequest,
-  ) : ConnectionEvent()
+  ) : ConnectionEvent() {
+    override val clear: Boolean = false
+  }
 
   data class Udp(
       override val id: String,
-      override val clear: Boolean = false,
       val destination: DestinationInfo,
-  ) : ConnectionEvent()
+  ) : ConnectionEvent() {
+    override val clear: Boolean = false
+  }
 }
