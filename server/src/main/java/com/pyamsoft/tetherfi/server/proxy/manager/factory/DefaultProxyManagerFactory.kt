@@ -8,8 +8,8 @@ import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import io.ktor.network.sockets.ConnectedDatagramSocket

@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session.data
+package com.pyamsoft.tetherfi.server.proxy.session.udp
 
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxyData

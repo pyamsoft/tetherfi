@@ -6,7 +6,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.KeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import io.ktor.network.sockets.BoundDatagramSocket

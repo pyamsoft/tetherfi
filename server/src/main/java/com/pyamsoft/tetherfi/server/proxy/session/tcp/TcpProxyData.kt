@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.server.proxy.session.data
+package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool

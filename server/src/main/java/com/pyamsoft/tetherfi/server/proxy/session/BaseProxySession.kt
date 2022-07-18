@@ -2,13 +2,14 @@ package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import timber.log.Timber
 
 internal abstract class BaseProxySession<CS : Any>
 protected constructor(
-    private val proxyType: SharedProxy.Type,
-    private val urlFixers: Set<UrlFixer>,
-    private val proxyDebug: Boolean,
+  private val proxyType: SharedProxy.Type,
+  private val urlFixers: Set<UrlFixer>,
+  private val proxyDebug: Boolean,
 ) : ProxySession<CS> {
 
   /** Log only when session is in debug mode */

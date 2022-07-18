@@ -11,8 +11,7 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
-import com.pyamsoft.tetherfi.server.proxy.session.UrlFixer
-import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
+import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
