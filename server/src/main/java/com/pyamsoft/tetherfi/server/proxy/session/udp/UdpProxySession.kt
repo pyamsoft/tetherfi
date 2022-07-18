@@ -96,11 +96,12 @@ internal constructor(
     }
   }
 
+  @CheckResult
   private suspend fun sendInitialPacket(
       internet: DatagramWriteChannel,
       packet: Datagram,
       destination: DestinationInfo,
-  ) {
+  ): Boolean {
     debugLog { "${proxyType.name} Forward datagram to destination: $destination" }
 
     // Log connection
@@ -114,6 +115,7 @@ internal constructor(
     // Send the data to the socket
     try {
       internet.send(packet)
+      return true
     } catch (e: Throwable) {
       e.ifNotCancellation {
         errorLog(e) { "${proxyType.name} Error during datagram forwarding: $destination" }
@@ -125,6 +127,7 @@ internal constructor(
             ),
         )
       }
+      return false
     }
   }
 
@@ -139,21 +142,21 @@ internal constructor(
     // Resolve destination info from original packet
     val destination = resolveDestinationInfo(packet.address)
 
-    val tracker = environment.tracker
-    tracker.use(destination) { internet ->
+    val connections = environment.connectionProducer
+    connections.use(destination) { internet ->
       // Send the initial packet
-      sendInitialPacket(
+      if (sendInitialPacket(
           internet = internet,
           packet = packet,
           destination = destination,
-      )
-
-      // Open a connection and wait for packets back from the internet destination
-      exchangeInternet(
-          internet = internet,
-          proxy = runtime.proxy,
-          destination = destination,
-      )
+      )) {
+        // Open a connection and wait for packets back from the internet destination
+        exchangeInternet(
+            internet = internet,
+            proxy = runtime.proxy,
+            destination = destination,
+        )
+      }
     }
   }
 }

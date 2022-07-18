@@ -16,6 +16,7 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.connector.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.connector.factory.DefaultProxyManagerFactory
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
@@ -23,8 +24,8 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedConnectionTracker
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpConnectionTracker
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
@@ -37,6 +38,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import io.ktor.network.sockets.ConnectedDatagramSocket
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -59,12 +61,14 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
+  internal abstract fun bindTcpMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
 
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindConnectionTracker(impl: UdpConnectionTracker): ManagedConnectionTracker
+  internal abstract fun bindUdpProducer(
+      impl: UdpKeyedObjectProducer
+  ): ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>
 
   @Binds
   @CheckResult

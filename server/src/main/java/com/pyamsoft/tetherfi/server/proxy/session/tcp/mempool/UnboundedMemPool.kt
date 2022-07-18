@@ -7,7 +7,7 @@ internal abstract class UnboundedMemPool<T : Any> protected constructor() : Simp
   override suspend fun claim(): T =
       mutex.withLock {
         // If we do not have any free storage, make a new buffer and add it to free storage
-        if (freeStorage.size <= 0) {
+        if (freeStorage.isEmpty()) {
           freeStorage.add(make())
         }
 

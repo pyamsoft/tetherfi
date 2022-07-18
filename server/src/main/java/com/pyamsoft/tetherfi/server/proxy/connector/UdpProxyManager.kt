@@ -5,12 +5,14 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.data.UdpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ConnectionTracker
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedConnectionTracker
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.KeyedObjectProducer
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.BoundDatagramSocket
+import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.aSocket
 import javax.inject.Provider
@@ -24,7 +26,8 @@ internal constructor(
     private val port: Int,
     private val dispatcher: CoroutineDispatcher,
     private val session: ProxySession<UdpProxyData>,
-    private val trackerProvider: Provider<ManagedConnectionTracker>,
+    private val connectionProducerProvider:
+        Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
     proxyDebug: Boolean,
 ) :
     BaseProxyManager<BoundDatagramSocket>(
@@ -32,16 +35,17 @@ internal constructor(
         proxyDebug,
     ) {
 
-  private var tracker: ManagedConnectionTracker? = null
+  private var connectionProducer: ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>? = null
 
   @CheckResult
-  private fun ensureConnectionTracker(): ConnectionTracker {
-    tracker =
-        tracker
-            ?: trackerProvider.get().requireNotNull().also {
-              Timber.d("Provide new ConnectionTracker: $it")
+  private fun ensureConnectionProducer():
+      KeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket> {
+    connectionProducer =
+        connectionProducer
+            ?: connectionProducerProvider.get().requireNotNull().also {
+              Timber.d("Provide new KeyedObjectProvider: $it")
             }
-    return tracker.requireNotNull()
+    return connectionProducer.requireNotNull()
   }
 
   private suspend fun runClientSession(server: BoundDatagramSocket, initialDatagram: Datagram) {
@@ -56,7 +60,7 @@ internal constructor(
                       ),
                   environment =
                       UdpProxyData.Environment(
-                          tracker = ensureConnectionTracker(),
+                          connectionProducer = ensureConnectionProducer(),
                       ),
               ),
       )
@@ -89,7 +93,7 @@ internal constructor(
   }
 
   override suspend fun onServerClosed() {
-    tracker?.dispose()
-    tracker = null
+    connectionProducer?.dispose()
+    connectionProducer = null
   }
 }

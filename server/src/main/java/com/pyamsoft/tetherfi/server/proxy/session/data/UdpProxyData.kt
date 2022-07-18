@@ -1,7 +1,9 @@
 package com.pyamsoft.tetherfi.server.proxy.session.data
 
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ConnectionTracker
+import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
+import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.KeyedObjectProducer
 import io.ktor.network.sockets.BoundDatagramSocket
+import io.ktor.network.sockets.ConnectedDatagramSocket
 import io.ktor.network.sockets.Datagram
 
 internal data class UdpProxyData
@@ -18,6 +20,6 @@ internal constructor(
 
   internal data class Environment
   internal constructor(
-      val tracker: ConnectionTracker,
+      val connectionProducer: KeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>,
   )
 }

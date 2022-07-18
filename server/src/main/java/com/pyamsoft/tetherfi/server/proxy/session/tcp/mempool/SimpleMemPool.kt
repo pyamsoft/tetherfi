@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool
 
 import androidx.annotation.CheckResult
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
@@ -38,19 +39,31 @@ internal abstract class SimpleMemPool<T : Any> protected constructor() : Managed
     }
   }
 
-  override fun dispose() {
+  final override fun dispose() {
     try {
       close()
     } catch (ignore: Throwable) {}
   }
 
-  override fun close() {
+  final override fun close() {
     if (!isAlive) {
       throw IllegalStateException("MemPool already closed, cannot close again")
     }
 
     Timber.d("Closing MemPool instance")
     isAlive = false
+
+    usedStorage.forEach { s ->
+      if (s is DisposableHandle) {
+        s.dispose()
+      }
+    }
+
+    freeStorage.forEach { s ->
+      if (s is DisposableHandle) {
+        s.dispose()
+      }
+    }
 
     // Release resources without using Mutex. This is a race so you should be sure that all work is
     // done before calling this method
