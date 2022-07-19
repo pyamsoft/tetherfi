@@ -133,7 +133,7 @@ internal constructor(
   }
 
   fun handleRequestPermissions(onRequest: (List<String>) -> Unit) {
-    onRequest(permissions.requiredPermissions())
+    onRequest(permissions.requiredPermissions)
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {

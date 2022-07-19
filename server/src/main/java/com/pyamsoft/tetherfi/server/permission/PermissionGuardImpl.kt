@@ -14,6 +14,8 @@ internal constructor(
     private val context: Context,
 ) : PermissionGuard {
 
+  override val requiredPermissions: List<String> = ALL_PERMISSIONS
+
   @CheckResult
   private fun hasPermission(permission: String): Boolean {
     return ContextCompat.checkSelfPermission(context.applicationContext, permission) ==
@@ -21,11 +23,7 @@ internal constructor(
   }
 
   override fun canCreateWiDiNetwork(): Boolean {
-    return ALL_PERMISSIONS.all { hasPermission(it) }
-  }
-
-  override fun requiredPermissions(): List<String> {
-    return ALL_PERMISSIONS
+    return requiredPermissions.all { hasPermission(it) }
   }
 
   companion object {

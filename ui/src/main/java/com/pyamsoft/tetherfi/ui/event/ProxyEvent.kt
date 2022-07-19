@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.ui
+package com.pyamsoft.tetherfi.ui.event
 
 import androidx.annotation.CheckResult
 

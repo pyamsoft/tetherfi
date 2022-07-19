@@ -4,7 +4,7 @@ import androidx.annotation.CheckResult
 
 interface PermissionGuard {
 
-  @CheckResult fun canCreateWiDiNetwork(): Boolean
+  @get:CheckResult val requiredPermissions: List<String>
 
-  @CheckResult fun requiredPermissions(): List<String>
+  @CheckResult fun canCreateWiDiNetwork(): Boolean
 }

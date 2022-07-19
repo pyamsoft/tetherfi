@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.core.ActivityScope
-import com.pyamsoft.tetherfi.ui.ProxyEvent
+import com.pyamsoft.tetherfi.ui.event.ProxyEvent
 import javax.inject.Inject
 
 @Stable

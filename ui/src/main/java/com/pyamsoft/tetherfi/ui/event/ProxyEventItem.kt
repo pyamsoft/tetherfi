@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.ui.ProxyEvent
 
 @Composable
 fun ProxyEventItem(

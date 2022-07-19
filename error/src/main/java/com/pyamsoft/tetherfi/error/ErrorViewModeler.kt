@@ -2,9 +2,8 @@ package com.pyamsoft.tetherfi.error
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
-import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.ui.ProxyEvent
+import com.pyamsoft.tetherfi.ui.event.ProxyEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
