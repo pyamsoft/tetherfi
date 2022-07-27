@@ -45,6 +45,9 @@ internal abstract class SimpleKeyedObjectProducer<K : Any, V : Any> protected co
       return
     }
 
+    Timber.d("Closing KeyedObjectPool instance")
+    isAlive = false
+
     pool.forEach { entry ->
       val v = entry.value
       if (v is DisposableHandle) {
