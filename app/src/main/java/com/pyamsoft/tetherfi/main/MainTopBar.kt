@@ -1,8 +1,8 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.Icon
@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.statusBarsHeight
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 import com.pyamsoft.tetherfi.R
@@ -68,10 +67,8 @@ internal fun MainTopBar(
         elevation = AppBarDefaults.TopAppBarElevation,
     ) {
       Column {
-        Spacer(
-            modifier = Modifier.statusBarsHeight(),
-        )
         TopAppBar(
+            modifier = Modifier.statusBarsPadding(),
             elevation = ZeroElevation,
             backgroundColor = Color.Transparent,
             contentColor = LocalContentColor.current,
@@ -89,7 +86,8 @@ internal fun MainTopBar(
                     contentDescription = "Open Settings",
                 )
               }
-            })
+            },
+        )
         TabRow(
             modifier = modifier,
             backgroundColor = Color.Transparent,

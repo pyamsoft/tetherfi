@@ -107,12 +107,13 @@ fun StatusScreen(
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
       )
-
+    
   Scaffold(
       modifier = modifier,
       scaffoldState = scaffoldState,
-  ) {
+  ) { pv ->
     PermissionExplanationDialog(
+        modifier = Modifier.padding(pv),
         state = state,
         appName = appName,
         onDismissPermissionExplanation = onDismissPermissionExplanation,

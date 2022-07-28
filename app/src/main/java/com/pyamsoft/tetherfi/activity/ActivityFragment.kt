@@ -7,14 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
@@ -34,8 +31,6 @@ class ActivityFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   @JvmField @Inject internal var theming: Theming? = null
   @JvmField @Inject internal var imageLoader: ImageLoader? = null
 
-  private var windowInsetObserver: ViewWindowInsetObserver? = null
-
   override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
@@ -51,20 +46,14 @@ class ActivityFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     return ComposeView(act).apply {
       id = R.id.screen_activity
 
-      val observer = ViewWindowInsetObserver(this)
-      val windowInsets = observer.start()
-      windowInsetObserver = observer
-
       setContent {
         vm.Render { state ->
           act.TetherFiTheme(themeProvider) {
-            CompositionLocalProvider(LocalWindowInsets provides windowInsets) {
-              ActivityScreen(
-                  modifier = Modifier.fillMaxSize(),
-                  state = state,
-                  imageLoader = loader,
-              )
-            }
+            ActivityScreen(
+                modifier = Modifier.fillMaxSize(),
+                state = state,
+                imageLoader = loader,
+            )
           }
         }
       }
@@ -92,9 +81,6 @@ class ActivityFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   override fun onDestroyView() {
     super.onDestroyView()
     dispose()
-
-    windowInsetObserver?.stop()
-    windowInsetObserver = null
 
     theming = null
     viewModel = null

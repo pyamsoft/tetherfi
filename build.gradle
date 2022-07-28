@@ -18,9 +18,9 @@
 
 buildscript {
   ext {
-    kotlin_version = '1.6.10'
+    kotlin_version = '1.7.0'
     desugar = "1.1.6"
-    compose_version = "1.1.1"
+    compose_version = "1.2.0"
   }
 
   repositories {
@@ -46,9 +46,9 @@ buildscript {
     maxSdk = 32
 
     // Us
-    pydroid = "25.0.0-SNAPSHOT"
-    cachify = "0.0.27"
-    highlander = "0.0.23"
+    pydroid = "25.0.0"
+    cachify = "0.1.0"
+    highlander = "0.1.0"
 
     // Leak Canary
     leakCanary = "2.9.1"
@@ -60,13 +60,13 @@ buildscript {
     dagger = "2.43"
 
     // Compose
-    composeActivity = "1.5.0"
-    accompanist = "0.23.1"
+    composeActivity = "1.5.1"
+    accompanist = "0.25.0"
     coil = "2.1.0"
 
     // AndroidX
     core = "1.8.0"
-    fragment = "1.5.0"
+    fragment = "1.5.1"
     appCompat = "1.4.2"
 
     // Material Design

@@ -28,9 +28,9 @@ fun ActivityScreen(
   Scaffold(
       modifier = modifier,
       scaffoldState = scaffoldState,
-  ) {
+  ) { pv ->
     Column(
-        modifier = Modifier.padding(MaterialTheme.keylines.content),
+        modifier = Modifier.padding(pv).padding(MaterialTheme.keylines.content),
     ) {
       Text(
           text = "Activity Log",

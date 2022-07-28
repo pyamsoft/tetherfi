@@ -11,14 +11,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.ViewWindowInsetObserver
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
@@ -41,7 +38,6 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   @JvmField @Inject internal var theming: Theming? = null
 
   private var permissionCallback: ActivityResultLauncher<Array<String>>? = null
-  private var compose: ViewWindowInsetObserver? = null
 
   private fun handleToggleProxy() {
     val act = requireActivity()
@@ -148,32 +144,26 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     return ComposeView(act).apply {
       id = R.id.screen_status
 
-      val observer = ViewWindowInsetObserver(this)
-      val windowInsets = observer.start()
-      compose = observer
-
       setContent {
         vm.Render { state ->
           act.TetherFiTheme(themeProvider) {
-            CompositionLocalProvider(LocalWindowInsets provides windowInsets) {
-              StatusScreen(
-                  modifier = Modifier.fillMaxSize(),
-                  state = state,
-                  appName = appName,
-                  onToggle = { handleToggleProxy() },
-                  onSsidChanged = { handleSsidChanged(it) },
-                  onPasswordChanged = { handlePasswordChanged(it) },
-                  onPortChanged = { handlePortChanged(it) },
-                  onOpenBatterySettings = { handleOpenBatterySettings() },
-                  onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
-                  onRequestPermissions = { handleRequestPermissions() },
-                  onOpenPermissionSettings = { handleOpenApplicationSettings() },
-                  onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
-                  onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
-                  onToggleKeepWakeLock = { handleToggleProxyWakelock() },
-                  onSelectBand = { handleChangeBand(it) },
-              )
-            }
+            StatusScreen(
+                modifier = Modifier.fillMaxSize(),
+                state = state,
+                appName = appName,
+                onToggle = { handleToggleProxy() },
+                onSsidChanged = { handleSsidChanged(it) },
+                onPasswordChanged = { handlePasswordChanged(it) },
+                onPortChanged = { handlePortChanged(it) },
+                onOpenBatterySettings = { handleOpenBatterySettings() },
+                onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
+                onRequestPermissions = { handleRequestPermissions() },
+                onOpenPermissionSettings = { handleOpenApplicationSettings() },
+                onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
+                onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
+                onToggleKeepWakeLock = { handleToggleProxyWakelock() },
+                onSelectBand = { handleChangeBand(it) },
+            )
           }
         }
       }
@@ -232,9 +222,6 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     super.onDestroyView()
     dispose()
     permissionCallback?.unregister()
-
-    compose?.stop()
-    compose = null
 
     theming = null
     viewModel = null
