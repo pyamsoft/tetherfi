@@ -32,9 +32,8 @@ class MainActivity : PYDroidActivity() {
   override val applicationIcon = R.mipmap.ic_launcher
 
   override val changelog = buildChangeLog {
-    feature("Allow changing between Wi-Fi frequency bands")
-    feature("Optionally improve performance by keeping a partial CPU wakelock")
-    feature("Initial support for UDP traffic in proxy")
+    bugfix("Improve UDP proxy support")
+    bugfix("Improve wakelock handling and reduce battery usage")
   }
 
   private fun handleOpenApplicationSettings() {
