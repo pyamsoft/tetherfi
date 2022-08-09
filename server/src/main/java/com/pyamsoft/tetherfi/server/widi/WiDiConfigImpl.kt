@@ -9,6 +9,7 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
 
 @Singleton
 internal class WiDiConfigImpl
@@ -20,19 +21,19 @@ internal constructor(
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredSsid(): String {
-    return preferences.getSsid()
+    return preferences.listenForSsidChanges().first()
   }
 
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredPassword(): String {
-    return preferences.getPassword()
+    return preferences.listenForPasswordChanges().first()
   }
 
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredBand(): Int {
-    return when (preferences.getNetworkBand()) {
+    return when (preferences.listenForNetworkBandChanges().first()) {
       ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
       ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
     }

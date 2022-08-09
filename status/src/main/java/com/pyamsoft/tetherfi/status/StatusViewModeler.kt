@@ -13,19 +13,34 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class StatusViewModeler
 @Inject
 internal constructor(
+    private val state: MutableStatusViewState,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
-    private val state: MutableStatusViewState,
     private val network: WiDiNetworkStatus,
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
 ) : AbstractViewModeler<StatusViewState>(state) {
+
+  private data class LoadConfig(
+      var port: Boolean,
+      var wakelock: Boolean,
+      var ssid: Boolean,
+      var password: Boolean,
+      var band: Boolean,
+  )
+
+  private fun markPreferencesLoaded(config: LoadConfig) {
+    if (config.band && config.wakelock && config.ssid && config.password && config.band) {
+      state.preferencesLoaded = true
+    }
+  }
 
   fun loadPreferences(scope: CoroutineScope) {
     val s = state
@@ -33,21 +48,83 @@ internal constructor(
       return
     }
 
-    scope.launch(context = Dispatchers.Main) {
-      s.port = serverPreferences.getPort()
-      s.keepWakeLock = servicePreferences.keepWakeLock()
+    val config =
+        LoadConfig(
+            port = false,
+            wakelock = false,
+            ssid = false,
+            password = false,
+            band = false,
+        )
 
-      if (ServerDefaults.canUseCustomConfig()) {
-        s.ssid = serverPreferences.getSsid()
-        s.password = serverPreferences.getPassword()
-        s.band = serverPreferences.getNetworkBand()
-      } else {
-        s.ssid = ""
-        s.password = ""
-        s.band = null
+    scope.launch(context = Dispatchers.Main) {
+      // Always populate the latest port value
+      servicePreferences.listenForWakeLockChanges().collectLatest { keep ->
+        s.keepWakeLock = keep
+        if (!s.preferencesLoaded) {
+          config.wakelock = true
+          markPreferencesLoaded(config)
+        }
+      }
+    }
+
+    scope.launch(context = Dispatchers.Main) {
+      serverPreferences.listenForPortChanges().collectLatest { port ->
+        if (!s.preferencesLoaded) {
+          // Don't deliver once we have loaded as this will update slower than the user could
+          // potentially type
+          s.port = port
+
+          config.port = true
+          markPreferencesLoaded(config)
+        }
+      }
+    }
+
+    if (ServerDefaults.canUseCustomConfig()) {
+      scope.launch(context = Dispatchers.Main) {
+        serverPreferences.listenForSsidChanges().collectLatest { ssid ->
+          if (!s.preferencesLoaded) {
+            // Don't deliver once we have loaded as this will update slower than the user could
+            // potentially type
+            s.ssid = ssid
+
+            config.ssid = true
+            markPreferencesLoaded(config)
+          }
+        }
       }
 
-      s.preferencesLoaded = true
+      scope.launch(context = Dispatchers.Main) {
+        serverPreferences.listenForPasswordChanges().collectLatest { pass ->
+          if (!s.preferencesLoaded) {
+            // Don't deliver once we have loaded as this will update slower than the user could
+            // potentially type
+            s.password = pass
+
+            config.password = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+
+      scope.launch(context = Dispatchers.Main) {
+        serverPreferences.listenForNetworkBandChanges().collectLatest { band ->
+          s.band = band
+          if (!s.preferencesLoaded) {
+            config.band = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    } else {
+      s.ssid = ""
+      s.password = ""
+      s.band = null
+      config.ssid = true
+      config.password = true
+      config.band = true
+      markPreferencesLoaded(config)
     }
   }
 

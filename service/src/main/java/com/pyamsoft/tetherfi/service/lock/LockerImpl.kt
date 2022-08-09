@@ -12,6 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -66,7 +67,7 @@ internal constructor(
 
         releaseWakelock()
 
-        if (preferences.keepWakeLock()) {
+        if (preferences.listenForWakeLockChanges().first()) {
           acquireWakelock()
         }
       }
