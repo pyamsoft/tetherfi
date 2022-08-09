@@ -37,7 +37,7 @@ internal constructor(
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.band && config.wakelock && config.ssid && config.password && config.band) {
+    if (config.port && config.wakelock && config.ssid && config.password && config.band) {
       state.preferencesLoaded = true
     }
   }
