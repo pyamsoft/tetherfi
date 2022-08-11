@@ -14,6 +14,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -69,43 +70,22 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPortChanges().collectLatest { port ->
-        if (!s.preferencesLoaded) {
-          // Don't deliver once we have loaded as this will update slower than the user could
-          // potentially type
-          s.port = port
-
-          config.port = true
-          markPreferencesLoaded(config)
-        }
-      }
+      s.port = serverPreferences.listenForPortChanges().first()
+      config.port = true
+      markPreferencesLoaded(config)
     }
 
     if (ServerDefaults.canUseCustomConfig()) {
       scope.launch(context = Dispatchers.Main) {
-        serverPreferences.listenForSsidChanges().collectLatest { ssid ->
-          if (!s.preferencesLoaded) {
-            // Don't deliver once we have loaded as this will update slower than the user could
-            // potentially type
-            s.ssid = ssid
-
-            config.ssid = true
-            markPreferencesLoaded(config)
-          }
-        }
+        s.ssid = serverPreferences.listenForSsidChanges().first()
+        config.ssid = true
+        markPreferencesLoaded(config)
       }
 
       scope.launch(context = Dispatchers.Main) {
-        serverPreferences.listenForPasswordChanges().collectLatest { pass ->
-          if (!s.preferencesLoaded) {
-            // Don't deliver once we have loaded as this will update slower than the user could
-            // potentially type
-            s.password = pass
-
-            config.password = true
-            markPreferencesLoaded(config)
-          }
-        }
+        s.password = serverPreferences.listenForPasswordChanges().first()
+        config.password = true
+        markPreferencesLoaded(config)
       }
 
       scope.launch(context = Dispatchers.Main) {
