@@ -57,17 +57,17 @@ buildscript {
     timber = "5.0.1"
 
     // Dagger
-    dagger = "2.43.1"
+    dagger = "2.43.2"
 
     // Compose
     composeActivity = "1.5.1"
-    accompanist = "0.25.0"
+    accompanist = "0.25.1"
     coil = "2.1.0"
 
     // AndroidX
     core = "1.8.0"
     fragment = "1.5.1"
-    appCompat = "1.4.2"
+    appCompat = "1.5.0"
 
     // Material Design
     materialDesign = "1.6.1"
