@@ -61,7 +61,7 @@ buildscript {
 
     // Compose
     composeActivity = "1.5.1"
-    accompanist = "0.25.0"
+    accompanist = "0.25.1"
     coil = "2.1.0"
 
     // AndroidX
