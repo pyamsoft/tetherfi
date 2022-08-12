@@ -1,7 +1,7 @@
 package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
-import java.util.*
+import java.util.UUID
 
 @CheckResult
 fun generateRandomId(): String {
