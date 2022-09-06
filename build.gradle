@@ -73,7 +73,7 @@ buildscript {
     // Material Design
     materialDesign = "1.6.1"
 
-    ktor = "2.1.0"
+    ktor = "2.1.1"
   }
 
   dependencies {
