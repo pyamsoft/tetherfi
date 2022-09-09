@@ -110,7 +110,14 @@ internal constructor(
 
   fun refreshSystemInfo(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
-      state.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
+      val s = state
+      s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
+
+      val requiresPermissions = !permissions.canCreateWiDiNetwork()
+
+      // Refresh these state bits
+      s.requiresPermissions = requiresPermissions
+      s.explainPermissions = requiresPermissions
     }
   }
 
@@ -187,10 +194,6 @@ internal constructor(
     }
 
     refreshGroupInfo(scope = scope)
-  }
-
-  fun handleRequestPermissions(onRequest: (List<String>) -> Unit) {
-    onRequest(permissions.requiredPermissions)
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {

@@ -7,7 +7,6 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
@@ -22,6 +21,7 @@ import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.theme.asThemeProvider
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
+import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
@@ -35,26 +35,9 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
+  @JvmField @Inject internal var networkPermissionRequester: PermissionRequester? = null
 
-  private val permissionCallback =
-      registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-        var hasPermission = true
-        for (entry in results) {
-          val permission = entry.key
-          val granted = entry.value
-          if (!granted) {
-            Timber.w("Permission was not granted: $permission")
-            hasPermission = false
-          }
-        }
-
-        if (hasPermission) {
-          Timber.d("All permissions are granted, toggle proxy again!")
-          handleToggleProxy()
-        } else {
-          Timber.w("Permissions not granted, cannot toggle proxy")
-        }
-      }
+  private var requester: PermissionRequester.Requester? = null
 
   private fun handleToggleProxy() {
     val act = requireActivity()
@@ -131,10 +114,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
       vm.handlePermissionsExplained()
 
       // Request permissions
-      vm.handleRequestPermissions { permissions ->
-        Timber.d("Requesting permission for WiDi network: $permissions")
-        permissionCallback.requireNotNull().launch(permissions.toTypedArray())
-      }
+      requester.requireNotNull().requestPermissions()
     }
   }
 
@@ -144,6 +124,22 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
     // Open settings
     safeOpenSettingsIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+
+    // As early as possible because of Lifecycle quirks
+    requester?.unregister()
+    requester =
+        networkPermissionRequester.requireNotNull().registerRequester(this) { granted ->
+          if (granted) {
+            Timber.d("Network permission granted, toggle proxy")
+            handleToggleProxy()
+          } else {
+            Timber.w("Network permission not granted")
+          }
+        }
   }
 
   override fun onCreateView(
@@ -218,10 +214,12 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     super.onDestroyView()
     dispose()
 
-    permissionCallback.unregister()
-
+    networkPermissionRequester = null
     theming = null
     viewModel = null
+
+    requester?.unregister()
+    requester = null
   }
 
   override fun getScreenId(): MainView {

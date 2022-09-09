@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.server
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
+import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
@@ -31,8 +32,8 @@ import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiConfig
 import com.pyamsoft.tetherfi.server.widi.WiDiConfigImpl
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkImpl
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.server.widi.receiver.WifiDirectReceiver
@@ -59,9 +60,7 @@ abstract class ServerModule {
   @CheckResult
   internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
 
-  @Binds
-  @CheckResult
-  internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
+  @Binds @CheckResult internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
 
   @Binds
   @CheckResult
@@ -125,6 +124,13 @@ abstract class ServerModule {
 
   @Module
   companion object {
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideServerPermissionRequester(guard: PermissionGuard): PermissionRequester {
+      return PermissionRequester.create(guard.requiredPermissions.toTypedArray())
+    }
 
     @Provides
     @JvmStatic
