@@ -20,12 +20,12 @@ apply plugin: "kotlin-kapt"
 
 //noinspection GroovyMissingReturnStatement
 android {
-  compileSdkVersion rootProject.ext.maxSdk
+  compileSdkVersion rootProject.ext.compileSdk
 
   //noinspection GroovyMissingReturnStatement
   defaultConfig {
     minSdkVersion rootProject.ext.minSdk
-    targetSdkVersion rootProject.ext.maxSdk
+    targetSdkVersion rootProject.ext.targetSdk
 
     resConfigs "en"
   }

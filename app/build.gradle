@@ -20,12 +20,12 @@ apply plugin: 'kotlin-kapt'
 
 //noinspection GroovyMissingReturnStatement
 android {
-  compileSdkVersion rootProject.ext.maxSdk
+  compileSdkVersion rootProject.ext.compileSdk
 
   defaultConfig {
     applicationId "com.pyamsoft.tetherfi"
     minSdkVersion rootProject.ext.minSdk
-    targetSdkVersion rootProject.ext.maxSdk
+    targetSdkVersion rootProject.ext.targetSdk
     versionCode 4
     versionName "20220801-1"
 
