@@ -20,17 +20,22 @@ internal class NotificationLauncherImpl
 @Inject
 internal constructor(
     @ServiceInternalApi private val notifier: Notifier,
-    private val status: WiDiNetworkStatus,
+    private val networkStatus: WiDiNetworkStatus,
 ) : NotificationLauncher {
 
   private val scope = MainScope()
 
   private var statusJob: Job? = null
 
-  private fun onStatusUpdated(s: RunningStatus) {
-    val data = ServerNotificationData(status = s)
+  private fun onStatusUpdated(
+      service: Service,
+      status: RunningStatus,
+  ) {
+    val data = ServerNotificationData(status = status)
 
-    notifier.show(
+    notifier
+        .startForeground(
+            service = service,
             id = NOTIFICATION_ID,
             channelInfo = CHANNEL_INFO,
             notification = data,
@@ -41,7 +46,8 @@ internal constructor(
   override fun start(service: Service) {
     val data = DEFAULT_DATA
 
-    notifier.startForeground(
+    notifier
+        .startForeground(
             service = service,
             id = NOTIFICATION_ID,
             channelInfo = CHANNEL_INFO,
@@ -51,7 +57,9 @@ internal constructor(
 
     statusJob?.cancel()
     statusJob =
-        scope.launch(context = Dispatchers.Main) { status.onStatusChanged { onStatusUpdated(it) } }
+        scope.launch(context = Dispatchers.Main) {
+          networkStatus.onStatusChanged { status -> onStatusUpdated(service, status) }
+        }
   }
 
   override fun stop(service: Service) {
