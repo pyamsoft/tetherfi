@@ -7,7 +7,6 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,7 +36,25 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
 
-  private var permissionCallback: ActivityResultLauncher<Array<String>>? = null
+  private val permissionCallback =
+      registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+        var hasPermission = true
+        for (entry in results) {
+          val permission = entry.key
+          val granted = entry.value
+          if (!granted) {
+            Timber.w("Permission was not granted: $permission")
+            hasPermission = false
+          }
+        }
+
+        if (hasPermission) {
+          Timber.d("All permissions are granted, toggle proxy again!")
+          handleToggleProxy()
+        } else {
+          Timber.w("Permissions not granted, cannot toggle proxy")
+        }
+      }
 
   private fun handleToggleProxy() {
     val act = requireActivity()
@@ -180,27 +197,6 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
         ProxyService.stop(requireActivity())
       }
     }
-
-    // Register here to watch for permissions
-    permissionCallback =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-          var hasPermission = true
-          for (entry in results) {
-            val permission = entry.key
-            val granted = entry.value
-            if (!granted) {
-              Timber.w("Permission was not granted: $permission")
-              hasPermission = false
-            }
-          }
-
-          if (hasPermission) {
-            Timber.d("All permissions are granted, toggle proxy again!")
-            handleToggleProxy()
-          } else {
-            Timber.w("Permissions not granted, cannot toggle proxy")
-          }
-        }
   }
 
   override fun onResume() {
@@ -221,7 +217,8 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   override fun onDestroyView() {
     super.onDestroyView()
     dispose()
-    permissionCallback?.unregister()
+
+    permissionCallback.unregister()
 
     theming = null
     viewModel = null
