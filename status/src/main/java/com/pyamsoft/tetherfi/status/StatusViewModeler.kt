@@ -43,9 +43,13 @@ internal constructor(
     }
   }
 
-  fun loadPreferences(scope: CoroutineScope) {
+  fun loadPreferences(
+      scope: CoroutineScope,
+      andThen: () -> Unit,
+  ) {
     val s = state
     if (s.preferencesLoaded) {
+      andThen()
       return
     }
 
@@ -106,12 +110,11 @@ internal constructor(
       config.band = true
       markPreferencesLoaded(config)
     }
+
+    andThen()
   }
 
-  fun refreshSystemInfo(
-      scope: CoroutineScope,
-      andThen: () -> Unit,
-  ) {
+  fun refreshSystemInfo(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
       s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
@@ -121,8 +124,6 @@ internal constructor(
       // Refresh these state bits
       s.requiresPermissions = requiresPermissions
       s.explainPermissions = requiresPermissions
-
-      andThen()
     }
   }
 

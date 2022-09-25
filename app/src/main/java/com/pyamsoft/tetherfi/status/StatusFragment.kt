@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.ui.theme.asThemeProvider
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.util.PermissionRequester
+import com.pyamsoft.pydroid.util.doOnResume
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
@@ -188,19 +189,19 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     viewModel.requireNotNull().also { vm ->
       vm.restoreState(savedInstanceState)
       vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
-      vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope)
       vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope) {
         ProxyService.stop(requireActivity())
+      }
+      vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope) {
+        // Vitals
+        viewLifecycleOwner.doOnResume { requireActivity().reportFullyDrawn() }
       }
     }
   }
 
   override fun onResume() {
     super.onResume()
-    viewModel.requireNotNull().refreshSystemInfo(scope = viewLifecycleOwner.lifecycleScope) {
-      // Vitals
-      requireActivity().reportFullyDrawn()
-    }
+    viewModel.requireNotNull().refreshSystemInfo(scope = viewLifecycleOwner.lifecycleScope)
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
