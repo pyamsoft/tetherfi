@@ -197,7 +197,10 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   override fun onResume() {
     super.onResume()
-    viewModel.requireNotNull().refreshSystemInfo(scope = viewLifecycleOwner.lifecycleScope)
+    viewModel.requireNotNull().refreshSystemInfo(scope = viewLifecycleOwner.lifecycleScope) {
+      // Vitals
+      requireActivity().reportFullyDrawn()
+    }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {

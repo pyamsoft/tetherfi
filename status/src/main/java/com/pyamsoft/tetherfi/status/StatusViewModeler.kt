@@ -108,7 +108,10 @@ internal constructor(
     }
   }
 
-  fun refreshSystemInfo(scope: CoroutineScope) {
+  fun refreshSystemInfo(
+      scope: CoroutineScope,
+      andThen: () -> Unit,
+  ) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
       s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
@@ -118,6 +121,8 @@ internal constructor(
       // Refresh these state bits
       s.requiresPermissions = requiresPermissions
       s.explainPermissions = requiresPermissions
+
+      andThen()
     }
   }
 
