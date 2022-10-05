@@ -20,6 +20,8 @@ apply plugin: 'kotlin-kapt'
 
 //noinspection GroovyMissingReturnStatement
 android {
+  namespace "com.pyamsoft.tetherfi"
+
   compileSdkVersion rootProject.ext.compileSdk
 
   defaultConfig {
