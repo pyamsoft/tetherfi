@@ -65,7 +65,7 @@ private fun ProxyEventItemUrl(
         text = url,
         style =
             MaterialTheme.typography.body1.copy(
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.W700,
                 color = color,
             ),
     )

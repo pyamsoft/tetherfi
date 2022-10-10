@@ -629,7 +629,7 @@ private fun ConnectionInstructions(
             text = "Connect Device 2 to the network:",
             style =
                 MaterialTheme.typography.body2.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.W700,
                 ),
         )
 
@@ -661,7 +661,7 @@ private fun ConnectionInstructions(
             text = "Set Proxy Network for Device 2:",
             style =
                 MaterialTheme.typography.body2.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.W700,
                 ),
         )
 
@@ -952,7 +952,7 @@ private fun Item(
         text = title,
         style =
             MaterialTheme.typography.caption.copy(
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.W700,
             ),
     )
     Text(
