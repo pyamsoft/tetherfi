@@ -111,6 +111,8 @@ internal fun ConnectionInstructions(
     ip: String,
     onToggleConnectionInstructions: () -> Unit,
 ) {
+  val isDeadProxy = remember(ip) { ip == "NO IP ADDRESS" }
+
   Column(
       modifier = modifier,
   ) {
@@ -300,57 +302,68 @@ internal fun ConnectionInstructions(
                 style = MaterialTheme.typography.body2,
             )
 
-            Row {
+            // If the IP is equal to "NO IP ADDRESS" then our network is fucked
+            if (isDeadProxy) {
               Text(
-                  text = "URL/Hostname",
+                  text = "An error has occurred, please restart the $appName proxy",
                   style =
                       MaterialTheme.typography.body1.copy(
+                          color = MaterialTheme.colors.error,
+                      ),
+              )
+            } else {
+              Row {
+                Text(
+                    text = "URL/Hostname",
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            color =
+                                MaterialTheme.colors.onBackground.copy(
+                                    alpha = 0.6F,
+                                ),
+                        ),
+                )
+                Text(
+                    modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                    text = ip,
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            fontWeight = FontWeight.W700,
+                        ),
+                )
+              }
+              Row {
+                Text(
+                    text = "Port",
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            color =
+                                MaterialTheme.colors.onBackground.copy(
+                                    alpha = 0.6F,
+                                ),
+                        ),
+                )
+                Text(
+                    modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                    text = port,
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            fontWeight = FontWeight.W700,
+                        ),
+                )
+              }
+              Text(
+                  modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+                  text = "Leave all other proxy options blank!",
+                  style =
+                      MaterialTheme.typography.caption.copy(
                           color =
                               MaterialTheme.colors.onBackground.copy(
                                   alpha = 0.6F,
                               ),
                       ),
               )
-              Text(
-                  modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                  text = ip,
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          fontWeight = FontWeight.W700,
-                      ),
-              )
             }
-            Row {
-              Text(
-                  text = "Port",
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          color =
-                              MaterialTheme.colors.onBackground.copy(
-                                  alpha = 0.6F,
-                              ),
-                      ),
-              )
-              Text(
-                  modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                  text = port,
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          fontWeight = FontWeight.W700,
-                      ),
-              )
-            }
-            Text(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-                text = "Leave all other proxy options blank!",
-                style =
-                    MaterialTheme.typography.caption.copy(
-                        color =
-                            MaterialTheme.colors.onBackground.copy(
-                                alpha = 0.6F,
-                            ),
-                    ),
-            )
           }
         }
 
@@ -364,13 +377,15 @@ internal fun ConnectionInstructions(
           )
         }
 
-        ThisInstruction(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content * 3),
-        ) {
-          Text(
-              text = "Your device should now be sharing its Internet connection!",
-              style = MaterialTheme.typography.body1,
-          )
+        if (!isDeadProxy) {
+          ThisInstruction(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content * 3),
+          ) {
+            Text(
+                text = "Your device should now be sharing its Internet connection!",
+                style = MaterialTheme.typography.body1,
+            )
+          }
         }
 
         ThisInstruction(
