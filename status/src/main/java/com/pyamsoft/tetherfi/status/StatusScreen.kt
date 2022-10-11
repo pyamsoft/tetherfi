@@ -343,7 +343,7 @@ private fun NetworkInformation(
         StatusEditor(
             modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
-            title = "NAME",
+            title = "WIFI NAME/SSID",
             value = ssid,
             onChange = onSsidChanged,
         )
@@ -351,7 +351,7 @@ private fun NetworkInformation(
         StatusEditor(
             modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
-            title = "PASSWORD",
+            title = "WIFI PASSWORD",
             value = password,
             onChange = onPasswordChanged,
             keyboardOptions =
@@ -362,7 +362,7 @@ private fun NetworkInformation(
 
         StatusEditor(
             modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-            title = "PORT",
+            title = "PROXY PORT",
             value = port,
             onChange = onPortChanged,
             keyboardOptions =
@@ -372,8 +372,8 @@ private fun NetworkInformation(
         )
       } else {
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            title = "NAME",
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            title = "WIFI NAME/SSID",
             value = ssid,
             valueStyle =
                 MaterialTheme.typography.h6.copy(
@@ -382,8 +382,8 @@ private fun NetworkInformation(
         )
 
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            title = "PASSWORD",
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content * 2),
+            title = "WIFI PASSWORD",
             value = password,
             valueStyle =
                 MaterialTheme.typography.h6.copy(
@@ -392,8 +392,8 @@ private fun NetworkInformation(
         )
 
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            title = "IP",
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            title = "PROXY URL/HOSTNAME",
             value = ip,
             valueStyle =
                 MaterialTheme.typography.h6.copy(
@@ -402,8 +402,8 @@ private fun NetworkInformation(
         )
 
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            title = "PORT",
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            title = "PROXY PORT",
             value = port,
             valueStyle =
                 MaterialTheme.typography.h6.copy(
