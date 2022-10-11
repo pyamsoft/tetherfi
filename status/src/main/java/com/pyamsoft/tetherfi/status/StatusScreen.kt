@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
@@ -371,27 +372,43 @@ private fun NetworkInformation(
         )
       } else {
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
             title = "NAME",
             value = ssid,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                ),
         )
 
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
             title = "PASSWORD",
             value = password,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                ),
         )
 
         StatusItem(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
             title = "IP",
             value = ip,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                ),
         )
 
         StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
             title = "PORT",
             value = port,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                ),
         )
       }
 

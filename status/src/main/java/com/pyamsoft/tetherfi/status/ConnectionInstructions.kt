@@ -368,17 +368,17 @@ internal fun ConnectionInstructions(
           }
         }
 
-        OtherInstruction(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-        ) {
-          Text(
-              text =
-                  "Turn the Wi-Fi off and back on again. It should automatically connect to the $appName network proxy",
-              style = MaterialTheme.typography.body1,
-          )
-        }
-
         if (!isDeadProxy) {
+          OtherInstruction(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          ) {
+            Text(
+                text =
+                    "Turn the Wi-Fi off and back on again. It should automatically connect to the $appName network proxy",
+                style = MaterialTheme.typography.body1,
+            )
+          }
+
           ThisInstruction(
               modifier = Modifier.padding(top = MaterialTheme.keylines.content * 3),
           ) {
