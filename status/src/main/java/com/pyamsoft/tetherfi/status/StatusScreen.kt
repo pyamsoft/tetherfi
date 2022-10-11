@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.ClickableText
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,8 +60,7 @@ import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.icons.PortableWifiOff
-import com.pyamsoft.tetherfi.ui.icons.WifiTethering
+import com.pyamsoft.tetherfi.ui.icons.RadioButtonUnchecked
 
 @Composable
 fun StatusScreen(
@@ -874,7 +875,8 @@ private fun NetworkInformation(
 
       CpuWakelock(
           modifier =
-              Modifier.padding(top = MaterialTheme.keylines.content)
+              Modifier.fillMaxWidth()
+                  .padding(top = MaterialTheme.keylines.content)
                   .padding(MaterialTheme.keylines.baseline),
           isEditable = isEditable,
           keepWakeLock = keepWakeLock,
@@ -882,7 +884,7 @@ private fun NetworkInformation(
       )
 
       NetworkBands(
-          modifier = Modifier.padding(MaterialTheme.keylines.baseline),
+          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
           isEditable = isEditable,
           band = band,
           onSelectBand = onSelectBand,
@@ -911,10 +913,13 @@ private fun CpuWakelock(
               shape = MaterialTheme.shapes.medium,
           ),
   ) {
-    Card {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
       Row(
           modifier =
-              Modifier.clickable {
+              Modifier.fillMaxWidth()
+                  .clickable {
                     if (isEditable) {
                       onToggleKeepWakeLock()
                     }
@@ -923,17 +928,27 @@ private fun CpuWakelock(
           verticalAlignment = Alignment.CenterVertically,
       ) {
         Icon(
+            modifier = Modifier.size(16.dp),
             imageVector =
-                if (keepWakeLock) Icons.Filled.WifiTethering else Icons.Filled.PortableWifiOff,
+                if (keepWakeLock) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
             contentDescription = if (keepWakeLock) "CPU kept awake" else "CPU not kept awake",
             tint =
-                if (keepWakeLock) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+                if (keepWakeLock) MaterialTheme.colors.primary
+                else
+                    MaterialTheme.colors.onSurface.copy(
+                        alpha = 0.6F,
+                    ),
         )
 
         Text(
             modifier = Modifier.padding(start = MaterialTheme.keylines.content),
             text = "Keep CPU awake for full performance",
-            style = MaterialTheme.typography.body2,
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        if (keepWakeLock) MaterialTheme.colors.primary
+                        else MaterialTheme.colors.onSurface,
+                ),
         )
       }
     }
@@ -1037,17 +1052,32 @@ private fun NetworkBands(
                       .padding(MaterialTheme.keylines.content),
           ) {
             Column {
-              Row {
+              Row(
+                  verticalAlignment = Alignment.Top,
+              ) {
                 Text(
-                    modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+                    modifier =
+                        Modifier.weight(1F).padding(bottom = MaterialTheme.keylines.baseline),
                     text = b.displayName,
                     style =
                         MaterialTheme.typography.h6.copy(
                             fontWeight = FontWeight.W700,
                             color =
                                 if (isSelected) MaterialTheme.colors.primary
-                                else MaterialTheme.typography.h6.color,
+                                else MaterialTheme.colors.onSurface,
                         ),
+                )
+
+                Icon(
+                    modifier = Modifier.size(16.dp),
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = b.name,
+                    tint =
+                        (if (isSelected) MaterialTheme.colors.primary
+                            else MaterialTheme.colors.onSurface)
+                            .copy(
+                                alpha = 0.8F,
+                            ),
                 )
               }
 
@@ -1064,17 +1094,14 @@ private fun NetworkBands(
                       MaterialTheme.typography.caption.copy(
                           color =
                               if (isSelected) MaterialTheme.colors.primary
-                              else MaterialTheme.typography.caption.color,
+                              else
+                                  MaterialTheme.colors.onSurface.copy(
+                                      alpha = 0.6F,
+                                  ),
                           fontWeight = FontWeight.W400,
                       ),
               )
             }
-
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = b.name,
-                tint = if (isSelected) MaterialTheme.colors.primary else Color.Unspecified,
-            )
           }
         }
       }
@@ -1143,6 +1170,10 @@ private fun DisplayStatus(
       title = title,
       value = text,
       color = color,
+      valueStyle =
+          MaterialTheme.typography.h6.copy(
+              fontWeight = FontWeight.W400,
+          ),
   )
 }
 
@@ -1151,6 +1182,7 @@ private fun Item(
     modifier: Modifier = Modifier,
     title: String,
     value: String,
+    valueStyle: TextStyle = MaterialTheme.typography.body1,
     color: Color = Color.Unspecified,
 ) {
   Column(
@@ -1161,11 +1193,14 @@ private fun Item(
         style =
             MaterialTheme.typography.caption.copy(
                 fontWeight = FontWeight.W700,
-            ),
+                color =
+                    MaterialTheme.colors.onSurface.copy(
+                        alpha = 0.6F,
+                    )),
     )
     Text(
         text = value,
-        style = MaterialTheme.typography.body1,
+        style = valueStyle,
         color = color,
     )
   }
