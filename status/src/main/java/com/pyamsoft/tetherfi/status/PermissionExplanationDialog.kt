@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -83,7 +84,7 @@ internal fun PermissionExplanationDialog(
                     ButtonDefaults.textButtonColors(
                         contentColor =
                             MaterialTheme.colors.onSurface.copy(
-                                alpha = 0.8F,
+                                alpha = ContentAlpha.medium,
                             ),
                     ),
             ) {
@@ -102,7 +103,7 @@ internal fun PermissionExplanationDialog(
                     ButtonDefaults.textButtonColors(
                         contentColor =
                             MaterialTheme.colors.error.copy(
-                                alpha = 0.8F,
+                                alpha = ContentAlpha.medium,
                             ),
                     ),
             ) {
@@ -183,7 +184,7 @@ private fun ViewPrivacyPolicy(
                 textAlign = TextAlign.Center,
                 color =
                     MaterialTheme.colors.onSurface.copy(
-                        alpha = 0.8F,
+                        alpha = ContentAlpha.medium,
                     ),
             ),
         onClick = {
