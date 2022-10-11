@@ -79,7 +79,7 @@ dependencies {
   api "androidx.compose.animation:animation:$compose_version"
   api "androidx.compose.ui:ui-tooling-preview:$compose_version"
   debugApi "androidx.compose.ui:ui-tooling:$compose_version"
-  // api "androidx.compose.material:material-icons-extended:$compose_version"
+  api "androidx.compose.material:material-icons-extended:$compose_version"
 
   api "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
 

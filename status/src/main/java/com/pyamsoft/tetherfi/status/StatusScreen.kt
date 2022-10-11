@@ -26,7 +26,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
@@ -59,6 +58,8 @@ import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.icons.PortableWifiOff
+import com.pyamsoft.tetherfi.ui.icons.WifiTethering
 
 @Composable
 fun StatusScreen(
@@ -816,7 +817,7 @@ private fun NetworkInformation(
 
       if (editable) {
         Editor(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
             title = "NAME",
             value = ssid,
@@ -824,7 +825,7 @@ private fun NetworkInformation(
         )
 
         Editor(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
             title = "PASSWORD",
             value = password,
@@ -836,7 +837,7 @@ private fun NetworkInformation(
         )
 
         Editor(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
             title = "PORT",
             value = port,
             onChange = onPortChanged,
@@ -845,21 +846,6 @@ private fun NetworkInformation(
                     keyboardType = KeyboardType.Number,
                 ),
         )
-
-        Row(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Switch(
-              checked = keepWakeLock,
-              onCheckedChange = { onToggleKeepWakeLock() },
-          )
-          Text(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-              text = "Keep CPU awake to improve performance",
-              style = MaterialTheme.typography.body2,
-          )
-        }
       } else {
         Item(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -886,6 +872,15 @@ private fun NetworkInformation(
         )
       }
 
+      CpuWakelock(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .padding(MaterialTheme.keylines.baseline),
+          isEditable = isEditable,
+          keepWakeLock = keepWakeLock,
+          onToggleKeepWakeLock = onToggleKeepWakeLock,
+      )
+
       NetworkBands(
           modifier = Modifier.padding(MaterialTheme.keylines.baseline),
           isEditable = isEditable,
@@ -897,147 +892,193 @@ private fun NetworkInformation(
 }
 
 @Composable
+private fun CpuWakelock(
+    modifier: Modifier = Modifier,
+    isEditable: Boolean,
+    keepWakeLock: Boolean,
+    onToggleKeepWakeLock: () -> Unit,
+) {
+  Box(
+      modifier =
+          modifier.border(
+              width = 2.dp,
+              color =
+                  (if (keepWakeLock) MaterialTheme.colors.primary
+                      else MaterialTheme.colors.onSurface)
+                      .copy(
+                          alpha = 0.6F,
+                      ),
+              shape = MaterialTheme.shapes.medium,
+          ),
+  ) {
+    Card {
+      Row(
+          modifier =
+              Modifier.clickable {
+                    if (isEditable) {
+                      onToggleKeepWakeLock()
+                    }
+                  }
+                  .padding(MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Icon(
+            imageVector =
+                if (keepWakeLock) Icons.Filled.WifiTethering else Icons.Filled.PortableWifiOff,
+            contentDescription = if (keepWakeLock) "CPU kept awake" else "CPU not kept awake",
+            tint =
+                if (keepWakeLock) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface,
+        )
+
+        Text(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            text = "Keep CPU awake for full performance",
+            style = MaterialTheme.typography.body2,
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun NetworkBands(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
     band: ServerNetworkBand?,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
-  if (isEditable) {
-    val bands = remember { ServerNetworkBand.values() }
-    val bandIterator = remember(bands) { bands.withIndex() }
+  val bands = remember { ServerNetworkBand.values() }
+  val bandIterator = remember(bands) { bands.withIndex() }
 
-    val density = LocalDensity.current
-    val (cardHeights, setCardHeight) =
-        remember { mutableStateOf(emptyMap<ServerNetworkBand, Int>()) }
+  val density = LocalDensity.current
+  val (cardHeights, setCardHeight) = remember { mutableStateOf(emptyMap<ServerNetworkBand, Int>()) }
 
-    Column(
-        modifier = modifier,
-    ) {
-      Row {
-        for ((index, b) in bandIterator) {
-          val isSelected = remember(b, band) { b == band }
+  Column(
+      modifier = modifier,
+  ) {
+    Row {
+      for ((index, b) in bandIterator) {
+        val isSelected = remember(b, band) { b == band }
 
-          // Figure out which card is the largest and size all other cards to match
-          val largestCard =
-              remember(cardHeights) {
-                if (cardHeights.isEmpty()) {
-                  return@remember 0
-                }
-
-                var largest = 0
-                for (height in cardHeights.values) {
-                  if (height > largest) {
-                    largest = height
-                  }
-                }
-
-                if (largest <= 0) {
-                  return@remember 0
-                }
-
-                return@remember largest
+        // Figure out which card is the largest and size all other cards to match
+        val largestCard =
+            remember(cardHeights) {
+              if (cardHeights.isEmpty()) {
+                return@remember 0
               }
 
-          val gapHeight =
-              remember(largestCard, density, cardHeights, b) {
-                val cardHeight: Int = cardHeights[b] ?: return@remember ZeroSize
-
-                val diff = largestCard - cardHeight
-                if (diff < 0) {
-                  return@remember ZeroSize
+              var largest = 0
+              for (height in cardHeights.values) {
+                if (height > largest) {
+                  largest = height
                 }
-
-                return@remember density.run { diff.toDp() }
               }
 
-          Card(
+              if (largest <= 0) {
+                return@remember 0
+              }
+
+              return@remember largest
+            }
+
+        val gapHeight =
+            remember(largestCard, density, cardHeights, b) {
+              val cardHeight: Int = cardHeights[b] ?: return@remember ZeroSize
+
+              val diff = largestCard - cardHeight
+              if (diff < 0) {
+                return@remember ZeroSize
+              }
+
+              return@remember density.run { diff.toDp() }
+            }
+
+        Card(
+            modifier =
+                Modifier.weight(1F)
+                    .onSizeChanged {
+                      // Only do this once, on the initial measure
+                      val height = it.height
+                      val entry: Int? = cardHeights[b]
+                      if (entry == null) {
+                        setCardHeight(
+                            cardHeights.toMutableMap().apply {
+                              this.set(
+                                  key = b,
+                                  value = height,
+                              )
+                            },
+                        )
+                      }
+                    }
+                    .padding(
+                        end =
+                            if (index < bands.lastIndex) MaterialTheme.keylines.content
+                            else ZeroSize,
+                    )
+                    .border(
+                        width = 2.dp,
+                        color =
+                            (if (isSelected) MaterialTheme.colors.primary
+                                else MaterialTheme.colors.onSurface)
+                                .copy(
+                                    alpha = 0.6F,
+                                ),
+                        shape = MaterialTheme.shapes.medium,
+                    ),
+        ) {
+          Row(
               modifier =
-                  Modifier.weight(1F)
-                      .onSizeChanged {
-                        // Only do this once, on the initial measure
-                        val height = it.height
-                        val entry: Int? = cardHeights[b]
-                        if (entry == null) {
-                          setCardHeight(
-                              cardHeights.toMutableMap().apply {
-                                this.set(
-                                    key = b,
-                                    value = height,
-                                )
-                              },
-                          )
+                  Modifier.clickable {
+                        if (isEditable) {
+                          onSelectBand(b)
                         }
                       }
-                      .padding(
-                          end =
-                              if (index < bands.lastIndex) MaterialTheme.keylines.content
-                              else ZeroSize,
-                      )
-                      .border(
-                          width = 2.dp,
-                          color =
-                              if (isSelected) MaterialTheme.colors.primary
-                              else MaterialTheme.colors.onSurface,
-                          shape = MaterialTheme.shapes.medium,
-                      )
-                      .clickable { onSelectBand(b) },
+                      .padding(MaterialTheme.keylines.content),
           ) {
-            Row(
-                modifier = Modifier.padding(MaterialTheme.keylines.content),
-            ) {
-              Column {
-                Row {
-                  Text(
-                      modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-                      text = b.displayName,
-                      style =
-                          MaterialTheme.typography.h6.copy(
-                              fontWeight = FontWeight.W700,
-                              color =
-                                  if (isSelected) MaterialTheme.colors.primary
-                                  else MaterialTheme.typography.h6.color,
-                          ),
-                  )
-                }
-
-                // Align with the largest card
-                if (gapHeight > ZeroSize) {
-                  Spacer(
-                      modifier = Modifier.height(gapHeight),
-                  )
-                }
-
+            Column {
+              Row {
                 Text(
-                    text = b.description,
+                    modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+                    text = b.displayName,
                     style =
-                        MaterialTheme.typography.caption.copy(
+                        MaterialTheme.typography.h6.copy(
+                            fontWeight = FontWeight.W700,
                             color =
                                 if (isSelected) MaterialTheme.colors.primary
-                                else MaterialTheme.typography.caption.color,
-                            fontWeight = FontWeight.W400,
+                                else MaterialTheme.typography.h6.color,
                         ),
                 )
               }
 
-              Icon(
-                  imageVector = Icons.Filled.CheckCircle,
-                  contentDescription = b.name,
-                  tint = if (isSelected) MaterialTheme.colors.primary else Color.Unspecified,
+              // Align with the largest card
+              if (gapHeight > ZeroSize) {
+                Spacer(
+                    modifier = Modifier.height(gapHeight),
+                )
+              }
+
+              Text(
+                  text = b.description,
+                  style =
+                      MaterialTheme.typography.caption.copy(
+                          color =
+                              if (isSelected) MaterialTheme.colors.primary
+                              else MaterialTheme.typography.caption.color,
+                          fontWeight = FontWeight.W400,
+                      ),
               )
             }
+
+            Icon(
+                imageVector = Icons.Filled.CheckCircle,
+                contentDescription = b.name,
+                tint = if (isSelected) MaterialTheme.colors.primary else Color.Unspecified,
+            )
           }
         }
       }
     }
-  } else {
-    val bandName = remember(band) { band?.name ?: "AUTO" }
-
-    Item(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        title = "BAND",
-        value = bandName,
-    )
   }
 }
 
@@ -1054,6 +1095,7 @@ private fun Editor(
       modifier = modifier,
   ) {
     TextField(
+        modifier = Modifier.fillMaxWidth(),
         enabled = enabled,
         keyboardOptions = keyboardOptions,
         value = value,
