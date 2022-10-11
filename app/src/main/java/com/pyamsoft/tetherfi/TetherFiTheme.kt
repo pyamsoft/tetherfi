@@ -40,6 +40,7 @@ private fun themeColors(
   val onPrimary = colorResource(colors[1])
   val secondary = colorResource(colors[2])
   val onSecondary = colorResource(colors[3])
+
   return if (isDarkMode)
       darkColors(
           primary = primary,

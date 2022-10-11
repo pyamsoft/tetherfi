@@ -184,8 +184,8 @@ private fun rememberPreparedLoadedContent(
   val ssid =
       remember(
           isEditable,
-          group,
           canUseCustomConfig,
+          group?.ssid,
           state.ssid,
       ) {
         if (isEditable) {
@@ -201,8 +201,8 @@ private fun rememberPreparedLoadedContent(
   val password =
       remember(
           isEditable,
-          group,
           canUseCustomConfig,
+          group?.password,
           state.password,
       ) {
         if (isEditable) {

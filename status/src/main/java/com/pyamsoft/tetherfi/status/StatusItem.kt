@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.status
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +28,7 @@ internal fun StatusItem(
                 fontWeight = FontWeight.W700,
                 color =
                 MaterialTheme.colors.onSurface.copy(
-                    alpha = 0.6F,
+                    alpha = ContentAlpha.medium,
                 )
             ),
         )

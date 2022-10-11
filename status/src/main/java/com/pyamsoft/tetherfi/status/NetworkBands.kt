@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 
 @Composable
@@ -46,6 +48,14 @@ internal fun NetworkBands(
     Row {
       for ((index, b) in bandIterator) {
         val isSelected = remember(b, band) { b == band }
+
+        val color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+        val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+        val mediumAlpha =
+            if (isEditable) {
+              // High alpha when selected
+              if (isSelected) ContentAlpha.high else ContentAlpha.medium
+            } else ContentAlpha.disabled
 
         // Figure out which card is the largest and size all other cards to match
         val largestCard =
@@ -105,22 +115,14 @@ internal fun NetworkBands(
                     )
                     .border(
                         width = 2.dp,
-                        color =
-                            (if (isSelected) MaterialTheme.colors.primary
-                                else MaterialTheme.colors.onSurface)
-                                .copy(
-                                    alpha = 0.6F,
-                                ),
+                        color = color.copy(alpha = mediumAlpha),
                         shape = MaterialTheme.shapes.medium,
                     ),
+            elevation = CardDefaults.Elevation,
         ) {
           Row(
               modifier =
-                  Modifier.clickable {
-                        if (isEditable) {
-                          onSelectBand(b)
-                        }
-                      }
+                  Modifier.clickable(enabled = isEditable) { onSelectBand(b) }
                       .padding(MaterialTheme.keylines.content),
           ) {
             Column {
@@ -134,9 +136,7 @@ internal fun NetworkBands(
                     style =
                         MaterialTheme.typography.h6.copy(
                             fontWeight = FontWeight.W700,
-                            color =
-                                if (isSelected) MaterialTheme.colors.primary
-                                else MaterialTheme.colors.onSurface,
+                            color = color.copy(alpha = highAlpha),
                         ),
                 )
 
@@ -144,12 +144,7 @@ internal fun NetworkBands(
                     modifier = Modifier.size(16.dp),
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = b.name,
-                    tint =
-                        (if (isSelected) MaterialTheme.colors.primary
-                            else MaterialTheme.colors.onSurface)
-                            .copy(
-                                alpha = 0.8F,
-                            ),
+                    tint = color.copy(alpha = mediumAlpha),
                 )
               }
 
@@ -164,12 +159,7 @@ internal fun NetworkBands(
                   text = b.description,
                   style =
                       MaterialTheme.typography.caption.copy(
-                          color =
-                              if (isSelected) MaterialTheme.colors.primary
-                              else
-                                  MaterialTheme.colors.onSurface.copy(
-                                      alpha = 0.6F,
-                                  ),
+                          color = color.copy(alpha = mediumAlpha),
                           fontWeight = FontWeight.W400,
                       ),
               )

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
@@ -142,7 +143,7 @@ internal fun ConnectionInstructions(
                     MaterialTheme.typography.caption.copy(
                         color =
                             MaterialTheme.colors.onSurface.copy(
-                                alpha = 0.6F,
+                                alpha = ContentAlpha.medium,
                             ),
                     ),
             )
@@ -157,7 +158,7 @@ internal fun ConnectionInstructions(
                     MaterialTheme.typography.caption.copy(
                         color =
                             MaterialTheme.colors.onSurface.copy(
-                                alpha = 0.6F,
+                                alpha = ContentAlpha.medium,
                             ),
                     ),
             )
@@ -229,81 +230,6 @@ internal fun ConnectionInstructions(
                 text = "Connect to the $appName network:",
                 style = MaterialTheme.typography.body2,
             )
-
-            Row {
-              Text(
-                  text = "Name",
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          color =
-                              MaterialTheme.colors.onBackground.copy(
-                                  alpha = 0.6F,
-                              ),
-                      ),
-              )
-              Text(
-                  modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                  text = ssid,
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          fontWeight = FontWeight.W700,
-                      ),
-              )
-            }
-            Row {
-              Text(
-                  text = "Password",
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          color =
-                              MaterialTheme.colors.onBackground.copy(
-                                  alpha = 0.6F,
-                              ),
-                      ),
-              )
-              Text(
-                  modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                  text = password,
-                  style =
-                      MaterialTheme.typography.body1.copy(
-                          fontWeight = FontWeight.W700,
-                      ),
-              )
-            }
-            Text(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-                text =
-                    "You may get a message that the device is connected, but does not have access to the Internet.",
-                style =
-                    MaterialTheme.typography.caption.copy(
-                        color =
-                            MaterialTheme.colors.onBackground.copy(
-                                alpha = 0.6F,
-                            ),
-                    ),
-            )
-          }
-        }
-
-        OtherInstruction(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content * 3),
-        ) {
-          Text(
-              text = "Open the Network Proxy page",
-              style = MaterialTheme.typography.body1,
-          )
-        }
-
-        OtherInstruction(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-        ) {
-          Column {
-            Text(
-                text = "Setup the $appName proxy:",
-                style = MaterialTheme.typography.body2,
-            )
-
-            // If the IP is equal to "NO IP ADDRESS" then our network is fucked
             if (isDeadProxy) {
               Text(
                   text = "An error has occurred, please restart the $appName proxy",
@@ -315,12 +241,52 @@ internal fun ConnectionInstructions(
             } else {
               Row {
                 Text(
+                    text = "Name",
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            color =
+                                MaterialTheme.colors.onBackground.copy(
+                                    alpha = ContentAlpha.medium,
+                                ),
+                        ),
+                )
+                Text(
+                    modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                    text = ssid,
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            fontWeight = FontWeight.W700,
+                        ),
+                )
+              }
+              Row {
+                Text(
+                    text = "Password",
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            color =
+                                MaterialTheme.colors.onBackground.copy(
+                                    alpha = ContentAlpha.medium,
+                                ),
+                        ),
+                )
+                Text(
+                    modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                    text = password,
+                    style =
+                        MaterialTheme.typography.body1.copy(
+                            fontWeight = FontWeight.W700,
+                        ),
+                )
+              }
+              Row {
+                Text(
                     text = "URL/Hostname",
                     style =
                         MaterialTheme.typography.body1.copy(
                             color =
                                 MaterialTheme.colors.onBackground.copy(
-                                    alpha = 0.6F,
+                                    alpha = ContentAlpha.medium,
                                 ),
                         ),
                 )
@@ -340,7 +306,7 @@ internal fun ConnectionInstructions(
                         MaterialTheme.typography.body1.copy(
                             color =
                                 MaterialTheme.colors.onBackground.copy(
-                                    alpha = 0.6F,
+                                    alpha = ContentAlpha.medium,
                                 ),
                         ),
                 )
@@ -360,7 +326,7 @@ internal fun ConnectionInstructions(
                       MaterialTheme.typography.caption.copy(
                           color =
                               MaterialTheme.colors.onBackground.copy(
-                                  alpha = 0.6F,
+                                  alpha = ContentAlpha.medium,
                               ),
                       ),
               )
@@ -393,7 +359,7 @@ internal fun ConnectionInstructions(
             modifier = Modifier.padding(top = MaterialTheme.keylines.content),
         ) {
           Text(
-              text = "To stop the $appName proxy, clicking the button at the top again.",
+              text = "To stop the $appName proxy, click the button at the top again.",
               style = MaterialTheme.typography.body1,
           )
         }
