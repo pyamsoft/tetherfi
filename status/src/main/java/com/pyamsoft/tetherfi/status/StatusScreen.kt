@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -18,11 +20,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
-import androidx.compose.material.RadioButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
@@ -33,10 +35,13 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
@@ -48,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -68,6 +74,7 @@ fun StatusScreen(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
+    onToggleOptions: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
@@ -106,8 +113,9 @@ fun StatusScreen(
           onToggleConnectionInstructions = onToggleConnectionInstructions,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
+          onToggleOptions = onToggleOptions,
       )
-    
+
   Scaffold(
       modifier = modifier,
       scaffoldState = scaffoldState,
@@ -163,7 +171,9 @@ fun StatusScreen(
           ) {
             Box(
                 contentAlignment = Alignment.Center,
-            ) { CircularProgressIndicator() }
+            ) {
+              CircularProgressIndicator()
+            }
           }
         }
       }
@@ -180,10 +190,9 @@ private fun PermissionExplanationDialog(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
 ) {
-  val show = state.explainPermissions
   AnimatedVisibility(
       modifier = modifier,
-      visible = show,
+      visible = state.explainPermissions,
   ) {
     AlertDialog(
         onDismissRequest = onDismissPermissionExplanation,
@@ -300,7 +309,9 @@ private fun ViewPrivacyPolicy(
                     textDecoration = TextDecoration.Underline,
                     color = MaterialTheme.colors.primary,
                 ),
-        ) { append(linkText) }
+        ) {
+          append(linkText)
+        }
       }
     }
 
@@ -331,7 +342,8 @@ private fun onTextClicked(
     uriHandler: UriHandler,
     start: Int,
 ) {
-  text.getStringAnnotations(
+  text
+      .getStringAnnotations(
           tag = uriTag,
           start = start,
           end = start + linkText.length,
@@ -349,6 +361,7 @@ private fun prepareLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
+    onToggleOptions: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
@@ -358,7 +371,9 @@ private fun prepareLoadedContent(
   val isEditable =
       remember(state.wiDiStatus) {
         when (state.wiDiStatus) {
-          is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
+          is RunningStatus.Running,
+          is RunningStatus.Starting,
+          is RunningStatus.Stopping -> false
           else -> true
         }
       }
@@ -403,35 +418,31 @@ private fun prepareLoadedContent(
 
   val ip = remember(state.ip) { state.ip.ifBlank { "NO IP ADDRESS" } }
   val port = remember(state.port) { if (state.port <= 0) "NO PORT" else "${state.port}" }
-  val bandName = remember(state.band) { state.band?.name ?: "AUTO" }
 
+  val keylines = MaterialTheme.keylines
   return remember(
+      keylines,
       appName,
       showErrorHintMessage,
       ssid,
       password,
       port,
       ip,
-      bandName,
       onSsidChanged,
       onPasswordChanged,
       onPortChanged,
+      onToggleOptions,
       onToggleBatteryInstructions,
       onToggleConnectionInstructions,
       onToggleKeepWakeLock,
       onSelectBand,
       isEditable,
-      state.band,
-      state.requiresPermissions,
-      state.isConnectionInstructionExpanded,
-      state.isBatteryInstructionExpanded,
-      state.isBatteryOptimizationsIgnored,
-      state.keepWakeLock,
+      state,
   ) {
     {
       item {
         NetworkInformation(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            modifier = Modifier.padding(keylines.content),
             isEditable = isEditable,
             canUseCustomConfig = canUseCustomConfig,
             appName = appName,
@@ -441,9 +452,8 @@ private fun prepareLoadedContent(
             password = password,
             port = port,
             ip = ip,
-            keepWakeLock = state.keepWakeLock,
             band = state.band,
-            bandName = bandName,
+            keepWakeLock = state.keepWakeLock,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
             onPortChanged = onPortChanged,
@@ -452,28 +462,85 @@ private fun prepareLoadedContent(
         )
       }
 
-      item {
-        BatteryInstructions(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
-            appName = appName,
-            showing = state.isBatteryInstructionExpanded,
-            isIgnored = state.isBatteryOptimizationsIgnored,
-            keepWakeLock = state.keepWakeLock,
-            onOpenBatterySettings = onOpenBatterySettings,
-            onToggleBatteryInstructions = onToggleBatteryInstructions,
+      renderExtraOptions(
+          modifier = Modifier.padding(keylines.content),
+          appName = appName,
+          ssid = ssid,
+          password = password,
+          port = port,
+          ip = ip,
+          state = state,
+          onToggleOptions = onToggleOptions,
+          onOpenBatterySettings = onOpenBatterySettings,
+          onToggleConnectionInstructions = onToggleConnectionInstructions,
+          onToggleBatteryInstructions = onToggleBatteryInstructions,
+          onToggleKeepWakeLock = onToggleKeepWakeLock,
+      )
+    }
+  }
+}
+
+private fun LazyListScope.renderExtraOptions(
+    modifier: Modifier = Modifier,
+    appName: String,
+    state: StatusViewState,
+    ssid: String,
+    password: String,
+    port: String,
+    ip: String,
+    onToggleOptions: () -> Unit,
+    onOpenBatterySettings: () -> Unit,
+    onToggleBatteryInstructions: () -> Unit,
+    onToggleConnectionInstructions: () -> Unit,
+    onToggleKeepWakeLock: () -> Unit,
+) {
+  item {
+    Column(
+        modifier = modifier,
+    ) {
+      OutlinedButton(
+          onClick = onToggleOptions,
+      ) {
+        Text(
+            text = "Additional Options",
+            style = MaterialTheme.typography.h6,
         )
       }
 
-      item {
-        ConnectionInstructions(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
-            showing = state.isConnectionInstructionExpanded,
-            ssid = ssid,
-            password = password,
-            port = port,
-            ip = ip,
-            onToggleConnectionInstructions = onToggleConnectionInstructions,
-        )
+      AnimatedVisibility(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          visible = state.isOptionsExpanded,
+      ) {
+        Column(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .border(
+                        width = 2.dp,
+                        color = MaterialTheme.colors.onSurface,
+                        shape = MaterialTheme.shapes.medium,
+                    ),
+        ) {
+          BatteryInstructions(
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              appName = appName,
+              showing = state.isBatteryInstructionExpanded,
+              isIgnored = state.isBatteryOptimizationsIgnored,
+              keepWakeLock = state.keepWakeLock,
+              onOpenBatterySettings = onOpenBatterySettings,
+              onToggleBatteryInstructions = onToggleBatteryInstructions,
+              onToggleKeepWakeLock = onToggleKeepWakeLock,
+          )
+
+          ConnectionInstructions(
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              showing = state.isConnectionInstructionExpanded,
+              ssid = ssid,
+              password = password,
+              port = port,
+              ip = ip,
+              onToggleConnectionInstructions = onToggleConnectionInstructions,
+          )
+        }
       }
     }
   }
@@ -488,6 +555,7 @@ private fun BatteryInstructions(
     keepWakeLock: Boolean,
     onOpenBatterySettings: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
+    onToggleKeepWakeLock: () -> Unit,
 ) {
   Column(
       modifier = modifier,
@@ -496,26 +564,18 @@ private fun BatteryInstructions(
         onClick = onToggleBatteryInstructions,
     ) {
       Text(
-          text = "How to Improve Performance",
+          text = "Improving Performance",
           style = MaterialTheme.typography.h6,
       )
     }
 
     AnimatedVisibility(
         visible = showing,
-        modifier =
-            Modifier.padding(top = MaterialTheme.keylines.baseline)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.onBackground,
-                    shape = MaterialTheme.shapes.medium,
-                )
-                .padding(all = MaterialTheme.keylines.content),
+        modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
     ) {
       Column {
         Text(
-            text =
-                "You can disable Android Battery Optimizations to ensure that the $appName proxy server is running at full performance.",
+            text = "Disable Battery Optimizations to ensure full $appName performance.",
             style = MaterialTheme.typography.body1,
         )
 
@@ -548,7 +608,7 @@ private fun BatteryInstructions(
 
         Text(
             modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
-            text = "You can keep the CPU on to ensure smooth proxy network performance",
+            text = "Keep the CPU on to ensure smooth network performance",
             style = MaterialTheme.typography.body1,
         )
 
@@ -559,13 +619,23 @@ private fun BatteryInstructions(
           Icon(
               modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
               imageVector = if (keepWakeLock) Icons.Filled.CheckCircle else Icons.Filled.Close,
-              contentDescription = if (keepWakeLock) "CPU kept on" else "CPU not kept on",
+              contentDescription = if (keepWakeLock) "CPU kept awake" else "CPU not kept awake",
               tint = if (keepWakeLock) Color.Green else Color.Red,
           )
-          Text(
-              text = if (keepWakeLock) "CPU kept on" else "CPU not kept on",
-              style = MaterialTheme.typography.body1,
-          )
+          if (keepWakeLock) {
+            Text(
+                text = "CPU kept Awake",
+                style = MaterialTheme.typography.body1,
+            )
+          } else {
+            Button(
+                onClick = onToggleKeepWakeLock,
+            ) {
+              Text(
+                  text = "Keep CPU Awake",
+              )
+            }
+          }
         }
       }
     }
@@ -595,14 +665,7 @@ private fun ConnectionInstructions(
     }
     AnimatedVisibility(
         visible = showing,
-        modifier =
-            Modifier.padding(top = MaterialTheme.keylines.baseline)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.onBackground,
-                    shape = MaterialTheme.shapes.medium,
-                )
-                .padding(all = MaterialTheme.keylines.content),
+        modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
     ) {
       Column {
         Text(
@@ -616,12 +679,6 @@ private fun ConnectionInstructions(
             text =
                 "On the device you want to connect (Device 2) to the Internet, go to the Wi-Fi settings.",
             style = MaterialTheme.typography.body1,
-        )
-
-        Text(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
-            text = "This may be in a different place depending on your device.",
-            style = MaterialTheme.typography.caption,
         )
 
         Text(
@@ -644,16 +701,16 @@ private fun ConnectionInstructions(
         )
 
         Text(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
             text =
-                "You may get a message that Device 2 does not have Internet, but is connected to a network. You will need to now go to the Proxy Network settings page for Device 2.",
-            style = MaterialTheme.typography.body1,
+                "You may get a message that Device 2 does not have Internet, but is connected to a network. ",
+            style = MaterialTheme.typography.caption,
         )
 
         Text(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
-            text = "This may be in a different place depending on your device.",
-            style = MaterialTheme.typography.caption,
+            modifier = Modifier.padding(top = MaterialTheme.keylines.content * 2),
+            text = "You will need to now go to the Proxy Network settings page for Device 2.",
+            style = MaterialTheme.typography.body1,
         )
 
         Text(
@@ -711,9 +768,8 @@ private fun NetworkInformation(
     password: String,
     port: String,
     ip: String,
-    keepWakeLock: Boolean,
     band: ServerNetworkBand?,
-    bandName: String,
+    keepWakeLock: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
@@ -759,7 +815,6 @@ private fun NetworkInformation(
       }
 
       if (editable) {
-        val bands = remember { ServerNetworkBand.values() }
         Editor(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             enabled = canUseCustomConfig,
@@ -790,41 +845,6 @@ private fun NetworkInformation(
                     keyboardType = KeyboardType.Number,
                 ),
         )
-
-        if (band != null) {
-          Row(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            Text(
-                text = "BAND",
-                style = MaterialTheme.typography.body2,
-            )
-
-            Column(
-                modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-            ) {
-              for (b in bands) {
-                val selected = remember(b, band) { b == band }
-                Row(
-                    modifier = Modifier.clickable { onSelectBand(b) },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                  RadioButton(
-                      selected = selected,
-                      onClick = { onSelectBand(b) },
-                  )
-
-                  Text(
-                      modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-                      text = b.description,
-                      style = MaterialTheme.typography.caption,
-                  )
-                }
-              }
-            }
-          }
-        }
 
         Row(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -864,14 +884,160 @@ private fun NetworkInformation(
             title = "PORT",
             value = port,
         )
+      }
 
-        Item(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            title = "BAND",
-            value = bandName,
-        )
+      NetworkBands(
+          modifier = Modifier.padding(MaterialTheme.keylines.baseline),
+          isEditable = isEditable,
+          band = band,
+          onSelectBand = onSelectBand,
+      )
+    }
+  }
+}
+
+@Composable
+private fun NetworkBands(
+    modifier: Modifier = Modifier,
+    isEditable: Boolean,
+    band: ServerNetworkBand?,
+    onSelectBand: (ServerNetworkBand) -> Unit,
+) {
+  if (isEditable) {
+    val bands = remember { ServerNetworkBand.values() }
+    val bandIterator = remember(bands) { bands.withIndex() }
+
+    val density = LocalDensity.current
+    val (cardHeights, setCardHeight) =
+        remember { mutableStateOf(emptyMap<ServerNetworkBand, Int>()) }
+
+    Column(
+        modifier = modifier,
+    ) {
+      Row {
+        for ((index, b) in bandIterator) {
+          val isSelected = remember(b, band) { b == band }
+
+          // Figure out which card is the largest and size all other cards to match
+          val largestCard =
+              remember(cardHeights) {
+                if (cardHeights.isEmpty()) {
+                  return@remember 0
+                }
+
+                var largest = 0
+                for (height in cardHeights.values) {
+                  if (height > largest) {
+                    largest = height
+                  }
+                }
+
+                if (largest <= 0) {
+                  return@remember 0
+                }
+
+                return@remember largest
+              }
+
+          val gapHeight =
+              remember(largestCard, density, cardHeights, b) {
+                val cardHeight: Int = cardHeights[b] ?: return@remember ZeroSize
+
+                val diff = largestCard - cardHeight
+                if (diff < 0) {
+                  return@remember ZeroSize
+                }
+
+                return@remember density.run { diff.toDp() }
+              }
+
+          Card(
+              modifier =
+                  Modifier.weight(1F)
+                      .onSizeChanged {
+                        // Only do this once, on the initial measure
+                        val height = it.height
+                        val entry: Int? = cardHeights[b]
+                        if (entry == null) {
+                          setCardHeight(
+                              cardHeights.toMutableMap().apply {
+                                this.set(
+                                    key = b,
+                                    value = height,
+                                )
+                              },
+                          )
+                        }
+                      }
+                      .padding(
+                          end =
+                              if (index < bands.lastIndex) MaterialTheme.keylines.content
+                              else ZeroSize,
+                      )
+                      .border(
+                          width = 2.dp,
+                          color =
+                              if (isSelected) MaterialTheme.colors.primary
+                              else MaterialTheme.colors.onSurface,
+                          shape = MaterialTheme.shapes.medium,
+                      )
+                      .clickable { onSelectBand(b) },
+          ) {
+            Row(
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+            ) {
+              Column {
+                Row {
+                  Text(
+                      modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+                      text = b.displayName,
+                      style =
+                          MaterialTheme.typography.h6.copy(
+                              fontWeight = FontWeight.W700,
+                              color =
+                                  if (isSelected) MaterialTheme.colors.primary
+                                  else MaterialTheme.typography.h6.color,
+                          ),
+                  )
+                }
+
+                // Align with the largest card
+                if (gapHeight > ZeroSize) {
+                  Spacer(
+                      modifier = Modifier.height(gapHeight),
+                  )
+                }
+
+                Text(
+                    text = b.description,
+                    style =
+                        MaterialTheme.typography.caption.copy(
+                            color =
+                                if (isSelected) MaterialTheme.colors.primary
+                                else MaterialTheme.typography.caption.color,
+                            fontWeight = FontWeight.W400,
+                        ),
+                )
+              }
+
+              Icon(
+                  imageVector = Icons.Filled.CheckCircle,
+                  contentDescription = b.name,
+                  tint = if (isSelected) MaterialTheme.colors.primary else Color.Unspecified,
+              )
+            }
+          }
+        }
       }
     }
+  } else {
+    val bandName = remember(band) { band?.name ?: "AUTO" }
+
+    Item(
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+        title = "BAND",
+        value = bandName,
+    )
   }
 }
 

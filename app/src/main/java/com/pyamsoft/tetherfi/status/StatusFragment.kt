@@ -127,8 +127,13 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     safeOpenSettingsIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
   }
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+  override fun onCreateView(
+      inflater: LayoutInflater,
+      container: ViewGroup?,
+      savedInstanceState: Bundle?
+  ): View {
+    val act = requireActivity()
+    Injector.obtainFromActivity<MainComponent>(act).plusStatus().create().inject(this)
 
     // As early as possible because of Lifecycle quirks
     requester?.unregister()
@@ -141,15 +146,6 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
             Timber.w("Network permission not granted")
           }
         }
-  }
-
-  override fun onCreateView(
-      inflater: LayoutInflater,
-      container: ViewGroup?,
-      savedInstanceState: Bundle?
-  ): View {
-    val act = requireActivity()
-    Injector.obtainFromActivity<MainComponent>(act).plusStatus().create().inject(this)
 
     val vm = viewModel.requireNotNull()
     val appName = act.getString(R.string.app_name)
@@ -177,6 +173,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
                 onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
                 onToggleKeepWakeLock = { handleToggleProxyWakelock() },
                 onSelectBand = { handleChangeBand(it) },
+                onToggleOptions = { vm.handleToggleOptions() },
             )
           }
         }

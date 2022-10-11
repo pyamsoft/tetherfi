@@ -21,16 +21,20 @@ interface StatusViewState : UiViewState {
 
   val ssid: String
   val password: String
-  val band: ServerNetworkBand?
   val ip: String
   val port: Int
 
-  val keepWakeLock: Boolean
-
+  // Permissions
   val requiresPermissions: Boolean
   val explainPermissions: Boolean
-  val isBatteryOptimizationsIgnored: Boolean
 
+  // Extras
+  val keepWakeLock: Boolean
+  val isBatteryOptimizationsIgnored: Boolean
+  val band: ServerNetworkBand?
+
+  // Visual
+  val isOptionsExpanded: Boolean
   val isBatteryInstructionExpanded: Boolean
   val isConnectionInstructionExpanded: Boolean
 }
@@ -45,16 +49,17 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
 
   override var ssid by mutableStateOf("")
   override var password by mutableStateOf("")
-  override var band by mutableStateOf<ServerNetworkBand?>(null)
   override var ip by mutableStateOf("")
   override var port by mutableStateOf(0)
 
-  override var keepWakeLock by mutableStateOf(false)
-
   override var requiresPermissions by mutableStateOf(false)
   override var explainPermissions by mutableStateOf(false)
-  override var isBatteryOptimizationsIgnored by mutableStateOf(false)
 
+  override var keepWakeLock by mutableStateOf(false)
+  override var isBatteryOptimizationsIgnored by mutableStateOf(false)
+  override var band by mutableStateOf<ServerNetworkBand?>(null)
+
+  override var isOptionsExpanded by mutableStateOf(false)
   override var isBatteryInstructionExpanded by mutableStateOf(false)
   override var isConnectionInstructionExpanded by mutableStateOf(false)
 }

@@ -66,6 +66,8 @@ internal constructor(
       // Always populate the latest port value
       servicePreferences.listenForWakeLockChanges().collectLatest { keep ->
         s.keepWakeLock = keep
+
+        // Watch constantly but only update the initial load config if we haven't loaded yet
         if (!s.preferencesLoaded) {
           config.wakelock = true
           markPreferencesLoaded(config)
@@ -74,20 +76,26 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Main) {
+      // Only pull once since after this point, the state will be driven by the input
       s.port = serverPreferences.listenForPortChanges().first()
+
       config.port = true
       markPreferencesLoaded(config)
     }
 
     if (ServerDefaults.canUseCustomConfig()) {
       scope.launch(context = Dispatchers.Main) {
+        // Only pull once since after this point, the state will be driven by the input
         s.ssid = serverPreferences.listenForSsidChanges().first()
+
         config.ssid = true
         markPreferencesLoaded(config)
       }
 
       scope.launch(context = Dispatchers.Main) {
+        // Only pull once since after this point, the state will be driven by the input
         s.password = serverPreferences.listenForPasswordChanges().first()
+
         config.password = true
         markPreferencesLoaded(config)
       }
@@ -95,6 +103,8 @@ internal constructor(
       scope.launch(context = Dispatchers.Main) {
         serverPreferences.listenForNetworkBandChanges().collectLatest { band ->
           s.band = band
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
           if (!s.preferencesLoaded) {
             config.band = true
             markPreferencesLoaded(config)
@@ -102,9 +112,12 @@ internal constructor(
         }
       }
     } else {
+      // No custom WiFi Direct config is allowed, fallback
       s.ssid = ""
       s.password = ""
       s.band = null
+
+      // Mark loaded and attempt flag setting
       config.ssid = true
       config.password = true
       config.band = true
@@ -117,13 +130,9 @@ internal constructor(
   fun refreshSystemInfo(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       val s = state
+
+      // Battery optimization
       s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
-
-      val requiresPermissions = !permissions.canCreateWiDiNetwork()
-
-      // Refresh these state bits
-      s.requiresPermissions = requiresPermissions
-      s.explainPermissions = requiresPermissions
     }
   }
 
@@ -176,17 +185,21 @@ internal constructor(
       onStop: () -> Unit,
   ) {
     val s = state
-    val requiresPermissions = !permissions.canCreateWiDiNetwork()
-
-    // Refresh these state bits
-    s.requiresPermissions = requiresPermissions
-    s.explainPermissions = requiresPermissions
 
     // Collapse instructions by default
+    s.isOptionsExpanded = false
     s.isConnectionInstructionExpanded = false
     s.isBatteryInstructionExpanded = false
 
+    // Refresh these state bits
+    val requiresPermissions = !permissions.canCreateWiDiNetwork()
+    s.requiresPermissions = requiresPermissions
+    s.explainPermissions = requiresPermissions
+
+    // If we do not have permission, stop here. s.explainPermissions will cause the permission dialog
+    // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
+      Timber.w("Cannot launch Proxy until Permissions are granted")
       return
     }
 
@@ -221,11 +234,25 @@ internal constructor(
   }
 
   fun handleToggleConnectionInstructions() {
-    state.isConnectionInstructionExpanded = !state.isConnectionInstructionExpanded
+    val s = state
+    s.isConnectionInstructionExpanded = !s.isConnectionInstructionExpanded
   }
 
   fun handleToggleBatteryInstructions() {
-    state.isBatteryInstructionExpanded = !state.isBatteryInstructionExpanded
+    val s = state
+    s.isBatteryInstructionExpanded = !s.isBatteryInstructionExpanded
+  }
+
+  fun handleToggleOptions() {
+    val s = state
+    val newExpanded = !s.isOptionsExpanded
+    s.isOptionsExpanded = newExpanded
+
+    // If we are closing, collapse other expanded options
+    if (!newExpanded) {
+      s.isConnectionInstructionExpanded = false
+      s.isBatteryInstructionExpanded = false
+    }
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {
