@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
@@ -70,6 +71,7 @@ internal fun CpuWakelock(
             style =
                 MaterialTheme.typography.body2.copy(
                     color = color.copy(alpha = highAlpha),
+                    fontWeight = FontWeight.W700,
                 ),
         )
       }

@@ -159,7 +159,7 @@ internal fun NetworkBands(
                   text = b.description,
                   style =
                       MaterialTheme.typography.caption.copy(
-                          color = color.copy(alpha = mediumAlpha),
+                          color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
                           fontWeight = FontWeight.W400,
                       ),
               )
