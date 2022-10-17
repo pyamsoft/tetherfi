@@ -32,8 +32,8 @@ class MainActivity : PYDroidActivity() {
   override val applicationIcon = R.mipmap.ic_launcher
 
   override val changelog = buildChangeLog {
-    bugfix("Improve UDP proxy support")
-    bugfix("Improve wakelock handling and reduce battery usage")
+    change("New UI style")
+    change("Clearer setup instructions")
   }
 
   private fun handleOpenApplicationSettings() {
