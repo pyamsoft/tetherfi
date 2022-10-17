@@ -182,7 +182,13 @@ internal fun ConnectionInstructions(
             Text(
                 text =
                     "Optionally configure the $appName proxy by setting the network name, password, port, and band",
-                style = MaterialTheme.typography.body2,
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.onSurface.copy(
+                                alpha = ContentAlpha.medium,
+                            ),
+                    ),
             )
           }
         }
@@ -194,12 +200,23 @@ internal fun ConnectionInstructions(
           Column {
             Text(
                 text = "Optionally disable Battery Optimizations for full proxy performance",
-                style = MaterialTheme.typography.body2,
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.onBackground.copy(
+                                alpha = ContentAlpha.medium,
+                            ),
+                    ),
             )
 
             Text(
                 text = "Optionally keep the CPU awake for full proxy performance",
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onBackground.copy(
+                            alpha = ContentAlpha.medium,
+                        ),
+                ),
             )
           }
         }
