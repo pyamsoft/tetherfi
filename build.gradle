@@ -62,7 +62,7 @@ buildscript {
     dagger = "2.44"
 
     // Compose
-    composeActivity = "1.6.0"
+    composeActivity = "1.6.1"
     accompanist = "0.25.1"
     coil = "2.2.2"
 
