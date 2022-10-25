@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.status
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -36,6 +38,15 @@ internal fun PermissionExplanationDialog(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
 ) {
+  // Permission needed is different on T
+  val neededPermission = remember {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      "PRECISE LOCATION"
+    } else {
+      "NEARBY WIFI"
+    }
+  }
+
   AnimatedVisibility(
       modifier = modifier,
       visible = state.explainPermissions,
@@ -55,14 +66,14 @@ internal fun PermissionExplanationDialog(
         text = {
           Column {
             Text(
-                text = "$appName needs PRECISE LOCATION permission to create a Wi-Fi Group",
+                text = "$appName needs $neededPermission permission to create a Wi-Fi Group",
                 style = MaterialTheme.typography.body1,
             )
 
             Text(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.content),
                 text =
-                    "$appName will not use your location for anything else but Wi-Fi Group creation.",
+                    "$appName will not use these permissions for anything else but Wi-Fi Group creation.",
                 style = MaterialTheme.typography.body1,
             )
 
