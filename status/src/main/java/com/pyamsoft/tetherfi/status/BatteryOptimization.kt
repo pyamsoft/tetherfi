@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -16,7 +15,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,7 +30,8 @@ internal fun BatteryOptimization(
     onDisableBatteryOptimizations: () -> Unit,
 ) {
   val color =
-      if (isBatteryOptimizationDisabled) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+      if (isBatteryOptimizationDisabled) MaterialTheme.colors.primary
+      else MaterialTheme.colors.onSurface
   val highAlpha = ContentAlpha.high
   // High alpha when selected
   val mediumAlpha = if (isBatteryOptimizationDisabled) ContentAlpha.high else ContentAlpha.medium
@@ -57,10 +56,8 @@ internal fun BatteryOptimization(
       ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
           Icon(
-              modifier = Modifier.size(16.dp),
               imageVector =
                   if (isBatteryOptimizationDisabled) Icons.Filled.CheckCircle
                   else Icons.Filled.RadioButtonUnchecked,
@@ -68,30 +65,33 @@ internal fun BatteryOptimization(
               tint = color.copy(alpha = highAlpha),
           )
 
-          Text(
+          Column(
               modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              text = "Disable Battery Optimizations",
-              style =
-                  MaterialTheme.typography.body1.copy(
-                      color = color.copy(alpha = highAlpha),
-                      fontWeight = FontWeight.W700,
-                  ),
-          )
-        }
+          ) {
+            Text(
+                text = "Disable Battery Optimizations",
+                style =
+                    MaterialTheme.typography.body1.copy(
+                        color = color.copy(alpha = highAlpha),
+                        fontWeight = FontWeight.W700,
+                    ),
+            )
 
-        Text(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            text =
-                """Disabling Battery Optimization will allow $appName
-                |to run at maximum performance. This 
-                |will significantly enhance your networking experience (recommended)"""
-                    .trimMargin(),
-            style =
-                MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
-                    fontWeight = FontWeight.W400,
-                ),
-        )
+            Text(
+                text =
+                    """This will allow $appName to run at maximum performance.
+                        |
+                        |This will significantly enhance your networking experience but may use more battery.
+                        |(recommended)"""
+                        .trimMargin(),
+                style =
+                    MaterialTheme.typography.caption.copy(
+                        color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
+                        fontWeight = FontWeight.W400,
+                    ),
+            )
+          }
+        }
       }
     }
   }

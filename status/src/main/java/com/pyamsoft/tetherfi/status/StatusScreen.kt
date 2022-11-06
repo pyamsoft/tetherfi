@@ -42,7 +42,6 @@ fun StatusScreen(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
-    onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
@@ -76,7 +75,6 @@ fun StatusScreen(
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
           onOpenBatterySettings = onOpenBatterySettings,
-          onToggleBatteryInstructions = onToggleBatteryInstructions,
           onToggleConnectionInstructions = onToggleConnectionInstructions,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
@@ -156,7 +154,6 @@ private fun rememberPreparedLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
-    onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
@@ -225,7 +222,6 @@ private fun rememberPreparedLoadedContent(
       onSsidChanged,
       onPasswordChanged,
       onPortChanged,
-      onToggleBatteryInstructions,
       onToggleConnectionInstructions,
       onToggleKeepWakeLock,
       onSelectBand,
@@ -417,8 +413,12 @@ private fun NetworkInformation(
       )
 
       CpuWakelock(
-          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
+          modifier =
+              Modifier.fillMaxWidth()
+                  .padding(top = MaterialTheme.keylines.baseline)
+                  .padding(MaterialTheme.keylines.baseline),
           isEditable = isEditable,
+          appName = appName,
           keepWakeLock = keepWakeLock,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
       )

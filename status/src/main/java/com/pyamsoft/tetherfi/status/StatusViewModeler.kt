@@ -187,16 +187,15 @@ internal constructor(
     val s = state
 
     // Collapse instructions by default
-    s.isOptionsExpanded = false
     s.isConnectionInstructionExpanded = false
-    s.isBatteryInstructionExpanded = false
 
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
     s.requiresPermissions = requiresPermissions
     s.explainPermissions = requiresPermissions
 
-    // If we do not have permission, stop here. s.explainPermissions will cause the permission dialog
+    // If we do not have permission, stop here. s.explainPermissions will cause the permission
+    // dialog
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
@@ -236,23 +235,6 @@ internal constructor(
   fun handleToggleConnectionInstructions() {
     val s = state
     s.isConnectionInstructionExpanded = !s.isConnectionInstructionExpanded
-  }
-
-  fun handleToggleBatteryInstructions() {
-    val s = state
-    s.isBatteryInstructionExpanded = !s.isBatteryInstructionExpanded
-  }
-
-  fun handleToggleOptions() {
-    val s = state
-    val newExpanded = !s.isOptionsExpanded
-    s.isOptionsExpanded = newExpanded
-
-    // If we are closing, collapse other expanded options
-    if (!newExpanded) {
-      s.isConnectionInstructionExpanded = false
-      s.isBatteryInstructionExpanded = false
-    }
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {

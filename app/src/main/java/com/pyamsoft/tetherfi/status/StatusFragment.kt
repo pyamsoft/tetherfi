@@ -170,10 +170,8 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
                 onRequestPermissions = { handleRequestPermissions() },
                 onOpenPermissionSettings = { handleOpenApplicationSettings() },
                 onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
-                onToggleBatteryInstructions = { vm.handleToggleBatteryInstructions() },
                 onToggleKeepWakeLock = { handleToggleProxyWakelock() },
                 onSelectBand = { handleChangeBand(it) },
-                onToggleOptions = { vm.handleToggleOptions() },
             )
           }
         }

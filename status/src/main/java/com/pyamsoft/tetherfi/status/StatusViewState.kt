@@ -34,8 +34,6 @@ interface StatusViewState : UiViewState {
   val band: ServerNetworkBand?
 
   // Visual
-  val isOptionsExpanded: Boolean
-  val isBatteryInstructionExpanded: Boolean
   val isConnectionInstructionExpanded: Boolean
 }
 
@@ -59,7 +57,5 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
   override var isBatteryOptimizationsIgnored by mutableStateOf(false)
   override var band by mutableStateOf<ServerNetworkBand?>(null)
 
-  override var isOptionsExpanded by mutableStateOf(false)
-  override var isBatteryInstructionExpanded by mutableStateOf(false)
   override var isConnectionInstructionExpanded by mutableStateOf(false)
 }
