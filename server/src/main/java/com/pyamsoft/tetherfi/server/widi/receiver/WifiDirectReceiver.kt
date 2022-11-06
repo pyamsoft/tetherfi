@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
@@ -34,7 +35,7 @@ internal constructor(
 
   @CheckResult
   private fun resolveWifiGroupIp(intent: Intent): String {
-    val p2pInfo: WifiP2pInfo? = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+    val p2pInfo = getWifiP2PInfo(intent)
     if (p2pInfo == null) {
       Timber.w("No P2P Info in connection intent")
       return ""
@@ -131,6 +132,15 @@ internal constructor(
   }
 
   companion object {
+
+    @CheckResult
+    @Suppress("DEPRECATION")
+    private fun getWifiP2PInfo(intent: Intent): WifiP2pInfo? {
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+          intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO, WifiP2pInfo::class.java)
+      else intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+    }
+
     private val INTENT_FILTER =
         IntentFilter().apply {
           addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
