@@ -37,7 +37,7 @@ internal constructor(
       withContext(context = Dispatchers.IO) {
         Enforcer.assertOffMainThread()
 
-        return@withContext preferences.booleanFlow(WAKE_LOCK, false)
+        return@withContext preferences.booleanFlow(WAKE_LOCK, true)
       }
 
   override suspend fun setWakeLock(keep: Boolean) =

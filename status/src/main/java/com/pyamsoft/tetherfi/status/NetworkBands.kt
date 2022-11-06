@@ -120,50 +120,47 @@ internal fun NetworkBands(
                     ),
             elevation = CardDefaults.Elevation,
         ) {
-          Row(
+          Column(
               modifier =
                   Modifier.clickable(enabled = isEditable) { onSelectBand(b) }
                       .padding(MaterialTheme.keylines.content),
           ) {
-            Column {
-              Row(
-                  verticalAlignment = Alignment.Top,
-              ) {
-                Text(
-                    modifier =
-                        Modifier.weight(1F).padding(bottom = MaterialTheme.keylines.baseline),
-                    text = b.displayName,
-                    style =
-                        MaterialTheme.typography.h6.copy(
-                            fontWeight = FontWeight.W700,
-                            color = color.copy(alpha = highAlpha),
-                        ),
-                )
-
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = b.name,
-                    tint = color.copy(alpha = mediumAlpha),
-                )
-              }
-
-              // Align with the largest card
-              if (gapHeight > ZeroSize) {
-                Spacer(
-                    modifier = Modifier.height(gapHeight),
-                )
-              }
-
+            Row(
+                verticalAlignment = Alignment.Top,
+            ) {
               Text(
-                  text = b.description,
+                  modifier = Modifier.weight(1F).padding(bottom = MaterialTheme.keylines.baseline),
+                  text = b.displayName,
                   style =
-                      MaterialTheme.typography.caption.copy(
-                          color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
-                          fontWeight = FontWeight.W400,
+                      MaterialTheme.typography.h6.copy(
+                          fontWeight = FontWeight.W700,
+                          color = color.copy(alpha = highAlpha),
                       ),
               )
+
+              Icon(
+                  modifier = Modifier.size(16.dp),
+                  imageVector = Icons.Filled.CheckCircle,
+                  contentDescription = b.name,
+                  tint = color.copy(alpha = mediumAlpha),
+              )
             }
+
+            // Align with the largest card
+            if (gapHeight > ZeroSize) {
+              Spacer(
+                  modifier = Modifier.height(gapHeight),
+              )
+            }
+
+            Text(
+                text = b.description,
+                style =
+                    MaterialTheme.typography.caption.copy(
+                        color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
+                        fontWeight = FontWeight.W400,
+                    ),
+            )
           }
         }
       }

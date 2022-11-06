@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.status
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
@@ -25,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -45,7 +42,6 @@ fun StatusScreen(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
-    onToggleOptions: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
@@ -84,7 +80,6 @@ fun StatusScreen(
           onToggleConnectionInstructions = onToggleConnectionInstructions,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
-          onToggleOptions = onToggleOptions,
       )
 
   Scaffold(
@@ -161,7 +156,6 @@ private fun rememberPreparedLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
-    onToggleOptions: () -> Unit,
     onToggleBatteryInstructions: () -> Unit,
     onToggleConnectionInstructions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
@@ -231,7 +225,6 @@ private fun rememberPreparedLoadedContent(
       onSsidChanged,
       onPasswordChanged,
       onPortChanged,
-      onToggleOptions,
       onToggleBatteryInstructions,
       onToggleConnectionInstructions,
       onToggleKeepWakeLock,
@@ -254,29 +247,29 @@ private fun rememberPreparedLoadedContent(
             ip = ip,
             band = state.band,
             keepWakeLock = state.keepWakeLock,
+            isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
             onPortChanged = onPortChanged,
             onToggleKeepWakeLock = onToggleKeepWakeLock,
             onSelectBand = onSelectBand,
+            onDisableBatteryOptimizations = onOpenBatterySettings,
         )
       }
 
-      renderExtraOptions(
-          modifier = Modifier.padding(keylines.content),
-          canConfigure = canUseCustomConfig,
-          appName = appName,
-          ssid = ssid,
-          password = password,
-          port = port,
-          ip = ip,
-          state = state,
-          onToggleOptions = onToggleOptions,
-          onOpenBatterySettings = onOpenBatterySettings,
-          onToggleConnectionInstructions = onToggleConnectionInstructions,
-          onToggleBatteryInstructions = onToggleBatteryInstructions,
-          onToggleKeepWakeLock = onToggleKeepWakeLock,
-      )
+      item {
+        ConnectionInstructions(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            showing = state.isConnectionInstructionExpanded,
+            canConfigure = canUseCustomConfig,
+            appName = appName,
+            ssid = ssid,
+            password = password,
+            port = port,
+            ip = ip,
+            onToggleConnectionInstructions = onToggleConnectionInstructions,
+        )
+      }
     }
   }
 }
@@ -295,13 +288,14 @@ private fun NetworkInformation(
     ip: String,
     band: ServerNetworkBand?,
     keepWakeLock: Boolean,
+    isBatteryOptimizationDisabled: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onDisableBatteryOptimizations: () -> Unit,
 ) {
-
   Crossfade(
       modifier = modifier,
       targetState = isEditable,
@@ -412,91 +406,29 @@ private fun NetworkInformation(
         )
       }
 
-      CpuWakelock(
+      NetworkBands(
           modifier =
               Modifier.fillMaxWidth()
                   .padding(top = MaterialTheme.keylines.content)
                   .padding(MaterialTheme.keylines.baseline),
           isEditable = isEditable,
+          band = band,
+          onSelectBand = onSelectBand,
+      )
+
+      CpuWakelock(
+          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
+          isEditable = isEditable,
           keepWakeLock = keepWakeLock,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
       )
 
-      NetworkBands(
+      BatteryOptimization(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
-          isEditable = isEditable,
-          band = band,
-          onSelectBand = onSelectBand,
+          appName = appName,
+          isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
+          onDisableBatteryOptimizations = onDisableBatteryOptimizations,
       )
-    }
-  }
-}
-
-private fun LazyListScope.renderExtraOptions(
-    modifier: Modifier = Modifier,
-    canConfigure: Boolean,
-    appName: String,
-    state: StatusViewState,
-    ssid: String,
-    password: String,
-    port: String,
-    ip: String,
-    onToggleOptions: () -> Unit,
-    onOpenBatterySettings: () -> Unit,
-    onToggleBatteryInstructions: () -> Unit,
-    onToggleConnectionInstructions: () -> Unit,
-    onToggleKeepWakeLock: () -> Unit,
-) {
-  item {
-    Column(
-        modifier = modifier,
-    ) {
-      OutlinedButton(
-          onClick = onToggleOptions,
-      ) {
-        Text(
-            text = "Additional Options",
-            style = MaterialTheme.typography.h6,
-        )
-      }
-
-      AnimatedVisibility(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-          visible = state.isOptionsExpanded,
-      ) {
-        Column(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .border(
-                        width = 2.dp,
-                        color = MaterialTheme.colors.onSurface,
-                        shape = MaterialTheme.shapes.medium,
-                    ),
-        ) {
-          BatteryInstructions(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              appName = appName,
-              showing = state.isBatteryInstructionExpanded,
-              isIgnored = state.isBatteryOptimizationsIgnored,
-              keepWakeLock = state.keepWakeLock,
-              onOpenBatterySettings = onOpenBatterySettings,
-              onToggleBatteryInstructions = onToggleBatteryInstructions,
-              onToggleKeepWakeLock = onToggleKeepWakeLock,
-          )
-
-          ConnectionInstructions(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              showing = state.isConnectionInstructionExpanded,
-              canConfigure = canConfigure,
-              appName = appName,
-              ssid = ssid,
-              password = password,
-              port = port,
-              ip = ip,
-              onToggleConnectionInstructions = onToggleConnectionInstructions,
-          )
-        }
-      }
     }
   }
 }

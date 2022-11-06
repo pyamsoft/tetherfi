@@ -25,19 +25,17 @@ import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.ui.icons.RadioButtonUnchecked
 
 @Composable
-internal fun CpuWakelock(
+internal fun BatteryOptimization(
     modifier: Modifier = Modifier,
-    isEditable: Boolean,
-    keepWakeLock: Boolean,
-    onToggleKeepWakeLock: () -> Unit,
+    appName: String,
+    isBatteryOptimizationDisabled: Boolean,
+    onDisableBatteryOptimizations: () -> Unit,
 ) {
-  val color = if (keepWakeLock) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-  val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-  val mediumAlpha =
-      if (isEditable) {
-        // High alpha when selected
-        if (keepWakeLock) ContentAlpha.high else ContentAlpha.medium
-      } else ContentAlpha.disabled
+  val color =
+      if (isBatteryOptimizationDisabled) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+  val highAlpha = ContentAlpha.high
+  // High alpha when selected
+  val mediumAlpha = if (isBatteryOptimizationDisabled) ContentAlpha.high else ContentAlpha.medium
 
   Box(
       modifier =
@@ -54,7 +52,7 @@ internal fun CpuWakelock(
       Column(
           modifier =
               Modifier.fillMaxWidth()
-                  .clickable(enabled = isEditable) { onToggleKeepWakeLock() }
+                  .clickable { onDisableBatteryOptimizations() }
                   .padding(MaterialTheme.keylines.content),
       ) {
         Row(
@@ -64,14 +62,15 @@ internal fun CpuWakelock(
           Icon(
               modifier = Modifier.size(16.dp),
               imageVector =
-                  if (keepWakeLock) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
-              contentDescription = if (keepWakeLock) "CPU kept awake" else "CPU not kept awake",
+                  if (isBatteryOptimizationDisabled) Icons.Filled.CheckCircle
+                  else Icons.Filled.RadioButtonUnchecked,
+              contentDescription = "Disable Battery Optimizations",
               tint = color.copy(alpha = highAlpha),
           )
 
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              text = "Keep CPU Awake",
+              text = "Disable Battery Optimizations",
               style =
                   MaterialTheme.typography.body1.copy(
                       color = color.copy(alpha = highAlpha),
@@ -83,7 +82,10 @@ internal fun CpuWakelock(
         Text(
             modifier = Modifier.padding(start = MaterialTheme.keylines.content),
             text =
-                "Keeping the CPU awake will significantly improve performance. This will sometimes use more battery though, as it may prevent your device from entering a deep sleep state. (recommended)",
+                """Disabling Battery Optimization will allow $appName
+                |to run at maximum performance. This 
+                |will significantly enhance your networking experience (recommended)"""
+                    .trimMargin(),
             style =
                 MaterialTheme.typography.caption.copy(
                     color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
