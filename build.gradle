@@ -59,7 +59,7 @@ buildscript {
     timber = "5.0.1"
 
     // Dagger
-    dagger = "2.44"
+    dagger = "2.44.1"
 
     // Compose
     composeActivity = "1.6.1"
