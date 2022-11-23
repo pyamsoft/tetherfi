@@ -74,23 +74,22 @@ class MainActivity : PYDroidActivity() {
     binding.mainTopBar.setContent {
       val screen by navi.currentScreenState()
 
-      vm.Render { state ->
-        val theme = state.theme
+      val state = vm.state()
+      val theme = state.theme
 
-        SystemBars()
-        TetherFiTheme(theme) {
-          Box(
-              contentAlignment = Alignment.TopCenter,
-          ) {
-            screen?.let { s ->
-              MainTopBar(
-                  currentTab = s,
-                  onLoadStatus = { navi.navigateTo(MainView.Status) },
-                  onLoadActivity = { navi.navigateTo(MainView.Activity) },
-                  onLoadError = { navi.navigateTo(MainView.Errors) },
-                  onSettingsOpen = { handleOpenApplicationSettings() },
-              )
-            }
+      SystemBars()
+      TetherFiTheme(theme) {
+        Box(
+            contentAlignment = Alignment.TopCenter,
+        ) {
+          screen?.let { s ->
+            MainTopBar(
+                currentTab = s,
+                onLoadStatus = { navi.navigateTo(MainView.Status) },
+                onLoadActivity = { navi.navigateTo(MainView.Activity) },
+                onLoadError = { navi.navigateTo(MainView.Errors) },
+                onSettingsOpen = { handleOpenApplicationSettings() },
+            )
           }
         }
       }

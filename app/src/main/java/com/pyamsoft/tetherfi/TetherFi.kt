@@ -4,78 +4,95 @@ import android.app.Application
 import androidx.annotation.CheckResult
 import coil.ImageLoader
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
-import com.pyamsoft.pydroid.ui.ModuleProvider
+import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.PYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
+import timber.log.Timber
 
 class TetherFi : Application() {
 
-  // Lazy so we ensure only one creation
-  private val component by
-      lazy(LazyThreadSafetyMode.NONE) {
-        val url = "https://github.com/pyamsoft/tetherfi"
+  // Must be lazy since Coil calls getSystemService() internally,
+  // leading to SO exception
+  private val lazyImageLoader = lazy(LazyThreadSafetyMode.NONE) { ImageLoader(this) }
 
-        val lazyImageLoader = lazy(LazyThreadSafetyMode.NONE) { ImageLoader(this) }
+  // The order that the PYDroid instance and TickerComponent instance are created is very specific.
+  //
+  // Coil lazy loader must be first, then PYDroid, and then Component
+  private var pydroid: PYDroid? = null
+  private var component: TetherFiComponent? = null
 
-        val parameters =
-            PYDroid.Parameters(
-                // ImageLoader needs to be lazy because Coil calls getSystemService() internally,
-                // which would otherwise lead to SO exception
-                lazyImageLoader = lazyImageLoader,
-                viewSourceUrl = url,
-                bugReportUrl = "$url/issues",
-                privacyPolicyUrl = PRIVACY_POLICY_URL,
-                termsConditionsUrl = TERMS_CONDITIONS_URL,
-                version = BuildConfig.VERSION_CODE,
-                logger = createLogger(),
-                theme = { activity, themeProvider, content ->
-                  activity.TetherFiTheme(
-                      themeProvider = themeProvider,
-                      content = content,
-                  )
-                },
-            )
+  private fun installPYDroid() {
+    if (pydroid == null) {
+      val url = "https://github.com/pyamsoft/tetherfi"
 
-        return@lazy createComponent(PYDroid.init(this, parameters), lazyImageLoader)
-      }
+      installLogger()
 
-  @CheckResult
-  private fun createComponent(
-      provider: ModuleProvider,
-      lazyImageLoader: Lazy<ImageLoader>,
-  ): TetherFiComponent {
-    return DaggerTetherFiComponent.factory()
-        .create(
-            application = this,
-            debug = isDebugMode(),
-            lazyImageLoader = lazyImageLoader,
-            theming = provider.get().theming(),
-        )
-        .also { addLibraries() }
+      pydroid =
+          PYDroid.init(
+              this,
+              PYDroid.Parameters(
+                  // Must be lazy since Coil calls getSystemService() internally,
+                  // leading to SO exception
+                  lazyImageLoader = lazyImageLoader,
+                  viewSourceUrl = url,
+                  bugReportUrl = "$url/issues",
+                  privacyPolicyUrl = PRIVACY_POLICY_URL,
+                  termsConditionsUrl = TERMS_CONDITIONS_URL,
+                  version = BuildConfig.VERSION_CODE,
+                  logger = createLogger(),
+                  theme = TetherFiThemeProvider,
+                  debug =
+                      PYDroid.DebugParameters(
+                          enabled = true,
+                          upgradeAvailable = true,
+                          ratingAvailable = false,
+                      ),
+              ),
+          )
+    } else {
+      Timber.w("Cannot install PYDroid again")
+    }
   }
 
-  override fun getSystemService(name: String): Any? {
-    // Use component here in a weird way to guarantee the lazy is initialized.
-    return component.run { PYDroid.getSystemService(name) } ?: fallbackGetSystemService(name)
+  private fun installComponent() {
+    if (component == null) {
+      val p = pydroid.requireNotNull { "Must install PYDroid before installing TetherFiComponent" }
+      component =
+          DaggerTetherFiComponent.factory()
+              .create(
+                  application = this,
+                  debug = isDebugMode(),
+                  lazyImageLoader = lazyImageLoader,
+                  theming = p.modules().theming(),
+              )
+    } else {
+      Timber.w("Cannot install TetherFiComponent again")
+    }
+  }
+
+  @CheckResult
+  private fun componentGraph(): TetherFiComponent {
+    return component.requireNotNull { "TetherFiComponent was not installed, something is wrong." }
   }
 
   @CheckResult
   private fun fallbackGetSystemService(name: String): Any? {
-    return if (name == TetherFiComponent::class.java.name) component
-    else {
-      provideModuleDependencies(name) ?: super.getSystemService(name)
-    }
+    return if (name == TetherFiComponent::class.java.name) componentGraph()
+    else super.getSystemService(name)
   }
 
-  @CheckResult
-  private fun provideModuleDependencies(name: String): Any? {
-    return component.run {
-      when (name) {
-        else -> null
-      }
-    }
+  override fun onCreate() {
+    super.onCreate()
+    installPYDroid()
+    installComponent()
+
+    addLibraries()
+  }
+
+  override fun getSystemService(name: String): Any? {
+    return pydroid?.getSystemService(name) ?: fallbackGetSystemService(name)
   }
 
   companion object {

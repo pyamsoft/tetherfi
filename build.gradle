@@ -18,7 +18,7 @@
 
 buildscript {
   ext {
-    kotlin_version = '1.7.21'
+    kotlin_version = '1.7.20'
     desugar = "1.2.2"
     compose_version = "1.3.1"
     compose_compiler_version = "1.3.2"
@@ -48,9 +48,7 @@ buildscript {
     compileSdk = 33
 
     // Us
-    pydroid = "25.0.0"
-    cachify = "0.1.0"
-    highlander = "0.1.0"
+    pydroid = "25.1.0-SNAPSHOT"
 
     // Leak Canary
     leakCanary = "2.10"

@@ -47,14 +47,12 @@ class ActivityFragment : Fragment(), FragmentNavigator.Screen<MainView> {
       id = R.id.screen_activity
 
       setContent {
-        vm.Render { state ->
-          act.TetherFiTheme(themeProvider) {
-            ActivityScreen(
-                modifier = Modifier.fillMaxSize(),
-                state = state,
-                imageLoader = loader,
-            )
-          }
+        act.TetherFiTheme(themeProvider) {
+          ActivityScreen(
+              modifier = Modifier.fillMaxSize(),
+              state = vm.state(),
+              imageLoader = loader,
+          )
         }
       }
     }

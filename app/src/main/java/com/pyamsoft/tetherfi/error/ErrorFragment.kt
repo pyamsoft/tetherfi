@@ -47,14 +47,12 @@ class ErrorFragment : Fragment(), FragmentNavigator.Screen<MainView> {
       id = R.id.screen_activity
 
       setContent {
-        vm.Render { state ->
-          act.TetherFiTheme(themeProvider) {
-            ErrorScreen(
-                modifier = Modifier.fillMaxSize(),
-                state = state,
-                imageLoader = loader,
-            )
-          }
+        act.TetherFiTheme(themeProvider) {
+          ErrorScreen(
+              modifier = Modifier.fillMaxSize(),
+              state = vm.state(),
+              imageLoader = loader,
+          )
         }
       }
     }

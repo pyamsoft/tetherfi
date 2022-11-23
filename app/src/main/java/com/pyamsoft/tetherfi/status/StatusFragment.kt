@@ -155,25 +155,23 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
       id = R.id.screen_status
 
       setContent {
-        vm.Render { state ->
-          act.TetherFiTheme(themeProvider) {
-            StatusScreen(
-                modifier = Modifier.fillMaxSize(),
-                state = state,
-                appName = appName,
-                onToggle = { handleToggleProxy() },
-                onSsidChanged = { handleSsidChanged(it) },
-                onPasswordChanged = { handlePasswordChanged(it) },
-                onPortChanged = { handlePortChanged(it) },
-                onOpenBatterySettings = { handleOpenBatterySettings() },
-                onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
-                onRequestPermissions = { handleRequestPermissions() },
-                onOpenPermissionSettings = { handleOpenApplicationSettings() },
-                onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
-                onToggleKeepWakeLock = { handleToggleProxyWakelock() },
-                onSelectBand = { handleChangeBand(it) },
-            )
-          }
+        act.TetherFiTheme(themeProvider) {
+          StatusScreen(
+              modifier = Modifier.fillMaxSize(),
+              state = vm.state(),
+              appName = appName,
+              onToggle = { handleToggleProxy() },
+              onSsidChanged = { handleSsidChanged(it) },
+              onPasswordChanged = { handlePasswordChanged(it) },
+              onPortChanged = { handlePortChanged(it) },
+              onOpenBatterySettings = { handleOpenBatterySettings() },
+              onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
+              onRequestPermissions = { handleRequestPermissions() },
+              onOpenPermissionSettings = { handleOpenApplicationSettings() },
+              onToggleConnectionInstructions = { vm.handleToggleConnectionInstructions() },
+              onToggleKeepWakeLock = { handleToggleProxyWakelock() },
+              onSelectBand = { handleChangeBand(it) },
+          )
         }
       }
     }
