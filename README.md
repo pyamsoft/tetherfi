@@ -1,10 +1,5 @@
-# tetherfi
-
-Internet sharing without Root
-
-[![Get it on Google Play](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/google-play-badge.png)][1]
-
-# What
+TetherFi
+--------
 
 Share your Android device's Internet connection with other devices without needing Root.
 
@@ -19,6 +14,15 @@ using TetherFi to get an open NAT type on consoles is currently not possible, an
 also currently fails to connect correctly to the Playstation Network. General "normal" internet
 browsing should work fine - however it is depedent on the speed and availability of your Android
 device's internet connection.
+
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
+     alt="Get it on IzzyOnDroid"
+     height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+
+or get the APK from the [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
 
 ## Privacy
 
@@ -48,8 +52,6 @@ and propose feature requests for future inclusion.
 Please post any issues with the code in the Issues section on GitHub. Pull Requests
 will be accepted on GitHub only after extensive reading and as long as the request
 goes in line with the design of the application.
-
-[1]: https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi
 
 ## License
 
