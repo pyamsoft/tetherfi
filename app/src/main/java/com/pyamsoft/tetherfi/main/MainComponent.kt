@@ -19,9 +19,7 @@ package com.pyamsoft.tetherfi.main
 import androidx.annotation.CheckResult
 import androidx.annotation.IdRes
 import com.pyamsoft.pydroid.ui.navigator.Navigator
-import com.pyamsoft.tetherfi.activity.ActivityComponent
 import com.pyamsoft.tetherfi.core.ActivityScope
-import com.pyamsoft.tetherfi.error.ErrorComponent
 import com.pyamsoft.tetherfi.settings.AppSettingsComponent
 import com.pyamsoft.tetherfi.settings.SettingsComponent
 import com.pyamsoft.tetherfi.status.StatusComponent
@@ -39,10 +37,6 @@ internal interface MainComponent {
   @CheckResult fun plusSettings(): SettingsComponent.Factory
 
   @CheckResult fun plusStatus(): StatusComponent.Factory
-
-  @CheckResult fun plusActivity(): ActivityComponent.Factory
-
-  @CheckResult fun plusError(): ErrorComponent.Factory
 
   fun inject(activity: MainActivity)
 

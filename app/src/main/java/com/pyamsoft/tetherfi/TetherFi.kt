@@ -13,10 +13,6 @@ import timber.log.Timber
 
 class TetherFi : Application() {
 
-  // Must be lazy since Coil calls getSystemService() internally,
-  // leading to SO exception
-  private val lazyImageLoader = lazy(LazyThreadSafetyMode.NONE) { ImageLoader(this) }
-
   // The order that the PYDroid instance and TickerComponent instance are created is very specific.
   //
   // Coil lazy loader must be first, then PYDroid, and then Component
@@ -33,9 +29,6 @@ class TetherFi : Application() {
           PYDroid.init(
               this,
               PYDroid.Parameters(
-                  // Must be lazy since Coil calls getSystemService() internally,
-                  // leading to SO exception
-                  lazyImageLoader = lazyImageLoader,
                   viewSourceUrl = url,
                   bugReportUrl = "$url/issues",
                   privacyPolicyUrl = PRIVACY_POLICY_URL,
@@ -59,13 +52,14 @@ class TetherFi : Application() {
   private fun installComponent() {
     if (component == null) {
       val p = pydroid.requireNotNull { "Must install PYDroid before installing TetherFiComponent" }
+        val mods = p.modules()
       component =
           DaggerTetherFiComponent.factory()
               .create(
                   application = this,
                   debug = isDebugMode(),
-                  lazyImageLoader = lazyImageLoader,
-                  theming = p.modules().theming(),
+                  imageLoader = mods.imageLoader(),
+                  theming = mods.theming(),
               )
     } else {
       Timber.w("Cannot install TetherFiComponent again")

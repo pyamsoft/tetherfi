@@ -34,17 +34,9 @@ internal fun MainTopBar(
     modifier: Modifier = Modifier,
     currentTab: MainView,
     onLoadStatus: () -> Unit,
-    onLoadActivity: () -> Unit,
-    onLoadError: () -> Unit,
     onSettingsOpen: () -> Unit,
 ) {
-  val tabs = remember {
-    listOf(
-        MainView.Status,
-        MainView.Activity,
-        MainView.Errors,
-    )
-  }
+  val tabs = remember { listOf(MainView.Status) }
   val index =
       remember(tabs, currentTab) {
         val idx = tabs.indexOfFirst { it == currentTab }
@@ -104,18 +96,6 @@ internal fun MainTopBar(
               current = currentTab,
               tab = MainView.Status,
               onTabUpdated = onLoadStatus,
-          )
-
-          ScreenTab(
-              current = currentTab,
-              tab = MainView.Activity,
-              onTabUpdated = onLoadActivity,
-          )
-
-          ScreenTab(
-              current = currentTab,
-              tab = MainView.Errors,
-              onTabUpdated = onLoadError,
           )
         }
       }

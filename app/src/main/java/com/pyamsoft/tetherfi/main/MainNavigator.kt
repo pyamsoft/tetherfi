@@ -25,8 +25,6 @@ import com.pyamsoft.pydroid.arch.UiSavedStateReader
 import com.pyamsoft.pydroid.arch.UiSavedStateWriter
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.activity.ActivityFragment
-import com.pyamsoft.tetherfi.error.ErrorFragment
 import com.pyamsoft.tetherfi.status.StatusFragment
 import javax.inject.Inject
 
@@ -43,8 +41,6 @@ internal constructor(
 
   override fun produceFragmentForScreen(screen: MainView): Fragment =
       when (screen) {
-        MainView.Activity -> ActivityFragment.newInstance()
-        MainView.Errors -> ErrorFragment.newInstance()
         MainView.Status -> StatusFragment.newInstance()
       }
 
@@ -83,22 +79,6 @@ internal constructor(
             is StatusFragment ->
                 when (oldPage) {
                   null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
-                  is ActivityFragment, is ErrorFragment ->
-                      R.anim.slide_in_left then R.anim.slide_out_right
-                  else -> null
-                }
-            is ActivityFragment ->
-                when (oldPage) {
-                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
-                  is StatusFragment -> R.anim.slide_in_right then R.anim.slide_out_left
-                  is ErrorFragment -> R.anim.slide_in_left then R.anim.slide_out_right
-                  else -> null
-                }
-            is ErrorFragment ->
-                when (oldPage) {
-                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
-                  is StatusFragment, is ActivityFragment ->
-                      R.anim.slide_in_right then R.anim.slide_out_left
                   else -> null
                 }
             else -> null

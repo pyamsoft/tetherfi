@@ -86,8 +86,6 @@ class MainActivity : PYDroidActivity() {
             MainTopBar(
                 currentTab = s,
                 onLoadStatus = { navi.navigateTo(MainView.Status) },
-                onLoadActivity = { navi.navigateTo(MainView.Activity) },
-                onLoadError = { navi.navigateTo(MainView.Errors) },
                 onSettingsOpen = { handleOpenApplicationSettings() },
             )
           }

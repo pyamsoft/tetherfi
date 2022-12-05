@@ -130,8 +130,6 @@ dependencies {
   api "androidx.fragment:fragment-ktx:$fragment"
   api "androidx.appcompat:appcompat:$appCompat"
 
-  api project(":activity")
-  api project(":error")
   api project(":server")
   api project(":service")
   api project(":settings")
