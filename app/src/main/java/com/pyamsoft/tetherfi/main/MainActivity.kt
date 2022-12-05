@@ -2,9 +2,7 @@ package com.pyamsoft.tetherfi.main
 
 import android.content.res.Configuration
 import android.os.Bundle
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.app.PYDroidActivity
@@ -78,17 +76,11 @@ class MainActivity : PYDroidActivity() {
       val theme = state.theme
 
       SystemBars()
-      TetherFiTheme(theme) {
-        Box(
-            contentAlignment = Alignment.TopCenter,
-        ) {
-          screen?.let { s ->
-            MainTopBar(
-                currentTab = s,
-                onLoadStatus = { navi.navigateTo(MainView.Status) },
-                onSettingsOpen = { handleOpenApplicationSettings() },
-            )
-          }
+      if (screen != null) {
+        TetherFiTheme(theme) {
+          MainTopBar(
+              onSettingsOpen = { handleOpenApplicationSettings() },
+          )
         }
       }
     }
