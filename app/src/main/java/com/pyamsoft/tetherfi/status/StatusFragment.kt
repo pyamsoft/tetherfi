@@ -28,7 +28,7 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.service.ProxyService
+import com.pyamsoft.tetherfi.service.ServiceLauncher
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -37,17 +37,18 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
   @JvmField @Inject internal var networkPermissionRequester: PermissionRequester? = null
+  @JvmField @Inject internal var serviceLauncher: ServiceLauncher? = null
 
   private var requester: PermissionRequester.Requester? = null
 
   private fun handleToggleProxy() {
-    val act = requireActivity()
+    val launcher = serviceLauncher.requireNotNull()
     viewModel
         .requireNotNull()
         .handleToggleProxy(
             scope = viewLifecycleOwner.lifecycleScope,
-            onStart = { ProxyService.start(act) },
-            onStop = { ProxyService.stop(act) },
+            onStart = { launcher.startForeground() },
+            onStop = { launcher.stopForeground() },
         )
   }
 
@@ -182,9 +183,10 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     viewModel.requireNotNull().also { vm ->
       vm.restoreState(savedInstanceState)
       vm.refreshGroupInfo(scope = viewLifecycleOwner.lifecycleScope)
-      vm.watchStatusUpdates(scope = viewLifecycleOwner.lifecycleScope) {
-        ProxyService.stop(requireActivity())
-      }
+      vm.watchStatusUpdates(
+          scope = viewLifecycleOwner.lifecycleScope,
+          onNetworkStopped = { serviceLauncher.requireNotNull().stopForeground() },
+      )
       vm.loadPreferences(scope = viewLifecycleOwner.lifecycleScope) {
         // Vitals
         viewLifecycleOwner.doOnResume { requireActivity().reportFullyDrawn() }

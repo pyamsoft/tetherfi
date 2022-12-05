@@ -144,7 +144,10 @@ internal constructor(
     state.explainPermissions = false
   }
 
-  fun watchStatusUpdates(scope: CoroutineScope, onStop: () -> Unit) {
+  fun watchStatusUpdates(
+      scope: CoroutineScope,
+      onNetworkStopped: () -> Unit,
+  ) {
     scope.launch(context = Dispatchers.Main) {
       network.onProxyStatusChanged { state.proxyStatus = it }
     }
@@ -166,7 +169,7 @@ internal constructor(
           }
           is WidiNetworkEvent.WifiDisabled -> {
             refreshGroupInfo(scope = scope)
-            onStop()
+            onNetworkStopped()
           }
           is WidiNetworkEvent.WifiEnabled -> {
             refreshGroupInfo(scope = scope)

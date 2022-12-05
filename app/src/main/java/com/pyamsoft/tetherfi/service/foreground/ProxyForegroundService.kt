@@ -1,9 +1,7 @@
-package com.pyamsoft.tetherfi.service
+package com.pyamsoft.tetherfi.service.foreground
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -22,7 +20,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class ProxyService internal constructor() : Service() {
+internal class ProxyForegroundService internal constructor() : Service() {
 
   @Inject @JvmField internal var shutdownBus: EventConsumer<OnShutdownEvent>? = null
 
@@ -159,26 +157,5 @@ internal class ProxyService internal constructor() : Service() {
     network = null
     locker = null
     status = null
-  }
-
-  companion object {
-
-    @JvmStatic
-    fun start(context: Context) {
-      val appContext = context.applicationContext
-      val intent = Intent(appContext, ProxyService::class.java)
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        appContext.startForegroundService(intent)
-      } else {
-        appContext.startService(intent)
-      }
-    }
-
-    @JvmStatic
-    fun stop(context: Context) {
-      val appContext = context.applicationContext
-      val intent = Intent(appContext, ProxyService::class.java)
-      appContext.stopService(intent)
-    }
   }
 }
