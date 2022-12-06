@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,7 +28,9 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.ui.success
 
 @Composable
 internal fun NetworkBands(
@@ -45,11 +48,29 @@ internal fun NetworkBands(
   Column(
       modifier = modifier,
   ) {
+
+    // Small label above
+    Text(
+        modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
+        text = "Broadcast Frequency",
+        style =
+            MaterialTheme.typography.caption.copy(
+                fontWeight = FontWeight.W700,
+                color =
+                    MaterialTheme.colors.onBackground.copy(
+                        alpha = ContentAlpha.medium,
+                    ),
+            ),
+    )
+
+    // Then the buttons
     Row {
       for ((index, b) in bandIterator) {
         val isSelected = remember(b, band) { b == band }
 
         val color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
+        val checkColor =
+            if (isSelected) MaterialTheme.colors.success else MaterialTheme.colors.onSurface
         val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
         val mediumAlpha =
             if (isEditable) {
@@ -139,10 +160,10 @@ internal fun NetworkBands(
               )
 
               Icon(
-                  modifier = Modifier.size(16.dp),
+                  modifier = Modifier.size(ImageDefaults.IconSize),
                   imageVector = Icons.Filled.CheckCircle,
                   contentDescription = b.name,
-                  tint = color.copy(alpha = mediumAlpha),
+                  tint = checkColor.copy(alpha = mediumAlpha),
               )
             }
 

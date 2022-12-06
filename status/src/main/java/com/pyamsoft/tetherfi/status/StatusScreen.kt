@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -231,29 +230,27 @@ private fun rememberPreparedLoadedContent(
       state,
   ) {
     {
-      item {
-        NetworkInformation(
-            modifier = Modifier.padding(keylines.content),
-            isEditable = isEditable,
-            canUseCustomConfig = canUseCustomConfig,
-            appName = appName,
-            showPermissionMessage = state.requiresPermissions,
-            showErrorHintMessage = showErrorHintMessage,
-            ssid = ssid,
-            password = password,
-            port = port,
-            ip = ip,
-            band = state.band,
-            keepWakeLock = state.keepWakeLock,
-            isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
-            onSsidChanged = onSsidChanged,
-            onPasswordChanged = onPasswordChanged,
-            onPortChanged = onPortChanged,
-            onToggleKeepWakeLock = onToggleKeepWakeLock,
-            onSelectBand = onSelectBand,
-            onDisableBatteryOptimizations = onOpenBatterySettings,
-        )
-      }
+      renderNetworkInformation(
+          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
+          isEditable = isEditable,
+          canUseCustomConfig = canUseCustomConfig,
+          appName = appName,
+          showPermissionMessage = state.requiresPermissions,
+          showErrorHintMessage = showErrorHintMessage,
+          ssid = ssid,
+          password = password,
+          port = port,
+          ip = ip,
+          band = state.band,
+          keepWakeLock = state.keepWakeLock,
+          isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
+          onSsidChanged = onSsidChanged,
+          onPasswordChanged = onPasswordChanged,
+          onPortChanged = onPortChanged,
+          onToggleKeepWakeLock = onToggleKeepWakeLock,
+          onSelectBand = onSelectBand,
+          onDisableBatteryOptimizations = onOpenBatterySettings,
+      )
 
       item {
         ConnectionInstructions(
@@ -279,9 +276,8 @@ private fun rememberPreparedLoadedContent(
   }
 }
 
-@Composable
-private fun NetworkInformation(
-    modifier: Modifier = Modifier,
+private fun LazyListScope.renderNetworkInformation(
+    itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
     showPermissionMessage: Boolean,
@@ -301,143 +297,155 @@ private fun NetworkInformation(
     onSelectBand: (ServerNetworkBand) -> Unit,
     onDisableBatteryOptimizations: () -> Unit,
 ) {
-  Crossfade(
-      modifier = modifier,
-      targetState = isEditable,
-  ) { editable ->
-    Column {
-      AnimatedVisibility(
-          visible = showErrorHintMessage,
+  item {
+    AnimatedVisibility(
+        modifier = itemModifier,
+        visible = showErrorHintMessage,
+    ) {
+      Box(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
       ) {
-        Box(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-        ) {
-          Text(
-              text = "Try toggling this device's Wi-Fi off and on, then try again.",
-              style =
-                  MaterialTheme.typography.body1.copy(
-                      color = MaterialTheme.colors.error,
-                  ),
-          )
-        }
+        Text(
+            text = "Try toggling this device's Wi-Fi off and on, then try again.",
+            style =
+                MaterialTheme.typography.body1.copy(
+                    color = MaterialTheme.colors.error,
+                ),
+        )
       }
+    }
+  }
 
-      AnimatedVisibility(
-          visible = showPermissionMessage,
+  item {
+    AnimatedVisibility(
+        modifier = itemModifier,
+        visible = showPermissionMessage,
+    ) {
+      Box(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
       ) {
-        Box(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-        ) {
-          Text(
-              text = "$appName requires permissions: Click the button and grant permissions",
-              style =
-                  MaterialTheme.typography.caption.copy(
-                      color = MaterialTheme.colors.error,
-                  ),
-          )
-        }
-      }
-
-      if (editable) {
-        StatusEditor(
-            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-            enabled = canUseCustomConfig,
-            title = "WIFI NAME/SSID",
-            value = ssid,
-            onChange = onSsidChanged,
-        )
-
-        StatusEditor(
-            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-            enabled = canUseCustomConfig,
-            title = "WIFI PASSWORD",
-            value = password,
-            onChange = onPasswordChanged,
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                ),
-        )
-
-        StatusEditor(
-            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-            title = "PROXY PORT",
-            value = port,
-            onChange = onPortChanged,
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                ),
-        )
-      } else {
-        StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            title = "WIFI NAME/SSID",
-            value = ssid,
-            valueStyle =
-                MaterialTheme.typography.h6.copy(
-                    fontWeight = FontWeight.W400,
-                ),
-        )
-
-        StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content * 2),
-            title = "WIFI PASSWORD",
-            value = password,
-            valueStyle =
-                MaterialTheme.typography.h6.copy(
-                    fontWeight = FontWeight.W400,
-                ),
-        )
-
-        StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            title = "PROXY URL/HOSTNAME",
-            value = ip,
-            valueStyle =
-                MaterialTheme.typography.h6.copy(
-                    fontWeight = FontWeight.W400,
-                ),
-        )
-
-        StatusItem(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            title = "PROXY PORT",
-            value = port,
-            valueStyle =
-                MaterialTheme.typography.h6.copy(
-                    fontWeight = FontWeight.W400,
+        Text(
+            text = "$appName requires permissions: Click the button and grant permissions",
+            style =
+                MaterialTheme.typography.caption.copy(
+                    color = MaterialTheme.colors.error,
                 ),
         )
       }
+    }
+  }
 
-      NetworkBands(
-          modifier =
-              Modifier.fillMaxWidth()
-                  .padding(top = MaterialTheme.keylines.content)
-                  .padding(MaterialTheme.keylines.baseline),
-          isEditable = isEditable,
-          band = band,
-          onSelectBand = onSelectBand,
-      )
-
-      CpuWakelock(
-          modifier =
-              Modifier.fillMaxWidth()
-                  .padding(top = MaterialTheme.keylines.baseline)
-                  .padding(MaterialTheme.keylines.baseline),
-          isEditable = isEditable,
-          appName = appName,
-          keepWakeLock = keepWakeLock,
-          onToggleKeepWakeLock = onToggleKeepWakeLock,
-      )
-
-      BatteryOptimization(
-          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
-          appName = appName,
-          isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
-          onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+  if (isEditable) {
+    item {
+      StatusEditor(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          enabled = canUseCustomConfig,
+          title = "WIFI NAME/SSID",
+          value = ssid,
+          onChange = onSsidChanged,
       )
     }
+
+    item {
+      StatusEditor(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          enabled = canUseCustomConfig,
+          title = "WIFI PASSWORD",
+          value = password,
+          onChange = onPasswordChanged,
+          keyboardOptions =
+              KeyboardOptions(
+                  keyboardType = KeyboardType.Password,
+              ),
+      )
+    }
+
+    item {
+      StatusEditor(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          title = "PROXY PORT",
+          value = port,
+          onChange = onPortChanged,
+          keyboardOptions =
+              KeyboardOptions(
+                  keyboardType = KeyboardType.Number,
+              ),
+      )
+    }
+  } else {
+    item {
+      StatusItem(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          title = "HOTSPOT NAME/SSID",
+          value = ssid,
+          valueStyle =
+              MaterialTheme.typography.h6.copy(
+                  fontWeight = FontWeight.W400,
+              ),
+      )
+    }
+
+    item {
+      StatusItem(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content * 2),
+          title = "HOTSPOT PASSWORD",
+          value = password,
+          valueStyle =
+              MaterialTheme.typography.h6.copy(
+                  fontWeight = FontWeight.W400,
+              ),
+      )
+    }
+
+    item {
+      StatusItem(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          title = "PROXY URL/HOSTNAME",
+          value = ip,
+          valueStyle =
+              MaterialTheme.typography.h6.copy(
+                  fontWeight = FontWeight.W400,
+              ),
+      )
+    }
+
+    item {
+      StatusItem(
+          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          title = "PROXY PORT",
+          value = port,
+          valueStyle =
+              MaterialTheme.typography.h6.copy(
+                  fontWeight = FontWeight.W400,
+              ),
+      )
+    }
+  }
+  item {
+    NetworkBands(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        isEditable = isEditable,
+        band = band,
+        onSelectBand = onSelectBand,
+    )
+  }
+
+  item {
+    CpuWakelock(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.baseline),
+        isEditable = isEditable,
+        appName = appName,
+        keepWakeLock = keepWakeLock,
+        onToggleKeepWakeLock = onToggleKeepWakeLock,
+    )
+  }
+
+  item {
+    BatteryOptimization(
+        modifier = itemModifier,
+        appName = appName,
+        isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
+        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+    )
   }
 }
