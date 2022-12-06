@@ -46,10 +46,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       Timber.d("Inject a new TileHandler")
       Injector.obtainFromApplication<TetherFiComponent>(application)
           .plusTileService()
-          .create(
-              getTile = { qsTile },
-              showDialog = { message -> showDialog(createAlertDialog(message)) },
-          )
+          .create()
           .inject(this)
     }
 
@@ -71,12 +68,15 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onStartListening() = withHandler { handler ->
     Timber.d("Tile has started listening")
-    handler.sync(qsTile)
+    handler.load(
+        tile = qsTile,
+        showDialog = { message -> showDialog(createAlertDialog(message)) },
+    )
   }
 
   override fun onStopListening() = withHandler { handler ->
     Timber.d("Tile has stopped listening")
-    handler.sync(qsTile)
+    handler.unload()
   }
 
   override fun onCreate() {
