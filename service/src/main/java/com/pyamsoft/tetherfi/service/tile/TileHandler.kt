@@ -10,7 +10,6 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -18,7 +17,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@Singleton
 class TileHandler
 @Inject
 internal constructor(
@@ -26,15 +24,16 @@ internal constructor(
     private val launcher: ServiceLauncher,
     private val network: WiDiNetworkStatus,
     private val permissions: PermissionGuard,
+
+    // Don't singleton since these are per-service
+    private val qsTile: () -> Tile?,
+    private val showDialog: (String) -> Unit,
 ) {
 
   private var scope: CoroutineScope? = null
 
   /** Description message to display on the tile */
   private var tileDescription: String = ""
-
-  private var qsTile: Tile? = null
-  private var dialogLauncher: ((String) -> Unit)? = null
 
   @CheckResult
   private fun createOrReUseScope(): CoroutineScope {
@@ -54,7 +53,7 @@ internal constructor(
       tile: Tile?,
       block: suspend (Tile) -> Unit,
   ) = withScope {
-    val t = tile ?: qsTile
+    val t = tile ?: qsTile()
     if (t == null) {
       Timber.w("QS Tile is null, cannot act")
       return@withScope
@@ -234,10 +233,7 @@ internal constructor(
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
       moveToErrorState(PERMISSION_ERROR_STATE, tile)
-
-      // Show dialog if we have one
-      dialogLauncher?.invoke("Cannot start Tethering without granting Permissions.")
-
+      showDialog("Cannot start Tethering without granting Permissions.")
       // Fire on stop (which can help reset the error in the event of a WiDi error)
       onStop()
       return
@@ -257,9 +253,7 @@ internal constructor(
       is RunningStatus.Error -> {
         Timber.w("Unable to start Tethering network ${status.message}")
         moveToErrorState(status, tile)
-
-        // Show dialog if we have one
-        dialogLauncher?.invoke(status.message)
+        showDialog(status.message)
 
         // Fire on stop (which can help reset the error in the event of a WiDi error)
         onStop()
@@ -290,22 +284,11 @@ internal constructor(
     )
   }
 
-  fun load(tile: Tile, showDialog: (String) -> Unit) {
-    // Assign member vars
-    qsTile = tile
-    dialogLauncher = showDialog
-
-    syncQsTile(
-        tile,
-        network.getCurrentStatus(),
-    )
-  }
-
-  fun unload() {
-    // Unload assignments to prevent leaks
-    qsTile = null
-    dialogLauncher = null
-  }
+  fun sync(tile: Tile?) =
+      syncQsTile(
+          tile,
+          network.getCurrentStatus(),
+      )
 
   fun toggleProxyNetwork(tile: Tile?) = withScope {
     handleToggleProxy(

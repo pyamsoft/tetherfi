@@ -16,7 +16,9 @@
 
 package com.pyamsoft.tetherfi.service.tile
 
+import android.service.quicksettings.Tile
 import androidx.annotation.CheckResult
+import dagger.BindsInstance
 import dagger.Subcomponent
 
 @Subcomponent
@@ -27,6 +29,10 @@ internal interface TileServiceComponent {
   @Subcomponent.Factory
   interface Factory {
 
-    @CheckResult fun create(): TileServiceComponent
+    @CheckResult
+    fun create(
+        @BindsInstance getTile: () -> Tile?,
+        @BindsInstance showDialog: (String) -> Unit,
+    ): TileServiceComponent
   }
 }
