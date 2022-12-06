@@ -32,7 +32,7 @@ internal class ProxyTileService internal constructor() : TileService() {
     val appName = getString(R.string.app_name)
     return AlertDialog.Builder(this)
         .setTitle("$appName Networking Error")
-        .setMessage(message)
+        .setMessage("$message\n\n$POSSIBLE_FIX")
         .setPositiveButton("Open $appName") { dialog, _ ->
           dialog.dismiss()
           ensureUnlocked { startActivityAndCollapse(mainActivityIntent) }
@@ -94,5 +94,11 @@ internal class ProxyTileService internal constructor() : TileService() {
     Timber.d("Tile is destroyed!")
     tileHandler?.destroy()
     tileHandler = null
+  }
+
+  companion object {
+
+    private const val POSSIBLE_FIX =
+        "Opening the app and trying again can sometimes fix the problem. If that still does not work, try toggling WiFi off and on again."
   }
 }

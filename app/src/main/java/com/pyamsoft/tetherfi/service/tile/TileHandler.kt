@@ -1,10 +1,7 @@
 package com.pyamsoft.tetherfi.service.tile
 
-import android.content.ComponentName
-import android.content.Context
 import android.os.Build
 import android.service.quicksettings.Tile
-import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -22,7 +19,6 @@ import timber.log.Timber
 internal class TileHandler
 @Inject
 internal constructor(
-    private val context: Context,
     private val launcher: ServiceLauncher,
     private val network: WiDiNetworkStatus,
     private val permissions: PermissionGuard,
@@ -34,13 +30,6 @@ internal constructor(
 
   /** Description message to display on the tile */
   private var tileDescription: String = ""
-
-  private fun requestTileStartListening() {
-    TileService.requestListeningState(
-        context,
-        ComponentName(context, TileService::class.java),
-    )
-  }
 
   @CheckResult
   private fun createOrReUseScope(): CoroutineScope {
@@ -89,15 +78,15 @@ internal constructor(
   private fun Tile.syncDescription() {
     val self = this
 
-    val message = tileDescription
-    self.contentDescription = message
+    val msg = tileDescription
+    self.contentDescription = msg
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      self.stateDescription = message
+      self.stateDescription = msg
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      self.subtitle = message
+      self.subtitle = msg
     }
   }
 
@@ -115,7 +104,10 @@ internal constructor(
   }
 
   private fun moveToErrorState(status: RunningStatus.Error, tile: Tile? = null) {
-    tileDescription = status.message
+    // Display a hardcoded message here
+    tileDescription = "Click to view error"
+
+    // Upon click, the status will update again and display the right message in the Dialog
     syncQsTile(tile, status)
   }
 
@@ -146,8 +138,6 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       network.onProxyStatusChanged { status ->
-        requestTileStartListening()
-
         when (status) {
           is RunningStatus.Error -> {
             Timber.w("Error running Proxy: ${status.message}")
@@ -171,8 +161,6 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       network.onStatusChanged { status ->
-        requestTileStartListening()
-
         when (status) {
           is RunningStatus.Error -> {
             Timber.w("Error running WiDi network: ${status.message}")
@@ -216,7 +204,10 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
+      moveToErrorState(PERMISSION_ERROR_STATE, tile)
       showDialog("Cannot start Tethering without granting Permissions.")
+      // Fire on stop (which can help reset the error in the event of a WiDi error)
+      onStop()
       return
     }
 
@@ -227,7 +218,11 @@ internal constructor(
       is RunningStatus.Running -> onStop()
       is RunningStatus.Error -> {
         Timber.w("Unable to start Tethering network ${status.message}")
+        moveToErrorState(status, tile)
         showDialog(status.message)
+
+        // Fire on stop (which can help reset the error in the event of a WiDi error)
+        onStop()
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
@@ -273,5 +268,10 @@ internal constructor(
           launcher.stopForeground()
         },
     )
+  }
+
+  companion object {
+    private val PERMISSION_ERROR_STATE =
+        RunningStatus.Error("Cannot start Tethering without granting Permissions.")
   }
 }
