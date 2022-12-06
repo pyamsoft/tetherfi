@@ -123,8 +123,8 @@ fun StatusScreen(
       item {
         DisplayStatus(
             modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
+                Modifier.padding(MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
             title = "Tethering Network Status:",
             status = wiDiStatus,
         )
