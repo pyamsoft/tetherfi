@@ -67,6 +67,10 @@ internal constructor(
   }
 
   private suspend fun shutdown() {
+    if (jobs.isNotEmpty()) {
+      Timber.d("Shutdown Proxy Server...")
+    }
+
     clearJobs()
 
     // Clear busses
@@ -79,8 +83,12 @@ internal constructor(
   }
 
   private suspend fun clearJobs() {
-    Timber.d("Cancelling jobs")
-    mutex.withLock { jobs.removeEach { it.job.cancel() } }
+    mutex.withLock {
+      if (jobs.isNotEmpty()) {
+        Timber.d("Cancelling jobs")
+        jobs.removeEach { it.job.cancel() }
+      }
+    }
   }
 
   override fun start() {
@@ -89,12 +97,13 @@ internal constructor(
 
       try {
         val port = getPort()
-        if (port > 65000 || port < 1024) {
+        if (port > 65000 || port <= 1024) {
           Timber.w("Port is invalid: $port")
           status.set(RunningStatus.Error(message = "Port is invalid: $port"))
           return@launch
         }
 
+        Timber.d("Starting proxy server on port $port ...")
         status.set(RunningStatus.Starting)
 
         coroutineScope {
@@ -106,7 +115,7 @@ internal constructor(
             jobs.add(udp)
           }
 
-          Timber.d("Started proxy server on port: $port")
+          Timber.d("Started Proxy Server on port: $port")
           status.set(RunningStatus.Running)
         }
       } catch (e: Throwable) {
@@ -119,8 +128,6 @@ internal constructor(
 
   override fun stop() {
     scope.launch(context = dispatcher) {
-      Timber.d("Stopping proxy server")
-
       status.set(RunningStatus.Stopping)
 
       shutdown()

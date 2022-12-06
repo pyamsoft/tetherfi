@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.WifiP2pManager.Channel
 import android.os.Build
 import android.os.Looper
 import androidx.annotation.CheckResult
@@ -45,7 +46,16 @@ protected constructor(
 
   @CheckResult
   private fun createChannel(): WifiP2pManager.Channel? {
-    return wifiP2PManager.initialize(context.applicationContext, Looper.getMainLooper(), null)
+    Timber.d("Creating WifiP2PManager Channel")
+
+    // This can return null if initialization fails
+    return wifiP2PManager.initialize(
+        context.applicationContext,
+        Looper.getMainLooper(),
+    ) {
+      Timber.d("WifiP2PManager Channel disconnected, kill Group!")
+      scope.launch(context = dispatcher) { stopNetwork() }
+    }
   }
 
   @CheckResult
@@ -106,15 +116,14 @@ protected constructor(
   @CheckResult
   private suspend fun removeGroup(channel: WifiP2pManager.Channel): Unit =
       withContext(context = Dispatchers.Main) {
-        Timber.d("Stop existing network")
-
+        // Close the Group here
+        Timber.d("Stop existing WiFi Group")
         return@withContext suspendCoroutine { cont ->
           wifiP2PManager.removeGroup(
               channel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                   Timber.d("Wifi P2P Channel is removed")
-                  closeSilent(channel)
                   cont.resume(Unit)
                 }
 
@@ -122,7 +131,6 @@ protected constructor(
                   Timber.w("Failed to stop network: ${reasonToString(reason)}")
 
                   Timber.d("Close Group failed but continue teardown anyway")
-                  closeSilent(channel)
                   cont.resume(Unit)
                 }
               },
@@ -140,61 +148,77 @@ protected constructor(
           return@withContext
         }
 
-        val channel = createChannel()
-        if (channel == null) {
-          Timber.w("Failed to create channel, cannot initialize WiDi network")
-          status.set(RunningStatus.NotRunning)
-          return@withContext
-        }
-
         Timber.d("Start new network")
         status.set(RunningStatus.Starting)
 
+        val channel = createChannel()
+        if (channel == null) {
+          Timber.w("Failed to create channel, cannot initialize WiDi network")
+
+          completeStop { status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel")) }
+          return@withContext
+        }
+
         val runningStatus = createGroup(channel)
         if (runningStatus == RunningStatus.Running) {
+          Timber.d("Network started")
+
+          // Only store the channel if it successfully "finished" creating.
           mutex.withLock {
             Timber.d("Store WiFi channel")
             wifiChannel = channel
           }
 
-          Timber.d("Network started")
           onNetworkStarted()
         } else {
           Timber.w("Group failed creation, stop proxy")
-          completeStop { Timber.w("Stopped proxy because group failed creation") }
+
+          // Remove whatever was created (should be a no-op if everyone follows API correctly)
+          shutdownWifiNetwork(channel)
+
+          completeStop { Timber.w("Stopping proxy after Group failed to create") }
         }
 
         status.set(runningStatus)
       }
 
   private suspend fun completeStop(onStop: () -> Unit) {
-    Timber.d("Stop when wifi network removed")
     onNetworkStopped()
-
     onStop()
   }
+
+  // Lock the mutex to avoid anyone else from using the channel during closing
+  private suspend fun shutdownWifiNetwork(channel: Channel) =
+      mutex.withLock {
+        // If we do have a channel, mark shutting down as we clean up
+        Timber.d("Shutting down wifi network")
+        status.set(RunningStatus.Stopping)
+
+        // This may fail if WiFi is off, but thats fine since if WiFi is off,
+        // the system has already cleaned us up.
+        removeGroup(channel)
+
+        // Close the wifi channel now that we are done with it
+        Timber.d("Close WiFiP2PManager channel")
+        closeSilent(channel)
+
+        // Clear out so nobody else can use a dead channel
+        wifiChannel = null
+      }
 
   private suspend fun stopNetwork() {
     Enforcer.assertOffMainThread()
 
     val channel = getChannel()
 
+    // If we have no channel, we haven't started yet. Make sure we are clean, but shi
+    // is basically a no-op
     if (channel == null) {
       completeStop { status.set(RunningStatus.NotRunning) }
       return
     }
 
-    Timber.d("Shutting down wifi network")
-    status.set(RunningStatus.Stopping)
-
-    // This may fail if WiFi is off, but thats fine since if WiFi is off, the system has already
-    // cleaned us up.
-    removeGroup(channel)
-
-    mutex.withLock {
-      Timber.d("Clear wifi channel")
-      wifiChannel = null
-    }
+    shutdownWifiNetwork(channel)
 
     completeStop {
       Timber.d("Proxy was stopped")
@@ -213,6 +237,7 @@ protected constructor(
               channel,
           ) { group ->
             if (group == null) {
+              Timber.w("No WiFi Direct Group info available")
               cont.resume(null)
             } else {
               cont.resume(
@@ -236,6 +261,7 @@ protected constructor(
               channel,
           ) { conn ->
             if (conn == null) {
+              Timber.w("No WiFi Direct Connection info available")
               cont.resume(null)
             } else {
               cont.resume(
@@ -252,7 +278,7 @@ protected constructor(
   final override suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo? =
       withContext(context = Dispatchers.Main) {
         if (!permissionGuard.canCreateWiDiNetwork()) {
-          Timber.w("Missing permissions for making WiDi network")
+          Timber.w("Missing permissions, cannot get Group Info")
           return@withContext null
         }
 
@@ -267,6 +293,11 @@ protected constructor(
 
   final override suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo? =
       withContext(context = Dispatchers.Main) {
+        if (!permissionGuard.canCreateWiDiNetwork()) {
+          Timber.w("Missing permissions, cannot get Connection Info")
+          return@withContext null
+        }
+
         val channel = getChannel()
         if (channel == null) {
           Timber.w("Cannot get connection info without Wifi channel")

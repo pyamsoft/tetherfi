@@ -8,6 +8,7 @@ import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import androidx.annotation.CheckResult
+import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
@@ -53,9 +54,11 @@ internal constructor(
   private suspend fun handleStateChangedAction(intent: Intent) {
     when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
       WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
+        Timber.d("WiFi Direct: Enabled")
         eventBus.send(WidiNetworkEvent.WifiEnabled)
       }
       WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
+        Timber.d("WiFi Direct: Disabled")
         eventBus.send(WidiNetworkEvent.WifiDisabled)
         shutdownBus.send(OnShutdownEvent)
       }
@@ -89,7 +92,12 @@ internal constructor(
     withContext(context = Dispatchers.Main) {
       if (!registered) {
         registered = true
-        context.registerReceiver(self, INTENT_FILTER)
+        ContextCompat.registerReceiver(
+            context,
+            self,
+            INTENT_FILTER,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
       }
     }
   }

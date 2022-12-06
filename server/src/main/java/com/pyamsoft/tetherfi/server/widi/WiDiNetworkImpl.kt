@@ -7,6 +7,7 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,12 +33,10 @@ internal constructor(
     ) {
 
   override suspend fun onNetworkStarted() {
-    Timber.d("Network started, start proxy")
     proxy.start()
   }
 
   override suspend fun onNetworkStopped() {
-    Timber.d("Stop proxy when wifi network removed")
     proxy.stop()
   }
 

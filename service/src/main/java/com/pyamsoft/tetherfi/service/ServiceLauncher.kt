@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-internal class ServiceLauncher
+class ServiceLauncher
 @Inject
 internal constructor(
     private val context: Context,

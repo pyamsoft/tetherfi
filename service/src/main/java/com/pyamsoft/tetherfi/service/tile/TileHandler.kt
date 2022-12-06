@@ -17,7 +17,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class TileHandler
+class TileHandler
 @Inject
 internal constructor(
     private val receiver: WiDiReceiver,
