@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import javax.inject.Inject
 import javax.inject.Singleton
+import timber.log.Timber
 
 @Singleton
 class ServiceLauncher
@@ -19,6 +20,7 @@ internal constructor(
       lazy(LazyThreadSafetyMode.NONE) { Intent(context, foregroundServiceClass) }
 
   fun startForeground() {
+    Timber.d("Start Foreground Service!")
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       context.startForegroundService(foregroundService)
     } else {
@@ -27,6 +29,7 @@ internal constructor(
   }
 
   fun stopForeground() {
+    Timber.d("Stop Foreground Service!")
     context.stopService(foregroundService)
   }
 }

@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.service.foreground
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
@@ -12,6 +13,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -25,7 +27,10 @@ internal constructor(
     private val status: WiDiNetworkStatus,
 ) {
 
-  private var job: Job? = null
+  private val scope by lazy(LazyThreadSafetyMode.NONE) { MainScope() }
+
+  private var prepJob: Job? = null
+  private var proxyJob: Job? = null
 
   private suspend fun acquireCpuWakeLock() {
     Timber.d("Attempt to claim CPU wakelock")
@@ -38,18 +43,24 @@ internal constructor(
   }
 
   private fun killJobs() {
-    job?.cancel()
-    job = null
+    prepJob?.cancel()
+    prepJob = null
+
+    proxyJob?.cancel()
+    proxyJob = null
   }
 
-  fun startProxy(
-      scope: CoroutineScope,
+  @CheckResult
+  private fun Job?.cancelAndReLaunch(block: suspend CoroutineScope.() -> Unit): Job {
+    this?.cancel()
+    return scope.launch(context = Dispatchers.Main, block = block)
+  }
+
+  fun prepareProxy(
       onShutdownService: () -> Unit,
   ) {
-    killJobs()
-
-    job =
-        scope.launch(context = Dispatchers.Main) {
+    prepJob =
+        prepJob.cancelAndReLaunch {
           // When shutdown events are received, we kill the service
           launch(context = Dispatchers.Main) {
             shutdownBus.requireNotNull().onEvent {
@@ -90,16 +101,18 @@ internal constructor(
               }
             }
           }
-
-          // Start network
-          launch(context = Dispatchers.Main) {
-            Timber.d("Start WiDi Network")
-            network.requireNotNull().start()
-          }
         }
   }
 
-  fun stopProxy(scope: CoroutineScope) {
+  fun startProxy() {
+    proxyJob =
+        proxyJob.cancelAndReLaunch {
+          Timber.d("Start WiDi Network")
+          network.requireNotNull().start()
+        }
+  }
+
+  fun stopProxy() {
     killJobs()
 
     // Launch a parent scope for all jobs

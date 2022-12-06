@@ -208,9 +208,18 @@ internal constructor(
     }
 
     when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> onStart()
-      is RunningStatus.Running -> onStop()
-      is RunningStatus.Error -> onStop()
+      is RunningStatus.NotRunning -> {
+        Timber.d("Starting Proxy...")
+        onStart()
+      }
+      is RunningStatus.Running -> {
+        Timber.d("Stopping Proxy")
+        onStop()
+      }
+      is RunningStatus.Error -> {
+        Timber.w("Resetting Proxy from Error state")
+        onStop()
+      }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }

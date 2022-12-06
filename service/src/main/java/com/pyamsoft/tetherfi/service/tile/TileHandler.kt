@@ -242,8 +242,14 @@ internal constructor(
     val status = network.getCurrentStatus()
     syncQsTile(tile, status)
     when (status) {
-      is RunningStatus.NotRunning -> onStart()
-      is RunningStatus.Running -> onStop()
+      is RunningStatus.NotRunning -> {
+        Timber.d("Starting Proxy")
+        onStart()
+      }
+      is RunningStatus.Running -> {
+        Timber.d("Stopping Proxy")
+        onStop()
+      }
       is RunningStatus.Error -> {
         Timber.w("Unable to start Tethering network ${status.message}")
         moveToErrorState(status, tile)

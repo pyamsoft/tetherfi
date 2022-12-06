@@ -17,6 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -30,7 +31,8 @@ internal constructor(
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
 ) : BroadcastReceiver(), WiDiReceiver, WiDiReceiverRegister {
 
-  private val scope by lazy { CoroutineScope(context = Dispatchers.IO) }
+  private val registerScope by lazy { MainScope() }
+  private val workScope by lazy { CoroutineScope(context = Dispatchers.IO) }
 
   private var registered = false
 
@@ -87,9 +89,10 @@ internal constructor(
     return eventBus.onEvent(onEvent)
   }
 
-  override suspend fun register() {
+  override fun register() {
     val self = this
-    withContext(context = Dispatchers.Main) {
+
+    registerScope.launch(context = Dispatchers.Main) {
       if (!registered) {
         registered = true
         ContextCompat.registerReceiver(
@@ -102,9 +105,10 @@ internal constructor(
     }
   }
 
-  override suspend fun unregister() {
+  override fun unregister() {
     val self = this
-    withContext(context = Dispatchers.Main) {
+
+    registerScope.launch(context = Dispatchers.Main) {
       if (registered) {
         registered = false
         context.unregisterReceiver(self)
@@ -115,7 +119,7 @@ internal constructor(
   override fun onReceive(context: Context, intent: Intent) {
     // Go async in case scope work takes a long time
     val pending = goAsync()
-    scope.launch(context = Dispatchers.IO) {
+    workScope.launch(context = Dispatchers.IO) {
       Enforcer.assertOffMainThread()
       try {
         when (val action = intent.action) {
