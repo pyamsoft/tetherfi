@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.tetherfi.ui.icons.Devices
 import com.pyamsoft.tetherfi.ui.icons.PhoneAndroid
 
@@ -32,11 +33,14 @@ private fun ThisDevice(
     modifier: Modifier = Modifier,
     small: Boolean,
 ) {
+  val keylines = MaterialTheme.keylines
+  val sizeAdjustment = remember(small, keylines) { if (small) keylines.typography else ZeroSize }
+
   Icon(
       modifier =
           modifier
               .padding(start = if (small) 2.dp else ZeroSize)
-              .size(if (small) 20.dp else 24.dp)
+              .size(ImageDefaults.DefaultSize - sizeAdjustment)
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.PhoneAndroid,
       contentDescription = "This Device",
@@ -49,11 +53,14 @@ private fun OtherDevice(
     modifier: Modifier = Modifier,
     small: Boolean,
 ) {
+  val keylines = MaterialTheme.keylines
+  val sizeAdjustment = remember(small, keylines) { if (small) keylines.typography else ZeroSize }
+
   Icon(
       modifier =
           modifier
               .padding(start = if (small) 2.dp else ZeroSize)
-              .size(if (small) 20.dp else 24.dp)
+              .size(ImageDefaults.DefaultSize - sizeAdjustment)
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.Devices,
       contentDescription = "Other Devices",
@@ -211,12 +218,13 @@ internal fun ConnectionInstructions(
 
             Text(
                 text = "Optionally keep the CPU awake for full proxy performance",
-                style = MaterialTheme.typography.body2.copy(
-                    color =
-                        MaterialTheme.colors.onBackground.copy(
-                            alpha = ContentAlpha.medium,
-                        ),
-                ),
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.onBackground.copy(
+                                alpha = ContentAlpha.medium,
+                            ),
+                    ),
             )
           }
         }

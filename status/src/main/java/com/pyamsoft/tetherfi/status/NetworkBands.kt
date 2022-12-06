@@ -1,36 +1,21 @@
 package com.pyamsoft.tetherfi.status
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Card
 import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
-import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.ui.success
+import com.pyamsoft.tetherfi.ui.MaterialCheckable
+import com.pyamsoft.tetherfi.ui.rememberMaterialCheckableHeightMatcherGenerator
 
 @Composable
 internal fun NetworkBands(
@@ -42,8 +27,7 @@ internal fun NetworkBands(
   val bands = remember { ServerNetworkBand.values() }
   val bandIterator = remember(bands) { bands.withIndex() }
 
-  val density = LocalDensity.current
-  val (cardHeights, setCardHeight) = remember { mutableStateOf(emptyMap<ServerNetworkBand, Int>()) }
+  val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()
 
   Column(
       modifier = modifier,
@@ -67,123 +51,24 @@ internal fun NetworkBands(
     Row {
       for ((index, b) in bandIterator) {
         val isSelected = remember(b, band) { b == band }
+        val heightMatcher = generator.generateFor(b)
 
-        val color = if (isSelected) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-        val checkColor =
-            if (isSelected) MaterialTheme.colors.success else MaterialTheme.colors.onSurface
-        val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-        val mediumAlpha =
-            if (isEditable) {
-              // High alpha when selected
-              if (isSelected) ContentAlpha.high else ContentAlpha.medium
-            } else ContentAlpha.disabled
-
-        // Figure out which card is the largest and size all other cards to match
-        val largestCard =
-            remember(cardHeights) {
-              if (cardHeights.isEmpty()) {
-                return@remember 0
-              }
-
-              var largest = 0
-              for (height in cardHeights.values) {
-                if (height > largest) {
-                  largest = height
-                }
-              }
-
-              if (largest <= 0) {
-                return@remember 0
-              }
-
-              return@remember largest
-            }
-
-        val gapHeight =
-            remember(largestCard, density, cardHeights, b) {
-              val cardHeight: Int = cardHeights[b] ?: return@remember ZeroSize
-
-              val diff = largestCard - cardHeight
-              if (diff < 0) {
-                return@remember ZeroSize
-              }
-
-              return@remember density.run { diff.toDp() }
-            }
-
-        Card(
+        MaterialCheckable(
             modifier =
                 Modifier.weight(1F)
-                    .onSizeChanged {
-                      // Only do this once, on the initial measure
-                      val height = it.height
-                      val entry: Int? = cardHeights[b]
-                      if (entry == null) {
-                        setCardHeight(
-                            cardHeights.toMutableMap().apply {
-                              this.set(
-                                  key = b,
-                                  value = height,
-                              )
-                            },
-                        )
-                      }
-                    }
+                    .then(heightMatcher.onSizeChangedModifier)
                     .padding(
                         end =
                             if (index < bands.lastIndex) MaterialTheme.keylines.content
                             else ZeroSize,
-                    )
-                    .border(
-                        width = 2.dp,
-                        color = color.copy(alpha = mediumAlpha),
-                        shape = MaterialTheme.shapes.medium,
                     ),
-            elevation = CardDefaults.Elevation,
-        ) {
-          Column(
-              modifier =
-                  Modifier.clickable(enabled = isEditable) { onSelectBand(b) }
-                      .padding(MaterialTheme.keylines.content),
-          ) {
-            Row(
-                verticalAlignment = Alignment.Top,
-            ) {
-              Text(
-                  modifier = Modifier.weight(1F).padding(bottom = MaterialTheme.keylines.baseline),
-                  text = b.displayName,
-                  style =
-                      MaterialTheme.typography.h6.copy(
-                          fontWeight = FontWeight.W700,
-                          color = color.copy(alpha = highAlpha),
-                      ),
-              )
-
-              Icon(
-                  modifier = Modifier.size(ImageDefaults.IconSize),
-                  imageVector = Icons.Filled.CheckCircle,
-                  contentDescription = b.name,
-                  tint = checkColor.copy(alpha = mediumAlpha),
-              )
-            }
-
-            // Align with the largest card
-            if (gapHeight > ZeroSize) {
-              Spacer(
-                  modifier = Modifier.height(gapHeight),
-              )
-            }
-
-            Text(
-                text = b.description,
-                style =
-                    MaterialTheme.typography.caption.copy(
-                        color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
-                        fontWeight = FontWeight.W400,
-                    ),
-            )
-          }
-        }
+            isEditable = isEditable,
+            condition = isSelected,
+            title = b.displayName,
+            description = b.description,
+            extraHeight = heightMatcher.extraHeight,
+            onClick = { onSelectBand(b) },
+        )
       }
     }
   }

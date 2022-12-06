@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -423,16 +425,61 @@ private fun LazyListScope.renderNetworkInformation(
   }
   item {
     NetworkBands(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        modifier = itemModifier.padding(vertical = MaterialTheme.keylines.content),
         isEditable = isEditable,
         band = band,
         onSelectBand = onSelectBand,
     )
   }
 
+  renderBatteryAndPerformance(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      keepWakeLock = keepWakeLock,
+      isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
+      onToggleKeepWakeLock = onToggleKeepWakeLock,
+      onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+  )
+
+  // Bottom space
+  item {
+    Spacer(
+        modifier = itemModifier.height(MaterialTheme.keylines.content),
+    )
+  }
+}
+
+private fun LazyListScope.renderBatteryAndPerformance(
+    itemModifier: Modifier = Modifier,
+    isEditable: Boolean,
+    appName: String,
+    keepWakeLock: Boolean,
+    isBatteryOptimizationDisabled: Boolean,
+    onToggleKeepWakeLock: () -> Unit,
+    onDisableBatteryOptimizations: () -> Unit,
+) {
+  item {
+    Text(
+        modifier =
+            itemModifier
+                .padding(top = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.baseline),
+        text = "Battery and Performance",
+        style =
+            MaterialTheme.typography.caption.copy(
+                fontWeight = FontWeight.W700,
+                color =
+                    MaterialTheme.colors.onBackground.copy(
+                        alpha = ContentAlpha.medium,
+                    ),
+            ),
+    )
+  }
+
   item {
     CpuWakelock(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.baseline),
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
         keepWakeLock = keepWakeLock,
@@ -443,6 +490,7 @@ private fun LazyListScope.renderNetworkInformation(
   item {
     BatteryOptimization(
         modifier = itemModifier,
+        isEditable = isEditable,
         appName = appName,
         isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
