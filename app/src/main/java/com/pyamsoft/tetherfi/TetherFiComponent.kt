@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi
 
 import android.app.Activity
 import android.app.Application
+import android.app.Service
 import android.content.Context
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
@@ -80,6 +81,12 @@ internal interface TetherFiComponent {
       @JvmStatic
       internal fun provideActivityClass(): Class<out Activity> {
         return MainActivity::class.java
+      }
+
+      @Provides
+      @JvmStatic
+      internal fun provideForegroundServiceClass(): Class<out Service> {
+        return ProxyForegroundService::class.java
       }
 
       @Provides

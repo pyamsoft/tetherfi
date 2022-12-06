@@ -7,7 +7,6 @@ import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -18,15 +17,13 @@ internal class WiDiNetworkImpl
 @Inject
 internal constructor(
     @ServerInternalApi private val proxy: SharedProxy,
-    @ServerInternalApi receiver: WiDiReceiver,
     @ServerInternalApi dispatcher: CoroutineDispatcher,
     @ServerInternalApi config: WiDiConfig,
     context: Context,
     permissionGuard: PermissionGuard,
     status: WiDiStatus,
 ) :
-    ReceiverAwareWifiDirectNetwork(
-        receiver,
+    WifiDirectNetwork(
         context,
         permissionGuard,
         dispatcher,
@@ -35,14 +32,11 @@ internal constructor(
     ) {
 
   override suspend fun onNetworkStarted() {
-    super.onNetworkStarted()
     Timber.d("Network started, start proxy")
     proxy.start()
   }
 
   override suspend fun onNetworkStopped() {
-    super.onNetworkStopped()
-
     Timber.d("Stop proxy when wifi network removed")
     proxy.stop()
   }

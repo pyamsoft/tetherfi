@@ -8,6 +8,7 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
@@ -27,6 +28,7 @@ internal constructor(
     private val network: WiDiNetworkStatus,
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
+    private val wiDiReceiver: WiDiReceiver,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -155,7 +157,7 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) { network.onStatusChanged { state.wiDiStatus = it } }
 
     scope.launch(context = Dispatchers.Main) {
-      network.onWifiDirectEvent { event ->
+      wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
             state.ip = event.ip

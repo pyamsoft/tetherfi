@@ -27,7 +27,7 @@ internal constructor(
     private val context: Context,
     private val shutdownBus: EventBus<OnShutdownEvent>,
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
-) : BroadcastReceiver(), WiDiReceiver {
+) : BroadcastReceiver(), WiDiReceiver, WiDiReceiverRegister {
 
   private val scope by lazy { CoroutineScope(context = Dispatchers.IO) }
 

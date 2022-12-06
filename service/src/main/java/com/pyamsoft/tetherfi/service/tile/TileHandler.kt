@@ -6,6 +6,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import javax.inject.Inject
@@ -19,9 +20,12 @@ import timber.log.Timber
 internal class TileHandler
 @Inject
 internal constructor(
+    private val receiver: WiDiReceiver,
     private val launcher: ServiceLauncher,
     private val network: WiDiNetworkStatus,
     private val permissions: PermissionGuard,
+
+    // Don't singleton since these are per-service
     private val qsTile: () -> Tile?,
     private val showDialog: (String) -> Unit,
 ) {
@@ -60,40 +64,55 @@ internal constructor(
 
   private fun updateQsTile(
       tile: Tile?,
-      block: suspend (Tile) -> Unit,
+      block: suspend (Tile) -> Boolean,
   ) =
       withQsTile(tile) { t ->
-        block(t)
-        t.updateTile()
+        if (block(t)) {
+          t.updateTile()
+        }
       }
 
   private fun syncQsTile(tile: Tile?, status: RunningStatus) =
       updateQsTile(tile) { t ->
-        t.syncDescription()
-        t.syncStatus(status)
-
-        t.updateTile()
+        val descChanged = t.syncDescription()
+        val statusChanged = t.syncStatus(status)
+        return@updateQsTile descChanged || statusChanged
       }
 
-  private fun Tile.syncDescription() {
+  @CheckResult
+  private fun Tile.syncDescription(): Boolean {
     val self = this
 
+    var changed = false
+
     val msg = tileDescription
-    self.contentDescription = msg
+    if (self.contentDescription != msg) {
+      self.contentDescription = msg
+      changed = true
+    }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      self.stateDescription = msg
+      if (self.stateDescription != msg) {
+        self.stateDescription = msg
+        changed = true
+      }
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      self.subtitle = msg
+      if (self.subtitle != msg) {
+        self.subtitle = msg
+        changed = true
+      }
     }
+
+    return changed
   }
 
-  private fun Tile.syncStatus(status: RunningStatus) {
+  @CheckResult
+  private fun Tile.syncStatus(status: RunningStatus): Boolean {
     val self = this
 
-    self.state =
+    val newState =
         when (status) {
           is RunningStatus.Error -> Tile.STATE_INACTIVE
           is RunningStatus.NotRunning -> Tile.STATE_INACTIVE
@@ -101,6 +120,13 @@ internal constructor(
           is RunningStatus.Starting -> Tile.STATE_ACTIVE
           is RunningStatus.Stopping -> Tile.STATE_INACTIVE
         }
+
+    return if (self.state != newState) {
+      self.state = newState
+      true
+    } else {
+      false
+    }
   }
 
   private fun moveToErrorState(status: RunningStatus.Error, tile: Tile? = null) {
@@ -137,54 +163,56 @@ internal constructor(
     val scope = this
 
     scope.launch(context = Dispatchers.Main) {
-      network.onProxyStatusChanged { status ->
-        when (status) {
-          is RunningStatus.Error -> {
-            Timber.w("Error running Proxy: ${status.message}")
-            moveToErrorState(status)
-          }
-          is RunningStatus.NotRunning -> {
-            moveToStoppedState()
-          }
-          is RunningStatus.Running -> {
-            moveToStartedState()
-          }
-          is RunningStatus.Starting -> {
-            moveToStartingState()
-          }
-          is RunningStatus.Stopping -> {
-            moveToStoppingState()
+      launch(context = Dispatchers.Main) {
+        network.onProxyStatusChanged { status ->
+          when (status) {
+            is RunningStatus.Error -> {
+              Timber.w("Error running Proxy: ${status.message}")
+              moveToErrorState(status)
+            }
+            is RunningStatus.NotRunning -> {
+              moveToStoppedState()
+            }
+            is RunningStatus.Running -> {
+              moveToStartedState()
+            }
+            is RunningStatus.Starting -> {
+              moveToStartingState()
+            }
+            is RunningStatus.Stopping -> {
+              moveToStoppingState()
+            }
           }
         }
       }
-    }
 
-    scope.launch(context = Dispatchers.Main) {
-      network.onStatusChanged { status ->
-        when (status) {
-          is RunningStatus.Error -> {
-            Timber.w("Error running WiDi network: ${status.message}")
-            moveToErrorState(status)
+      launch(context = Dispatchers.Main) {
+        network.onStatusChanged { status ->
+          when (status) {
+            is RunningStatus.Error -> {
+              Timber.w("Error running WiDi network: ${status.message}")
+              moveToErrorState(status)
+            }
+            is RunningStatus.NotRunning -> {}
+            is RunningStatus.Running -> {}
+            is RunningStatus.Starting -> {}
+            is RunningStatus.Stopping -> {}
           }
-          is RunningStatus.NotRunning -> {}
-          is RunningStatus.Running -> {}
-          is RunningStatus.Starting -> {}
-          is RunningStatus.Stopping -> {}
         }
       }
-    }
 
-    scope.launch(context = Dispatchers.Main) {
-      network.onWifiDirectEvent { event ->
-        when (event) {
-          is WidiNetworkEvent.ConnectionChanged -> {}
-          is WidiNetworkEvent.ThisDeviceChanged -> {}
-          is WidiNetworkEvent.PeersChanged -> {}
-          is WidiNetworkEvent.WifiDisabled -> {
-            onNetworkStopped()
+      launch(context = Dispatchers.Main) {
+        receiver.onEvent { event ->
+          when (event) {
+            is WidiNetworkEvent.ConnectionChanged -> {}
+            is WidiNetworkEvent.ThisDeviceChanged -> {}
+            is WidiNetworkEvent.PeersChanged -> {}
+            is WidiNetworkEvent.WifiDisabled -> {
+              onNetworkStopped()
+            }
+            is WidiNetworkEvent.WifiEnabled -> {}
+            is WidiNetworkEvent.DiscoveryChanged -> {}
           }
-          is WidiNetworkEvent.WifiEnabled -> {}
-          is WidiNetworkEvent.DiscoveryChanged -> {}
         }
       }
     }

@@ -35,6 +35,7 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkImpl
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.server.widi.receiver.WifiDirectReceiver
 import dagger.Binds
@@ -100,10 +101,11 @@ abstract class ServerModule {
   @ServerInternalApi
   internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
 
+  @Binds @CheckResult internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
+
   @Binds
   @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
+  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WiDiReceiverRegister
 
   @Binds
   @CheckResult
