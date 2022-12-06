@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.status
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -95,52 +95,52 @@ fun StatusScreen(
         onOpenPermissionSettings = onOpenPermissionSettings,
         onRequestPermissions = onRequestPermissions,
     )
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
       item {
-        Column(
+        NewVersionWidget(
             modifier =
                 Modifier.padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
+        )
+      }
+      item {
+        Button(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+            enabled = isButtonEnabled,
+            onClick = onToggle,
         ) {
-          Button(
-              enabled = isButtonEnabled,
-              onClick = onToggle,
-          ) {
-            Text(
-                text = buttonText,
-            )
-          }
+          Text(
+              text = buttonText,
+          )
         }
       }
 
       item {
-        Column(
-            Modifier.padding(top = MaterialTheme.keylines.content)
-                .padding(horizontal = MaterialTheme.keylines.content),
-        ) {
-          DisplayStatus(
-              title = "Tethering Network Status:",
-              status = wiDiStatus,
-          )
-        }
+        DisplayStatus(
+            modifier =
+                Modifier.padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+            title = "Tethering Network Status:",
+            status = wiDiStatus,
+        )
       }
 
       if (isLoaded) {
         loadedContent()
       } else {
         item {
-          Column(
+          Box(
               modifier =
                   Modifier.padding(top = MaterialTheme.keylines.content)
                       .padding(horizontal = MaterialTheme.keylines.content),
+              contentAlignment = Alignment.Center,
           ) {
-            Box(
-                contentAlignment = Alignment.Center,
-            ) {
-              CircularProgressIndicator()
-            }
+            CircularProgressIndicator()
           }
         }
       }

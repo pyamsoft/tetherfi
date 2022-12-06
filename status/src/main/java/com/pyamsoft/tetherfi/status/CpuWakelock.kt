@@ -2,7 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.pyamsoft.tetherfi.ui.MaterialCheckable
+import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
 
 @Composable
 internal fun CpuWakelock(

@@ -40,7 +40,7 @@ private fun ThisDevice(
       modifier =
           modifier
               .padding(start = if (small) 2.dp else ZeroSize)
-              .size(ImageDefaults.DefaultSize - sizeAdjustment)
+              .size(ImageDefaults.IconSize - sizeAdjustment)
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.PhoneAndroid,
       contentDescription = "This Device",
@@ -60,7 +60,7 @@ private fun OtherDevice(
       modifier =
           modifier
               .padding(start = if (small) 2.dp else ZeroSize)
-              .size(ImageDefaults.DefaultSize - sizeAdjustment)
+              .size(ImageDefaults.IconSize - sizeAdjustment)
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.Devices,
       contentDescription = "Other Devices",

@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
+import com.pyamsoft.pydroid.ui.widget.rememberMaterialCheckableHeightMatcherGenerator
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.ui.MaterialCheckable
-import com.pyamsoft.tetherfi.ui.rememberMaterialCheckableHeightMatcherGenerator
 
 @Composable
 internal fun NetworkBands(
