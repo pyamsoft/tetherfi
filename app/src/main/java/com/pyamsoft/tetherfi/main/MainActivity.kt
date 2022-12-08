@@ -2,14 +2,17 @@ package com.pyamsoft.tetherfi.main
 
 import android.content.res.Configuration
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.inject.Injector
-import com.pyamsoft.pydroid.ui.app.PYDroidActivity
+import com.pyamsoft.pydroid.ui.app.installPYDroid
+import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
+import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiComponent
@@ -18,7 +21,7 @@ import com.pyamsoft.tetherfi.databinding.ActivityMainBinding
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import javax.inject.Inject
 
-class MainActivity : PYDroidActivity() {
+class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: MainViewModeler? = null
 
@@ -27,11 +30,21 @@ class MainActivity : PYDroidActivity() {
   private var viewBinding: ActivityMainBinding? = null
   private var injector: MainComponent? = null
 
-  override val applicationIcon = R.mipmap.ic_launcher
+  init {
+    doOnCreate {
+      installPYDroid(
+          provider =
+              object : ChangeLogProvider {
 
-  override val changelog = buildChangeLog {
-    change("New UI style")
-    change("Clearer setup instructions")
+                override val applicationIcon = R.mipmap.ic_launcher
+
+                override val changelog = buildChangeLog {
+                  change("New UI style")
+                  change("Clearer setup instructions")
+                }
+              },
+      )
+    }
   }
 
   private fun handleOpenApplicationSettings() {
