@@ -99,7 +99,7 @@ internal constructor(
             context,
             self,
             INTENT_FILTER,
-            ContextCompat.RECEIVER_NOT_EXPORTED,
+            ContextCompat.RECEIVER_EXPORTED,
         )
       }
     }
