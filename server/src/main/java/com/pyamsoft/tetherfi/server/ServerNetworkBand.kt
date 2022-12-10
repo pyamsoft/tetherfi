@@ -10,6 +10,6 @@ enum class ServerNetworkBand(
   ),
   MODERN(
       "5GHz",
-      "Faster but not compatible with every device. Test test test test",
+      "Faster but not compatible with every device.",
   )
 }
