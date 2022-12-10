@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.app.Service
 import android.content.Context
-import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import coil.ImageLoader
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -15,7 +14,6 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.foreground.ProxyForegroundService
-import com.pyamsoft.tetherfi.service.tile.ProxyTileService
 import com.pyamsoft.tetherfi.service.tile.TileServiceComponent
 import dagger.Binds
 import dagger.BindsInstance
@@ -87,12 +85,6 @@ internal interface TetherFiComponent {
       @JvmStatic
       internal fun provideForegroundServiceClass(): Class<out Service> {
         return ProxyForegroundService::class.java
-      }
-
-      @Provides
-      @JvmStatic
-      internal fun provideTileServiceClass(): Class<out TileService> {
-        return ProxyTileService::class.java
       }
     }
   }
