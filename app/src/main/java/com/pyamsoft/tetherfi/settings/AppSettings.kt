@@ -9,13 +9,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.fragment.app.Fragment
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.preference.Preferences
 import com.pyamsoft.pydroid.ui.settings.SettingsFragment
-import com.pyamsoft.tetherfi.main.MainComponent
+import com.pyamsoft.tetherfi.ObjectGraph
 import javax.inject.Inject
 
 internal class AppSettings : SettingsFragment(), FragmentNavigator.Screen<SettingsPage> {
@@ -28,10 +27,7 @@ internal class AppSettings : SettingsFragment(), FragmentNavigator.Screen<Settin
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Injector.obtainFromActivity<MainComponent>(requireActivity())
-        .plusAppSettings()
-        .create()
-        .inject(this)
+    ObjectGraph.ActivityScope.retrieve(requireActivity()).plusAppSettings().create().inject(this)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

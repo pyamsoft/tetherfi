@@ -13,7 +13,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.app.makeFullscreen
 import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.pydroid.ui.theme.ThemeProvider
@@ -21,9 +20,9 @@ import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.ui.util.show
+import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.DialogSettingsBinding
-import com.pyamsoft.tetherfi.main.MainComponent
 import javax.inject.Inject
 
 class SettingsDialog : AppCompatDialogFragment() {
@@ -37,10 +36,10 @@ class SettingsDialog : AppCompatDialogFragment() {
       container: ViewGroup?,
       savedInstanceState: Bundle?
   ): View {
-    val act = requireActivity()
     val binding = DialogSettingsBinding.inflate(inflater, container, false)
 
-    Injector.obtainFromActivity<MainComponent>(act)
+    val act = requireActivity()
+    ObjectGraph.ActivityScope.retrieve(act)
         .plusSettings()
         .create(this, binding.dialogSettings.id)
         .inject(this)

@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
@@ -14,8 +13,8 @@ import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
+import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.TetherFiComponent
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.ActivityMainBinding
 import com.pyamsoft.tetherfi.settings.SettingsDialog
@@ -28,7 +27,6 @@ class MainActivity : AppCompatActivity() {
   @Inject @JvmField internal var navigator: Navigator<MainView>? = null
 
   private var viewBinding: ActivityMainBinding? = null
-  private var injector: MainComponent? = null
 
   init {
     doOnCreate {
@@ -70,14 +68,15 @@ class MainActivity : AppCompatActivity() {
     val binding = ActivityMainBinding.inflate(layoutInflater).apply { viewBinding = this }
     setContentView(binding.root)
 
-    injector =
-        Injector.obtainFromApplication<TetherFiComponent>(this)
+    val component =
+        ObjectGraph.ApplicationScope.retrieve(this)
             .plusMain()
             .create(
                 activity = this,
                 fragmentContainerId = binding.mainContents.id,
             )
-            .also { c -> c.inject(this) }
+    component.inject(this)
+    ObjectGraph.ActivityScope.install(this, component)
 
     super.onCreate(savedInstanceState)
     stableLayoutHideNavigation()
@@ -119,16 +118,11 @@ class MainActivity : AppCompatActivity() {
     navigator?.saveState(outState)
   }
 
-  override fun getSystemService(name: String): Any? {
-    return if (name == MainComponent::class.java.name) injector else super.getSystemService(name)
-  }
-
   override fun onDestroy() {
     super.onDestroy()
     viewBinding?.apply { mainTopBar.dispose() }
     viewBinding = null
 
-    injector = null
     viewModel = null
     navigator = null
   }

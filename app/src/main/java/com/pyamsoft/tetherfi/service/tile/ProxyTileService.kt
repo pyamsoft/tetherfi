@@ -6,9 +6,8 @@ import android.content.Intent
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
+import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.TetherFiComponent
 import com.pyamsoft.tetherfi.main.MainActivity
 import javax.inject.Inject
 import timber.log.Timber
@@ -44,7 +43,7 @@ internal class ProxyTileService internal constructor() : TileService() {
   private inline fun withHandler(block: (TileHandler) -> Unit) {
     if (tileHandler == null) {
       Timber.d("Inject a new TileHandler")
-      Injector.obtainFromApplication<TetherFiComponent>(application)
+      ObjectGraph.ApplicationScope.retrieve(this)
           .plusTileService()
           .create(
               getTile = { qsTile },

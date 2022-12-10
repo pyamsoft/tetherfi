@@ -4,8 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
-import com.pyamsoft.tetherfi.TetherFiComponent
+import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
@@ -23,7 +22,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
   override fun onCreate() {
     super.onCreate()
-    Injector.obtainFromApplication<TetherFiComponent>(application).inject(this)
+    ObjectGraph.ApplicationScope.retrieve(this).inject(this)
 
     Timber.d("Creating service")
 
@@ -44,7 +43,8 @@ internal class ProxyForegroundService internal constructor() : Service() {
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     // Constantly attempt to start proxy here instead of in onCreate
     //
-    // If we spam ON/OFF, the service is created but the proxy is only started again within this block.
+    // If we spam ON/OFF, the service is created but the proxy is only started again within this
+    // block.
     Timber.d("Starting Proxy!")
     foregroundHandler.requireNotNull().startProxy()
     return START_STICKY

@@ -15,7 +15,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.inject.Injector
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.theme.asThemeProvider
@@ -23,9 +22,9 @@ import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnResume
+import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
-import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.service.ServiceLauncher
@@ -134,7 +133,8 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
       savedInstanceState: Bundle?
   ): View {
     val act = requireActivity()
-    Injector.obtainFromActivity<MainComponent>(act).plusStatus().create().inject(this)
+
+    ObjectGraph.ActivityScope.retrieve(act).plusStatus().create().inject(this)
 
     // As early as possible because of Lifecycle quirks
     requester?.unregister()
