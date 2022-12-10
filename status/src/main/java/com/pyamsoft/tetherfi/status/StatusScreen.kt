@@ -244,15 +244,31 @@ private fun rememberPreparedLoadedContent(
           port = port,
           ip = ip,
           band = state.band,
-          keepWakeLock = state.keepWakeLock,
-          isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
           onSsidChanged = onSsidChanged,
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
-          onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
+      )
+
+      renderBatteryAndPerformance(
+          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
+          isEditable = isEditable,
+          appName = appName,
+          keepWakeLock = state.keepWakeLock,
+          isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
+          onToggleKeepWakeLock = onToggleKeepWakeLock,
           onDisableBatteryOptimizations = onOpenBatterySettings,
       )
+
+      // Bottom space
+      item {
+        Spacer(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = keylines.content)
+                    .height(MaterialTheme.keylines.content),
+        )
+      }
 
       item {
         ConnectionInstructions(
@@ -290,14 +306,10 @@ private fun LazyListScope.renderNetworkInformation(
     port: String,
     ip: String,
     band: ServerNetworkBand?,
-    keepWakeLock: Boolean,
-    isBatteryOptimizationDisabled: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
-    onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
-    onDisableBatteryOptimizations: () -> Unit,
 ) {
   item {
     AnimatedVisibility(
@@ -429,23 +441,6 @@ private fun LazyListScope.renderNetworkInformation(
         isEditable = isEditable,
         band = band,
         onSelectBand = onSelectBand,
-    )
-  }
-
-  renderBatteryAndPerformance(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-      keepWakeLock = keepWakeLock,
-      isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
-      onDisableBatteryOptimizations = onDisableBatteryOptimizations,
-  )
-
-  // Bottom space
-  item {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.content),
     )
   }
 }

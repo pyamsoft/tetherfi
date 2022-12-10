@@ -18,9 +18,9 @@ internal fun CpuWakelock(
       condition = keepWakeLock,
       title = "Keep CPU Awake",
       description =
-          """This will significantly improve $appName performance.
+          """This will significantly improve $appName when the screen is off. Without it, you may notice extreme network slow down.
             |
-            |This will sometimes use more battery, as it may prevent your device from entering a deep sleep state.
+            |This will use more battery, as it prevents your device from entering a deep-sleep state.
             |(recommended)"""
               .trimMargin(),
       onClick = onToggleKeepWakeLock,
