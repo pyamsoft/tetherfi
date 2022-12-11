@@ -8,7 +8,7 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
-import com.pyamsoft.tetherfi.server.event.OnShutdownEvent
+import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.logging.ApplicationLogStorage
 import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
@@ -54,8 +54,8 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   internal abstract fun bindShutdownConsumer(
-      impl: EventBus<OnShutdownEvent>
-  ): EventConsumer<OnShutdownEvent>
+      impl: EventBus<ServerShutdownEvent>
+  ): EventConsumer<ServerShutdownEvent>
 
   @Binds
   @CheckResult
@@ -153,7 +153,7 @@ abstract class ServerModule {
     @Provides
     @JvmStatic
     @Singleton
-    internal fun provideShutdownEventBus(): EventBus<OnShutdownEvent> {
+    internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
       return EventBus.create()
     }
 

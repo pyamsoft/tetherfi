@@ -36,7 +36,10 @@ internal class ProxyForegroundService internal constructor() : Service() {
     foregroundHandler
         .requireNotNull()
         .prepareProxy(
-            onShutdownService = { stopSelf() },
+            onShutdownService = {
+              Timber.d("Shutdown event received. Stopping service")
+              stopSelf()
+            },
         )
   }
 

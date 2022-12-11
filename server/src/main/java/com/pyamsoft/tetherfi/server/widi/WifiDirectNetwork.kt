@@ -9,10 +9,12 @@ import android.os.Build
 import android.os.Looper
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
+import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlin.coroutines.resume
@@ -28,11 +30,12 @@ import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-    private val context: Context,
-    private val permissionGuard: PermissionGuard,
-    private val dispatcher: CoroutineDispatcher,
-    private val config: WiDiConfig,
-    status: WiDiStatus,
+  private val shutdownBus: EventBus<ServerShutdownEvent>,
+  private val context: Context,
+  private val permissionGuard: PermissionGuard,
+  private val dispatcher: CoroutineDispatcher,
+  private val config: WiDiConfig,
+  status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {
@@ -331,6 +334,10 @@ protected constructor(
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+      } finally {
+        // Fire the shutdown event to the service
+        Timber.d("Wi-Fi Direct network is shutdown. Fire final shutdown event.")
+        shutdownBus.send(ServerShutdownEvent)
       }
     }
   }

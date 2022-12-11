@@ -47,16 +47,16 @@ fun ProxyTileScreen(
       status,
       onDismissed,
   ) {
+    // If the current status is an error
+    if (status is RunningStatus.Error) {
+      // display the error message for ~2 seconds and then dismiss
+      delay(2_000)
+      onDismissed()
+      return@LaunchedEffect
+    }
+
     // status has changed
     if (initialStatus != status) {
-      // If the current status is an error
-      if (status is RunningStatus.Error) {
-        // display the error message for ~2 seconds and then dismiss
-        delay(2_000)
-        onDismissed()
-        return@LaunchedEffect
-      }
-
       // If we started not running and now we are running
       val isInitialStarting =
           initialStatus is RunningStatus.NotRunning || initialStatus is RunningStatus.Starting

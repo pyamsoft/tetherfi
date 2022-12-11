@@ -44,10 +44,11 @@
         <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
         <service
             android:name=".service.tile.ProxyTileService"
+            android:description="@string/beta"
             android:enabled="true"
             android:exported="true"
             android:icon="@drawable/ic_wifi_tethering_24"
-            android:label="@string/app_name"
+            android:label="@string/beta"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />

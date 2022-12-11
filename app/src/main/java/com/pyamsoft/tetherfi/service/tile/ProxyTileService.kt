@@ -56,7 +56,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   private fun setTileStatus(status: RunningStatus) {
     val state: Int
-    val description: String
+    var description: String
     when (status) {
       is RunningStatus.Error -> {
         state = Tile.STATE_INACTIVE
@@ -80,8 +80,12 @@ internal class ProxyTileService internal constructor() : TileService() {
       }
     }
 
+    // TODO(Peter): Still in BETA
+    description = "[BETA]"
+
     withTile { tile ->
       tile.state = state
+      tile.label = description
       tile.contentDescription = description
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
