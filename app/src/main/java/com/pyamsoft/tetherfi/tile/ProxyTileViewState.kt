@@ -15,6 +15,6 @@ interface ProxyTileViewState : UiViewState {
 }
 
 internal class MutableProxyTileViewState @Inject internal constructor() : ProxyTileViewState {
-  override var isShowing by mutableStateOf(false)
+  override var isShowing by mutableStateOf(true)
   override var status by mutableStateOf<RunningStatus>(RunningStatus.NotRunning)
 }

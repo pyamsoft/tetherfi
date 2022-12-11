@@ -2,6 +2,8 @@ package com.pyamsoft.tetherfi.tile
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
@@ -24,6 +26,8 @@ class ProxyTileActivity : AppCompatActivity() {
   @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
 
   private var viewBinding: ActivityMainBinding? = null
+
+  private val handler by lazy(LazyThreadSafetyMode.NONE) { Handler(Looper.getMainLooper()) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // NOTE(Peter):
@@ -70,7 +74,7 @@ class ProxyTileActivity : AppCompatActivity() {
     vm.bind(scope = lifecycleScope)
 
     // Wait a little bit before starting the proxy
-    binding.mainTopBar.handler.postDelayed({ vm.handleToggleProxyIfNotInErrorState() }, 500)
+    handler.postDelayed({ vm.handleToggleProxyIfNotInErrorState() }, 500)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
@@ -87,10 +91,8 @@ class ProxyTileActivity : AppCompatActivity() {
 
   override fun onDestroy() {
     super.onDestroy()
-    viewBinding?.apply {
-      mainTopBar.dispose()
-      mainTopBar.handler.removeCallbacksAndMessages(null)
-    }
+    viewBinding?.apply { mainTopBar.dispose() }
+    handler.removeCallbacksAndMessages(null)
 
     viewBinding = null
     viewModel = null

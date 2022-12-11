@@ -15,6 +15,7 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.foreground.ProxyForegroundService
+import com.pyamsoft.tetherfi.service.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.service.tile.ProxyTileService
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import dagger.Binds
@@ -38,9 +39,9 @@ internal interface TetherFiComponent {
 
   @CheckResult fun plusMain(): MainComponent.Factory
 
-  fun inject(service: ProxyForegroundService)
+  @CheckResult fun plusProxyTile(): ProxyTileComponent.Factory
 
-  fun inject(service: TileService)
+  fun inject(service: ProxyForegroundService)
 
   fun inject(activity: ProxyTileActivity)
 

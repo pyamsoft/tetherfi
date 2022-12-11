@@ -66,11 +66,13 @@
 
         <activity
             android:name=".tile.ProxyTileActivity"
+            android:clearTaskOnLaunch="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:noHistory="true"
+            android:theme="@style/Theme.TetherFi.Tile"
             android:windowSoftInputMode="adjustResize" />
 
     </application>

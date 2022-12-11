@@ -47,6 +47,7 @@ internal constructor(
     val status = handler.getNetworkStatus()
     if (status is RunningStatus.Error) {
       Timber.d("Proxy is already in error state. Do not toggle")
+      state.status = status
       return
     }
 

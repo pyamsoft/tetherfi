@@ -13,6 +13,8 @@ import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
+  @Inject @JvmField internal var tileHandler: TileHandler? = null
+
   private val tileActivityIntent by
       lazy(LazyThreadSafetyMode.NONE) {
         Intent(this, ProxyTileActivity::class.java).apply {
@@ -22,8 +24,6 @@ internal class ProxyTileService internal constructor() : TileService() {
                   Intent.FLAG_ACTIVITY_NEW_TASK
         }
       }
-
-  @Inject @JvmField internal var handler: TileHandler? = null
 
   private inline fun ensureUnlocked(crossinline block: () -> Unit) {
     if (isLocked) {
@@ -114,39 +114,46 @@ internal class ProxyTileService internal constructor() : TileService() {
     setTileStatus(RunningStatus.Stopping)
   }
 
+  private fun withHandler(block: (TileHandler) -> Unit) {
+    if (tileHandler == null) {
+      ObjectGraph.ApplicationScope.retrieve(this).plusProxyTile().create().inject(this)
+    }
+
+    block(tileHandler.requireNotNull())
+  }
+
   override fun onClick() = ensureUnlocked { startActivityAndCollapse(tileActivityIntent) }
 
   override fun onStartListening() {
-    handler
-        .requireNotNull()
-        .sync(
-            onNetworkError = { err -> handleNetworkErrorState(err) },
-            onNetworkNotRunning = { handleNetworkNotRunningState() },
-            onNetworkRunning = { handleNetworkRunningState() },
-            onNetworkStarting = { handleNetworkStartingState() },
-            onNetworkStopping = { handleNetworkStoppingState() },
-        )
+    withHandler { handler ->
+      when (val status = handler.getNetworkStatus()) {
+        is RunningStatus.Error -> handleNetworkErrorState(status)
+        is RunningStatus.NotRunning -> handleNetworkNotRunningState()
+        is RunningStatus.Running -> handleNetworkRunningState()
+        is RunningStatus.Starting -> handleNetworkStartingState()
+        is RunningStatus.Stopping -> handleNetworkStoppingState()
+      }
+    }
   }
 
   override fun onCreate() {
     super.onCreate()
 
-    ObjectGraph.ApplicationScope.retrieve(this).inject(this)
-
-    handler
-        .requireNotNull()
-        .bind(
-            onNetworkError = { err -> handleNetworkErrorState(err) },
-            onNetworkNotRunning = { handleNetworkNotRunningState() },
-            onNetworkRunning = { handleNetworkRunningState() },
-            onNetworkStarting = { handleNetworkStartingState() },
-            onNetworkStopping = { handleNetworkStoppingState() },
-        )
+    withHandler { handler ->
+      handler.bind(
+          onNetworkError = { err -> handleNetworkErrorState(err) },
+          onNetworkNotRunning = { handleNetworkNotRunningState() },
+          onNetworkRunning = { handleNetworkRunningState() },
+          onNetworkStarting = { handleNetworkStartingState() },
+          onNetworkStopping = { handleNetworkStoppingState() },
+      )
+    }
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    handler?.destroy()
-    handler = null
+    tileHandler?.destroy()
+
+    tileHandler = null
   }
 }

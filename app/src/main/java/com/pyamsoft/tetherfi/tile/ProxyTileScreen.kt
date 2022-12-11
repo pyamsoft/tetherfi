@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.tile
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.delay
 
@@ -40,7 +42,11 @@ fun ProxyTileScreen(
     }
   }
 
-  LaunchedEffect(initialStatus, status, onDismissed) {
+  LaunchedEffect(
+      initialStatus,
+      status,
+      onDismissed,
+  ) {
     // status has changed
     if (initialStatus != status) {
       // If the current status is an error
@@ -86,22 +92,27 @@ fun ProxyTileScreen(
                   dismissOnClickOutside = isInitialStatusError,
               ),
       ) {
-        Box(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
-            contentAlignment = Alignment.Center,
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            elevation = DialogDefaults.Elevation,
         ) {
-          Text(
-              text =
-                  "Status: ${when (status) {
-                      is RunningStatus.Error -> "ERROR: ${status.message}"
-                      is RunningStatus.NotRunning -> "NOT RUNNING"
-                      is RunningStatus.Running -> "RUNNING"
-                      is RunningStatus.Starting -> "STARTING..."
-                      is RunningStatus.Stopping -> "STOPPING..."
-                  }
-                  }",
-              style = MaterialTheme.typography.h6,
-          )
+          Box(
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              contentAlignment = Alignment.Center,
+          ) {
+            Text(
+                text =
+                    "Status: ${when (status) {
+                          is RunningStatus.Error -> "ERROR: ${status.message}"
+                          is RunningStatus.NotRunning -> "NOT RUNNING"
+                          is RunningStatus.Running -> "RUNNING"
+                          is RunningStatus.Starting -> "STARTING..."
+                          is RunningStatus.Stopping -> "STOPPING..."
+                      }
+                      }",
+                style = MaterialTheme.typography.h6,
+            )
+          }
         }
       }
     }

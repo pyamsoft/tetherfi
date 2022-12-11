@@ -17,11 +17,16 @@
     </style>
 
     <style name="Theme.TetherFi.Tile" parent="Theme.TetherFi">
-        <item name="android:windowBackground">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>
+
         <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:background">@null</item>
+
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:background">@color/transparent</item>
+
+        <!-- No animation on the window -->
+        <item name="android:animation">@null</item>
     </style>
 
 </resources>

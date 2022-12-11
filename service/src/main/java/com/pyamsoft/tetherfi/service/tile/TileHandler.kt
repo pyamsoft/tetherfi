@@ -1,13 +1,13 @@
 package com.pyamsoft.tetherfi.service.tile
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -15,13 +15,13 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-@Singleton
 class TileHandler
 @Inject
 internal constructor(
     private val receiver: WiDiReceiver,
     private val launcher: ServiceLauncher,
     private val network: WiDiNetworkStatus,
+    private val permissionGuard: PermissionGuard,
 ) {
 
   private var scope: CoroutineScope? = null
@@ -114,23 +114,11 @@ internal constructor(
 
   @CheckResult
   fun getNetworkStatus(): RunningStatus {
-    return network.getCurrentStatus()
-  }
-
-  fun sync(
-      onNetworkError: (RunningStatus.Error) -> Unit,
-      onNetworkNotRunning: () -> Unit,
-      onNetworkStarting: () -> Unit,
-      onNetworkRunning: () -> Unit,
-      onNetworkStopping: () -> Unit,
-  ) {
-    when (val status = getNetworkStatus()) {
-      is RunningStatus.Error -> onNetworkError(status)
-      is RunningStatus.NotRunning -> onNetworkNotRunning()
-      is RunningStatus.Running -> onNetworkRunning()
-      is RunningStatus.Starting -> onNetworkStarting()
-      is RunningStatus.Stopping -> onNetworkStopping()
+    if (!permissionGuard.canCreateWiDiNetwork()) {
+      return STATUS_MISSING_PERMISSION
     }
+
+    return network.getCurrentStatus()
   }
 
   fun bind(
@@ -153,5 +141,10 @@ internal constructor(
           launcher.stopForeground()
         },
     )
+  }
+
+  companion object {
+
+    private val STATUS_MISSING_PERMISSION = RunningStatus.Error("Missing required permissions.")
   }
 }
