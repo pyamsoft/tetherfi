@@ -24,11 +24,6 @@ internal fun NetworkBands(
     band: ServerNetworkBand?,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
-  val bands = remember { ServerNetworkBand.values() }
-  val bandIterator = remember(bands) { bands.withIndex() }
-
-  val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()
-
   Column(
       modifier = modifier,
   ) {
@@ -46,30 +41,47 @@ internal fun NetworkBands(
                     ),
             ),
     )
+    if (isEditable) {
+      val bands = remember { ServerNetworkBand.values() }
+      val bandIterator = remember(bands) { bands.withIndex() }
+      val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()
 
-    // Then the buttons
-    Row {
-      for ((index, b) in bandIterator) {
-        val isSelected = remember(b, band) { b == band }
-        val heightMatcher = generator.generateFor(b)
+      // Then the buttons
+      Row {
+        for ((index, b) in bandIterator) {
+          val isSelected = remember(b, band) { b == band }
+          val heightMatcher = generator.generateFor(b)
 
-        MaterialCheckable(
-            modifier =
-                Modifier.weight(1F)
-                    .then(heightMatcher.onSizeChangedModifier)
-                    .padding(
-                        end =
-                            if (index < bands.lastIndex) MaterialTheme.keylines.content
-                            else ZeroSize,
-                    ),
-            isEditable = isEditable,
-            condition = isSelected,
-            title = b.displayName,
-            description = b.description,
-            extraHeight = heightMatcher.extraHeight,
-            onClick = { onSelectBand(b) },
-        )
+          MaterialCheckable(
+              modifier =
+                  Modifier.weight(1F)
+                      .then(heightMatcher.onSizeChangedModifier)
+                      .padding(
+                          end =
+                              if (index < bands.lastIndex) MaterialTheme.keylines.content
+                              else ZeroSize,
+                      ),
+              isEditable = true,
+              condition = isSelected,
+              title = b.displayName,
+              description = b.description,
+              extraHeight = heightMatcher.extraHeight,
+              onClick = { onSelectBand(b) },
+          )
+        }
       }
+    } else {
+      Text(
+          text = "Network Broadcast Frequency is defined by the system.",
+          style =
+              MaterialTheme.typography.body2.copy(
+                  fontWeight = FontWeight.W700,
+                  color =
+                      MaterialTheme.colors.onBackground.copy(
+                          alpha = ContentAlpha.medium,
+                      ),
+              ),
+      )
     }
   }
 }
