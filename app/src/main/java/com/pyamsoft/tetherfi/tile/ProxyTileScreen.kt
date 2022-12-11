@@ -103,8 +103,8 @@ fun ProxyTileScreen(
             Text(
                 text =
                     "Status: ${when (status) {
-                          is RunningStatus.Error -> "ERROR: ${status.message}"
-                          is RunningStatus.NotRunning -> "NOT RUNNING"
+                          is RunningStatus.Error -> "ERROR"
+                          is RunningStatus.NotRunning -> "STOPPED"
                           is RunningStatus.Running -> "RUNNING"
                           is RunningStatus.Starting -> "STARTING..."
                           is RunningStatus.Stopping -> "STOPPING..."

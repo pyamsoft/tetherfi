@@ -39,16 +39,6 @@ internal constructor(
   private var networkStatusJob: Job? = null
   private var proxyStatusJob: Job? = null
 
-  private suspend fun acquireCpuWakeLock() {
-    Timber.d("Attempt to claim CPU wakelock")
-    locker.acquire()
-  }
-
-  private suspend fun releaseCpuWakeLock() {
-    Timber.d("Attempt to release CPU wakelock")
-    locker.release()
-  }
-
   private fun killJobs() {
     proxyStatusJob?.cancel()
     proxyStatusJob = null
@@ -83,8 +73,7 @@ internal constructor(
             when (s) {
               is RunningStatus.Error -> {
                 Timber.w("Server Server Error: ${s.message}")
-                // Release wakelock
-                releaseCpuWakeLock()
+                locker.release()
               }
               else -> Timber.d("Server status changed: $s")
             }
@@ -98,13 +87,11 @@ internal constructor(
             when (s) {
               is RunningStatus.Running -> {
                 Timber.d("Proxy Server started!")
-                // Acquire wake lock
-                acquireCpuWakeLock()
+                locker.acquire()
               }
               is RunningStatus.Error -> {
                 Timber.w("Proxy Server Error: ${s.message}")
-                // Release wakelock
-                releaseCpuWakeLock()
+                locker.release()
               }
               else -> Timber.d("Proxy status changed: $s")
             }
@@ -118,8 +105,6 @@ internal constructor(
   }
 
   fun stopProxy() {
-    killJobs()
-
     Timber.d("Stop WiDi network")
     network.stop()
 
@@ -128,5 +113,14 @@ internal constructor(
       Timber.d("Destroy CPU wakelock")
       locker.release()
     }
+
+    killJobs()
+  }
+
+  fun destroy() {
+    stopProxy()
+
+    shutdownJob?.cancel()
+    shutdownJob = null
   }
 }

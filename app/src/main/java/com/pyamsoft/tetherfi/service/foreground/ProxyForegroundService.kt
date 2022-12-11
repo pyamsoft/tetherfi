@@ -59,7 +59,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     Timber.d("Destroying service")
 
     notificationLauncher?.stop(this)
-    foregroundHandler?.stopProxy()
+    foregroundHandler?.destroy()
     wiDiReceiverRegister?.unregister()
 
     foregroundHandler = null
