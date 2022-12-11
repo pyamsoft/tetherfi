@@ -28,8 +28,8 @@ android {
     applicationId "com.pyamsoft.tetherfi"
     minSdkVersion rootProject.ext.minSdk
     targetSdkVersion rootProject.ext.targetSdk
-    versionCode 11
-    versionName "20221211-1"
+    versionCode 12
+    versionName "20221211-2"
 
     // For vector drawables
     vectorDrawables.useSupportLibrary = true
