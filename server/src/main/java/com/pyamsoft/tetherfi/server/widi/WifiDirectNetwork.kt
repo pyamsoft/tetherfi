@@ -231,9 +231,7 @@ protected constructor(
   private suspend fun resolveCurrentGroup(channel: Channel): WiDiNetworkStatus.GroupInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
-          wifiP2PManager.requestGroupInfo(
-              channel,
-          ) { group ->
+          wifiP2PManager.requestGroupInfo(channel) { group ->
             if (group == null) {
               Timber.w("No WiFi Direct Group info available")
               cont.resume(null)
@@ -253,9 +251,7 @@ protected constructor(
   private suspend fun resolveConnectionInfo(channel: Channel): WiDiNetworkStatus.ConnectionInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
-          wifiP2PManager.requestConnectionInfo(
-              channel,
-          ) { conn ->
+          wifiP2PManager.requestConnectionInfo(channel) { conn ->
             if (conn == null) {
               Timber.w("No WiFi Direct Connection info available")
               cont.resume(null)
