@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
+import com.pyamsoft.pydroid.ui.widget.UpdateProgressWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -104,16 +105,28 @@ fun StatusScreen(
         modifier = Modifier.fillMaxSize(),
     ) {
       item {
-        NewVersionWidget(
+        UpdateProgressWidget(
             modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
+                Modifier.fillMaxWidth()
+                    .padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
         )
       }
+
+      item {
+        NewVersionWidget(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(top = MaterialTheme.keylines.content)
+                    .padding(horizontal = MaterialTheme.keylines.content),
+        )
+      }
+
       item {
         Button(
             modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content)
+                Modifier.fillMaxWidth()
+                    .padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
             enabled = isButtonEnabled,
             onClick = onToggle,
@@ -127,7 +140,8 @@ fun StatusScreen(
       item {
         DisplayStatus(
             modifier =
-                Modifier.padding(MaterialTheme.keylines.content)
+                Modifier.fillMaxWidth()
+                    .padding(MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
             title = "Tethering Network Status:",
             status = wiDiStatus,

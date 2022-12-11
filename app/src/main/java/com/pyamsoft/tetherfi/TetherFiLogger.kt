@@ -21,8 +21,6 @@ fun Application.installLogger() {
 @CheckResult
 fun Application.createLogger(): PYDroidLogger? {
   if (isDebugMode()) {
-    return null
-  } else {
     return object : PYDroidLogger {
 
       override fun d(
@@ -50,5 +48,7 @@ fun Application.createLogger(): PYDroidLogger? {
         Timber.tag(tag).e(throwable, message, args)
       }
     }
+  } else {
+    return null
   }
 }
