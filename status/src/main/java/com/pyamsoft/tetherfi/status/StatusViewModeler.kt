@@ -84,10 +84,6 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
-
-    // Refresh status again, in the weird state event where we call stop()
-    // on an already stopped service
-    s.wiDiStatus = network.getCurrentStatus()
   }
 
   fun loadPreferences(
@@ -200,10 +196,18 @@ internal constructor(
 
   fun watchStatusUpdates(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
-      network.onProxyStatusChanged { state.proxyStatus = it }
+      network.onProxyStatusChanged { status ->
+        Timber.d("Proxy Status Changed: $status")
+        state.proxyStatus = status
+      }
     }
 
-    scope.launch(context = Dispatchers.Main) { network.onStatusChanged { state.wiDiStatus = it } }
+    scope.launch(context = Dispatchers.Main) {
+      network.onStatusChanged { status ->
+        Timber.d("WiDi Status Changed: $status")
+        state.wiDiStatus = status
+      }
+    }
 
     scope.launch(context = Dispatchers.Main) {
       wiDiReceiver.onEvent { event ->

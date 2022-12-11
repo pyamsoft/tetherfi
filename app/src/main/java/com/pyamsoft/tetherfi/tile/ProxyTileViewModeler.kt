@@ -78,9 +78,5 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
-
-    // Refresh status again, in the weird state event where we call stop()
-    // on an already stopped service
-    s.status = handler.getNetworkStatus()
   }
 }

@@ -52,13 +52,12 @@ protected constructor(
     return wifiP2PManager.initialize(
         context.applicationContext,
         Looper.getMainLooper(),
-
-        // Don't use a Listener here
-        //
-        // If we shutdown our proxy from here instead of the foreground service itself, stuff
-        // can get out of sync
-        null,
-    )
+    ) {
+      scope.launch(context = dispatcher) {
+        Timber.d("WifiChannel died, shutdown the network")
+        stopNetwork(resetStatus = false)
+      }
+    }
   }
 
   @CheckResult
@@ -185,7 +184,7 @@ protected constructor(
         status.set(runningStatus)
       }
 
-  private suspend fun completeStop(onStop: () -> Unit = {}) {
+  private suspend fun completeStop(onStop: () -> Unit) {
     onNetworkStopped()
     onStop()
   }
@@ -205,7 +204,7 @@ protected constructor(
         wifiChannel = null
       }
 
-  private suspend fun stopNetwork() {
+  private suspend fun stopNetwork(resetStatus: Boolean) {
     Enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -213,9 +212,12 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but shi
     // is basically a no-op
     if (channel == null) {
-      // Stop called without channel, don't do anything
-      // Do not set status here as we want to be able to keep error status
-      completeStop()
+      completeStop {
+        if (resetStatus) {
+          Timber.d("Resetting status back to not running")
+          status.set(RunningStatus.NotRunning)
+        }
+      }
       return
     }
 
@@ -310,7 +312,7 @@ protected constructor(
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork()
+        stopNetwork(resetStatus = true)
         startNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
@@ -325,7 +327,7 @@ protected constructor(
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
-        stopNetwork()
+        stopNetwork(resetStatus = true)
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
