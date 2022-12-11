@@ -113,9 +113,14 @@ internal class ProxyTileService internal constructor() : TileService() {
   private fun handleNetworkStoppingState() {
     setTileStatus(RunningStatus.Stopping)
   }
-
   private fun withHandler(block: (TileHandler) -> Unit) {
     if (tileHandler == null) {
+      // Need to constantly re-bind here because each time this is called, the tile service may have
+      // changed
+      //
+      // We also must inject via our own SubComponent to ensure that Dagger re-creates and
+      // re-injects each time. If we inject directly from the AppComponent, Dagger internally tracks
+      // the injection and does not inject again even though the service lifecycle requires it.
       ObjectGraph.ApplicationScope.retrieve(this).plusProxyTile().create().inject(this)
     }
 
