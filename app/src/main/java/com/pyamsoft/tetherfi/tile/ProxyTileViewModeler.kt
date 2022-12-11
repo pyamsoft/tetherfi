@@ -43,14 +43,8 @@ internal constructor(
     }
   }
 
-  fun handleToggleProxyIfNotInErrorState() {
+  fun handleToggleProxy() {
     val s = state
-    val status = handler.getNetworkStatus()
-    if (status is RunningStatus.Error) {
-      Timber.d("Proxy is already in error state. Do not toggle")
-      s.status = status
-      return
-    }
 
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
@@ -65,7 +59,7 @@ internal constructor(
       return
     }
 
-    when (status) {
+    when (val status = handler.getNetworkStatus()) {
       is RunningStatus.NotRunning -> {
         Timber.d("Starting Proxy...")
         serviceLauncher.startForeground()

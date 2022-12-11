@@ -74,7 +74,7 @@ class ProxyTileActivity : AppCompatActivity() {
     vm.bind(scope = lifecycleScope)
 
     // Wait a little bit before starting the proxy
-    handler.postDelayed({ vm.handleToggleProxyIfNotInErrorState() }, 500)
+    handler.postDelayed({ vm.handleToggleProxy() }, 500)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
