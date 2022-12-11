@@ -58,18 +58,7 @@ internal constructor(
               Timber.w("Error running Proxy: ${status.message}")
               onNetworkError(status)
             }
-            is RunningStatus.NotRunning -> {
-              onNetworkNotRunning()
-            }
-            is RunningStatus.Running -> {
-              onNetworkRunning()
-            }
-            is RunningStatus.Starting -> {
-              onNetworkStarting()
-            }
-            is RunningStatus.Stopping -> {
-              onNetworkStopping()
-            }
+            else -> Timber.d("Unhandled Proxy status event $status")
           }
         }
       }
@@ -81,10 +70,10 @@ internal constructor(
               Timber.w("Error running WiDi network: ${status.message}")
               onNetworkError(status)
             }
-            is RunningStatus.NotRunning -> {}
-            is RunningStatus.Running -> {}
-            is RunningStatus.Starting -> {}
-            is RunningStatus.Stopping -> {}
+            is RunningStatus.NotRunning -> onNetworkNotRunning()
+            is RunningStatus.Running -> onNetworkRunning()
+            is RunningStatus.Starting -> onNetworkStarting()
+            is RunningStatus.Stopping -> onNetworkStopping()
           }
         }
       }

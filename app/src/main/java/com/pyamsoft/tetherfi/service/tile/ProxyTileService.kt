@@ -10,6 +10,7 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import javax.inject.Inject
+import timber.log.Timber
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -34,24 +35,10 @@ internal class ProxyTileService internal constructor() : TileService() {
   }
 
   private inline fun withTile(crossinline block: (Tile) -> Unit) {
-    requestTileUpdate()
-
     val tile = qsTile
     if (tile != null) {
       block(tile)
     }
-
-    requestTileUpdate()
-  }
-
-  private fun requestTileUpdate() {
-    requestListeningState(
-        application,
-        ComponentName(
-            application,
-            ProxyTileService::class.java,
-        ),
-    )
   }
 
   private fun setTileStatus(status: RunningStatus) {
@@ -127,7 +114,13 @@ internal class ProxyTileService internal constructor() : TileService() {
     block(tileHandler.requireNotNull())
   }
 
-  override fun onClick() = ensureUnlocked { startActivityAndCollapse(tileActivityIntent) }
+  override fun onClick() {
+    Timber.d("Tile Clicked!")
+    ensureUnlocked {
+      Timber.d("Start TileActivity!")
+      startActivityAndCollapse(tileActivityIntent)
+    }
+  }
 
   override fun onStartListening() {
     withHandler { handler ->
