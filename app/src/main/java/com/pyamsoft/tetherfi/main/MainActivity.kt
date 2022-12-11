@@ -89,11 +89,10 @@ class MainActivity : AppCompatActivity() {
       val screen by navi.currentScreenState()
 
       val state = vm.state()
-      val theme = state.theme
 
       SystemBars()
       if (screen != null) {
-        TetherFiTheme(theme) {
+        TetherFiTheme(state.theme) {
           MainTopBar(
               onSettingsOpen = { handleOpenApplicationSettings() },
           )
@@ -121,8 +120,8 @@ class MainActivity : AppCompatActivity() {
   override fun onDestroy() {
     super.onDestroy()
     viewBinding?.apply { mainTopBar.dispose() }
-    viewBinding = null
 
+    viewBinding = null
     viewModel = null
     navigator = null
   }
