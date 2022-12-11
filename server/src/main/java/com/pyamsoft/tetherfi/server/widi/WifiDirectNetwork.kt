@@ -182,7 +182,7 @@ protected constructor(
         status.set(runningStatus)
       }
 
-  private suspend fun completeStop(onStop: () -> Unit) {
+  private suspend fun completeStop(onStop: () -> Unit = {}) {
     onNetworkStopped()
     onStop()
   }
@@ -210,10 +210,9 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but shi
     // is basically a no-op
     if (channel == null) {
-      completeStop {
-        // Stop called without channel, don't do anything
-        // Do not set status here as we want to be able to keep error status
-      }
+      // Stop called without channel, don't do anything
+      // Do not set status here as we want to be able to keep error status
+      completeStop()
       return
     }
 
