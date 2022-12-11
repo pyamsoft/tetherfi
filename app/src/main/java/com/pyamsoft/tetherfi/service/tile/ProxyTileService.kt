@@ -35,10 +35,23 @@ internal class ProxyTileService internal constructor() : TileService() {
   }
 
   private inline fun withTile(crossinline block: (Tile) -> Unit) {
+    updateTile()
     val tile = qsTile
     if (tile != null) {
       block(tile)
+    } else {
+      Timber.w("Cannot update tile, no QS Tile")
     }
+  }
+
+  private fun updateTile() {
+    requestListeningState(
+        application,
+        ComponentName(
+            application,
+            ProxyTileService::class.java,
+        ),
+    )
   }
 
   private fun setTileStatus(status: RunningStatus) {
@@ -108,6 +121,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       // We also must inject via our own SubComponent to ensure that Dagger re-creates and
       // re-injects each time. If we inject directly from the AppComponent, Dagger internally tracks
       // the injection and does not inject again even though the service lifecycle requires it.
+      Timber.d("Injecting handler!")
       ObjectGraph.ApplicationScope.retrieve(this).plusProxyTile().create().inject(this)
     }
 
@@ -124,6 +138,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onStartListening() {
     withHandler { handler ->
+      Timber.d("onStartListening: $handler")
       when (val status = handler.getNetworkStatus()) {
         is RunningStatus.Error -> handleNetworkErrorState(status)
         is RunningStatus.NotRunning -> handleNetworkNotRunningState()
@@ -138,6 +153,8 @@ internal class ProxyTileService internal constructor() : TileService() {
     super.onCreate()
 
     withHandler { handler ->
+      Timber.d("onCreate: $handler")
+
       handler.bind(
           onNetworkError = { err -> handleNetworkErrorState(err) },
           onNetworkNotRunning = { handleNetworkNotRunningState() },
