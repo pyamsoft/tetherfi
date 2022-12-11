@@ -16,4 +16,12 @@
         <item name="alertDialogTheme">@style/ThemeOverlay.TetherFi.Dialog.Alert</item>
     </style>
 
+    <style name="Theme.TetherFi.Tile" parent="Theme.TetherFi">
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:background">@null</item>
+    </style>
+
 </resources>
