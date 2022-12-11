@@ -84,6 +84,10 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
+
+    // Refresh status again, in the weird state event where we call stop()
+    // on an already stopped service
+    s.wiDiStatus = network.getCurrentStatus()
   }
 
   fun loadPreferences(
@@ -216,6 +220,8 @@ internal constructor(
           }
           is WidiNetworkEvent.WifiDisabled -> {
             refreshGroupInfo(scope = scope)
+
+            Timber.d("Stop ForegroundService when WiFi Disabled")
             serviceLauncher.stopForeground()
           }
           is WidiNetworkEvent.WifiEnabled -> {

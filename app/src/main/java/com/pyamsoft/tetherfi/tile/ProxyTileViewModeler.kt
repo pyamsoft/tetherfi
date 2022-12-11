@@ -44,10 +44,11 @@ internal constructor(
   }
 
   fun handleToggleProxyIfNotInErrorState() {
+    val s = state
     val status = handler.getNetworkStatus()
     if (status is RunningStatus.Error) {
       Timber.d("Proxy is already in error state. Do not toggle")
-      state.status = status
+      s.status = status
       return
     }
 
@@ -59,7 +60,7 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
-      state.status = RunningStatus.Error("Missing required permission, cannot start Hotspot")
+      s.status = RunningStatus.Error("Missing required permission, cannot start Hotspot")
       serviceLauncher.stopForeground()
       return
     }
@@ -77,5 +78,9 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
+
+    // Refresh status again, in the weird state event where we call stop()
+    // on an already stopped service
+    s.status = handler.getNetworkStatus()
   }
 }

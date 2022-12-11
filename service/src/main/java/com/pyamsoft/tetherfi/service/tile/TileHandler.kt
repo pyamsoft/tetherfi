@@ -4,9 +4,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
-import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import com.pyamsoft.tetherfi.service.ServiceLauncher
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,8 +15,6 @@ import timber.log.Timber
 class TileHandler
 @Inject
 internal constructor(
-    private val receiver: WiDiReceiver,
-    private val launcher: ServiceLauncher,
     private val network: WiDiNetworkStatus,
     private val permissionGuard: PermissionGuard,
 ) {
@@ -46,7 +41,6 @@ internal constructor(
       onNetworkStarting: () -> Unit,
       onNetworkRunning: () -> Unit,
       onNetworkStopping: () -> Unit,
-      onNetworkShutdown: () -> Unit,
   ) {
     val scope = this
 
@@ -74,21 +68,6 @@ internal constructor(
             is RunningStatus.Running -> onNetworkRunning()
             is RunningStatus.Starting -> onNetworkStarting()
             is RunningStatus.Stopping -> onNetworkStopping()
-          }
-        }
-      }
-
-      launch(context = Dispatchers.Main) {
-        receiver.onEvent { event ->
-          when (event) {
-            is WidiNetworkEvent.ConnectionChanged -> {}
-            is WidiNetworkEvent.ThisDeviceChanged -> {}
-            is WidiNetworkEvent.PeersChanged -> {}
-            is WidiNetworkEvent.WifiEnabled -> {}
-            is WidiNetworkEvent.DiscoveryChanged -> {}
-            is WidiNetworkEvent.WifiDisabled -> {
-              onNetworkShutdown()
-            }
           }
         }
       }
@@ -125,10 +104,6 @@ internal constructor(
         onNetworkStarting = onNetworkStarting,
         onNetworkRunning = onNetworkRunning,
         onNetworkStopping = onNetworkStopping,
-        onNetworkShutdown = {
-          Timber.d("Network stopped, stop launcher from Tile")
-          launcher.stopForeground()
-        },
     )
   }
 

@@ -52,10 +52,13 @@ protected constructor(
     return wifiP2PManager.initialize(
         context.applicationContext,
         Looper.getMainLooper(),
-    ) {
-      Timber.d("WifiP2PManager Channel disconnected, kill Group!")
-      scope.launch(context = dispatcher) { stopNetwork() }
-    }
+
+        // Don't use a Listener here
+        //
+        // If we shutdown our proxy from here instead of the foreground service itself, stuff
+        // can get out of sync
+        null,
+    )
   }
 
   @CheckResult
