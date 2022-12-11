@@ -37,12 +37,9 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  feature("Added Tile for quickly toggling the Hotspot")
-                  change("Minimum API level now Android N (24)")
-                  change("Removed the Activity screen as it was largely unused.")
-                  change("Removed the Error screen as it was largely unused.")
-                  bugfix("Better explanation of battery related options")
-                  bugfix("Improved proxy network performance")
+                  change("[BETA] Rework Tile to be more reliable. UI still in progress.")
+                  bugfix("Allow the setup to restart if the Hotspot enters an error state")
+                  bugfix("Remove dead code for size improvement")
                 }
               },
       )
