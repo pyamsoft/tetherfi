@@ -42,10 +42,10 @@ protected constructor(
   private val scope by lazy { CoroutineScope(context = dispatcher) }
 
   private val mutex = Mutex()
-  private var wifiChannel: WifiP2pManager.Channel? = null
+  private var wifiChannel: Channel? = null
 
   @CheckResult
-  private fun createChannel(): WifiP2pManager.Channel? {
+  private fun createChannel(): Channel? {
     Timber.d("Creating WifiP2PManager Channel")
 
     // This can return null if initialization fails
@@ -59,13 +59,13 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun getChannel(): WifiP2pManager.Channel? {
+  private suspend fun getChannel(): Channel? {
     return mutex.withLock { wifiChannel }
   }
 
   @SuppressLint("MissingPermission")
   private fun createGroupQ(
-      channel: WifiP2pManager.Channel,
+      channel: Channel,
       config: WifiP2pConfig,
       listener: WifiP2pManager.ActionListener,
   ) {
@@ -81,7 +81,7 @@ protected constructor(
   }
 
   @SuppressLint("MissingPermission")
-  private suspend fun createGroup(channel: WifiP2pManager.Channel): RunningStatus =
+  private suspend fun createGroup(channel: Channel): RunningStatus =
       withContext(context = Dispatchers.Main) {
         Timber.d("Creating new wifi p2p group")
 
@@ -114,7 +114,7 @@ protected constructor(
       }
 
   @CheckResult
-  private suspend fun removeGroup(channel: WifiP2pManager.Channel): Unit =
+  private suspend fun removeGroup(channel: Channel): Unit =
       withContext(context = Dispatchers.Main) {
         // Close the Group here
         Timber.d("Stop existing WiFi Group")
@@ -190,10 +190,6 @@ protected constructor(
   // Lock the mutex to avoid anyone else from using the channel during closing
   private suspend fun shutdownWifiNetwork(channel: Channel) =
       mutex.withLock {
-        // If we do have a channel, mark shutting down as we clean up
-        Timber.d("Shutting down wifi network")
-        status.set(RunningStatus.Stopping)
-
         // This may fail if WiFi is off, but thats fine since if WiFi is off,
         // the system has already cleaned us up.
         removeGroup(channel)
@@ -218,6 +214,10 @@ protected constructor(
       return
     }
 
+    // If we do have a channel, mark shutting down as we clean up
+    Timber.d("Shutting down wifi network")
+    status.set(RunningStatus.Stopping)
+
     shutdownWifiNetwork(channel)
 
     completeStop {
@@ -228,9 +228,7 @@ protected constructor(
 
   @CheckResult
   @SuppressLint("MissingPermission")
-  private suspend fun resolveCurrentGroup(
-      channel: WifiP2pManager.Channel
-  ): WiDiNetworkStatus.GroupInfo? =
+  private suspend fun resolveCurrentGroup(channel: Channel): WiDiNetworkStatus.GroupInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
           wifiP2PManager.requestGroupInfo(
@@ -252,9 +250,7 @@ protected constructor(
       }
 
   @CheckResult
-  private suspend fun resolveConnectionInfo(
-      channel: WifiP2pManager.Channel
-  ): WiDiNetworkStatus.ConnectionInfo? =
+  private suspend fun resolveConnectionInfo(channel: Channel): WiDiNetworkStatus.ConnectionInfo? =
       withContext(context = Dispatchers.Main) {
         return@withContext suspendCoroutine { cont ->
           wifiP2PManager.requestConnectionInfo(
@@ -355,7 +351,7 @@ protected constructor(
     }
 
     @JvmStatic
-    private fun closeSilent(s: WifiP2pManager.Channel) {
+    private fun closeSilent(s: Channel) {
       try {
         s.close()
       } catch (e: Throwable) {
