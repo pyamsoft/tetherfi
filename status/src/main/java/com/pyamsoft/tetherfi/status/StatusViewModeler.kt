@@ -10,6 +10,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
+import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ internal constructor(
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val wiDiReceiver: WiDiReceiver,
+    private val serviceLauncher: ServiceLauncher,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -42,6 +44,45 @@ internal constructor(
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port && config.wakelock && config.ssid && config.password && config.band) {
       state.preferencesLoaded = true
+    }
+  }
+
+  private fun toggleProxy() {
+    val s = state
+
+    // Collapse instructions by default
+    s.isConnectionInstructionExpanded = false
+
+    // Refresh these state bits
+    val requiresPermissions = !permissions.canCreateWiDiNetwork()
+    s.requiresPermissions = requiresPermissions
+    s.explainPermissions = requiresPermissions
+
+    // If we do not have permission, stop here. s.explainPermissions will cause the permission
+    // dialog
+    // to show. Upon granting permission, this function will be called again and should pass
+    if (requiresPermissions) {
+      Timber.w("Cannot launch Proxy until Permissions are granted")
+      serviceLauncher.stopForeground()
+      return
+    }
+
+    when (val status = network.getCurrentStatus()) {
+      is RunningStatus.NotRunning -> {
+        Timber.d("Starting Proxy...")
+        serviceLauncher.startForeground()
+      }
+      is RunningStatus.Running -> {
+        Timber.d("Stopping Proxy")
+        serviceLauncher.stopForeground()
+      }
+      is RunningStatus.Error -> {
+        Timber.w("Resetting Proxy from Error state")
+        serviceLauncher.stopForeground()
+      }
+      else -> {
+        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
+      }
     }
   }
 
@@ -135,6 +176,13 @@ internal constructor(
 
       // Battery optimization
       s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
+
+      // If we are in an error state, we tried to run the proxy
+      // If the proxy fails, we should at least check that the permission req is not the cause.
+      if (s.wiDiStatus is RunningStatus.Error || s.proxyStatus is RunningStatus.Error) {
+        val requiresPermissions = !permissions.canCreateWiDiNetwork()
+        s.requiresPermissions = requiresPermissions
+      }
     }
   }
 
@@ -146,10 +194,7 @@ internal constructor(
     state.explainPermissions = false
   }
 
-  fun watchStatusUpdates(
-      scope: CoroutineScope,
-      onNetworkStopped: () -> Unit,
-  ) {
+  fun watchStatusUpdates(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       network.onProxyStatusChanged { state.proxyStatus = it }
     }
@@ -171,7 +216,7 @@ internal constructor(
           }
           is WidiNetworkEvent.WifiDisabled -> {
             refreshGroupInfo(scope = scope)
-            onNetworkStopped()
+            serviceLauncher.stopForeground()
           }
           is WidiNetworkEvent.WifiEnabled -> {
             refreshGroupInfo(scope = scope)
@@ -186,45 +231,8 @@ internal constructor(
 
   fun handleToggleProxy(
       scope: CoroutineScope,
-      onStart: () -> Unit,
-      onStop: () -> Unit,
   ) {
-    val s = state
-
-    // Collapse instructions by default
-    s.isConnectionInstructionExpanded = false
-
-    // Refresh these state bits
-    val requiresPermissions = !permissions.canCreateWiDiNetwork()
-    s.requiresPermissions = requiresPermissions
-    s.explainPermissions = requiresPermissions
-
-    // If we do not have permission, stop here. s.explainPermissions will cause the permission
-    // dialog
-    // to show. Upon granting permission, this function will be called again and should pass
-    if (requiresPermissions) {
-      Timber.w("Cannot launch Proxy until Permissions are granted")
-      return
-    }
-
-    when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> {
-        Timber.d("Starting Proxy...")
-        onStart()
-      }
-      is RunningStatus.Running -> {
-        Timber.d("Stopping Proxy")
-        onStop()
-      }
-      is RunningStatus.Error -> {
-        Timber.w("Resetting Proxy from Error state")
-        onStop()
-      }
-      else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
-      }
-    }
-
+    toggleProxy()
     refreshGroupInfo(scope = scope)
   }
 
