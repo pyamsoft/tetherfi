@@ -133,6 +133,10 @@ fun StatusScreen(
         ) {
           Text(
               text = buttonText,
+              style =
+                  MaterialTheme.typography.body1.copy(
+                      fontWeight = FontWeight.W700,
+                  ),
           )
         }
       }
@@ -143,7 +147,7 @@ fun StatusScreen(
                 Modifier.fillMaxWidth()
                     .padding(MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
-            title = "Tethering Network Status:",
+            title = "$appName Network Status:",
             status = wiDiStatus,
         )
       }

@@ -25,12 +25,6 @@ class TetherFi : Application() {
             version = BuildConfig.VERSION_CODE,
             logger = createLogger(),
             theme = TetherFiThemeProvider,
-            debug =
-                PYDroid.DebugParameters(
-                    enabled = true,
-                    upgradeAvailable = true,
-                    ratingAvailable = true,
-                ),
         ),
     )
   }
