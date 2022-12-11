@@ -72,12 +72,12 @@ internal fun NetworkBands(
       }
     } else {
       Text(
-          text = "Network Broadcast Frequency is defined by the system.",
+          text = "Network Broadcast Frequency is defined by the system and cannot be changed.",
           style =
-              MaterialTheme.typography.body2.copy(
+              MaterialTheme.typography.body1.copy(
                   fontWeight = FontWeight.W700,
                   color =
-                      MaterialTheme.colors.onBackground.copy(
+                      MaterialTheme.colors.primary.copy(
                           alpha = ContentAlpha.medium,
                       ),
               ),

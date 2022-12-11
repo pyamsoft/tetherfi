@@ -17,5 +17,8 @@ object ServerDefaults {
 
   @CheckResult
   @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
-  fun canUseCustomConfig(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+  fun canUseCustomConfig(): Boolean {
+    return false
+//    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+  }
 }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,11 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+
+private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 
 @Composable
 fun StatusScreen(
@@ -136,11 +140,14 @@ fun StatusScreen(
         item {
           Box(
               modifier =
-                  Modifier.padding(top = MaterialTheme.keylines.content)
+                  Modifier.fillMaxWidth()
+                      .padding(top = MaterialTheme.keylines.content)
                       .padding(horizontal = MaterialTheme.keylines.content),
               contentAlignment = Alignment.Center,
           ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                modifier = Modifier.size(120.dp),
+            )
           }
         }
       }
@@ -186,7 +193,7 @@ private fun rememberPreparedLoadedContent(
           if (canUseCustomConfig) {
             state.ssid
           } else {
-            "SYSTEM DEFINED SSID"
+            SYSTEM_DEFINED
           }
         } else {
           group?.ssid ?: "NO SSID"
@@ -203,7 +210,7 @@ private fun rememberPreparedLoadedContent(
           if (canUseCustomConfig) {
             state.password
           } else {
-            "SYSTEM DEFINED PASSWORD"
+            SYSTEM_DEFINED
           }
         } else {
           group?.password ?: "NO PASSWORD"
@@ -354,7 +361,7 @@ private fun LazyListScope.renderNetworkInformation(
       StatusEditor(
           modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
           enabled = canUseCustomConfig,
-          title = "WIFI NAME/SSID",
+          title = "HOTSPOT NAME/SSID",
           value = ssid,
           onChange = onSsidChanged,
       )
@@ -364,7 +371,7 @@ private fun LazyListScope.renderNetworkInformation(
       StatusEditor(
           modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
           enabled = canUseCustomConfig,
-          title = "WIFI PASSWORD",
+          title = "HOTSPOT PASSWORD",
           value = password,
           onChange = onPasswordChanged,
           keyboardOptions =
