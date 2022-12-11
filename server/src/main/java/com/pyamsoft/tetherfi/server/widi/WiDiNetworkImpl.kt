@@ -3,8 +3,6 @@ package com.pyamsoft.tetherfi.server.widi
 import android.content.Context
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.event.ConnectionEvent
-import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -40,14 +38,6 @@ internal constructor(
 
   override suspend fun onNetworkStopped() {
     proxy.stop()
-  }
-
-  override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
-    return proxy.onErrorEvent(block)
-  }
-
-  override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
-    return proxy.onConnectionEvent(block)
   }
 
   override suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit) {

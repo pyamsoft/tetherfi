@@ -7,6 +7,7 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,16 +22,15 @@ import timber.log.Timber
 class ForegroundHandler
 @Inject
 internal constructor(
-  private val shutdownBus: EventConsumer<ServerShutdownEvent>,
-  private val locker: Locker,
-  private val network: WiDiNetwork,
-  private val status: WiDiNetworkStatus,
+    @ServiceInternalApi private val locker: Locker,
+    private val shutdownBus: EventConsumer<ServerShutdownEvent>,
+    private val network: WiDiNetwork,
+    private val status: WiDiNetworkStatus,
 ) {
 
   private val scope by lazy(LazyThreadSafetyMode.NONE) { MainScope() }
 
   private var prepJob: Job? = null
-  private var proxyJob: Job? = null
 
   private suspend fun acquireCpuWakeLock() {
     Timber.d("Attempt to claim CPU wakelock")
@@ -45,9 +45,6 @@ internal constructor(
   private fun killJobs() {
     prepJob?.cancel()
     prepJob = null
-
-    proxyJob?.cancel()
-    proxyJob = null
   }
 
   @CheckResult
@@ -63,6 +60,7 @@ internal constructor(
         prepJob.cancelAndReLaunch {
           // When shutdown events are received, we kill the service
           launch(context = Dispatchers.Main) {
+            Timber.d("Watching for Shutdown")
             shutdownBus.requireNotNull().onEvent {
               Timber.d("Shutdown event received!")
               onShutdownService()
@@ -105,27 +103,20 @@ internal constructor(
   }
 
   fun startProxy() {
-    proxyJob =
-        proxyJob.cancelAndReLaunch {
-          Timber.d("Start WiDi Network")
-          network.requireNotNull().start()
-        }
+    Timber.d("Start WiDi Network")
+    network.start()
   }
 
   fun stopProxy() {
     killJobs()
 
+    Timber.d("Stop WiDi network")
+    network.stop()
+
     // Launch a parent scope for all jobs
     scope.launch(context = Dispatchers.Main) {
-      launch(context = Dispatchers.Main) {
-        Timber.d("Destroy WiDi network")
-        network.stop()
-      }
-
-      launch(context = Dispatchers.Main) {
-        Timber.d("Destroy CPU wakelock")
-        locker.release()
-      }
+      Timber.d("Destroy CPU wakelock")
+      locker.release()
     }
   }
 }

@@ -9,8 +9,6 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.logging.ApplicationLogStorage
-import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -170,22 +168,6 @@ abstract class ServerModule {
     @ServerInternalApi
     internal fun provideProxyDebug(): Boolean {
       return false
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    internal fun provideActivityLogStorage(): LogStorage<ConnectionEvent> {
-      return ApplicationLogStorage()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    internal fun provideErrorLogStorage(): LogStorage<ErrorEvent> {
-      return ApplicationLogStorage()
     }
 
     @Provides

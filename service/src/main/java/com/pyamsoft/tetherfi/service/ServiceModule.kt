@@ -25,7 +25,7 @@ abstract class ServiceModule {
 
   @Binds internal abstract fun bindLauncher(impl: NotificationLauncherImpl): NotificationLauncher
 
-  @Binds internal abstract fun bindLocker(impl: LockerImpl): Locker
+  @Binds @ServiceInternalApi internal abstract fun bindLocker(impl: LockerImpl): Locker
 
   @Module
   companion object {

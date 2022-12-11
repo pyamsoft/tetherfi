@@ -17,6 +17,7 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,12 +31,12 @@ import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-  private val shutdownBus: EventBus<ServerShutdownEvent>,
-  private val context: Context,
-  private val permissionGuard: PermissionGuard,
-  private val dispatcher: CoroutineDispatcher,
-  private val config: WiDiConfig,
-  status: WiDiStatus,
+    private val shutdownBus: EventBus<ServerShutdownEvent>,
+    private val context: Context,
+    private val permissionGuard: PermissionGuard,
+    private val dispatcher: CoroutineDispatcher,
+    private val config: WiDiConfig,
+    status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {
@@ -57,7 +58,7 @@ protected constructor(
         Looper.getMainLooper(),
     ) {
       scope.launch(context = dispatcher) {
-        Timber.d("WifiChannel died, shutdown the network")
+        Timber.d("WifiP2PManager Channel died. Kill network")
         stopNetwork(resetStatus = false)
       }
     }
@@ -336,8 +337,10 @@ protected constructor(
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
       } finally {
         // Fire the shutdown event to the service
-        Timber.d("Wi-Fi Direct network is shutdown. Fire final shutdown event.")
+        Timber.d("Fire final shutdown event.")
         shutdownBus.send(ServerShutdownEvent)
+
+        Timber.d("Wi-Fi Direct network is shutdown")
       }
     }
   }

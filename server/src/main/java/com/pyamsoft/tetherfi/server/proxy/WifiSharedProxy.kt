@@ -1,14 +1,9 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.tetherfi.core.generateRandomId
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import com.pyamsoft.tetherfi.server.event.ConnectionEvent
-import com.pyamsoft.tetherfi.server.event.ErrorEvent
-import com.pyamsoft.tetherfi.server.logging.LogStorage
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
@@ -29,11 +24,7 @@ internal class WifiSharedProxy
 @Inject
 internal constructor(
     private val preferences: ServerPreferences,
-    @ServerInternalApi private val activityLogStorage: LogStorage<ConnectionEvent>,
-    @ServerInternalApi private val errorLogStorage: LogStorage<ErrorEvent>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
-    @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
-    @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
     @ServerInternalApi private val factory: ProxyManager.Factory,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
@@ -43,12 +34,6 @@ internal constructor(
 
   /** We own our own scope here because the proxy lifespan is separate */
   private val scope = CoroutineScope(context = dispatcher)
-
-  init {
-    scope.launch(context = dispatcher) { connectionBus.onEvent { activityLogStorage.submit(it) } }
-
-    scope.launch(context = dispatcher) { errorBus.onEvent { errorLogStorage.submit(it) } }
-  }
 
   /** Get the port for the proxy */
   @CheckResult
@@ -67,26 +52,14 @@ internal constructor(
   }
 
   private suspend fun shutdown() {
-    if (jobs.isNotEmpty()) {
-      Timber.d("Shutdown Proxy Server...")
-    }
-
     clearJobs()
-
-    // Clear busses
-    errorBus.send(ErrorEvent.Clear(id = generateRandomId()))
-    connectionBus.send(ConnectionEvent.Clear(id = generateRandomId()))
-
-    // Clear storage
-    activityLogStorage.clear()
-    errorLogStorage.clear()
   }
 
   private suspend fun clearJobs() {
     mutex.withLock {
-      if (jobs.isNotEmpty()) {
-        Timber.d("Cancelling jobs")
-        jobs.removeEach { it.job.cancel() }
+      jobs.removeEach { proxyJob ->
+        Timber.d("Cancelling proxyJob: $proxyJob")
+        proxyJob.job.cancel()
       }
     }
   }
@@ -134,14 +107,6 @@ internal constructor(
 
       status.set(RunningStatus.NotRunning)
     }
-  }
-
-  override suspend fun onErrorEvent(block: suspend (ErrorEvent) -> Unit) {
-    return errorLogStorage.onLogEvent(block)
-  }
-
-  override suspend fun onConnectionEvent(block: suspend (ConnectionEvent) -> Unit) {
-    return activityLogStorage.onLogEvent(block)
   }
 
   private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {
