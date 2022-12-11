@@ -30,7 +30,14 @@ internal constructor(
 
   private val scope by lazy(LazyThreadSafetyMode.NONE) { MainScope() }
 
-  private var prepJob: Job? = null
+  /**
+   * Don't cancel this job on destroy. It must listen for the final shutdown event fired from the
+   * server
+   */
+  private var shutdownJob: Job? = null
+
+  private var networkStatusJob: Job? = null
+  private var proxyStatusJob: Job? = null
 
   private suspend fun acquireCpuWakeLock() {
     Timber.d("Attempt to claim CPU wakelock")
@@ -43,8 +50,11 @@ internal constructor(
   }
 
   private fun killJobs() {
-    prepJob?.cancel()
-    prepJob = null
+    proxyStatusJob?.cancel()
+    proxyStatusJob = null
+
+    networkStatusJob?.cancel()
+    networkStatusJob = null
   }
 
   @CheckResult
@@ -53,50 +63,50 @@ internal constructor(
     return scope.launch(context = Dispatchers.Main, block = block)
   }
 
-  fun prepareProxy(
+  fun bind(
       onShutdownService: () -> Unit,
   ) {
-    prepJob =
-        prepJob.cancelAndReLaunch {
-          // When shutdown events are received, we kill the service
-          launch(context = Dispatchers.Main) {
-            Timber.d("Watching for Shutdown")
-            shutdownBus.requireNotNull().onEvent {
-              Timber.d("Shutdown event received!")
-              onShutdownService()
+    // When shutdown events are received, we kill the service
+    shutdownJob =
+        shutdownJob.cancelAndReLaunch {
+          Timber.d("Watching for Shutdown")
+          shutdownBus.requireNotNull().onEvent {
+            Timber.d("Shutdown event received!")
+            onShutdownService()
+          }
+        }
+
+    // Watch status of network
+    networkStatusJob =
+        networkStatusJob.cancelAndReLaunch {
+          status.requireNotNull().onStatusChanged { s ->
+            when (s) {
+              is RunningStatus.Error -> {
+                Timber.w("Server Server Error: ${s.message}")
+                // Release wakelock
+                releaseCpuWakeLock()
+              }
+              else -> Timber.d("Server status changed: $s")
             }
           }
+        }
 
-          // Watch status of network
-          launch(context = Dispatchers.Main) {
-            status.requireNotNull().onStatusChanged { s ->
-              when (s) {
-                is RunningStatus.Error -> {
-                  Timber.w("Server Server Error: ${s.message}")
-                  // Release wakelock
-                  releaseCpuWakeLock()
-                }
-                else -> Timber.d("Server status changed: $s")
+    // Watch status of proxy
+    proxyStatusJob =
+        proxyStatusJob.cancelAndReLaunch {
+          status.requireNotNull().onProxyStatusChanged { s ->
+            when (s) {
+              is RunningStatus.Running -> {
+                Timber.d("Proxy Server started!")
+                // Acquire wake lock
+                acquireCpuWakeLock()
               }
-            }
-          }
-
-          // Watch status of proxy
-          launch(context = Dispatchers.Main) {
-            status.requireNotNull().onProxyStatusChanged { s ->
-              when (s) {
-                is RunningStatus.Running -> {
-                  Timber.d("Proxy Server started!")
-                  // Acquire wake lock
-                  acquireCpuWakeLock()
-                }
-                is RunningStatus.Error -> {
-                  Timber.w("Proxy Server Error: ${s.message}")
-                  // Release wakelock
-                  releaseCpuWakeLock()
-                }
-                else -> Timber.d("Proxy status changed: $s")
+              is RunningStatus.Error -> {
+                Timber.w("Proxy Server Error: ${s.message}")
+                // Release wakelock
+                releaseCpuWakeLock()
               }
+              else -> Timber.d("Proxy status changed: $s")
             }
           }
         }
