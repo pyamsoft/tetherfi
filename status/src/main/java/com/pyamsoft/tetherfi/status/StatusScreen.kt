@@ -445,7 +445,8 @@ private fun LazyListScope.renderNetworkInformation(
   item {
     NetworkBands(
         modifier = itemModifier.padding(vertical = MaterialTheme.keylines.content),
-        isEditable = canUseCustomConfig,
+        isEnabled = canUseCustomConfig,
+        isEditable = isEditable,
         band = band,
         onSelectBand = onSelectBand,
     )

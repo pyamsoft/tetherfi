@@ -20,6 +20,7 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 @Composable
 internal fun NetworkBands(
     modifier: Modifier = Modifier,
+    isEnabled: Boolean,
     isEditable: Boolean,
     band: ServerNetworkBand?,
     onSelectBand: (ServerNetworkBand) -> Unit,
@@ -41,7 +42,7 @@ internal fun NetworkBands(
                     ),
             ),
     )
-    if (isEditable) {
+    if (isEnabled) {
       val bands = remember { ServerNetworkBand.values() }
       val bandIterator = remember(bands) { bands.withIndex() }
       val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()
@@ -61,7 +62,7 @@ internal fun NetworkBands(
                               if (index < bands.lastIndex) MaterialTheme.keylines.content
                               else ZeroSize,
                       ),
-              isEditable = true,
+              isEditable = isEditable,
               condition = isSelected,
               title = b.displayName,
               description = b.description,
