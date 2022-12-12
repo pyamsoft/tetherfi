@@ -34,6 +34,7 @@ import com.pyamsoft.pydroid.ui.widget.UpdateProgressWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.icons.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 
@@ -504,31 +505,3 @@ private fun LazyListScope.renderBatteryAndPerformance(
   }
 }
 
-private fun LazyListScope.renderPYDroidExtras() {
-  item {
-    UpdateProgressWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
-    )
-  }
-
-  item {
-    NewVersionWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
-    )
-  }
-
-  item {
-    ShowChangeLogWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
-    )
-  }
-}
