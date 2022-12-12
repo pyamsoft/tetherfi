@@ -46,7 +46,7 @@ class ProxyTileActivity : AppCompatActivity() {
 
     setTheme(R.style.Theme_TetherFi_Tile)
     super.onCreate(savedInstanceState)
-    ObjectGraph.ApplicationScope.retrieve(this).inject(this)
+    ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
 
     stableLayoutHideNavigation()
 

@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class ProxyTileViewModeler
+class ProxyTileViewModeler
 @Inject
 internal constructor(
     private val state: MutableProxyTileViewState,

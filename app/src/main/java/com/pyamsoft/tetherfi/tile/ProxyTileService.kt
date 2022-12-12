@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.service.tile
+package com.pyamsoft.tetherfi.tile
 
 import android.content.ComponentName
 import android.content.Intent
@@ -8,7 +8,7 @@ import android.service.quicksettings.TileService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.tile.ProxyTileActivity
+import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
 import timber.log.Timber
 
@@ -126,7 +126,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       // re-injects each time. If we inject directly from the AppComponent, Dagger internally tracks
       // the injection and does not inject again even though the service lifecycle requires it.
       Timber.d("Injecting handler!")
-      ObjectGraph.ApplicationScope.retrieve(this).plusProxyTile().create().inject(this)
+      ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
     }
 
     block(tileHandler.requireNotNull())

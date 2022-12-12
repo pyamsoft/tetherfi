@@ -134,4 +134,5 @@ dependencies {
   api project(":service")
   api project(":settings")
   api project(":status")
+  api project(":tile")
 }

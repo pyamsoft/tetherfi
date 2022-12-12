@@ -36,14 +36,14 @@
         </activity>
 
         <service
-            android:name=".service.foreground.ProxyForegroundService"
+            android:name=".foreground.ProxyForegroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="" />
 
         <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
         <service
-            android:name=".service.tile.ProxyTileService"
+            android:name=".tile.ProxyTileService"
             android:description="@string/beta"
             android:enabled="true"
             android:exported="true"

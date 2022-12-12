@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.service.foreground
+package com.pyamsoft.tetherfi.foreground
 
 import android.app.Service
 import android.content.Intent
@@ -6,6 +6,7 @@ import android.os.IBinder
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
+import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
 import timber.log.Timber
@@ -22,7 +23,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
   override fun onCreate() {
     super.onCreate()
-    ObjectGraph.ApplicationScope.retrieve(this).inject(this)
+    ObjectGraph.ApplicationScope.retrieve(this).plusForeground().create().inject(this)
 
     Timber.d("Creating service")
 

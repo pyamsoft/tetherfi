@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.tile
+package com.pyamsoft.tetherfi.foreground
 
 import androidx.annotation.CheckResult
 import dagger.Subcomponent
 
 @Subcomponent
-internal interface ProxyTileComponent {
+internal interface ForegroundServiceComponent {
 
-  fun inject(service: ProxyTileService)
+  fun inject(service: ProxyForegroundService)
 
   @Subcomponent.Factory
   interface Factory {
 
-    @CheckResult fun create(): ProxyTileComponent
+    @CheckResult fun create(): ForegroundServiceComponent
   }
 }
