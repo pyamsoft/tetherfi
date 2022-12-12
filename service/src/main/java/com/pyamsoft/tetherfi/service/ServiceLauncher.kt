@@ -34,9 +34,8 @@ internal constructor(
     // Instead of stopping the service, stop the widi network
     // as this will eventually fire a shutdown() event which will stop the service
     // if it is still running
-    //
-    //    Timber.d("Stop Foreground Service!")
-    //    context.stopService(foregroundService)
+    Timber.d("Stop Foreground Service!")
+    context.stopService(foregroundService)
 
     // Also directly stop the network
     //
