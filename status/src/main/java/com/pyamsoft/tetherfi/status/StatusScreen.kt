@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
+import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
 import com.pyamsoft.pydroid.ui.widget.UpdateProgressWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -104,23 +105,7 @@ fun StatusScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
-      item {
-        UpdateProgressWidget(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
-        )
-      }
-
-      item {
-        NewVersionWidget(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
-        )
-      }
+      renderPYDroidExtras()
 
       item {
         Button(
@@ -515,6 +500,35 @@ private fun LazyListScope.renderBatteryAndPerformance(
         appName = appName,
         isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+    )
+  }
+}
+
+private fun LazyListScope.renderPYDroidExtras() {
+  item {
+    UpdateProgressWidget(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content),
+    )
+  }
+
+  item {
+    NewVersionWidget(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content),
+    )
+  }
+
+  item {
+    ShowChangeLogWidget(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content),
     )
   }
 }
