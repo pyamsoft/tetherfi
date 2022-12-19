@@ -17,6 +17,7 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import java.net.InetAddress
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -188,25 +189,29 @@ protected constructor(
         status.set(runningStatus)
       }
 
-  private suspend fun completeStop(onStop: () -> Unit) {
-    onNetworkStopped()
-    onStop()
-  }
+  private suspend fun completeStop(onStop: () -> Unit) =
+      withContext(context = Dispatchers.Main) {
+        onNetworkStopped()
+        onStop()
+      }
 
   // Lock the mutex to avoid anyone else from using the channel during closing
-  private suspend fun shutdownWifiNetwork(channel: Channel) =
-      mutex.withLock {
-        // This may fail if WiFi is off, but thats fine since if WiFi is off,
-        // the system has already cleaned us up.
-        removeGroup(channel)
+  private suspend fun shutdownWifiNetwork(channel: Channel) {
+    Enforcer.assertOffMainThread()
 
-        // Close the wifi channel now that we are done with it
-        Timber.d("Close WiFiP2PManager channel")
-        closeSilent(channel)
+    mutex.withLock {
+      // This may fail if WiFi is off, but thats fine since if WiFi is off,
+      // the system has already cleaned us up.
+      removeGroup(channel)
 
-        // Clear out so nobody else can use a dead channel
-        wifiChannel = null
-      }
+      // Close the wifi channel now that we are done with it
+      Timber.d("Close WiFiP2PManager channel")
+      closeSilent(channel)
+
+      // Clear out so nobody else can use a dead channel
+      wifiChannel = null
+    }
+  }
 
   private suspend fun stopNetwork(resetStatus: Boolean) {
     Enforcer.assertOffMainThread()
@@ -239,47 +244,54 @@ protected constructor(
 
   @CheckResult
   @SuppressLint("MissingPermission")
-  private suspend fun resolveCurrentGroup(channel: Channel): WiDiNetworkStatus.GroupInfo? =
-      withContext(context = Dispatchers.Main) {
-        return@withContext suspendCoroutine { cont ->
-          wifiP2PManager.requestGroupInfo(channel) { group ->
-            if (group == null) {
-              Timber.w("No WiFi Direct Group info available")
-              cont.resume(null)
-            } else {
-              cont.resume(
-                  WiDiNetworkStatus.GroupInfo(
-                      ssid = group.networkName,
-                      password = group.passphrase,
-                  ),
-              )
-            }
-          }
-        }
+  private suspend fun resolveCurrentGroup(channel: Channel): WiDiNetworkStatus.GroupInfo? {
+    Enforcer.assertOffMainThread()
+
+    val group = suspendCoroutine { cont ->
+      wifiP2PManager.requestGroupInfo(channel) { cont.resume(it) }
+    }
+
+    return if (group == null) {
+      Timber.w("No WiFi Direction Group info available")
+      null
+    } else {
+      // No NetworkMainThread warning yet, but mirror resolveConnectionInfo for future safety
+      withContext(context = dispatcher) {
+        WiDiNetworkStatus.GroupInfo(
+            ssid = group.networkName,
+            password = group.passphrase,
+        )
       }
+    }
+  }
 
   @CheckResult
-  private suspend fun resolveConnectionInfo(channel: Channel): WiDiNetworkStatus.ConnectionInfo? =
-      withContext(context = Dispatchers.Main) {
-        return@withContext suspendCoroutine { cont ->
-          wifiP2PManager.requestConnectionInfo(channel) { conn ->
-            if (conn == null) {
-              Timber.w("No WiFi Direct Connection info available")
-              cont.resume(null)
-            } else {
-              cont.resume(
-                  WiDiNetworkStatus.ConnectionInfo(
-                      ip = conn.groupOwnerAddress?.hostAddress ?: "No IP Address",
-                      hostName = conn.groupOwnerAddress?.hostName ?: "No Host Name",
-                  ),
-              )
-            }
-          }
-        }
+  private suspend fun resolveConnectionInfo(channel: Channel): WiDiNetworkStatus.ConnectionInfo? {
+    Enforcer.assertOffMainThread()
+
+    val connectionInfo: InetAddress? = suspendCoroutine { cont ->
+      wifiP2PManager.requestConnectionInfo(channel) { cont.resume(it?.groupOwnerAddress) }
+    }
+
+    return if (connectionInfo == null) {
+      Timber.w("No WiFi Direct Connection info available")
+      null
+    } else {
+      // Explicitly move OMTC, since calling info.hostName in cont.resume causes Network Main Thread
+      // Strict Mode violation
+      withContext(context = dispatcher) {
+        WiDiNetworkStatus.ConnectionInfo(
+            ip = connectionInfo.hostAddress ?: "No IP Address",
+            hostName = connectionInfo.hostName ?: "No Host Name",
+        )
       }
+    }
+  }
 
   final override suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo? =
-      withContext(context = Dispatchers.Main) {
+      withContext(context = dispatcher) {
+        Enforcer.assertOffMainThread()
+
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions, cannot get Group Info")
           return@withContext null
@@ -295,7 +307,9 @@ protected constructor(
       }
 
   final override suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo? =
-      withContext(context = Dispatchers.Main) {
+      withContext(context = dispatcher) {
+        Enforcer.assertOffMainThread()
+
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions, cannot get Connection Info")
           return@withContext null

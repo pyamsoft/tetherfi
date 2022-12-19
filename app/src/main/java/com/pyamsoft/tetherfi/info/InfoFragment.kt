@@ -66,6 +66,7 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   override fun onResume() {
     super.onResume()
+    viewModel.requireNotNull().refreshConnectionInfo(scope = viewLifecycleOwner.lifecycleScope)
     requireActivity().reportFullyDrawn()
   }
 
