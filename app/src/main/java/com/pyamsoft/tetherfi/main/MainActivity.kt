@@ -88,10 +88,12 @@ class MainActivity : AppCompatActivity() {
       val state = vm.state()
 
       SystemBars()
-      if (screen != null) {
+      screen?.also { selected ->
         TetherFiTheme(state.theme) {
           MainTopBar(
+              selected = selected,
               onSettingsOpen = { handleOpenApplicationSettings() },
+              onTabSelected = { navi.navigateTo(it) },
           )
         }
       }

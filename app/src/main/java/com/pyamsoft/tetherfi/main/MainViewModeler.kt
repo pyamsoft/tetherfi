@@ -20,7 +20,9 @@ internal constructor(
   }
 
   override fun saveState(outState: UiSavedStateWriter) {
-    state.theme.also { theme ->
+    val s = state
+
+    s.theme.also { theme ->
       if (theme != Theming.Mode.SYSTEM) {
         outState.put(KEY_THEME, theme.name)
       } else {
@@ -30,10 +32,9 @@ internal constructor(
   }
 
   override fun restoreState(savedInstanceState: UiSavedStateReader) {
-    savedInstanceState.get<String>(KEY_THEME)?.also { themeName ->
-      val theme = Theming.Mode.valueOf(themeName)
-      state.theme = theme
-    }
+    val s = state
+
+    savedInstanceState.get<String>(KEY_THEME)?.also { s.theme = Theming.Mode.valueOf(it) }
   }
 
   companion object {

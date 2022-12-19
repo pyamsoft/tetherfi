@@ -50,9 +50,6 @@ internal constructor(
   private fun toggleProxy() {
     val s = state
 
-    // Collapse instructions by default
-    s.isConnectionInstructionExpanded = false
-
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
     s.requiresPermissions = requiresPermissions
@@ -262,11 +259,6 @@ internal constructor(
       state.port = portValue
       scope.launch(context = Dispatchers.Main) { serverPreferences.setPort(portValue) }
     }
-  }
-
-  fun handleToggleConnectionInstructions() {
-    val s = state
-    s.isConnectionInstructionExpanded = !s.isConnectionInstructionExpanded
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {

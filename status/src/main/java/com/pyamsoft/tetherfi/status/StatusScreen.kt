@@ -28,9 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
-import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
-import com.pyamsoft.pydroid.ui.widget.UpdateProgressWidget
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -52,7 +49,6 @@ fun StatusScreen(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
-    onToggleConnectionInstructions: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
   val wiDiStatus = state.wiDiStatus
@@ -85,7 +81,6 @@ fun StatusScreen(
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
           onOpenBatterySettings = onOpenBatterySettings,
-          onToggleConnectionInstructions = onToggleConnectionInstructions,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
       )
@@ -133,7 +128,7 @@ fun StatusScreen(
                 Modifier.fillMaxWidth()
                     .padding(MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
-            title = "$appName Network Status:",
+            title = "Hotspot Status:",
             status = wiDiStatus,
         )
       }
@@ -168,7 +163,6 @@ private fun rememberPreparedLoadedContent(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
-    onToggleConnectionInstructions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ): LazyListScope.() -> Unit {
@@ -236,7 +230,6 @@ private fun rememberPreparedLoadedContent(
       onSsidChanged,
       onPasswordChanged,
       onPortChanged,
-      onToggleConnectionInstructions,
       onToggleKeepWakeLock,
       onSelectBand,
       isEditable,
@@ -278,20 +271,6 @@ private fun rememberPreparedLoadedContent(
                 Modifier.fillMaxWidth()
                     .padding(horizontal = keylines.content)
                     .height(MaterialTheme.keylines.content),
-        )
-      }
-
-      item {
-        ConnectionInstructions(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
-            showing = state.isConnectionInstructionExpanded,
-            canConfigure = canUseCustomConfig,
-            appName = appName,
-            ssid = ssid,
-            password = password,
-            port = port,
-            ip = ip,
-            onToggleConnectionInstructions = onToggleConnectionInstructions,
         )
       }
 

@@ -32,9 +32,6 @@ interface StatusViewState : UiViewState {
   // Extras
   val keepWakeLock: Boolean
   val isBatteryOptimizationsIgnored: Boolean
-
-  // Visual
-  val isConnectionInstructionExpanded: Boolean
 }
 
 @ActivityScope
@@ -56,6 +53,4 @@ internal class MutableStatusViewState @Inject internal constructor() : StatusVie
 
   override var keepWakeLock by mutableStateOf(false)
   override var isBatteryOptimizationsIgnored by mutableStateOf(false)
-
-  override var isConnectionInstructionExpanded by mutableStateOf(false)
 }

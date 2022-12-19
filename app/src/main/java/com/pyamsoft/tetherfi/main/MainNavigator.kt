@@ -25,6 +25,7 @@ import com.pyamsoft.pydroid.arch.UiSavedStateReader
 import com.pyamsoft.pydroid.arch.UiSavedStateWriter
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.tetherfi.R
+import com.pyamsoft.tetherfi.info.InfoFragment
 import com.pyamsoft.tetherfi.status.StatusFragment
 import javax.inject.Inject
 
@@ -42,6 +43,7 @@ internal constructor(
   override fun produceFragmentForScreen(screen: MainView): Fragment =
       when (screen) {
         MainView.Status -> StatusFragment.newInstance()
+        MainView.Info -> InfoFragment.newInstance()
       }
 
   override fun performFragmentTransaction(
@@ -79,6 +81,13 @@ internal constructor(
             is StatusFragment ->
                 when (oldPage) {
                   null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
+                  is InfoFragment -> R.anim.slide_in_left then R.anim.slide_out_right
+                  else -> null
+                }
+            is InfoFragment ->
+                when (oldPage) {
+                  null -> R.anim.fragment_open_enter then R.anim.fragment_open_exit
+                  is StatusFragment -> R.anim.slide_in_right then R.anim.slide_out_left
                   else -> null
                 }
             else -> null
