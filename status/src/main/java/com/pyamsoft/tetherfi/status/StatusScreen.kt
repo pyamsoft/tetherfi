@@ -20,11 +20,13 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -52,9 +54,18 @@ fun StatusScreen(
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
     onRequestNotificationPermission: () -> Unit,
+    onStatusUpdated: (RunningStatus) -> Unit,
 ) {
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
+
+  // Status update
+  LaunchedEffect(
+      wiDiStatus,
+      onStatusUpdated,
+  ) {
+    onStatusUpdated(wiDiStatus)
+  }
 
   val isButtonEnabled =
       remember(wiDiStatus) {
@@ -496,4 +507,26 @@ private fun LazyListScope.renderBatteryAndPerformance(
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
     )
   }
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreen() {
+  StatusScreen(
+      state = MutableStatusViewState(),
+      appName = "TEST",
+      hasNotificationPermission = false,
+      onStatusUpdated = {},
+      onRequestNotificationPermission = {},
+      onToggleKeepWakeLock = {},
+      onSelectBand = {},
+      onDismissPermissionExplanation = {},
+      onOpenBatterySettings = {},
+      onOpenPermissionSettings = {},
+      onPasswordChanged = {},
+      onPortChanged = {},
+      onRequestPermissions = {},
+      onSsidChanged = {},
+      onToggle = {},
+  )
 }

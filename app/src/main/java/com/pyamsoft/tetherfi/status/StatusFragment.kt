@@ -32,6 +32,7 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
+import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.Dispatchers
@@ -213,6 +214,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
               onToggleKeepWakeLock = { handleToggleProxyWakelock() },
               onSelectBand = { handleChangeBand(it) },
               onRequestNotificationPermission = { npr.requestPermissions() },
+              onStatusUpdated = { ProxyTileService.updateTile(act) },
           )
         }
       }

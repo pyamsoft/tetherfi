@@ -24,6 +24,7 @@ fun ProxyTileScreen(
     state: ProxyTileViewState,
     onDismissed: () -> Unit,
     onComplete: () -> Unit,
+    onStatusUpdated: (RunningStatus) -> Unit,
 ) {
   // Capture this once, the first time
   val status = state.status
@@ -31,6 +32,14 @@ fun ProxyTileScreen(
   val isInitialStatusError = remember(initialStatus) { initialStatus is RunningStatus.Error }
 
   val isShowing = state.isShowing
+
+  // Status update
+  LaunchedEffect(
+      status,
+      onStatusUpdated,
+  ) {
+    onStatusUpdated(status)
+  }
 
   // Once the dialog is flagged off, we fire this "completed" hook
   LaunchedEffect(
@@ -126,5 +135,6 @@ private fun PreviewProxyTileScreen() {
       state = MutableProxyTileViewState(),
       onDismissed = {},
       onComplete = {},
+      onStatusUpdated = {},
   )
 }

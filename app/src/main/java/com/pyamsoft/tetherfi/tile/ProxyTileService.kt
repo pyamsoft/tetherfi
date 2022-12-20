@@ -1,12 +1,14 @@
 package com.pyamsoft.tetherfi.tile
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
@@ -35,57 +37,53 @@ internal class ProxyTileService internal constructor() : TileService() {
   }
 
   private inline fun withTile(crossinline block: (Tile) -> Unit) {
-    updateTile()
     val tile = qsTile
     if (tile != null) {
       block(tile)
-    } else {
-      Timber.w("Cannot update tile, no QS Tile")
-    }
-  }
 
-  private fun updateTile() {
-    requestListeningState(
-        application,
-        ComponentName(
-            application,
-            ProxyTileService::class.java,
-        ),
-    )
+      // Make sure we call this or nothing actually happens
+      tile.updateTile()
+    } else {
+      Timber.w("Cannot update tile, no QS Tile, try requesting LS update")
+      updateTile(application)
+    }
   }
 
   private fun setTileStatus(status: RunningStatus) {
     val state: Int
-    var description: String
+    val title: String
+    val description: String
     when (status) {
       is RunningStatus.Error -> {
         state = Tile.STATE_INACTIVE
+        title = "ERROR"
         description = "Unable to start Hotspot. Click to View Error"
       }
       is RunningStatus.NotRunning -> {
         state = Tile.STATE_INACTIVE
+        title = getString(R.string.app_name)
         description = "Click to start Hotspot"
       }
       is RunningStatus.Running -> {
         state = Tile.STATE_ACTIVE
+        title = getString(R.string.app_name)
         description = "Hotspot Running"
       }
       is RunningStatus.Starting -> {
         state = Tile.STATE_INACTIVE
+        title = getString(R.string.app_name)
         description = "Starting..."
       }
       is RunningStatus.Stopping -> {
         state = Tile.STATE_ACTIVE
+        title = getString(R.string.app_name)
         description = "Stopping..."
       }
     }
 
-    // TODO(Peter): Still in BETA
-    description = "[BETA]"
-
     withTile { tile ->
       tile.state = state
-      tile.label = description
+      tile.label = title
       tile.contentDescription = description
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -142,7 +140,6 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onStartListening() {
     withHandler { handler ->
-      Timber.d("onStartListening: $handler")
       when (val status = handler.getNetworkStatus()) {
         is RunningStatus.Error -> handleNetworkErrorState(status)
         is RunningStatus.NotRunning -> handleNetworkNotRunningState()
@@ -157,8 +154,6 @@ internal class ProxyTileService internal constructor() : TileService() {
     super.onCreate()
 
     withHandler { handler ->
-      Timber.d("onCreate: $handler")
-
       handler.bind(
           onNetworkError = { err -> handleNetworkErrorState(err) },
           onNetworkNotRunning = { handleNetworkNotRunningState() },
@@ -174,5 +169,20 @@ internal class ProxyTileService internal constructor() : TileService() {
     tileHandler?.destroy()
 
     tileHandler = null
+  }
+
+  companion object {
+
+    @JvmStatic
+    fun updateTile(context: Context) {
+      val appContext = context.applicationContext
+      requestListeningState(
+          appContext,
+          ComponentName(
+              appContext,
+              ProxyTileService::class.java,
+          ),
+      )
+    }
   }
 }

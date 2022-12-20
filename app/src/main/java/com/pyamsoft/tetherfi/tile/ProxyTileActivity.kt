@@ -66,6 +66,7 @@ class ProxyTileActivity : AppCompatActivity() {
             state = vm.state(),
             onDismissed = { vm.handleDismissed() },
             onComplete = { finishAndRemoveTask() },
+            onStatusUpdated = { ProxyTileService.updateTile(this) },
         )
       }
     }
