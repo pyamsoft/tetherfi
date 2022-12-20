@@ -31,7 +31,7 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.event.NotificationRefreshEvent
+import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.Dispatchers

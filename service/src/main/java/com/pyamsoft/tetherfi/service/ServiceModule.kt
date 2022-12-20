@@ -2,8 +2,11 @@ package com.pyamsoft.tetherfi.service
 
 import android.content.Context
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
+import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.lock.Locker
 import com.pyamsoft.tetherfi.service.lock.LockerImpl
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
@@ -27,8 +30,21 @@ abstract class ServiceModule {
 
   @Binds @ServiceInternalApi internal abstract fun bindLocker(impl: LockerImpl): Locker
 
+  @Binds
+  @CheckResult
+  internal abstract fun bindNotificationRefreshConsumer(
+      impl: EventBus<NotificationRefreshEvent>
+  ): EventConsumer<NotificationRefreshEvent>
+
   @Module
   companion object {
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideNotificationRefreshEventBus(): EventBus<NotificationRefreshEvent> {
+      return EventBus.create()
+    }
 
     @Provides
     @Singleton

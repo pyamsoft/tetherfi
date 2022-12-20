@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.service.foreground
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.tetherfi.server.event.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
@@ -23,11 +22,11 @@ import timber.log.Timber
 class ForegroundHandler
 @Inject
 internal constructor(
-    @ServiceInternalApi private val locker: Locker,
-    private val shutdownListener: EventConsumer<ServerShutdownEvent>,
-    private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
-    private val network: WiDiNetwork,
-    private val status: WiDiNetworkStatus,
+  @ServiceInternalApi private val locker: Locker,
+  private val shutdownListener: EventConsumer<ServerShutdownEvent>,
+  private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
+  private val network: WiDiNetwork,
+  private val status: WiDiNetworkStatus,
 ) {
 
   private val scope by lazy(LazyThreadSafetyMode.NONE) { MainScope() }
