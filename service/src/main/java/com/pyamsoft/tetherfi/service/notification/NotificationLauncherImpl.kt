@@ -63,7 +63,6 @@ internal constructor(
   }
 
   override fun stop(service: Service) {
-
     notifier.stopForeground(
         service = service,
         id = NOTIFICATION_ID,

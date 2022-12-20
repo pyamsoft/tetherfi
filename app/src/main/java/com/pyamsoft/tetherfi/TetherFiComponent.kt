@@ -7,15 +7,18 @@ import android.content.Context
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import coil.ImageLoader
+import com.pyamsoft.pydroid.notify.NotifyGuard
+import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.pydroid.util.PermissionRequester
+import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
+import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.server.ServerModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
-import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import dagger.Binds
@@ -76,6 +79,21 @@ internal interface TetherFiComponent {
       @Named("app_name")
       internal fun provideAppNameRes(): Int {
         return R.string.app_name
+      }
+
+      @Provides
+      @JvmStatic
+      @Singleton
+      @Named("notification")
+      internal fun provideNotificationPermissionRequester(): PermissionRequester {
+        return NotifyPermission.createDefault()
+      }
+
+      @Provides
+      @JvmStatic
+      @Singleton
+      internal fun provideNotifyGuard(context: Context): NotifyGuard {
+        return NotifyGuard.createDefault(context)
       }
 
       @Provides

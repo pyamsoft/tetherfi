@@ -37,6 +37,10 @@ internal class ProxyForegroundService internal constructor() : Service() {
     foregroundHandler
         .requireNotNull()
         .bind(
+            onRefreshNotification = {
+              Timber.d("Refresh event received, start notification again")
+              notificationLauncher.requireNotNull().start(this)
+            },
             onShutdownService = {
               Timber.d("Shutdown event received. Stopping service")
               stopSelf()

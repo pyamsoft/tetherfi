@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -31,6 +30,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.icons.Label
 import com.pyamsoft.tetherfi.ui.icons.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
@@ -40,6 +40,7 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
+    hasNotificationPermission: Boolean,
     onToggle: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -50,6 +51,7 @@ fun StatusScreen(
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onRequestNotificationPermission: () -> Unit,
 ) {
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
@@ -77,12 +79,14 @@ fun StatusScreen(
       rememberPreparedLoadedContent(
           appName = appName,
           state = state,
+          hasNotificationPermission = hasNotificationPermission,
           onSsidChanged = onSsidChanged,
           onPasswordChanged = onPasswordChanged,
           onPortChanged = onPortChanged,
           onOpenBatterySettings = onOpenBatterySettings,
           onToggleKeepWakeLock = onToggleKeepWakeLock,
           onSelectBand = onSelectBand,
+          onRequestNotificationPermission = onRequestNotificationPermission,
       )
 
   Scaffold(
@@ -159,12 +163,14 @@ fun StatusScreen(
 private fun rememberPreparedLoadedContent(
     appName: String,
     state: StatusViewState,
+    hasNotificationPermission: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onOpenBatterySettings: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onRequestNotificationPermission: () -> Unit,
 ): LazyListScope.() -> Unit {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
@@ -234,6 +240,8 @@ private fun rememberPreparedLoadedContent(
       onSelectBand,
       isEditable,
       state,
+      hasNotificationPermission,
+      onRequestNotificationPermission,
   ) {
     {
       renderNetworkInformation(
@@ -254,6 +262,15 @@ private fun rememberPreparedLoadedContent(
           onSelectBand = onSelectBand,
       )
 
+      item {
+        Spacer(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = keylines.content)
+                    .height(keylines.content),
+        )
+      }
+
       renderBatteryAndPerformance(
           itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
           isEditable = isEditable,
@@ -264,20 +281,25 @@ private fun rememberPreparedLoadedContent(
           onDisableBatteryOptimizations = onOpenBatterySettings,
       )
 
-      // Bottom space
       item {
         Spacer(
             modifier =
                 Modifier.fillMaxWidth()
                     .padding(horizontal = keylines.content)
-                    .height(MaterialTheme.keylines.content),
+                    .height(keylines.content),
         )
       }
 
+      // Includes bottom space if rendered
+      renderOptionalNotification(
+          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
+          hasPermission = hasNotificationPermission,
+          onRequest = onRequestNotificationPermission,
+      )
+
       item {
         Spacer(
-            modifier =
-                Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
+            modifier = Modifier.padding(top = keylines.content).navigationBarsPadding(),
         )
       }
     }
@@ -427,7 +449,7 @@ private fun LazyListScope.renderNetworkInformation(
   }
   item {
     NetworkBands(
-        modifier = itemModifier.padding(vertical = MaterialTheme.keylines.content),
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
         isEnabled = canUseCustomConfig,
         isEditable = isEditable,
         band = band,
@@ -446,20 +468,12 @@ private fun LazyListScope.renderBatteryAndPerformance(
     onDisableBatteryOptimizations: () -> Unit,
 ) {
   item {
-    Text(
+    Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         text = "Battery and Performance",
-        style =
-            MaterialTheme.typography.caption.copy(
-                fontWeight = FontWeight.W700,
-                color =
-                    MaterialTheme.colors.onBackground.copy(
-                        alpha = ContentAlpha.medium,
-                    ),
-            ),
     )
   }
 
@@ -483,4 +497,3 @@ private fun LazyListScope.renderBatteryAndPerformance(
     )
   }
 }
-

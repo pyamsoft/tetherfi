@@ -9,12 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.ui.navigator.FragmentNavigator
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.ui.theme.asThemeProvider
@@ -27,16 +31,34 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.event.NotificationRefreshEvent
 import javax.inject.Inject
+import javax.inject.Named
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
-  @JvmField @Inject internal var networkPermissionRequester: PermissionRequester? = null
 
-  private var requester: PermissionRequester.Requester? = null
+  @JvmField @Inject internal var notifyGuard: NotifyGuard? = null
+
+  @JvmField
+  @Inject
+  @Named("server")
+  internal var serverPermissionRequester: PermissionRequester? = null
+
+  @JvmField
+  @Inject
+  @Named("notification")
+  internal var notificationPermissionRequester: PermissionRequester? = null
+
+  @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
+
+  private var serverRequester: PermissionRequester.Requester? = null
+  private var notificationRequester: PermissionRequester.Requester? = null
 
   private fun handleToggleProxy() {
     viewModel.requireNotNull().handleToggleProxy(scope = viewLifecycleOwner.lifecycleScope)
@@ -100,13 +122,13 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
         )
   }
 
-  private fun handleRequestPermissions() {
+  private fun handleRequestServerPermissions() {
     viewModel.requireNotNull().also { vm ->
       // Close dialog
       vm.handlePermissionsExplained()
 
       // Request permissions
-      requester.requireNotNull().requestPermissions()
+      serverRequester.requireNotNull().requestPermissions()
     }
   }
 
@@ -118,6 +140,35 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     safeOpenSettingsIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
   }
 
+  private fun registerPermissionRequests(notificationPermissionState: MutableState<Boolean>) {
+    serverRequester?.unregister()
+    serverRequester =
+        serverPermissionRequester.requireNotNull().registerRequester(this) { granted ->
+          if (granted) {
+            Timber.d("Network permission granted, toggle proxy")
+            handleToggleProxy()
+          } else {
+            Timber.w("Network permission not granted")
+          }
+        }
+
+    notificationRequester?.unregister()
+    notificationRequester =
+        notificationPermissionRequester.requireNotNull().registerRequester(this) { granted ->
+          if (granted) {
+            Timber.d("Notification permission granted")
+
+            // Broadcast in the background
+            viewLifecycleOwner.lifecycleScope.launch(context = Dispatchers.IO) {
+              notificationRefreshBus.requireNotNull().send(NotificationRefreshEvent)
+            }
+          } else {
+            Timber.w("Notification permission not granted")
+          }
+          notificationPermissionState.value = granted
+        }
+  }
+
   override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
@@ -127,20 +178,18 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
     ObjectGraph.ActivityScope.retrieve(act).plusStatus().create().inject(this)
 
-    // As early as possible because of Lifecycle quirks
-    requester?.unregister()
-    requester =
-        networkPermissionRequester.requireNotNull().registerRequester(this) { granted ->
-          if (granted) {
-            Timber.d("Network permission granted, toggle proxy")
-            handleToggleProxy()
-          } else {
-            Timber.w("Network permission not granted")
-          }
-        }
-
     val vm = viewModel.requireNotNull()
     val appName = act.getString(R.string.app_name)
+    val ng = notifyGuard.requireNotNull()
+
+    // Hold the state here locally so we don't carry outside of Composable lifespan
+    val notificationState = mutableStateOf(ng.canPostNotification())
+
+    // As early as possible because of Lifecycle quirks
+    registerPermissionRequests(notificationState)
+
+    // Also hold onto the requester here instead of in composition
+    val npr = notificationRequester.requireNotNull()
 
     val themeProvider = act.asThemeProvider(theming.requireNotNull())
     return ComposeView(act).apply {
@@ -152,16 +201,18 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
               modifier = Modifier.fillMaxSize(),
               state = vm.state(),
               appName = appName,
+              hasNotificationPermission = notificationState.value,
               onToggle = { handleToggleProxy() },
               onSsidChanged = { handleSsidChanged(it) },
               onPasswordChanged = { handlePasswordChanged(it) },
               onPortChanged = { handlePortChanged(it) },
               onOpenBatterySettings = { handleOpenBatterySettings() },
               onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
-              onRequestPermissions = { handleRequestPermissions() },
+              onRequestPermissions = { handleRequestServerPermissions() },
               onOpenPermissionSettings = { handleOpenApplicationSettings() },
               onToggleKeepWakeLock = { handleToggleProxyWakelock() },
               onSelectBand = { handleChangeBand(it) },
+              onRequestNotificationPermission = { npr.requestPermissions() },
           )
         }
       }
@@ -201,12 +252,18 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     super.onDestroyView()
     dispose()
 
-    networkPermissionRequester = null
+    serverPermissionRequester = null
+    notificationPermissionRequester = null
     theming = null
     viewModel = null
+    notifyGuard = null
+    notificationRefreshBus = null
 
-    requester?.unregister()
-    requester = null
+    serverRequester?.unregister()
+    serverRequester = null
+
+    notificationRequester?.unregister()
+    notificationRequester = null
   }
 
   override fun getScreenId(): MainView {

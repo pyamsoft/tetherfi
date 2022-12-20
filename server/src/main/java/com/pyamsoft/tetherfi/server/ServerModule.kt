@@ -8,6 +8,7 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
+import com.pyamsoft.tetherfi.server.event.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
@@ -42,6 +43,7 @@ import dagger.Provides
 import dagger.multibindings.IntoSet
 import io.ktor.network.sockets.ConnectedDatagramSocket
 import java.util.concurrent.Executors
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -54,6 +56,12 @@ abstract class ServerModule {
   internal abstract fun bindShutdownConsumer(
       impl: EventBus<ServerShutdownEvent>
   ): EventConsumer<ServerShutdownEvent>
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindNotificationRefreshConsumer(
+      impl: EventBus<NotificationRefreshEvent>
+  ): EventConsumer<NotificationRefreshEvent>
 
   @Binds
   @CheckResult
@@ -128,6 +136,7 @@ abstract class ServerModule {
     @Provides
     @JvmStatic
     @Singleton
+    @Named("server")
     internal fun provideServerPermissionRequester(guard: PermissionGuard): PermissionRequester {
       return PermissionRequester.create(guard.requiredPermissions.toTypedArray())
     }
@@ -152,6 +161,13 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
+      return EventBus.create()
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideNotificationRefreshEventBus(): EventBus<NotificationRefreshEvent> {
       return EventBus.create()
     }
 
