@@ -66,9 +66,9 @@ fun StatusScreen(
   val buttonText =
       remember(wiDiStatus) {
         when (wiDiStatus) {
-          is RunningStatus.Error -> "$appName Error"
-          is RunningStatus.NotRunning -> "Turn $appName ON"
-          is RunningStatus.Running -> "Turn $appName OFF"
+          is RunningStatus.Error -> "$appName Hotspot Error"
+          is RunningStatus.NotRunning -> "Start $appName Hotspot"
+          is RunningStatus.Running -> "Stop $appName Hotspot"
           else -> "$appName is thinking..."
         }
       }
