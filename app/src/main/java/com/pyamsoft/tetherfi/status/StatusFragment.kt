@@ -39,7 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
+class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.main.MainView> {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
@@ -268,8 +268,8 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     notificationRequester = null
   }
 
-  override fun getScreenId(): MainView {
-    return MainView.Status
+  override fun getScreenId(): com.pyamsoft.tetherfi.main.MainView {
+    return com.pyamsoft.tetherfi.main.MainView.Status
   }
 
   companion object {

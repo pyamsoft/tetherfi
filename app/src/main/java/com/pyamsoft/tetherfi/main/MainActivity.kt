@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     val vm = viewModel.requireNotNull()
     val navi = navigator.requireNotNull()
+    val appName = getString(R.string.app_name)
     vm.restoreState(savedInstanceState)
 
     binding.mainTopBar.setContent {
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity() {
       screen?.also { selected ->
         TetherFiTheme(state.theme) {
           MainTopBar(
+              appName = appName,
               selected = selected,
               onSettingsOpen = { handleOpenApplicationSettings() },
               onTabSelected = { navi.navigateTo(it) },

@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 class ProxyTileActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
+  @Inject @JvmField internal var mainViewModel: com.pyamsoft.tetherfi.main.MainViewModeler? = null
   @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
 
   private var viewBinding: ActivityMainBinding? = null
@@ -58,7 +58,7 @@ class ProxyTileActivity : AppCompatActivity() {
 
     binding.mainTopBar.setContent {
       val mainState = mainVm.state()
-      SystemBars()
+        com.pyamsoft.tetherfi.main.SystemBars()
 
       TetherFiTheme(mainState.theme) {
         ProxyTileScreen(

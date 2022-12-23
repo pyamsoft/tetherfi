@@ -131,6 +131,7 @@ dependencies {
   api "androidx.appcompat:appcompat:$appCompat"
 
   api project(":info")
+  api project(":main")
   api project(":server")
   api project(":service")
   api project(":settings")

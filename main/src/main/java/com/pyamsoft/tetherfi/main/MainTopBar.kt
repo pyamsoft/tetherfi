@@ -21,11 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
-import com.pyamsoft.tetherfi.R
 
 private val ALL_TABS =
     listOf(
@@ -33,10 +31,10 @@ private val ALL_TABS =
         MainView.Info,
     )
 
-@JvmOverloads
 @Composable
-internal fun MainTopBar(
+fun MainTopBar(
     modifier: Modifier = Modifier,
+    appName: String,
     selected: MainView,
     onSettingsOpen: () -> Unit,
     onTabSelected: (MainView) -> Unit,
@@ -66,7 +64,7 @@ internal fun MainTopBar(
             contentColor = LocalContentColor.current,
             title = {
               Text(
-                  text = stringResource(R.string.app_name),
+                  text = appName,
               )
             },
             actions = {
@@ -121,6 +119,7 @@ internal fun MainTopBar(
 @Composable
 private fun PreviewMainTopBar() {
   MainTopBar(
+      appName = "TEST",
       selected = MainView.Status,
       onSettingsOpen = {},
       onTabSelected = {},

@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
-internal fun SystemBars() {
+fun SystemBars() {
   val controller = rememberSystemUiController()
   SideEffect {
     controller.setSystemBarsColor(

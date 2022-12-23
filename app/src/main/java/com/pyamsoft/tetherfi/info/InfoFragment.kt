@@ -23,7 +23,7 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainView
 import javax.inject.Inject
 
-class InfoFragment : Fragment(), FragmentNavigator.Screen<MainView> {
+class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.main.MainView> {
 
   @JvmField @Inject internal var viewModel: InfoViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
@@ -88,8 +88,8 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<MainView> {
     viewModel = null
   }
 
-  override fun getScreenId(): MainView {
-    return MainView.Info
+  override fun getScreenId(): com.pyamsoft.tetherfi.main.MainView {
+    return com.pyamsoft.tetherfi.main.MainView.Info
   }
 
   companion object {

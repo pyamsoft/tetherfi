@@ -34,16 +34,16 @@ internal class MainNavigator
 internal constructor(
     activity: MainActivity,
     @IdRes fragmentContainerId: Int,
-) : FragmentNavigator<MainView>(activity, fragmentContainerId) {
+) : FragmentNavigator<com.pyamsoft.tetherfi.main.MainView>(activity, fragmentContainerId) {
 
   override fun onRestoreState(savedInstanceState: UiSavedStateReader) {}
 
   override fun onSaveState(outState: UiSavedStateWriter) {}
 
-  override fun produceFragmentForScreen(screen: MainView): Fragment =
+  override fun produceFragmentForScreen(screen: com.pyamsoft.tetherfi.main.MainView): Fragment =
       when (screen) {
-        MainView.Status -> StatusFragment.newInstance()
-        MainView.Info -> InfoFragment.newInstance()
+        com.pyamsoft.tetherfi.main.MainView.Status -> StatusFragment.newInstance()
+        com.pyamsoft.tetherfi.main.MainView.Info -> InfoFragment.newInstance()
       }
 
   override fun performFragmentTransaction(

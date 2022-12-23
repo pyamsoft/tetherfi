@@ -7,7 +7,7 @@ import com.pyamsoft.pydroid.arch.UiSavedStateWriter
 import com.pyamsoft.pydroid.ui.theme.Theming
 import javax.inject.Inject
 
-internal class MainViewModeler
+class MainViewModeler
 @Inject
 internal constructor(
     private val state: MutableMainViewState,
