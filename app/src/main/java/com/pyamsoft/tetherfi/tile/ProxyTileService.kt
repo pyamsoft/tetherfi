@@ -20,7 +20,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   private val tileActivityIntent by
       lazy(LazyThreadSafetyMode.NONE) {
-        Intent(this, ProxyTileActivity::class.java).apply {
+        Intent(application, ProxyTileActivity::class.java).apply {
           flags =
               Intent.FLAG_ACTIVITY_SINGLE_TOP or
                   Intent.FLAG_ACTIVITY_CLEAR_TOP or
