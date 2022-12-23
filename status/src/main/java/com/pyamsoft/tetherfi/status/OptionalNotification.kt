@@ -37,7 +37,11 @@ internal fun LazyListScope.renderOptionalNotification(
         isEditable = !hasPermission,
         condition = hasPermission,
         title = "Show Hotspot Notification",
-        description = "Show a notification when the Hotspot is active",
+        description =
+            """Keep the Hotspot alive on newer Android versions.
+            |
+            |Without a notification, the Hotspot may be stopped randomly."""
+                .trimMargin(),
         onClick = {
           if (!hasPermission) {
             onRequest()
