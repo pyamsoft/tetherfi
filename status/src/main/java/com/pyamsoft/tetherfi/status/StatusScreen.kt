@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.status
 
+import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
@@ -236,6 +237,9 @@ private fun rememberPreparedLoadedContent(
   val port = remember(state.port) { if (state.port <= 0) "NO PORT" else "${state.port}" }
 
   val keylines = MaterialTheme.keylines
+
+  val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
+
   return remember(
       keylines,
       appName,
@@ -253,6 +257,7 @@ private fun rememberPreparedLoadedContent(
       state,
       hasNotificationPermission,
       onRequestNotificationPermission,
+      showNotificationSettings,
   ) {
     {
       renderNetworkInformation(
@@ -301,12 +306,22 @@ private fun rememberPreparedLoadedContent(
         )
       }
 
-      // Includes bottom space if rendered
-      renderOptionalNotification(
-          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
-          hasPermission = hasNotificationPermission,
-          onRequest = onRequestNotificationPermission,
-      )
+      if (showNotificationSettings) {
+        renderNotificationSettings(
+            itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
+            hasPermission = hasNotificationPermission,
+            onRequest = onRequestNotificationPermission,
+        )
+
+        item {
+          Spacer(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(horizontal = MaterialTheme.keylines.content)
+                      .height(MaterialTheme.keylines.content),
+          )
+        }
+      }
 
       item {
         Spacer(
