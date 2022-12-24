@@ -9,8 +9,8 @@ import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
 import io.ktor.network.sockets.ConnectedDatagramSocket
 import javax.inject.Inject
@@ -27,7 +27,9 @@ internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
-    @ServerInternalApi private val connectionProducerProvider: Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
+    @ServerInternalApi
+    private val connectionProducerProvider:
+        Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
 ) : ProxyManager.Factory {
 
   @CheckResult

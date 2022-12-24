@@ -13,9 +13,9 @@ import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
-import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
+import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.Socket

@@ -58,6 +58,8 @@ internal interface MainComponent {
 
     @Binds
     @CheckResult
-    internal abstract fun bindNavigator(impl: MainNavigator): Navigator<com.pyamsoft.tetherfi.main.MainView>
+    internal abstract fun bindNavigator(
+        impl: MainNavigator
+    ): Navigator<com.pyamsoft.tetherfi.main.MainView>
   }
 }

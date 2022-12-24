@@ -5,5 +5,5 @@ sealed class RunningStatus {
   object Starting : RunningStatus()
   object Running : RunningStatus()
   object Stopping : RunningStatus()
-  data class Error (val message: String) : RunningStatus()
+  data class Error(val message: String) : RunningStatus()
 }

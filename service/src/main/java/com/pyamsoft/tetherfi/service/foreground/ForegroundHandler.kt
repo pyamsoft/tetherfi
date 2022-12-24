@@ -22,11 +22,11 @@ import timber.log.Timber
 class ForegroundHandler
 @Inject
 internal constructor(
-  @ServiceInternalApi private val locker: Locker,
-  private val shutdownListener: EventConsumer<ServerShutdownEvent>,
-  private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
-  private val network: WiDiNetwork,
-  private val status: WiDiNetworkStatus,
+    @ServiceInternalApi private val locker: Locker,
+    private val shutdownListener: EventConsumer<ServerShutdownEvent>,
+    private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
+    private val network: WiDiNetwork,
+    private val status: WiDiNetworkStatus,
 ) {
 
   private val scope by lazy(LazyThreadSafetyMode.NONE) { MainScope() }
