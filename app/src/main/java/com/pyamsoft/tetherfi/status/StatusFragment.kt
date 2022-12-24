@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.net.toUri
@@ -29,8 +31,8 @@ import com.pyamsoft.pydroid.util.doOnResume
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
-import com.pyamsoft.tetherfi.main.MainView
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
@@ -61,11 +63,11 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
   private var serverRequester: PermissionRequester.Requester? = null
   private var notificationRequester: PermissionRequester.Requester? = null
 
-  private fun handleToggleProxy() {
+  private fun onToggleProxy() {
     viewModel.requireNotNull().handleToggleProxy(scope = viewLifecycleOwner.lifecycleScope)
   }
 
-  private fun handleSsidChanged(ssid: String) {
+  private fun onSsidChanged(ssid: String) {
     viewModel
         .requireNotNull()
         .handleSsidChanged(
@@ -74,7 +76,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
         )
   }
 
-  private fun handlePasswordChanged(password: String) {
+  private fun onPasswordChanged(password: String) {
     viewModel
         .requireNotNull()
         .handlePasswordChanged(
@@ -83,7 +85,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
         )
   }
 
-  private fun handlePortChanged(port: String) {
+  private fun onPortChanged(port: String) {
     viewModel
         .requireNotNull()
         .handlePortChanged(
@@ -106,15 +108,15 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
     }
   }
 
-  private fun handleOpenBatterySettings() {
+  private fun onOpenBatterySettings() {
     safeOpenSettingsIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
   }
 
-  private fun handleToggleProxyWakelock() {
+  private fun onToggleProxyWakelock() {
     viewModel.requireNotNull().handleToggleProxyWakelock(scope = viewLifecycleOwner.lifecycleScope)
   }
 
-  private fun handleChangeBand(band: ServerNetworkBand) {
+  private fun onChangeBand(band: ServerNetworkBand) {
     viewModel
         .requireNotNull()
         .handleChangeBand(
@@ -123,7 +125,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
         )
   }
 
-  private fun handleRequestServerPermissions() {
+  private fun onRequestServerPermissions() {
     viewModel.requireNotNull().also { vm ->
       // Close dialog
       vm.handlePermissionsExplained()
@@ -133,7 +135,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
     }
   }
 
-  private fun handleOpenApplicationSettings() {
+  private fun onOpenApplicationSettings() {
     // Close dialog
     viewModel.requireNotNull().handlePermissionsExplained()
 
@@ -147,7 +149,7 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
         serverPermissionRequester.requireNotNull().registerRequester(this) { granted ->
           if (granted) {
             Timber.d("Network permission granted, toggle proxy")
-            handleToggleProxy()
+            onToggleProxy()
           } else {
             Timber.w("Network permission not granted")
           }
@@ -197,24 +199,56 @@ class StatusFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherf
       id = R.id.screen_status
 
       setContent {
+        val handleToggleProxy by rememberUpdatedState { onToggleProxy() }
+
+        val handleSsidChange by rememberUpdatedState { ssid: String -> onSsidChanged(ssid) }
+
+        val handlePasswordChange by rememberUpdatedState { password: String ->
+          onPasswordChanged(password)
+        }
+
+        val handlePortChanged by rememberUpdatedState { port: String -> onPortChanged(port) }
+
+        val handleOpenBatterySettings by rememberUpdatedState { onOpenBatterySettings() }
+
+        val handleDismissPermissionExplanation by rememberUpdatedState {
+          vm.handlePermissionsExplained()
+        }
+
+        val handleRequestPermissions by rememberUpdatedState { onRequestServerPermissions() }
+
+        val handleOpenPermissionSettings by rememberUpdatedState { onOpenApplicationSettings() }
+
+        val handleToggleKeepWakeLock by rememberUpdatedState { onToggleProxyWakelock() }
+
+        val handleSelectBand by rememberUpdatedState { band: ServerNetworkBand ->
+          onChangeBand(band)
+        }
+
+        val handleRequestNotificationPermission by rememberUpdatedState { npr.requestPermissions() }
+
+        val handleStatusUpdated by rememberUpdatedState { _: RunningStatus ->
+          ProxyTileService.updateTile(act)
+        }
+
         act.TetherFiTheme(themeProvider) {
           StatusScreen(
               modifier = Modifier.fillMaxSize(),
               state = vm.state(),
               appName = appName,
               hasNotificationPermission = notificationState.value,
-              onToggle = { handleToggleProxy() },
-              onSsidChanged = { handleSsidChanged(it) },
-              onPasswordChanged = { handlePasswordChanged(it) },
-              onPortChanged = { handlePortChanged(it) },
-              onOpenBatterySettings = { handleOpenBatterySettings() },
-              onDismissPermissionExplanation = { vm.handlePermissionsExplained() },
-              onRequestPermissions = { handleRequestServerPermissions() },
-              onOpenPermissionSettings = { handleOpenApplicationSettings() },
-              onToggleKeepWakeLock = { handleToggleProxyWakelock() },
-              onSelectBand = { handleChangeBand(it) },
-              onRequestNotificationPermission = { npr.requestPermissions() },
-              onStatusUpdated = { ProxyTileService.updateTile(act) },
+              onToggle = handleToggleProxy,
+              onSsidChanged = handleSsidChange,
+              onPasswordChanged = handlePasswordChange,
+              onPortChanged = handlePortChanged,
+              onOpenBatterySettings = handleOpenBatterySettings,
+              onDismissPermissionExplanation = handleDismissPermissionExplanation,
+              onRequestPermissions = handleRequestPermissions,
+              onOpenPermissionSettings = handleOpenPermissionSettings,
+              onToggleKeepWakeLock = handleToggleKeepWakeLock,
+              onSelectBand = handleSelectBand,
+              onRequestNotificationPermission = handleRequestNotificationPermission,
+              onStatusUpdated = handleStatusUpdated,
           )
         }
       }

@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -152,16 +153,19 @@ private fun SideEffectStep(
     status: RunningStatus,
     onDismissed: () -> Unit,
 ) {
+  // Don't use by so that we can pass this object without causing a recompose
+  val handleDismissed = rememberUpdatedState { onDismissed() }
+
   LaunchedEffect(
       initialStatus,
       status,
-      onDismissed,
+      handleDismissed,
   ) {
     // If the current status is an error
     if (status is RunningStatus.Error) {
       // display the error message for ~2 seconds and then dismiss
       delay(2_000)
-      onDismissed()
+      handleDismissed.value()
       return@LaunchedEffect
     }
 
@@ -173,7 +177,7 @@ private fun SideEffectStep(
       if (isInitialStarting && status is RunningStatus.Running) {
         // display for ~1 second and dismiss
         delay(1_000)
-        onDismissed()
+        handleDismissed.value()
         return@LaunchedEffect
       }
 
@@ -183,7 +187,7 @@ private fun SideEffectStep(
       if (isInitialStopping && status is RunningStatus.NotRunning) {
         // display for ~1 second and dismiss
         delay(1_000)
-        onDismissed()
+        handleDismissed.value()
         return@LaunchedEffect
       }
     }
@@ -195,12 +199,17 @@ private fun SideEffectUpdate(
     status: RunningStatus,
     onStatusUpdated: (RunningStatus) -> Unit,
 ) {
+  // Don't use by so that we can pass this object without causing a recompose
+  val handleStatusUpdated = rememberUpdatedState { status: RunningStatus ->
+    onStatusUpdated(status)
+  }
+
   // Status update
   LaunchedEffect(
       status,
-      onStatusUpdated,
+      handleStatusUpdated,
   ) {
-    onStatusUpdated(status)
+    handleStatusUpdated.value(status)
   }
 }
 
@@ -209,13 +218,16 @@ private fun SideEffectComplete(
     isShowing: Boolean,
     onComplete: () -> Unit,
 ) {
+  // Don't use by so that we can pass this object without causing a recompose
+  val handleComplete = rememberUpdatedState { onComplete() }
+
   // Once the dialog is flagged off, we fire this "completed" hook
   LaunchedEffect(
       isShowing,
-      onComplete,
+      handleComplete,
   ) {
     if (!isShowing) {
-      onComplete()
+      handleComplete.value()
     }
   }
 }

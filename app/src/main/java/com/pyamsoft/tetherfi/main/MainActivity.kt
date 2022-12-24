@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  private fun handleOpenApplicationSettings() {
+  private fun onOpenApplicationSettings() {
     SettingsDialog.show(this)
   }
 
@@ -91,11 +92,15 @@ class MainActivity : AppCompatActivity() {
       SystemBars()
       screen?.also { selected ->
         TetherFiTheme(state.theme) {
+          val handleSettingsOpened by rememberUpdatedState { onOpenApplicationSettings() }
+
+          val handleNavigate by rememberUpdatedState { page: MainView -> navi.navigateTo(page) }
+
           MainTopBar(
               appName = appName,
               selected = selected,
-              onSettingsOpen = { handleOpenApplicationSettings() },
-              onTabSelected = { navi.navigateTo(it) },
+              onSettingsOpen = handleSettingsOpened,
+              onTabSelected = handleNavigate,
           )
         }
       }

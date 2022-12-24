@@ -23,6 +23,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -60,12 +61,17 @@ fun StatusScreen(
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
 
+  // Don't use by so that we can pass this object without causing a recompose
+  val handleStatusUpdated = rememberUpdatedState { status: RunningStatus ->
+    onStatusUpdated(status)
+  }
+
   // Status update
   LaunchedEffect(
       wiDiStatus,
-      onStatusUpdated,
+      handleStatusUpdated,
   ) {
-    onStatusUpdated(wiDiStatus)
+    handleStatusUpdated.value(wiDiStatus)
   }
 
   val isButtonEnabled =
