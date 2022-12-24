@@ -75,7 +75,7 @@ dependencies {
   api "androidx.compose.compiler:compiler:$compose_compiler_version"
   api "androidx.activity:activity-compose:$composeActivity"
   api "androidx.compose.ui:ui:$compose_version"
-  api "androidx.compose.material:material:$compose_version"
+  api "androidx.compose.material:material:$composeMaterial"
   api "androidx.compose.animation:animation:$compose_version"
   api "androidx.compose.ui:ui-tooling-preview:$compose_version"
   debugApi "androidx.compose.ui:ui-tooling:$compose_version"
