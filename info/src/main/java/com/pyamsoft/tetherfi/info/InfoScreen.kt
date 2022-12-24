@@ -16,9 +16,7 @@ fun InfoScreen(
     appName: String,
     state: InfoViewState,
 ) {
-  val itemModifier =
-      Modifier.fillMaxWidth()
-          .padding(horizontal = MaterialTheme.keylines.content)
+  val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
 
   LazyColumn(
       modifier = modifier,
