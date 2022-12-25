@@ -23,6 +23,7 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -60,12 +61,13 @@ fun StatusScreen(
   val wiDiStatus = state.wiDiStatus
   val isLoaded = state.preferencesLoaded
 
-  // Status update
+  // Don't use by so we can memoize
+  val handleStatusUpdated = rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(
       wiDiStatus,
-      onStatusUpdated,
+      handleStatusUpdated,
   ) {
-    onStatusUpdated(wiDiStatus)
+    handleStatusUpdated.value.invoke(wiDiStatus)
   }
 
   val isButtonEnabled =
@@ -240,6 +242,15 @@ private fun rememberPreparedLoadedContent(
 
   val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
 
+  // Don't use by so we can memoize
+  val handleRequestNotificationPermission = rememberUpdatedState(onRequestNotificationPermission)
+  val handleSsidChanged = rememberUpdatedState(onSsidChanged)
+  val handlePasswordChanged = rememberUpdatedState(onPasswordChanged)
+  val handlePortChanged = rememberUpdatedState(onPortChanged)
+  val handleToggleKeepWakeLock = rememberUpdatedState(onToggleKeepWakeLock)
+  val handleSelectBand = rememberUpdatedState(onSelectBand)
+  val handleOpenBatterySettings = rememberUpdatedState(onOpenBatterySettings)
+
   return remember(
       keylines,
       appName,
@@ -248,16 +259,17 @@ private fun rememberPreparedLoadedContent(
       password,
       port,
       ip,
-      onSsidChanged,
-      onPasswordChanged,
-      onPortChanged,
-      onToggleKeepWakeLock,
-      onSelectBand,
       isEditable,
       state,
       hasNotificationPermission,
-      onRequestNotificationPermission,
       showNotificationSettings,
+      handleRequestNotificationPermission,
+      handleSsidChanged,
+      handlePasswordChanged,
+      handlePortChanged,
+      handleToggleKeepWakeLock,
+      handleSelectBand,
+      handleOpenBatterySettings,
   ) {
     {
       renderNetworkInformation(
@@ -272,10 +284,10 @@ private fun rememberPreparedLoadedContent(
           port = port,
           ip = ip,
           band = state.band,
-          onSsidChanged = onSsidChanged,
-          onPasswordChanged = onPasswordChanged,
-          onPortChanged = onPortChanged,
-          onSelectBand = onSelectBand,
+          onSsidChanged = handleSsidChanged.value,
+          onPasswordChanged = handlePasswordChanged.value,
+          onPortChanged = handlePortChanged.value,
+          onSelectBand = handleSelectBand.value,
       )
 
       item {
@@ -293,8 +305,8 @@ private fun rememberPreparedLoadedContent(
           appName = appName,
           keepWakeLock = state.keepWakeLock,
           isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
-          onToggleKeepWakeLock = onToggleKeepWakeLock,
-          onDisableBatteryOptimizations = onOpenBatterySettings,
+          onToggleKeepWakeLock = handleToggleKeepWakeLock.value,
+          onDisableBatteryOptimizations = handleOpenBatterySettings.value,
       )
 
       item {
@@ -310,7 +322,7 @@ private fun rememberPreparedLoadedContent(
         renderNotificationSettings(
             itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
             hasPermission = hasNotificationPermission,
-            onRequest = onRequestNotificationPermission,
+            onRequest = handleRequestNotificationPermission.value,
         )
 
         item {

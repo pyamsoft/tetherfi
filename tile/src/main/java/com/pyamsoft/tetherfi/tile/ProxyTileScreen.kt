@@ -9,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -152,16 +153,19 @@ private fun SideEffectStep(
     status: RunningStatus,
     onDismissed: () -> Unit,
 ) {
+  // Don't use by so we can memoize
+  val handleDismissed = rememberUpdatedState(onDismissed)
+
   LaunchedEffect(
       initialStatus,
       status,
-      onDismissed,
+      handleDismissed,
   ) {
     // If the current status is an error
     if (status is RunningStatus.Error) {
       // display the error message for ~2 seconds and then dismiss
       delay(2_000)
-      onDismissed()
+      handleDismissed.value.invoke()
       return@LaunchedEffect
     }
 
@@ -173,7 +177,7 @@ private fun SideEffectStep(
       if (isInitialStarting && status is RunningStatus.Running) {
         // display for ~1 second and dismiss
         delay(1_000)
-        onDismissed()
+        handleDismissed.value.invoke()
         return@LaunchedEffect
       }
 
@@ -183,7 +187,7 @@ private fun SideEffectStep(
       if (isInitialStopping && status is RunningStatus.NotRunning) {
         // display for ~1 second and dismiss
         delay(1_000)
-        onDismissed()
+        handleDismissed.value.invoke()
         return@LaunchedEffect
       }
     }
@@ -195,12 +199,13 @@ private fun SideEffectUpdate(
     status: RunningStatus,
     onStatusUpdated: (RunningStatus) -> Unit,
 ) {
-  // Status update
+  // Don't use by so we can memoize
+  val handleStatusUpdated = rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(
       status,
-      onStatusUpdated,
+      handleStatusUpdated,
   ) {
-    onStatusUpdated(status)
+    handleStatusUpdated.value.invoke(status)
   }
 }
 
@@ -209,13 +214,16 @@ private fun SideEffectComplete(
     isShowing: Boolean,
     onComplete: () -> Unit,
 ) {
-  // Once the dialog is flagged off, we fire this "completed" hook
+
+  // Don't use by so we can memoize
+  val handleCompleted = rememberUpdatedState(onComplete)
   LaunchedEffect(
       isShowing,
-      onComplete,
+      handleCompleted,
   ) {
+    // Once the dialog is flagged off, we fire this "completed" hook
     if (!isShowing) {
-      onComplete()
+      handleCompleted.value.invoke()
     }
   }
 }
