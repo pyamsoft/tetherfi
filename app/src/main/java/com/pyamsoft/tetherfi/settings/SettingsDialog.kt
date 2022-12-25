@@ -8,11 +8,8 @@ import android.view.ViewGroup
 import androidx.annotation.CheckResult
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -51,16 +48,10 @@ class SettingsDialog : AppCompatDialogFragment() {
     val themeProvider = ThemeProvider { theming.requireNotNull().isDarkTheme(act) }
 
     binding.dialogComposeTop.setContent {
-      val handleTopBarHeightChanged by rememberUpdatedState { size: IntSize ->
-        vm.handleTopBarHeight(size.height)
-      }
-
-      val handleDismissed by rememberUpdatedState { dismiss() }
-
       act.TetherFiTheme(themeProvider) {
         SettingsToolbar(
-            modifier = Modifier.fillMaxWidth().onSizeChanged(handleTopBarHeightChanged),
-            onClose = handleDismissed,
+            modifier = Modifier.fillMaxWidth().onSizeChanged { vm.handleTopBarHeight(it.height) },
+            onClose = { dismiss() },
         )
       }
     }

@@ -6,8 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -20,12 +18,11 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.ActivityMainBinding
 import com.pyamsoft.tetherfi.main.MainViewModeler
 import com.pyamsoft.tetherfi.main.SystemBars
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 
 class ProxyTileActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
+  @Inject @JvmField internal var mainViewModel: com.pyamsoft.tetherfi.main.MainViewModeler? = null
   @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
 
   private var viewBinding: ActivityMainBinding? = null
@@ -61,23 +58,15 @@ class ProxyTileActivity : AppCompatActivity() {
 
     binding.mainTopBar.setContent {
       val mainState = mainVm.state()
+      com.pyamsoft.tetherfi.main.SystemBars()
 
-      val handleDismissed by rememberUpdatedState { vm.handleDismissed() }
-
-      val handleCompleted by rememberUpdatedState { finishAndRemoveTask() }
-
-      val handleStatusUpdated by rememberUpdatedState { _: RunningStatus ->
-        ProxyTileService.updateTile(this)
-      }
-
-      SystemBars()
       TetherFiTheme(mainState.theme) {
         ProxyTileScreen(
             modifier = Modifier.fillMaxSize(),
             state = vm.state(),
-            onDismissed = handleDismissed,
-            onComplete = handleCompleted,
-            onStatusUpdated = handleStatusUpdated,
+            onDismissed = { vm.handleDismissed() },
+            onComplete = { finishAndRemoveTask() },
+            onStatusUpdated = { ProxyTileService.updateTile(this) },
         )
       }
     }
