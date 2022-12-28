@@ -38,8 +38,9 @@ class MainActivity : AppCompatActivity() {
 
                 override val changelog = buildChangeLog {
                   change("[BETA] Rework Tile to be more reliable. UI still in progress.")
-                  bugfix("Allow the setup to restart if the Hotspot enters an error state")
-                  bugfix("Remove dead code for size improvement")
+                  change("Split the instructions into its own top tab")
+                  change("Add controls for optional Notification on Android T")
+                  bugfix("General fixes and code optimization")
                 }
               },
       )
