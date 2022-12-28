@@ -47,10 +47,6 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
-  private fun handleOpenApplicationSettings() {
-    SettingsDialog.show(this)
-  }
-
   override fun onCreate(savedInstanceState: Bundle?) {
     // NOTE(Peter):
     // Not full Compose yet
@@ -95,7 +91,7 @@ class MainActivity : AppCompatActivity() {
           MainTopBar(
               appName = appName,
               selected = selected,
-              onSettingsOpen = { handleOpenApplicationSettings() },
+              onSettingsOpen = { SettingsDialog.show(this) },
               onTabSelected = { navi.navigateTo(it) },
           )
         }
