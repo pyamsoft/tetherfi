@@ -51,7 +51,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   private fun setTileStatus(status: RunningStatus) {
     val state: Int
-    val title: String
+    var title: String
     val description: String
     when (status) {
       is RunningStatus.Error -> {
@@ -80,6 +80,9 @@ internal class ProxyTileService internal constructor() : TileService() {
         description = "Stopping..."
       }
     }
+
+    // TODO beta still
+    title = "TetherFi [BETA]"
 
     withTile { tile ->
       tile.state = state
