@@ -27,14 +27,6 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForSsidChanges().collectLatest { s.ssid = it }
-    }
-
-    scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPasswordChanges().collectLatest { s.password = it }
-    }
-
-    scope.launch(context = Dispatchers.Main) {
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
@@ -54,12 +46,26 @@ internal constructor(
 
   fun refreshConnectionInfo(scope: CoroutineScope) {
     val s = state
+
+    // Pull connection info
     scope.launch(context = Dispatchers.Main) {
       val conn = network.getConnectionInfo()
       if (conn == null) {
         s.ip = "NO IP ADDRESS"
       } else {
         s.ip = conn.ip
+      }
+    }
+
+    // Pull group info
+    scope.launch(context = Dispatchers.Main) {
+      val grp = network.getGroupInfo()
+      if (grp == null) {
+        s.ssid = "NO SSID"
+        s.password = "NO PASSWORD"
+      } else {
+        s.ssid = grp.ssid
+        s.password = grp.password
       }
     }
   }

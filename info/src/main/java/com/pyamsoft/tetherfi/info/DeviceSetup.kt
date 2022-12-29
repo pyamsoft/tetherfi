@@ -90,7 +90,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Row {
           Text(
-              text = "Proxy URL/Hostname",
+              text = "URL/Hostname",
               style =
                   MaterialTheme.typography.body1.copy(
                       color =
@@ -111,7 +111,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Row {
           Text(
-              text = "Proxy Port",
+              text = "Port",
               style =
                   MaterialTheme.typography.body1.copy(
                       color =
