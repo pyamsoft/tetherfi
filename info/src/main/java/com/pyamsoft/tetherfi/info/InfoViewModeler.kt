@@ -20,6 +20,21 @@ internal constructor(
     private val wiDiReceiver: WiDiReceiver,
 ) : AbstractViewModeler<InfoViewState>(state) {
 
+  private fun refreshGroupInfo(scope: CoroutineScope) {
+    val s = state
+
+    scope.launch(context = Dispatchers.Main) {
+      val grp = network.getGroupInfo()
+      if (grp == null) {
+        s.ssid = "NO SSID"
+        s.password = "NO PASSWORD"
+      } else {
+        s.ssid = grp.ssid
+        s.password = grp.password
+      }
+    }
+  }
+
   fun bind(scope: CoroutineScope) {
     val s = state
     scope.launch(context = Dispatchers.Main) {
@@ -30,13 +45,24 @@ internal constructor(
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
+            refreshGroupInfo(scope)
             s.ip = event.ip
           }
-          is WidiNetworkEvent.ThisDeviceChanged -> {}
-          is WidiNetworkEvent.PeersChanged -> {}
-          is WidiNetworkEvent.WifiDisabled -> {}
-          is WidiNetworkEvent.WifiEnabled -> {}
-          is WidiNetworkEvent.DiscoveryChanged -> {}
+          is WidiNetworkEvent.ThisDeviceChanged -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.PeersChanged -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.WifiDisabled -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.WifiEnabled -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.DiscoveryChanged -> {
+            refreshGroupInfo(scope)
+          }
         }
       }
     }
@@ -58,15 +84,6 @@ internal constructor(
     }
 
     // Pull group info
-    scope.launch(context = Dispatchers.Main) {
-      val grp = network.getGroupInfo()
-      if (grp == null) {
-        s.ssid = "NO SSID"
-        s.password = "NO PASSWORD"
-      } else {
-        s.ssid = grp.ssid
-        s.password = grp.password
-      }
-    }
+    refreshGroupInfo(scope)
   }
 }
