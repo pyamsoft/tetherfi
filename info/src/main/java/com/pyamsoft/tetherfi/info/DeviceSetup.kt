@@ -131,6 +131,7 @@ internal fun LazyListScope.renderDeviceSetup(
         }
 
         Text(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
             text = "Leave all other proxy options blank!",
             style =
                 MaterialTheme.typography.caption.copy(
