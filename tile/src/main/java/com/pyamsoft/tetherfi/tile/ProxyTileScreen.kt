@@ -1,25 +1,40 @@
 package com.pyamsoft.tetherfi.tile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
+import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
+import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.delay
 import timber.log.Timber
+
+private val CONNECTOR_SIZE = 16.dp
+private val STEP_SIZE = ImageDefaults.ItemSize
 
 @Composable
 fun ProxyTileScreen(
@@ -35,6 +50,8 @@ fun ProxyTileScreen(
   val isInitialStatusError = remember(initialStatus) { initialStatus is RunningStatus.Error }
 
   val isShowing = state.isShowing
+
+  val isError = remember(status) { status is RunningStatus.Error }
 
   val isMiddleStep =
       remember(
@@ -94,7 +111,6 @@ fun ProxyTileScreen(
   )
 
   Box(
-      modifier = modifier,
       contentAlignment = Alignment.Center,
   ) {
     if (isShowing) {
@@ -107,42 +123,201 @@ fun ProxyTileScreen(
               ),
       ) {
         Surface(
+            modifier = modifier,
             shape = MaterialTheme.shapes.medium,
             elevation = DialogDefaults.Elevation,
         ) {
           Column(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           ) {
-            Text(
-                text =
-                    "Status: ${when (status) {
-                          is RunningStatus.Error -> "ERROR"
-                          is RunningStatus.NotRunning -> "STOPPED"
-                          is RunningStatus.Running -> "RUNNING"
-                          is RunningStatus.Starting -> "STARTING..."
-                          is RunningStatus.Stopping -> "STOPPING..."
-                      }
-                      }",
-                style = MaterialTheme.typography.h6,
+            StatusText(
+                modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
+                status = status,
             )
-
-            Text(
-                text = "First: YES",
-                style = MaterialTheme.typography.body1,
-            )
-
-            Text(
-                text = "Middle: ${if (isMiddleStep) "YES" else "NO"}",
-                style = MaterialTheme.typography.body1,
-            )
-
-            Text(
-                text = "Final: ${if (isFinalStep) "YES" else "NO"}",
-                style = MaterialTheme.typography.body1,
+            ProgressStepper(
+                modifier = Modifier.fillMaxWidth(),
+                isError = isError,
+                isMiddleStep = isMiddleStep,
+                isFinalStep = isFinalStep,
             )
           }
         }
       }
+    }
+  }
+}
+
+@Composable
+private fun StatusText(
+    modifier: Modifier = Modifier,
+    status: RunningStatus,
+) {
+  val statusText =
+      remember(status) {
+        when (status) {
+          is RunningStatus.Error -> "ERROR"
+          is RunningStatus.NotRunning -> "STOPPED"
+          is RunningStatus.Running -> "RUNNING"
+          is RunningStatus.Starting -> "STARTING..."
+          is RunningStatus.Stopping -> "STOPPING..."
+        }
+      }
+
+  Text(
+      modifier = modifier,
+      text = statusText,
+      textAlign = TextAlign.Center,
+      style = MaterialTheme.typography.h4,
+  )
+}
+
+@Composable
+private fun ProgressStepper(
+    modifier: Modifier = Modifier,
+    isError: Boolean,
+    isMiddleStep: Boolean,
+    isFinalStep: Boolean,
+) {
+  val isFirstConnectorDone =
+      remember(
+          isMiddleStep,
+          isFinalStep,
+      ) {
+        isMiddleStep || isFinalStep
+      }
+
+  val isFirstConnectorInProgress =
+      remember(
+          isMiddleStep,
+          isFinalStep,
+      ) {
+        !isMiddleStep && !isFinalStep
+      }
+
+  val isSecondConnectorDone =
+      remember(
+          isMiddleStep,
+          isFinalStep,
+      ) {
+        isMiddleStep && isFinalStep
+      }
+
+  val isSecondConnectorInProgress =
+      remember(
+          isMiddleStep,
+          isFinalStep,
+      ) {
+        isMiddleStep && !isFinalStep
+      }
+
+  Row(
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Step(
+        isError = isError,
+        isDone = true,
+    )
+
+    Connector(
+        modifier = Modifier.weight(1F),
+        isError = isError,
+        isDone = isFirstConnectorDone,
+        inProgress = isFirstConnectorInProgress,
+    )
+
+    Step(
+        isError = isError,
+        isDone = isFirstConnectorDone,
+    )
+
+    Connector(
+        modifier = Modifier.weight(1F),
+        isError = isError,
+        isDone = isSecondConnectorDone,
+        inProgress = isSecondConnectorInProgress,
+    )
+
+    Step(
+        isError = isError,
+        isDone = isSecondConnectorDone,
+    )
+  }
+}
+
+@Composable
+private fun Step(
+    modifier: Modifier = Modifier,
+    isError: Boolean,
+    isDone: Boolean,
+) {
+  val colors = MaterialTheme.colors
+  val color =
+      remember(
+          isError,
+          isDone,
+          colors,
+      ) {
+        if (isError) {
+          colors.error
+        } else if (isDone) {
+          colors.success
+        } else {
+          colors.onSurface
+        }
+      }
+
+  Box(
+      modifier = modifier,
+      contentAlignment = Alignment.Center,
+  ) {
+    Icon(
+        modifier = Modifier.size(STEP_SIZE),
+        imageVector = Icons.Filled.CheckCircle,
+        contentDescription = null,
+        tint = color,
+    )
+  }
+}
+
+@Composable
+private fun Connector(
+    modifier: Modifier = Modifier,
+    isError: Boolean,
+    isDone: Boolean,
+    inProgress: Boolean,
+) {
+  val colors = MaterialTheme.colors
+  val color =
+      remember(
+          isError,
+          isDone,
+          inProgress,
+          colors,
+      ) {
+        if (isError) {
+          colors.error
+        } else if (isDone) {
+          colors.success
+        } else if (inProgress) {
+          colors.primary
+        } else {
+          colors.onSurface
+        }
+      }
+
+  Row(
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceEvenly,
+  ) {
+    repeat(3) {
+      Icon(
+          modifier = Modifier.size(CONNECTOR_SIZE),
+          imageVector = Icons.Filled.RadioButtonUnchecked,
+          contentDescription = null,
+          tint = color,
+      )
     }
   }
 }
@@ -214,7 +389,6 @@ private fun SideEffectComplete(
     isShowing: Boolean,
     onComplete: () -> Unit,
 ) {
-
   // Don't use by so we can memoize
   val handleCompleted = rememberUpdatedState(onComplete)
   LaunchedEffect(
@@ -230,7 +404,7 @@ private fun SideEffectComplete(
 
 @Preview
 @Composable
-private fun PreviewProxyTileScreen() {
+private fun PreviewProxyTileScreenInitial() {
   ProxyTileScreen(
       state = MutableProxyTileViewState(),
       onDismissed = {},
