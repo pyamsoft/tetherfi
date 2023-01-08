@@ -58,7 +58,7 @@ class ProxyTileActivity : AppCompatActivity() {
 
     binding.mainTopBar.setContent {
       val mainState = mainVm.state()
-      com.pyamsoft.tetherfi.main.SystemBars()
+      SystemBars()
 
       TetherFiTheme(mainState.theme) {
         ProxyTileScreen(

@@ -111,6 +111,7 @@ fun ProxyTileScreen(
   )
 
   Box(
+      modifier = modifier.padding(MaterialTheme.keylines.content),
       contentAlignment = Alignment.Center,
   ) {
     if (isShowing) {
@@ -123,7 +124,6 @@ fun ProxyTileScreen(
               ),
       ) {
         Surface(
-            modifier = modifier,
             shape = MaterialTheme.shapes.medium,
             elevation = DialogDefaults.Elevation,
         ) {
