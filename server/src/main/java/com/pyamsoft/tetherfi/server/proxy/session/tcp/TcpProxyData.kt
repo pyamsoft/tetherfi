@@ -10,9 +10,8 @@ internal constructor(
     override val environment: Environment,
 ) : ProxyData<TcpProxyData.Runtime, TcpProxyData.Environment> {
 
-  internal data class Runtime
-  internal constructor(
-      val proxy: Socket,
+  internal data class Runtime(
+      val connection: Socket,
   )
 
   internal data class Environment

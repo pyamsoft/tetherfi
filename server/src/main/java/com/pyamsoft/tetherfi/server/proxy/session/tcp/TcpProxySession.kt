@@ -40,16 +40,15 @@ import kotlinx.coroutines.launch
 internal class TcpProxySession
 @Inject
 internal constructor(
-    // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
-    @ServerInternalApi urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi proxyDebug: Boolean,
+    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
+    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
     @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
-        urlFixers,
         proxyDebug,
     ) {
 
@@ -340,7 +339,21 @@ internal constructor(
             port = request.port,
         )
 
-    return aSocket(ActorSelectorManager(context = dispatcher)).tcp().connect(remoteAddress = remote)
+    val rawSocket = aSocket(ActorSelectorManager(context = dispatcher))
+    return rawSocket.tcp().connect(remoteAddress = remote)
+  }
+
+  /**
+   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
+   * very specific cases is correct
+   */
+  @CheckResult
+  private fun String.fixSpecialBuggyUrls(): String {
+    var result = this
+    for (fixer in urlFixers) {
+      result = fixer.fix(result)
+    }
+    return result
   }
 
   override suspend fun exchange(data: TcpProxyData) {
@@ -349,8 +362,9 @@ internal constructor(
     val runtime = data.runtime
     val environment = data.environment
 
-    val proxyInput = runtime.proxy.openReadChannel()
-    val proxyOutput = runtime.proxy.openWriteChannel(autoFlush = true)
+    val connection = runtime.connection
+    val proxyInput = connection.openReadChannel()
+    val proxyOutput = connection.openWriteChannel(autoFlush = true)
 
     val request = parseRequest(proxyInput)
     try {
@@ -360,7 +374,7 @@ internal constructor(
         errorBus.send(
             ErrorEvent.Tcp(
                 id = generateRandomId(),
-                request = request,
+                request = null,
                 throwable = RuntimeException(msg),
             ),
         )

@@ -1,51 +1,44 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
-import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.KeyedObjectProducer
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
+import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.sockets.BoundDatagramSocket
-import io.ktor.network.sockets.ConnectedDatagramSocket
-import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
-import javax.inject.Provider
+import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 internal class UdpProxyManager
 internal constructor(
-    private val session: ProxySession<UdpProxyData>,
-    private val connectionProducerProvider:
-        Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
-    proxyDebug: Boolean,
     port: Int,
-    dispatcher: CoroutineDispatcher,
+    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
+    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    private val dispatcher: CoroutineDispatcher,
 ) :
-    BaseProxyManager<BoundDatagramSocket, Datagram>(
+    BaseProxyManager<BoundDatagramSocket>(
         SharedProxy.Type.UDP,
         dispatcher,
-        proxyDebug,
         port,
     ) {
 
-  private var connectionProducer:
-      ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>? =
-      null
-
+  /**
+   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
+   * very specific cases is correct
+   */
   @CheckResult
-  private fun ensureConnectionProducer():
-      KeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket> {
-    connectionProducer =
-        connectionProducer
-            ?: connectionProducerProvider.get().requireNotNull().also {
-              debugLog("Provide new ConnectionProducer: $it")
-            }
-    return connectionProducer.requireNotNull()
+  private fun String.fixSpecialBuggyUrls(): String {
+    var result = this
+    for (fixer in urlFixers) {
+      result = fixer.fix(result)
+    }
+    return result
   }
 
   override suspend fun openServer(
@@ -59,33 +52,16 @@ internal constructor(
         )
   }
 
-  override suspend fun createSession(server: BoundDatagramSocket): Datagram {
-    return server.receive()
-  }
-
-  override suspend fun runSession(server: BoundDatagramSocket, instance: Datagram) {
+  override suspend fun runServer(server: BoundDatagramSocket) = coroutineScope {
     try {
-      session.exchange(
-          data =
-              UdpProxyData(
-                  runtime =
-                      UdpProxyData.Runtime(
-                          proxy = server,
-                          initialPacket = instance,
-                      ),
-                  environment =
-                      UdpProxyData.Environment(
-                          connectionProducer = ensureConnectionProducer(),
-                      ),
-              ),
-      )
+      while (!server.isClosed && isActive) {
+        val packet = server.receive()
+        launch(context = dispatcher) { Timber.d("Received UDP packet: $packet ${packet.address}") }
+      }
     } catch (e: Throwable) {
-      e.ifNotCancellation { errorLog(e, "Error during session") }
+      e.ifNotCancellation { errorLog(e, "Error during UDP transfer") }
     }
   }
 
-  override suspend fun onServerClosed() {
-    connectionProducer?.dispose()
-    connectionProducer = null
-  }
+  override suspend fun onServerClosed() {}
 }

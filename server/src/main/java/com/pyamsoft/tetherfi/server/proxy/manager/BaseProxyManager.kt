@@ -17,10 +17,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal abstract class BaseProxyManager<S : ASocket, I : Any>(
+internal abstract class BaseProxyManager<S : ASocket>(
     private val proxyType: SharedProxy.Type,
     private val dispatcher: CoroutineDispatcher,
-    private val proxyDebug: Boolean,
     private val port: Int,
 ) : ProxyManager {
 
@@ -29,10 +28,9 @@ internal abstract class BaseProxyManager<S : ASocket, I : Any>(
     val scope = this
     while (scope.isActive) {
       try {
-        val instance = createSession(server)
         scope.launch(context = dispatcher) {
           Enforcer.assertOffMainThread()
-          runSession(server, instance)
+          runServer(server)
         }
       } catch (e: Throwable) {
         e.ifNotCancellation { errorLog(e, "Error running serverLoop") }
@@ -72,9 +70,7 @@ internal abstract class BaseProxyManager<S : ASocket, I : Any>(
     }
   }
 
-  protected abstract suspend fun runSession(server: S, instance: I)
-
-  @CheckResult protected abstract suspend fun createSession(server: S): I
+  protected abstract suspend fun runServer(server: S)
 
   @CheckResult
   protected abstract suspend fun openServer(

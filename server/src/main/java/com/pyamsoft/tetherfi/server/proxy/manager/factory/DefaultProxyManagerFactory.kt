@@ -6,13 +6,10 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
-import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
-import io.ktor.network.sockets.ConnectedDatagramSocket
+import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -22,14 +19,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
-    @ServerInternalApi private val proxyDebug: Boolean,
+    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
+    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
-    @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
-    @ServerInternalApi
-    private val connectionProducerProvider:
-        Provider<ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>>,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -37,7 +31,6 @@ internal constructor(
     return TcpProxyManager(
         port = port,
         dispatcher = dispatcher,
-        proxyDebug = proxyDebug,
         session = tcpSession,
         memPoolProvider = memPoolProvider,
     )
@@ -47,10 +40,8 @@ internal constructor(
   private fun createUdp(port: Int): ProxyManager {
     return UdpProxyManager(
         port = port,
+        urlFixers = urlFixers,
         dispatcher = dispatcher,
-        proxyDebug = proxyDebug,
-        session = udpSession,
-        connectionProducerProvider = connectionProducerProvider,
     )
   }
 

@@ -9,7 +9,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import io.ktor.network.sockets.ServerSocket
-import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import javax.inject.Provider
@@ -20,13 +19,11 @@ internal constructor(
     private val session: ProxySession<TcpProxyData>,
     private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
     dispatcher: CoroutineDispatcher,
-    proxyDebug: Boolean,
     port: Int,
 ) :
-    BaseProxyManager<ServerSocket, Socket>(
+    BaseProxyManager<ServerSocket>(
         SharedProxy.Type.TCP,
         dispatcher,
-        proxyDebug,
         port,
     ) {
 
@@ -50,19 +47,17 @@ internal constructor(
         )
   }
 
-  override suspend fun createSession(server: ServerSocket): Socket {
-    return server.accept()
-  }
-
-  override suspend fun runSession(server: ServerSocket, instance: Socket) {
+  override suspend fun runServer(server: ServerSocket) {
     // Do not use client.use() here or it will close too early
+    val connection = server.accept()
+
     try {
       session.exchange(
           data =
               TcpProxyData(
                   runtime =
                       TcpProxyData.Runtime(
-                          proxy = instance,
+                          connection = connection,
                       ),
                   environment =
                       TcpProxyData.Environment(
@@ -74,7 +69,7 @@ internal constructor(
       e.ifNotCancellation { errorLog(e, "Error during runSession") }
     } finally {
       // Always close the socket
-      instance.dispose()
+      connection.dispose()
     }
   }
 

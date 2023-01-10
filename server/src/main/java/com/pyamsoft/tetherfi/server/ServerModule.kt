@@ -15,16 +15,11 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
-import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.ManagedKeyedObjectProducer
-import com.pyamsoft.tetherfi.server.proxy.session.udp.tracker.UdpKeyedObjectProducer
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiConfig
@@ -40,7 +35,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import io.ktor.network.sockets.ConnectedDatagramSocket
 import java.util.concurrent.Executors
 import javax.inject.Named
 import javax.inject.Singleton
@@ -88,13 +82,6 @@ abstract class ServerModule {
   internal abstract fun bindTcpMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
 
   @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindUdpProducer(
-      impl: UdpKeyedObjectProducer
-  ): ManagedKeyedObjectProducer<DestinationInfo, ConnectedDatagramSocket>
-
-  @Binds
   @IntoSet
   @CheckResult
   @ServerInternalApi
@@ -117,11 +104,6 @@ abstract class ServerModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindUdpProxySession(impl: UdpProxySession): ProxySession<UdpProxyData>
 
   @Module
   companion object {
@@ -169,7 +151,7 @@ abstract class ServerModule {
     @JvmStatic
     @ServerInternalApi
     internal fun provideProxyDebug(): Boolean {
-      return false
+      return true
     }
 
     @Provides
