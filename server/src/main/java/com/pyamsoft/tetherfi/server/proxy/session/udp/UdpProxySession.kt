@@ -24,7 +24,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 @Singleton
 internal class UdpProxySession
@@ -66,20 +65,14 @@ internal constructor(
       destination: DestinationInfo,
   ) = coroutineScope {
     try {
-      val job =
-          launch(context = dispatcher) {
-            // Loop as long as the job is alive and the connections are alive
-            while (isActive && !internet.isClosed && !proxy.isClosed) {
-              // Receive datagrams from the internet
-              val datagram = internet.receive()
+      // Loop as long as the job is alive and the connections are alive
+      while (isActive && !internet.isClosed && !proxy.isClosed) {
+        // Receive datagrams from the internet
+        val datagram = internet.receive()
 
-              // Send them back to the proxy
-              proxy.send(datagram)
-            }
-          }
-
-      // Wait for internet communication to finish
-      job.join()
+        // Send them back to the proxy
+        proxy.send(datagram)
+      }
       debugLog { "Done with proxy request: $destination" }
     } catch (e: Throwable) {
       e.ifNotCancellation {
