@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.ui.icons
+package com.pyamsoft.tetherfi.ui
 
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme

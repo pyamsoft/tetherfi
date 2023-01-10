@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.ui.icons
+package com.pyamsoft.tetherfi.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

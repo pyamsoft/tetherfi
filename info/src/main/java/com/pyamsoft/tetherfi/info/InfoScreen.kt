@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.ui.icons.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 @Composable
 fun InfoScreen(

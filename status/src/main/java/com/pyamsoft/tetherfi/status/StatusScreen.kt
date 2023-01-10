@@ -34,8 +34,8 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.icons.Label
-import com.pyamsoft.tetherfi.ui.icons.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 

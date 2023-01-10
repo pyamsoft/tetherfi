@@ -16,7 +16,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
 import com.pyamsoft.pydroid.ui.widget.rememberMaterialCheckableHeightMatcherGenerator
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.ui.icons.Label
+import com.pyamsoft.tetherfi.ui.Label
 
 @Composable
 internal fun NetworkBands(

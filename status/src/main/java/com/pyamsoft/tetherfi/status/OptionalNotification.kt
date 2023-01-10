@@ -6,7 +6,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
-import com.pyamsoft.tetherfi.ui.icons.Label
+import com.pyamsoft.tetherfi.ui.Label
 
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
