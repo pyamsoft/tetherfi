@@ -64,13 +64,20 @@ internal constructor(
    */
   @CheckResult
   private suspend fun parseRequest(input: ByteReadChannel): ProxyRequest? {
+    /**
+     * Read the first line as it should include enough data for us yeah ok, there is often extra
+     * data sent over but its mainly for optimization and rarely required to actually make a
+     * connection
+     */
     val line = input.readUTF8Line()
 
+    // No line, no go
     if (line.isNullOrBlank()) {
       warnLog { "No input read from proxy" }
       return null
     }
 
+    // Given the line, it needs to be in an expected format or we can't do it
     val methodData = getMethodAndUrlString(line)
     if (methodData == null) {
       warnLog { "Unable to parse method and URL: $line" }
@@ -124,48 +131,60 @@ internal constructor(
       host = uu.host.requireNotNull()
       port = uu.port.requireNotNull()
     } catch (e: Throwable) {
-      // Well that didn't work
-      val portSeperator = possiblyProtocolAndHostAndPort.indexOf(':')
-      val possiblyProtocolAndHost: String
+      // Well that didn't work, would have hoped we didn't have to do this but
 
-      if (portSeperator >= 0) {
-        possiblyProtocolAndHost = possiblyProtocolAndHostAndPort.substring(0, portSeperator)
-        val portString = possiblyProtocolAndHostAndPort.substring(portSeperator + 1)
-        val maybePort = portString.toIntOrNull()
+      // Do we have a port in this URL? if we do split it up
+      val possiblyProtocolAndHost: String
+      val portSeparator = possiblyProtocolAndHostAndPort.indexOf(':')
+      if (portSeparator >= 0) {
+
+        // Split up to just the protocol and host
+        possiblyProtocolAndHost = possiblyProtocolAndHostAndPort.substring(0, portSeparator)
+
+        // And then this, should be the port, right?
+        val portString = possiblyProtocolAndHostAndPort.substring(portSeparator + 1)
+
+        // Parse the port, or default to just 80 for HTTP traffic
         port =
-            if (maybePort == null) {
-              warnLog {
-                "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString"
+            portString.toIntOrNull().let { maybePort ->
+              if (maybePort == null) {
+                warnLog {
+                  "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString"
+                }
+                // Default to port 80 for HTTP
+                80
+              } else {
+                maybePort
               }
-              // Default to port 80 for HTTP
-              80
-            } else {
-              maybePort
             }
       } else {
         // No port in the URL, this is the URL then
         possiblyProtocolAndHost = possiblyProtocolAndHostAndPort
       }
 
+      // Then we split up the protocol
       val splitByProtocol = possiblyProtocolAndHost.split("://")
 
       // Strip the protocol of http:// off of the url, but if there is no protocol, we just have
-      // the
-      // host name as the entire thing
+      // the host name as the entire thing
 
       // Could be a name like mywebsite.com/filehere.html and we only want the host name
       // mywebsite.com
       val hostAndPossiblyFile = splitByProtocol[if (splitByProtocol.size == 1) 0 else 1]
-      val fileIndex = hostAndPossiblyFile.indexOf("/")
+
+      // If there is an additional file attached to this request, ignore it and just grab the URL
       host =
-          if (fileIndex >= 0) hostAndPossiblyFile.substring(0, fileIndex) else hostAndPossiblyFile
+          hostAndPossiblyFile.indexOf("/").let { fileIndex ->
+            if (fileIndex >= 0) hostAndPossiblyFile.substring(0, fileIndex) else hostAndPossiblyFile
+          }
 
       // Guess the protocol or assume it empty
       protocol = if (splitByProtocol.size == 1) splitByProtocol[0] else ""
     }
 
+    // If the port was passed but is some random number, guess it from the protocol
     if (port < 0) {
-      // Port is guessed based on URL
+      // And if we don't know the protocol, good old 80
       port = if (protocol.startsWith("https")) 443 else 80
     }
 
@@ -178,32 +197,57 @@ internal constructor(
   }
 
   /**
+   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
+   * very specific cases is correct
+   */
+  @CheckResult
+  private fun String.fixSpecialBuggyUrls(): String {
+    var result = this
+    for (fixer in urlFixers) {
+      result = fixer.fix(result)
+    }
+    return result
+  }
+
+  /**
    * Figure out the METHOD and URL
    *
    * The METHOD is important because we need to know if this is a CONNECT call for HTTPS
    */
   @CheckResult
   private fun getMethodAndUrlString(line: String): MethodData? {
+    // Line is something like
+    // CONNECT https://my-internet-domain:80 HTTP/2
+
+    // We find the first space
     val firstSpace = line.indexOf(' ')
     if (firstSpace < 0) {
       warnLog { "Invalid request line format. No space: '$line'" }
       return null
     }
 
+    // We now have the first space, the start-of-line, and the rest-of-line
+    //
+    // start-of-line: CONNECT
+    // rest-of-line: https://my-internet-domain:80 HTTP/2
     val restOfLine = line.substring(firstSpace + 1)
+
+    // Need to have the last space so we know the version too
     val nextSpace = restOfLine.indexOf(' ')
     if (nextSpace < 0) {
       warnLog { "Invalid request line format. No nextSpace: '$line' => '$restOfLine'" }
       return null
     }
 
-    val methodString = line.substring(0, firstSpace)
-    val urlString = restOfLine.substring(0, nextSpace)
-    val versionString = restOfLine.substring(nextSpace + 1)
+    // We have everything we need now
+    //
+    // start-of-line: CONNECT
+    // middle-of-line: https://my-internet-domain
+    // end-of-line: HTTP/2
     return MethodData(
-        url = urlString.trim().fixSpecialBuggyUrls(),
-        method = methodString.trim(),
-        version = versionString.trim(),
+        url = restOfLine.substring(0, nextSpace).trim().fixSpecialBuggyUrls(),
+        method = line.substring(0, firstSpace).trim(),
+        version = restOfLine.substring(nextSpace + 1).trim(),
     )
   }
 
@@ -327,6 +371,10 @@ internal constructor(
     }
   }
 
+  /**
+   * Given the initial proxy request, connect to the Internet from our device via the connected
+   * socket
+   */
   @CheckResult
   private suspend fun connectToInternet(request: ProxyRequest): Socket {
     // Tag sockets for Android O strict mode
@@ -345,26 +393,15 @@ internal constructor(
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
-  /**
-   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
-   * very specific cases is correct
-   */
-  @CheckResult
-  private fun String.fixSpecialBuggyUrls(): String {
-    var result = this
-    for (fixer in urlFixers) {
-      result = fixer.fix(result)
-    }
-    return result
-  }
-
   override suspend fun exchange(data: TcpProxyData) {
     Enforcer.assertOffMainThread()
 
+    /** The Proxy is our device */
     val connection = data.connection
     val proxyInput = connection.openReadChannel()
     val proxyOutput = connection.openWriteChannel(autoFlush = true)
 
+    /** We use a string parsing to figure out what this HTTP request wants to do */
     val request = parseRequest(proxyInput)
     try {
       if (request == null) {
@@ -383,6 +420,7 @@ internal constructor(
         return
       }
 
+      // Given the request, connect to the Web
       connectToInternet(request).use { internet ->
         debugLog { "Proxy to: $request" }
         val internetInput = internet.openReadChannel()
@@ -396,6 +434,7 @@ internal constructor(
             ),
         )
 
+        // Communicate between the web connection we've made and back to our client device
         exchangeInternet(
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
