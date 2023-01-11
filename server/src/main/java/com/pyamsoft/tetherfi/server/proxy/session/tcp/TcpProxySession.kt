@@ -22,6 +22,7 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
+import io.ktor.util.encodeBase64
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readAvailable
@@ -260,7 +261,7 @@ internal constructor(
           break
         }
 
-        debugLog { "TALK: $input -> $output\n${String(buffer, 0, size)}" }
+        debugLog { "TALK: $input -> $output\n${String(buffer, 0, size).encodeBase64()}" }
         output.writeFully(buffer, 0, size)
       }
     }
