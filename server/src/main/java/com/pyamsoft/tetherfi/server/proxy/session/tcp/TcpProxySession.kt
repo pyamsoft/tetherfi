@@ -14,7 +14,6 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.InetSocketAddress
@@ -22,6 +21,7 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
+import io.ktor.util.cio.KtorDefaultPool
 import io.ktor.util.encodeBase64
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -252,25 +252,32 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.talk(
-      memPool: MemPool<ByteArray>,
       input: ByteReadChannel,
       output: ByteWriteChannel
   ) {
-    memPool.use { buffer ->
+    // Use the KTorDefaultPool instead of our own mempool
+    val buffer = KtorDefaultPool.borrow()
+
+    // But, we use the array directly instead of as a buffer because, well, I couldn't figure out
+    // how the buffer worked but I did figure out arrays.
+    val bufferArray = buffer.array()
+
+    try {
       while (isActive) {
-        val size = input.readAvailable(buffer)
+        val size = input.readAvailable(bufferArray)
         if (size < 0) {
           break
         }
 
-        debugLog { "TALK: $input -> $output\n${String(buffer, 0, size).encodeBase64()}" }
-        output.writeFully(buffer, 0, size)
+        debugLog { "TALK: $input -> $output\n${String(bufferArray, 0, size).encodeBase64()}" }
+        output.writeFully(bufferArray, 0, size)
       }
+    } finally {
+      KtorDefaultPool.recycle(buffer)
     }
   }
 
   private suspend fun exchangeInternet(
-      memPool: MemPool<ByteArray>,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
@@ -297,7 +304,6 @@ internal constructor(
           launch(context = dispatcher) {
             // Send data from the internet back to the proxy in a different thread
             talk(
-                memPool = memPool,
                 input = internetInput,
                 output = proxyOutput,
             )
@@ -305,7 +311,6 @@ internal constructor(
 
       // Send input from the proxy (clients) to the internet on this thread
       talk(
-          memPool = memPool,
           input = proxyInput,
           output = internetOutput,
       )
@@ -367,10 +372,7 @@ internal constructor(
   override suspend fun exchange(data: TcpProxyData) {
     Enforcer.assertOffMainThread()
 
-    val runtime = data.runtime
-    val environment = data.environment
-
-    val connection = runtime.connection
+    val connection = data.connection
     val proxyInput = connection.openReadChannel()
     val proxyOutput = connection.openWriteChannel(autoFlush = true)
 
@@ -406,7 +408,6 @@ internal constructor(
         )
 
         exchangeInternet(
-            memPool = environment.memPool,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             internetInput = internetInput,

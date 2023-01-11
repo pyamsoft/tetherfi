@@ -3,7 +3,7 @@ package com.pyamsoft.tetherfi.server.proxy.session
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import timber.log.Timber
 
-internal abstract class BaseProxySession<T : ProxyData<*, *>>
+internal abstract class BaseProxySession<T : ProxyData>
 protected constructor(
     private val proxyType: SharedProxy.Type,
     private val proxyDebug: Boolean,

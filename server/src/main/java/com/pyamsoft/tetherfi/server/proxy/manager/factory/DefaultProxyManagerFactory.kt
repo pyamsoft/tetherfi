@@ -8,10 +8,8 @@ import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import javax.inject.Inject
-import javax.inject.Provider
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -23,7 +21,6 @@ internal constructor(
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
-    @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
     @ServerInternalApi private val proxyDebug: Boolean,
 ) : ProxyManager.Factory {
 
@@ -33,7 +30,6 @@ internal constructor(
         port = port,
         dispatcher = dispatcher,
         session = tcpSession,
-        memPoolProvider = memPoolProvider,
         proxyDebug = proxyDebug,
     )
   }

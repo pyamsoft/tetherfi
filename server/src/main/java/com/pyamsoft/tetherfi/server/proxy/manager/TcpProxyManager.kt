@@ -1,20 +1,15 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
-import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -23,7 +18,6 @@ import kotlinx.coroutines.launch
 internal class TcpProxyManager
 internal constructor(
     private val session: ProxySession<TcpProxyData>,
-    private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
     private val dispatcher: CoroutineDispatcher,
     port: Int,
     proxyDebug: Boolean,
@@ -35,31 +29,12 @@ internal constructor(
         proxyDebug,
     ) {
 
-  private var pool: ManagedMemPool<ByteArray>? = null
-
-  @CheckResult
-  private fun ensureMemPool(): MemPool<ByteArray> {
-    pool =
-        pool
-            ?: memPoolProvider.get().requireNotNull().also {
-              debugLog { "Provide new MemPool: $it" }
-            }
-    return pool.requireNotNull()
-  }
-
   private suspend fun runSession(connection: Socket) = coroutineScope {
     try {
       session.exchange(
           data =
               TcpProxyData(
-                  runtime =
-                      TcpProxyData.Runtime(
-                          connection = connection,
-                      ),
-                  environment =
-                      TcpProxyData.Environment(
-                          memPool = ensureMemPool(),
-                      ),
+                  connection = connection,
               ),
       )
     } catch (e: Throwable) {
@@ -98,7 +73,6 @@ internal constructor(
   }
 
   override suspend fun onServerClosed() {
-    pool?.dispose()
-    pool = null
+    // Don't dispose of the KTorDefaultPool here as others may use it
   }
 }

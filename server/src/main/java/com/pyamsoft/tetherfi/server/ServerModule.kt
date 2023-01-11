@@ -18,8 +18,6 @@ import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFac
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ByteArrayMemPool
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiConfig
@@ -75,11 +73,6 @@ abstract class ServerModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindTcpMemPool(impl: ByteArrayMemPool): ManagedMemPool<ByteArray>
 
   @Binds
   @IntoSet
