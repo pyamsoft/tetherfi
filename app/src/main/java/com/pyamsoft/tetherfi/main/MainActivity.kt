@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
                 override val changelog = buildChangeLog {
                   change("A more reliable Quick Tile Toggle with new UI")
                   change("Remove broken UDP traffic support")
-                  bugfix("Faster TCP performance using native memory pools")
+                  bugfix("Faster TCP performance using native operations")
                   bugfix("Less memory used for hotspot creation")
                 }
               },

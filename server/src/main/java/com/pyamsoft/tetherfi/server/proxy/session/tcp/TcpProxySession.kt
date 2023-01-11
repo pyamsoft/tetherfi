@@ -22,13 +22,11 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
-import io.ktor.util.cio.KtorDefaultPool
-import io.ktor.util.encodeBase64
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.cancel
 import io.ktor.utils.io.close
-import io.ktor.utils.io.readAvailable
+import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
 import java.net.URI
@@ -253,25 +251,18 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.talk(input: ByteReadChannel, output: ByteWriteChannel) {
-    // Use the KTorDefaultPool instead of our own mempool
-    val buffer = KtorDefaultPool.borrow()
-
-    // But, we use the array directly instead of as a buffer because, well, I couldn't figure out
-    // how the buffer worked but I did figure out arrays.
-    val bufferArray = buffer.array()
-
-    try {
-      while (isActive) {
-        val size = input.readAvailable(bufferArray)
-        if (size < 0) {
-          break
-        }
-
-        debugLog { "TALK: $input -> $output\n${String(bufferArray, 0, size).encodeBase64()}" }
-        output.writeFully(bufferArray, 0, size)
+    while (isActive) {
+      try {
+        input.joinTo(output, closeOnEnd = false)
+      } catch (_: Throwable) {
+        /**
+         * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected
+         * that this will happen as the natural end of client/host communication.
+         *
+         * Furthermore, even if this were an error, there is no recovery operation we can do, thus
+         * it is useless to care about it.
+         */
       }
-    } finally {
-      KtorDefaultPool.recycle(buffer)
     }
   }
 
