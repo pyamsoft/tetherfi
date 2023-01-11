@@ -5,29 +5,19 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 
 internal enum class ProxyDebug {
 
-  /**
-   * No debug messages
-   */
+  /** No debug messages */
   NONE,
 
-  /**
-   * TCP related messages
-   */
+  /** TCP related messages */
   TCP,
 
-  /**
-   * UDP related messages
-   */
+  /** UDP related messages */
   UDP,
 
-  /**
-   * All debug messages
-   */
+  /** All debug messages */
   ALL;
 
-  /**
-   * We have to be allowed to debug this type
-   */
+  /** We have to be allowed to debug this type */
   @CheckResult
   fun isAllowed(type: SharedProxy.Type): Boolean {
     if (this == NONE) {
