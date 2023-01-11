@@ -23,21 +23,6 @@ internal abstract class BaseProxyManager<S : ASocket>(
     private val port: Int,
 ) : ProxyManager {
 
-  private suspend fun serverLoop(server: S) = coroutineScope {
-    Enforcer.assertOffMainThread()
-    val scope = this
-    while (scope.isActive) {
-      try {
-        scope.launch(context = dispatcher) {
-          Enforcer.assertOffMainThread()
-          runServer(server)
-        }
-      } catch (e: Throwable) {
-        e.ifNotCancellation { errorLog(e, "Error running serverLoop") }
-      }
-    }
-  }
-
   @CheckResult
   private fun getServerAddress(port: Int): SocketAddress {
     return InetSocketAddress(hostname = "0.0.0.0", port = port)
@@ -63,7 +48,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
             localAddress = getServerAddress(port = port),
         )
     try {
-      serverLoop(server)
+      runServer(server)
     } finally {
       server.dispose()
       onServerClosed()

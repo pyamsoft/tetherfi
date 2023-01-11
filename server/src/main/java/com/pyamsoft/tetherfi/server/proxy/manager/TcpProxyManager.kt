@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -9,16 +10,21 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.ManagedMemPool
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.mempool.MemPool
 import io.ktor.network.sockets.ServerSocket
+import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
+import io.ktor.network.sockets.isClosed
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 internal class TcpProxyManager
 internal constructor(
     private val session: ProxySession<TcpProxyData>,
     private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
-    dispatcher: CoroutineDispatcher,
+    private val dispatcher: CoroutineDispatcher,
     port: Int,
 ) :
     BaseProxyManager<ServerSocket>(
@@ -36,21 +42,7 @@ internal constructor(
     return pool.requireNotNull()
   }
 
-  override suspend fun openServer(
-      builder: SocketBuilder,
-      localAddress: SocketAddress
-  ): ServerSocket {
-    return builder
-        .tcp()
-        .bind(
-            localAddress = localAddress,
-        )
-  }
-
-  override suspend fun runServer(server: ServerSocket) {
-    // Do not use client.use() here or it will close too early
-    val connection = server.accept()
-
+  private suspend fun runSession(connection: Socket) = coroutineScope {
     try {
       session.exchange(
           data =
@@ -67,9 +59,36 @@ internal constructor(
       )
     } catch (e: Throwable) {
       e.ifNotCancellation { errorLog(e, "Error during runSession") }
-    } finally {
-      // Always close the socket
-      connection.dispose()
+    }
+  }
+
+  override suspend fun openServer(
+      builder: SocketBuilder,
+      localAddress: SocketAddress
+  ): ServerSocket {
+    return builder
+        .tcp()
+        .bind(
+            localAddress = localAddress,
+        )
+  }
+
+  override suspend fun runServer(server: ServerSocket) = coroutineScope {
+    Enforcer.assertOffMainThread()
+
+    // In a loop, we wait for new TCP connections and then offload them to their own routine.
+    while (isActive && !server.isClosed) {
+      // We must close the connection in the launch{} after exchange is over
+      val connection = server.accept()
+
+      // Run this server loop off thread so we can handle multiple connections at once.
+      launch(context = dispatcher) {
+        try {
+          runSession(connection)
+        } finally {
+          connection.dispose()
+        }
+      }
     }
   }
 

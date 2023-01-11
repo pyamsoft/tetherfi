@@ -59,7 +59,7 @@ internal constructor(
         launch(context = dispatcher) { Timber.d("Received UDP packet: $packet ${packet.address}") }
       }
     } catch (e: Throwable) {
-      e.ifNotCancellation { errorLog(e, "Error during UDP transfer") }
+      e.ifNotCancellation { errorLog(e, "Error during runServer") }
     }
   }
 
