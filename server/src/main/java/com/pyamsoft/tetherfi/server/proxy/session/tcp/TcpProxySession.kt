@@ -252,10 +252,7 @@ internal constructor(
     output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
-  private suspend fun CoroutineScope.talk(
-      input: ByteReadChannel,
-      output: ByteWriteChannel
-  ) {
+  private suspend fun CoroutineScope.talk(input: ByteReadChannel, output: ByteWriteChannel) {
     // Use the KTorDefaultPool instead of our own mempool
     val buffer = KtorDefaultPool.borrow()
 
