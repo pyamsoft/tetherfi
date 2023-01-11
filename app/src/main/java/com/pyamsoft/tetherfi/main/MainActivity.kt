@@ -37,10 +37,10 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  change("[BETA] Rework Tile to be more reliable. UI still in progress.")
-                  change("Split the instructions into its own top tab")
-                  change("Add controls for optional Notification on Android T")
-                  bugfix("General fixes and code optimization")
+                  change("A more reliable Quick Tile Toggle with new UI")
+                  change("Remove broken UDP traffic support")
+                  bugfix("Faster TCP performance using native memory pools")
+                  bugfix("Less memory used for hotspot creation")
                 }
               },
       )

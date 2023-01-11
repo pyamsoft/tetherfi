@@ -144,7 +144,7 @@ abstract class ServerModule {
     @JvmStatic
     @ServerInternalApi
     internal fun provideProxyDebug(): Boolean {
-      return true
+      return false
     }
 
     @Provides
