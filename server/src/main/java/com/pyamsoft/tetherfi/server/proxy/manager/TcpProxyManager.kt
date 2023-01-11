@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
@@ -20,7 +21,7 @@ internal constructor(
     private val session: ProxySession<TcpProxyData>,
     private val dispatcher: CoroutineDispatcher,
     port: Int,
-    proxyDebug: Boolean,
+    proxyDebug: ProxyDebug,
 ) :
     BaseProxyManager<ServerSocket>(
         SharedProxy.Type.TCP,

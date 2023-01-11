@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
@@ -20,7 +21,7 @@ internal constructor(
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
-    @ServerInternalApi private val proxyDebug: Boolean,
+    @ServerInternalApi private val proxyDebug: ProxyDebug,
 ) : ProxyManager.Factory {
 
   @CheckResult

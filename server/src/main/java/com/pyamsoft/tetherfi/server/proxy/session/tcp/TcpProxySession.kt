@@ -6,6 +6,7 @@ import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.generateRandomId
+import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ConnectionEvent
 import com.pyamsoft.tetherfi.server.event.ErrorEvent
@@ -43,7 +44,7 @@ import kotlinx.coroutines.launch
 internal class TcpProxySession
 @Inject
 internal constructor(
-    @ServerInternalApi proxyDebug: Boolean,
+    @ServerInternalApi proxyDebug: ProxyDebug,
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,

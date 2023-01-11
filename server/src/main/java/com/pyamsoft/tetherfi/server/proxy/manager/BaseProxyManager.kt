@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
@@ -17,7 +18,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
     private val proxyType: SharedProxy.Type,
     private val dispatcher: CoroutineDispatcher,
     private val port: Int,
-    private val proxyDebug: Boolean,
+    private val proxyDebug: ProxyDebug,
 ) : ProxyManager {
 
   @CheckResult
@@ -27,21 +28,21 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
   /** Log only when session is in debug mode */
   protected inline fun debugLog(message: () -> String) {
-    if (proxyDebug) {
+    if (proxyDebug.isAllowed(proxyType)) {
       Timber.d("${proxyType.name}: ${message()}")
     }
   }
 
   /** Log only when session is in debug mode */
   protected inline fun warnLog(message: () -> String) {
-    if (proxyDebug) {
+    if (proxyDebug.isAllowed(proxyType)) {
       Timber.w("${proxyType.name}: ${message()}")
     }
   }
 
   /** Log only when session is in debug mode */
   protected inline fun errorLog(throwable: Throwable, message: () -> String) {
-    if (proxyDebug) {
+    if (proxyDebug.isAllowed(proxyType)) {
       Timber.e(throwable, "${proxyType.name}: ${message()}")
     }
   }
