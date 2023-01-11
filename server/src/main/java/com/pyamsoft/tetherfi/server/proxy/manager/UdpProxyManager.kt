@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.sockets.BoundDatagramSocket
@@ -18,14 +17,15 @@ import timber.log.Timber
 internal class UdpProxyManager
 internal constructor(
     port: Int,
-    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
-    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    proxyDebug: Boolean,
+    private val urlFixers: MutableSet<UrlFixer>,
     private val dispatcher: CoroutineDispatcher,
 ) :
     BaseProxyManager<BoundDatagramSocket>(
         SharedProxy.Type.UDP,
         dispatcher,
         port,
+        proxyDebug,
     ) {
 
   /**
@@ -55,11 +55,14 @@ internal constructor(
   override suspend fun runServer(server: BoundDatagramSocket) = coroutineScope {
     try {
       while (!server.isClosed && isActive) {
+        debugLog { "Await UDP packet ${server.localAddress} ${server.socketContext}" }
         val packet = server.receive()
-        launch(context = dispatcher) { Timber.d("Received UDP packet: $packet ${packet.address}") }
+        launch(context = dispatcher) {
+            Timber.d("Received UDP packet: ${packet.address}")
+        }
       }
     } catch (e: Throwable) {
-      e.ifNotCancellation { errorLog(e, "Error during runServer") }
+      e.ifNotCancellation { errorLog(e) { "Error during runServer" } }
     }
   }
 

@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
-import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
@@ -12,15 +11,13 @@ import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal abstract class BaseProxyManager<S : ASocket>(
     private val proxyType: SharedProxy.Type,
     private val dispatcher: CoroutineDispatcher,
     private val port: Int,
+    private val proxyDebug: Boolean,
 ) : ProxyManager {
 
   @CheckResult
@@ -28,12 +25,25 @@ internal abstract class BaseProxyManager<S : ASocket>(
     return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
 
-  protected fun errorLog(error: Throwable, message: String) {
-    Timber.e(error, "${proxyType.name}: $message")
+  /** Log only when session is in debug mode */
+  protected inline fun debugLog(message: () -> String) {
+    if (proxyDebug) {
+      Timber.d("${proxyType.name}: ${message()}")
+    }
   }
 
-  protected fun debugLog(message: String) {
-    Timber.d("${proxyType.name}: $message")
+  /** Log only when session is in debug mode */
+  protected inline fun warnLog(message: () -> String) {
+    if (proxyDebug) {
+      Timber.w("${proxyType.name}: ${message()}")
+    }
+  }
+
+  /** Log only when session is in debug mode */
+  protected inline fun errorLog(throwable: Throwable, message: () -> String) {
+    if (proxyDebug) {
+      Timber.e(throwable, "${proxyType.name}: ${message()}")
+    }
   }
 
   override suspend fun loop() {

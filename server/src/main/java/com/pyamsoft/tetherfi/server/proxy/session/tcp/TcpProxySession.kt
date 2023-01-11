@@ -25,6 +25,8 @@ import io.ktor.network.sockets.openWriteChannel
 import io.ktor.util.encodeBase64
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.cancel
+import io.ktor.utils.io.close
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
@@ -323,6 +325,11 @@ internal constructor(
         )
         writeError(proxyOutput)
       }
+    } finally {
+      proxyInput.cancel()
+      proxyOutput.close()
+      internetInput.cancel()
+      internetOutput.close()
     }
   }
 
@@ -380,6 +387,8 @@ internal constructor(
             ),
         )
         writeError(proxyOutput)
+        proxyInput.cancel()
+        proxyOutput.close()
         return
       }
 

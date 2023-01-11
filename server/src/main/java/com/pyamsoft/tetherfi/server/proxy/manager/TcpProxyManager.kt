@@ -26,11 +26,13 @@ internal constructor(
     private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
     private val dispatcher: CoroutineDispatcher,
     port: Int,
+    proxyDebug: Boolean,
 ) :
     BaseProxyManager<ServerSocket>(
         SharedProxy.Type.TCP,
         dispatcher,
         port,
+        proxyDebug,
     ) {
 
   private var pool: ManagedMemPool<ByteArray>? = null
@@ -38,7 +40,10 @@ internal constructor(
   @CheckResult
   private fun ensureMemPool(): MemPool<ByteArray> {
     pool =
-        pool ?: memPoolProvider.get().requireNotNull().also { debugLog("Provide new MemPool: $it") }
+        pool
+            ?: memPoolProvider.get().requireNotNull().also {
+              debugLog { "Provide new MemPool: $it" }
+            }
     return pool.requireNotNull()
   }
 
@@ -58,7 +63,7 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { errorLog(e, "Error during runSession") }
+      e.ifNotCancellation { errorLog(e) { "Error during runSession" } }
     }
   }
 

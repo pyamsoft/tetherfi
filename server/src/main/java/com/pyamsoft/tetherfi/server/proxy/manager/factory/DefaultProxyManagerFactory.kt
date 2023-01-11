@@ -24,6 +24,7 @@ internal constructor(
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val memPoolProvider: Provider<ManagedMemPool<ByteArray>>,
+    @ServerInternalApi private val proxyDebug: Boolean,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -33,6 +34,7 @@ internal constructor(
         dispatcher = dispatcher,
         session = tcpSession,
         memPoolProvider = memPoolProvider,
+        proxyDebug = proxyDebug,
     )
   }
 
@@ -42,6 +44,7 @@ internal constructor(
         port = port,
         urlFixers = urlFixers,
         dispatcher = dispatcher,
+        proxyDebug = proxyDebug,
     )
   }
 
