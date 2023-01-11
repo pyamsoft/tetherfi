@@ -77,26 +77,29 @@ internal constructor(
       return null
     }
 
-    // Given the line, it needs to be in an expected format or we can't do it
-    val methodData = getMethodAndUrlString(line)
-    if (methodData == null) {
-      warnLog { "Unable to parse method and URL: $line" }
-      return null
-    }
+    try {
+      // Given the line, it needs to be in an expected format or we can't do it
+      val methodData = getMethodAndUrlString(line)
+      if (methodData == null) {
+        warnLog { "Unable to parse method and URL: $line" }
+        return null
+      }
 
-    return try {
       val urlData = getUrlAndPort(methodData.url)
-      ProxyRequest(
-          url = methodData.url,
-          host = urlData.hostName,
-          method = methodData.method,
-          port = urlData.port,
-          version = methodData.version,
-          raw = line,
-      )
+      val request =
+          ProxyRequest(
+              url = methodData.url,
+              host = urlData.hostName,
+              method = methodData.method,
+              port = urlData.port,
+              version = methodData.version,
+              raw = line,
+          )
+      debugLog { "Request received: $line $request" }
+      return request
     } catch (e: Throwable) {
-      warnLog { "Unable to parse url and port: $methodData" }
-      null
+      errorLog(e) { "Unable to parse request: $line" }
+      return null
     }
   }
 
