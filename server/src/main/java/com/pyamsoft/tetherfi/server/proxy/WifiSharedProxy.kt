@@ -81,12 +81,8 @@ internal constructor(
 
         coroutineScope {
           val tcp = proxyLoop(type = SharedProxy.Type.TCP, port = port)
-          val udp = proxyLoop(type = SharedProxy.Type.UDP, port = port)
 
-          mutex.withLock {
-            jobs.add(tcp)
-            jobs.add(udp)
-          }
+          mutex.withLock { jobs.add(tcp) }
 
           Timber.d("Started Proxy Server on port: $port")
           status.set(RunningStatus.Running)

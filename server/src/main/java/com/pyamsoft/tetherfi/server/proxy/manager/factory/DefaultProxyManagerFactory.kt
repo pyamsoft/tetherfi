@@ -5,7 +5,6 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
-import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
@@ -34,20 +33,11 @@ internal constructor(
     )
   }
 
-  @CheckResult
-  private fun createUdp(port: Int): ProxyManager {
-    return UdpProxyManager(
-        port = port,
-        urlFixers = urlFixers,
-        dispatcher = dispatcher,
-        proxyDebug = proxyDebug,
-    )
-  }
-
   override fun create(type: SharedProxy.Type, port: Int): ProxyManager {
     return when (type) {
       SharedProxy.Type.TCP -> createTcp(port = port)
-      SharedProxy.Type.UDP -> createUdp(port = port)
+      SharedProxy.Type.UDP ->
+          throw IllegalArgumentException("Unable to create UDP ProxyManager on port: $port")
     }
   }
 }
