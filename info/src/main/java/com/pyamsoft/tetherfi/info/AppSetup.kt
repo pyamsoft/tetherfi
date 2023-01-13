@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.info
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -21,10 +22,46 @@ internal fun LazyListScope.renderAppSetup(
     ThisInstruction(
         modifier = itemModifier,
     ) {
-      Text(
-          text = "Connect to the Internet.",
-          style = MaterialTheme.typography.body1,
-      )
+      Column {
+        Text(
+            text = "Turn on Wi-Fi.",
+            style = MaterialTheme.typography.body1,
+        )
+        Text(
+            text =
+                "You do not need to connect to a Network, but Wi-Fi must be on for $appName to work.",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.medium,
+                        ),
+                ),
+        )
+      }
+    }
+  }
+
+  item {
+    ThisInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    ) {
+      Column {
+        Text(
+            text = "Connect to the Internet.",
+            style = MaterialTheme.typography.body1,
+        )
+        Text(
+            text = "You can connect via Wi-Fi or Mobile Data",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.medium,
+                        ),
+                ),
+        )
+      }
     }
   }
 
@@ -92,10 +129,22 @@ internal fun LazyListScope.renderAppSetup(
     ThisInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
-      Text(
-          text = "Start the $appName Hotspot.",
-          style = MaterialTheme.typography.body1,
-      )
+      Column {
+        Text(
+            text = "Start the $appName Hotspot.",
+            style = MaterialTheme.typography.body1,
+        )
+        Text(
+            text = "Check that the Broadcast, Proxy, and Hotspot status are all green and running.",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.medium,
+                        ),
+                ),
+        )
+      }
     }
   }
 }
