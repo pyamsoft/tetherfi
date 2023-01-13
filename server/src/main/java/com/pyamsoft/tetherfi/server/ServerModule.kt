@@ -6,8 +6,6 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
-import com.pyamsoft.tetherfi.server.event.ConnectionEvent
-import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
@@ -113,14 +111,6 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     @ServerInternalApi
-    internal fun provideErrorBus(): EventBus<ErrorEvent> {
-      return EventBus.create()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
     internal fun provideWidiReceiverEventBus(): EventBus<WidiNetworkEvent> {
       return EventBus.create()
     }
@@ -129,14 +119,6 @@ abstract class ServerModule {
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
-      return EventBus.create()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    internal fun provideConnectionBus(): EventBus<ConnectionEvent> {
       return EventBus.create()
     }
 

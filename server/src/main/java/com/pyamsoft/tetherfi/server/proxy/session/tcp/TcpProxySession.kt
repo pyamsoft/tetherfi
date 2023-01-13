@@ -1,15 +1,11 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.core.generateRandomId
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.event.ConnectionEvent
-import com.pyamsoft.tetherfi.server.event.ErrorEvent
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
@@ -46,8 +42,6 @@ internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
-    @ServerInternalApi private val errorBus: EventBus<ErrorEvent>,
-    @ServerInternalApi private val connectionBus: EventBus<ConnectionEvent>,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -357,13 +351,6 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         errorLog(e) { "Error during Internet exchange" }
-        errorBus.send(
-            ErrorEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-                throwable = e,
-            ),
-        )
         writeError(proxyOutput)
       }
     } finally {
@@ -410,13 +397,6 @@ internal constructor(
       if (request == null) {
         val msg = "Could not parse proxy request"
         warnLog { msg }
-        errorBus.send(
-            ErrorEvent.Tcp(
-                id = generateRandomId(),
-                request = null,
-                throwable = RuntimeException(msg),
-            ),
-        )
         writeError(proxyOutput)
         proxyInput.cancel()
         proxyOutput.close()
@@ -428,14 +408,6 @@ internal constructor(
         debugLog { "Proxy to: $request" }
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
-
-        // Log connection
-        connectionBus.send(
-            ConnectionEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-            ),
-        )
 
         // Communicate between the web connection we've made and back to our client device
         exchangeInternet(
@@ -449,13 +421,6 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         errorLog(e) { "Error during connect to internet: $request" }
-        errorBus.send(
-            ErrorEvent.Tcp(
-                id = generateRandomId(),
-                request = request,
-                throwable = e,
-            ),
-        )
         writeError(proxyOutput)
       }
     }
