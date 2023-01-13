@@ -3,7 +3,10 @@ package com.pyamsoft.tetherfi.status
 import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -59,27 +64,57 @@ fun StatusScreen(
     onStatusUpdated: (RunningStatus) -> Unit,
 ) {
   val wiDiStatus = state.wiDiStatus
+  val proxyStatus = state.proxyStatus
   val isLoaded = state.preferencesLoaded
+
+  val hotspotStatus =
+      remember(
+          wiDiStatus,
+          proxyStatus,
+      ) {
+        // If either is starting, mark us starting
+        if (wiDiStatus == RunningStatus.Starting || proxyStatus == RunningStatus.Starting) {
+          return@remember RunningStatus.Starting
+        }
+
+        // If either is stopping, mark us stopping
+        if (wiDiStatus == RunningStatus.Stopping || proxyStatus == RunningStatus.Stopping) {
+          return@remember RunningStatus.Stopping
+        }
+
+        // If we are not running
+        if (wiDiStatus == RunningStatus.NotRunning && proxyStatus == RunningStatus.NotRunning) {
+          return@remember RunningStatus.NotRunning
+        }
+
+        // If we are running
+        if (wiDiStatus == RunningStatus.Running && proxyStatus == RunningStatus.Running) {
+          return@remember RunningStatus.Running
+        }
+
+        // Otherwise fallback to wiDi status
+        return@remember wiDiStatus
+      }
 
   // Don't use by so we can memoize
   val handleStatusUpdated = rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(
-      wiDiStatus,
+      hotspotStatus,
       handleStatusUpdated,
   ) {
-    handleStatusUpdated.value.invoke(wiDiStatus)
+    handleStatusUpdated.value.invoke(hotspotStatus)
   }
 
   val isButtonEnabled =
-      remember(wiDiStatus) {
+      remember(hotspotStatus) {
         wiDiStatus is RunningStatus.Running ||
             wiDiStatus is RunningStatus.NotRunning ||
             wiDiStatus is RunningStatus.Error
       }
 
   val buttonText =
-      remember(wiDiStatus) {
-        when (wiDiStatus) {
+      remember(hotspotStatus) {
+        when (hotspotStatus) {
           is RunningStatus.Error -> "$appName Hotspot Error"
           is RunningStatus.NotRunning -> "Start $appName Hotspot"
           is RunningStatus.Running -> "Stop $appName Hotspot"
@@ -93,6 +128,7 @@ fun StatusScreen(
       rememberPreparedLoadedContent(
           appName = appName,
           state = state,
+          hotspotStatus = hotspotStatus,
           hasNotificationPermission = hasNotificationPermission,
           onSsidChanged = onSsidChanged,
           onPasswordChanged = onPasswordChanged,
@@ -141,14 +177,45 @@ fun StatusScreen(
       }
 
       item {
-        DisplayStatus(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(MaterialTheme.keylines.content)
-                    .padding(bottom = MaterialTheme.keylines.content),
-            title = "Hotspot Status:",
-            status = wiDiStatus,
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+            elevation = CardDefaults.Elevation,
+        ) {
+          Column(
+              modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+          ) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+              DisplayStatus(
+                  modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+                  title = "Broadcast Status:",
+                  status = wiDiStatus,
+                  size = StatusSize.SMALL,
+              )
+
+              DisplayStatus(
+                  title = "Proxy Status:",
+                  status = proxyStatus,
+                  size = StatusSize.SMALL,
+              )
+            }
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+              DisplayStatus(
+                  title = "Hotspot Status:",
+                  status = hotspotStatus,
+                  size = StatusSize.NORMAL,
+              )
+            }
+          }
+        }
       }
 
       if (isLoaded) {
@@ -177,6 +244,7 @@ fun StatusScreen(
 private fun rememberPreparedLoadedContent(
     appName: String,
     state: StatusViewState,
+    hotspotStatus: RunningStatus,
     hasNotificationPermission: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -188,8 +256,8 @@ private fun rememberPreparedLoadedContent(
 ): LazyListScope.() -> Unit {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
-      remember(state.wiDiStatus) {
-        when (state.wiDiStatus) {
+      remember(hotspotStatus) {
+        when (hotspotStatus) {
           is RunningStatus.Running,
           is RunningStatus.Starting,
           is RunningStatus.Stopping -> false
@@ -251,6 +319,11 @@ private fun rememberPreparedLoadedContent(
   val handleSelectBand = rememberUpdatedState(onSelectBand)
   val handleOpenBatterySettings = rememberUpdatedState(onOpenBatterySettings)
 
+  val requiresPermissions = state.requiresPermissions
+  val band = state.band
+  val keepWakeLock = state.keepWakeLock
+  val isBatteryOptimizationsIgnored = state.isBatteryOptimizationsIgnored
+
   return remember(
       keylines,
       appName,
@@ -260,7 +333,10 @@ private fun rememberPreparedLoadedContent(
       port,
       ip,
       isEditable,
-      state,
+      requiresPermissions,
+      band,
+      keepWakeLock,
+      isBatteryOptimizationsIgnored,
       hasNotificationPermission,
       showNotificationSettings,
       handleRequestNotificationPermission,
@@ -277,13 +353,13 @@ private fun rememberPreparedLoadedContent(
           isEditable = isEditable,
           canUseCustomConfig = canUseCustomConfig,
           appName = appName,
-          showPermissionMessage = state.requiresPermissions,
+          showPermissionMessage = requiresPermissions,
           showErrorHintMessage = showErrorHintMessage,
           ssid = ssid,
           password = password,
           port = port,
           ip = ip,
-          band = state.band,
+          band = band,
           onSsidChanged = handleSsidChanged.value,
           onPasswordChanged = handlePasswordChanged.value,
           onPortChanged = handlePortChanged.value,
@@ -303,8 +379,8 @@ private fun rememberPreparedLoadedContent(
           itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
           isEditable = isEditable,
           appName = appName,
-          keepWakeLock = state.keepWakeLock,
-          isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
+          keepWakeLock = keepWakeLock,
+          isBatteryOptimizationDisabled = isBatteryOptimizationsIgnored,
           onToggleKeepWakeLock = handleToggleKeepWakeLock.value,
           onDisableBatteryOptimizations = handleOpenBatterySettings.value,
       )

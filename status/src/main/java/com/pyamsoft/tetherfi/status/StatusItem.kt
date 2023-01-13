@@ -12,6 +12,7 @@ import com.pyamsoft.tetherfi.ui.Label
 @Composable
 internal fun StatusItem(
     modifier: Modifier = Modifier,
+    valueModifier: Modifier = Modifier,
     title: String,
     value: String,
     valueStyle: TextStyle = MaterialTheme.typography.body1,
@@ -25,6 +26,7 @@ internal fun StatusItem(
         color = MaterialTheme.colors.onSurface,
     )
     Text(
+        modifier = valueModifier,
         text = value,
         style = valueStyle,
         color = color,
