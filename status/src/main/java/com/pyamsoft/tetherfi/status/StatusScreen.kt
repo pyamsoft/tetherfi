@@ -191,13 +191,14 @@ fun StatusScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
               DisplayStatus(
-                  modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+                  modifier = Modifier.weight(1F, fill = false),
                   title = "Broadcast Status:",
                   status = wiDiStatus,
                   size = StatusSize.SMALL,
               )
 
               DisplayStatus(
+                  modifier = Modifier.weight(1F, fill = false),
                   title = "Proxy Status:",
                   status = proxyStatus,
                   size = StatusSize.SMALL,
@@ -446,7 +447,8 @@ private fun LazyListScope.renderNetworkInformation(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
       ) {
         Text(
-            text = "Try toggling this device's Wi-Fi off and on, then try again.",
+            text =
+                "Wi-Fi must be turned on for the hotspot to work. Try toggling this device's Wi-Fi off and on, then try again.",
             style =
                 MaterialTheme.typography.body1.copy(
                     color = MaterialTheme.colors.error,
