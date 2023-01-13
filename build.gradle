@@ -77,7 +77,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:7.3.1'
+    classpath 'com.android.tools.build:gradle:7.4.0'
 
     // Gradle version checker
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.44.0'
