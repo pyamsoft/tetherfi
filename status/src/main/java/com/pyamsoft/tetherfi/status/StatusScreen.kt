@@ -221,7 +221,7 @@ private fun StatusCard(
         modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
     ) {
       Row(
-          modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
+          modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceEvenly,
       ) {
