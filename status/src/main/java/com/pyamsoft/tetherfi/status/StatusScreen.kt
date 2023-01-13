@@ -177,46 +177,12 @@ fun StatusScreen(
       }
 
       item {
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-            elevation = CardDefaults.Elevation,
-        ) {
-          Column(
-              modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-          ) {
-            Row(
-                modifier =
-                    Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-              DisplayStatus(
-                  modifier = Modifier.weight(1F, fill = false),
-                  title = "Broadcast Status:",
-                  status = wiDiStatus,
-                  size = StatusSize.SMALL,
-              )
-
-              DisplayStatus(
-                  modifier = Modifier.weight(1F, fill = false),
-                  title = "Proxy Status:",
-                  status = proxyStatus,
-                  size = StatusSize.SMALL,
-              )
-            }
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-              DisplayStatus(
-                  title = "Hotspot Status:",
-                  status = hotspotStatus,
-                  size = StatusSize.NORMAL,
-              )
-            }
-          }
-        }
+        StatusCard(
+            modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
+            wiDiStatus = wiDiStatus,
+            proxyStatus = proxyStatus,
+            hotspotStatus = hotspotStatus,
+        )
       }
 
       if (isLoaded) {
@@ -235,6 +201,54 @@ fun StatusScreen(
             )
           }
         }
+      }
+    }
+  }
+}
+
+@Composable
+private fun StatusCard(
+    modifier: Modifier = Modifier,
+    wiDiStatus: RunningStatus,
+    proxyStatus: RunningStatus,
+    hotspotStatus: RunningStatus,
+) {
+  Card(
+      modifier = modifier.padding(MaterialTheme.keylines.content),
+      elevation = CardDefaults.Elevation,
+  ) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+    ) {
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceEvenly,
+      ) {
+        DisplayStatus(
+            modifier = Modifier.weight(1F, fill = false),
+            title = "Broadcast Status:",
+            status = wiDiStatus,
+            size = StatusSize.SMALL,
+        )
+
+        DisplayStatus(
+            modifier = Modifier.weight(1F, fill = false),
+            title = "Proxy Status:",
+            status = proxyStatus,
+            size = StatusSize.SMALL,
+        )
+      }
+
+      Box(
+          modifier = Modifier.fillMaxWidth(),
+          contentAlignment = Alignment.Center,
+      ) {
+        DisplayStatus(
+            title = "Hotspot Status:",
+            status = hotspotStatus,
+            size = StatusSize.NORMAL,
+        )
       }
     }
   }

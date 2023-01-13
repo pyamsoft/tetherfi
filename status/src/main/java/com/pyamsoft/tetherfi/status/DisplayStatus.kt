@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
@@ -60,8 +62,8 @@ internal fun DisplayStatus(
           size,
       ) {
         when (size) {
-          StatusSize.SMALL -> typography.body2
-          StatusSize.NORMAL -> typography.h6
+          StatusSize.SMALL -> typography.body1
+          StatusSize.NORMAL -> typography.h5
         }
       }
 
@@ -105,7 +107,8 @@ internal fun DisplayStatus(
       value = text,
       color = fgColor,
       valueModifier =
-          Modifier.run {
+          Modifier
+              .run {
                 when (size) {
                   StatusSize.SMALL -> this
                   StatusSize.NORMAL -> padding(top = MaterialTheme.keylines.typography)
@@ -133,6 +136,7 @@ internal fun DisplayStatus(
       valueStyle =
           valueStyle.copy(
               fontWeight = FontWeight.W400,
+              textAlign = TextAlign.Center,
           ),
   )
 }
