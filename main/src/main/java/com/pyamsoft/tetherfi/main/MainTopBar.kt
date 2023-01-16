@@ -104,7 +104,6 @@ fun MainTopBar(
               )
             },
         ) {
-          val textStyle = LocalTextStyle.current
           val scope = rememberCoroutineScope()
           for (index in allTabs.indices) {
             val tab = allTabs[index]
@@ -116,22 +115,14 @@ fun MainTopBar(
                   index == currentPage
                 }
 
-            Tab(
-                selected = isSelected,
-                onClick = {
+            MainTab(
+                tab = tab,
+                isSelected = isSelected,
+                onSelected = {
                   // Click fires the index to update
                   // The index updating is caught by the snapshot flow
                   // Which then triggers the page update function
                   scope.launch(context = Dispatchers.Main) { pagerState.animateScrollToPage(index) }
-                },
-                text = {
-                  Text(
-                      text = tab.name,
-                      style =
-                          textStyle.copy(
-                              fontWeight = if (isSelected) FontWeight.W700 else null,
-                          ),
-                  )
                 },
             )
           }
@@ -139,6 +130,30 @@ fun MainTopBar(
       }
     }
   }
+}
+
+@Composable
+private fun MainTab(
+    modifier: Modifier = Modifier,
+    tab: MainView,
+    isSelected: Boolean,
+    onSelected: () -> Unit,
+) {
+  val textStyle = LocalTextStyle.current
+  Tab(
+      modifier = modifier,
+      selected = isSelected,
+      onClick = onSelected,
+      text = {
+        Text(
+            text = tab.name,
+            style =
+                textStyle.copy(
+                    fontWeight = if (isSelected) FontWeight.W700 else null,
+                ),
+        )
+      },
+  )
 }
 
 @Preview
