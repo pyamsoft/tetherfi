@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.main
 
+import androidx.annotation.CheckResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -13,39 +14,51 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.pagerTabIndicatorOffset
+import com.google.accompanist.pager.rememberPagerState
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-private val ALL_TABS =
+@Composable
+@CheckResult
+fun rememberAllTabs(): List<MainView> {
+  return remember {
     listOf(
         MainView.Status,
         MainView.Info,
     )
+  }
+}
 
 @Composable
+@OptIn(ExperimentalPagerApi::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
-    selected: MainView,
+    pagerState: PagerState,
+    allTabs: List<MainView>,
     onSettingsOpen: () -> Unit,
-    onTabSelected: (MainView) -> Unit,
 ) {
   Surface(
       modifier = modifier,
       color = MaterialTheme.colors.background,
       elevation = ZeroElevation,
   ) {
-    val selectedIndex = remember(selected) { ALL_TABS.indexOf(selected) }
-
     Surface(
         contentColor = MaterialTheme.colors.onPrimary,
         color = MaterialTheme.colors.primary,
@@ -79,25 +92,38 @@ fun MainTopBar(
             },
         )
 
+        val currentPage = pagerState.currentPage
         TabRow(
             modifier = Modifier.fillMaxWidth(),
-            selectedTabIndex = selectedIndex,
+            selectedTabIndex = currentPage,
             backgroundColor = Color.Transparent,
             contentColor = LocalContentColor.current,
+            indicator = { tabPositions ->
+              TabRowDefaults.Indicator(
+                  modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+              )
+            },
         ) {
-          ALL_TABS.forEach { tab ->
+          val textStyle = LocalTextStyle.current
+          val scope = rememberCoroutineScope()
+          for (index in allTabs.indices) {
+            val tab = allTabs[index]
             val isSelected =
                 remember(
-                    tab,
-                    selected,
+                    index,
+                    currentPage,
                 ) {
-                  tab == selected
+                  index == currentPage
                 }
 
-            val textStyle = LocalTextStyle.current
             Tab(
                 selected = isSelected,
-                onClick = { onTabSelected(tab) },
+                onClick = {
+                  // Click fires the index to update
+                  // The index updating is caught by the snapshot flow
+                  // Which then triggers the page update function
+                  scope.launch(context = Dispatchers.Main) { pagerState.animateScrollToPage(index) }
+                },
                 text = {
                   Text(
                       text = tab.name,
@@ -117,11 +143,12 @@ fun MainTopBar(
 
 @Preview
 @Composable
+@OptIn(ExperimentalPagerApi::class)
 private fun PreviewMainTopBar() {
   MainTopBar(
       appName = "TEST",
-      selected = MainView.Status,
+      pagerState = rememberPagerState(),
+      allTabs = rememberAllTabs(),
       onSettingsOpen = {},
-      onTabSelected = {},
   )
 }

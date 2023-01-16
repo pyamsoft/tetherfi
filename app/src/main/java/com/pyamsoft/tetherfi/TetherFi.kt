@@ -72,6 +72,18 @@ class TetherFi : Application() {
           "https://github.com/ktorio/ktor",
           "Framework for quickly creating connected applications in Kotlin with minimal effort",
       )
+
+      OssLibraries.add(
+          "Accompanist System UI Controller",
+          "https://google.github.io/accompanist/systemuicontroller/",
+          "System UI Controller provides easy-to-use utilities for updating the System UI bar colors within Jetpack Compose.",
+      )
+
+      OssLibraries.add(
+          "Accompanist Pager",
+          "https://google.github.io/accompanist/pager/",
+          "A library which provides paging layouts for Jetpack Compose.",
+      )
     }
   }
 }

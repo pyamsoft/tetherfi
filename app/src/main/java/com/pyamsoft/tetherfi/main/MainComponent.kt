@@ -17,20 +17,15 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.annotation.CheckResult
-import androidx.annotation.IdRes
-import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.info.InfoComponent
 import com.pyamsoft.tetherfi.settings.AppSettingsComponent
 import com.pyamsoft.tetherfi.settings.SettingsComponent
 import com.pyamsoft.tetherfi.status.StatusComponent
-import dagger.Binds
-import dagger.BindsInstance
-import dagger.Module
 import dagger.Subcomponent
 
 @ActivityScope
-@Subcomponent(modules = [MainComponent.MainModule::class])
+@Subcomponent
 internal interface MainComponent {
 
   @CheckResult fun plusAppSettings(): AppSettingsComponent.Factory
@@ -43,23 +38,11 @@ internal interface MainComponent {
 
   fun inject(activity: MainActivity)
 
+  fun inject(injector: MainInjector)
+
   @Subcomponent.Factory
   interface Factory {
 
-    @CheckResult
-    fun create(
-        @BindsInstance activity: MainActivity,
-        @BindsInstance @IdRes fragmentContainerId: Int,
-    ): MainComponent
-  }
-
-  @Module
-  abstract class MainModule {
-
-    @Binds
-    @CheckResult
-    internal abstract fun bindNavigator(
-        impl: MainNavigator
-    ): Navigator<com.pyamsoft.tetherfi.main.MainView>
+    @CheckResult fun create(): MainComponent
   }
 }

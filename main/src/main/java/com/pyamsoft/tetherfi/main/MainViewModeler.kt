@@ -1,10 +1,11 @@
 package com.pyamsoft.tetherfi.main
 
 import android.app.Activity
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.pydroid.arch.UiSavedStateReader
-import com.pyamsoft.pydroid.arch.UiSavedStateWriter
+import com.pyamsoft.pydroid.ui.arch.ComposableViewModeler
 import com.pyamsoft.pydroid.ui.theme.Theming
+import java.security.KeyStore.Entry
 import javax.inject.Inject
 
 class MainViewModeler
@@ -12,29 +13,29 @@ class MainViewModeler
 internal constructor(
     private val state: MutableMainViewState,
     private val theming: Theming,
-) : AbstractViewModeler<MainViewState>(state) {
+) : AbstractViewModeler<MainViewState>(state), ComposableViewModeler {
 
   fun handleSyncDarkTheme(activity: Activity) {
     val isDark = theming.isDarkTheme(activity)
     state.theme = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
   }
 
-  override fun saveState(outState: UiSavedStateWriter) {
-    val s = state
+  override fun registerSaveState(
+      registry: SaveableStateRegistry
+  ): List<SaveableStateRegistry.Entry> =
+      mutableListOf<SaveableStateRegistry.Entry>().apply {
+        val s = state
 
-    s.theme.also { theme ->
-      if (theme != Theming.Mode.SYSTEM) {
-        outState.put(KEY_THEME, theme.name)
-      } else {
-        outState.remove(KEY_THEME)
+        registry.registerProvider(KEY_THEME) { s.theme.name }.also { add(it) }
       }
-    }
-  }
 
-  override fun restoreState(savedInstanceState: UiSavedStateReader) {
+  override fun consumeRestoredState(registry: SaveableStateRegistry) {
     val s = state
-
-    savedInstanceState.get<String>(KEY_THEME)?.also { s.theme = Theming.Mode.valueOf(it) }
+    registry
+        .consumeRestored(KEY_THEME)
+        ?.let { it as String }
+        ?.let { Theming.Mode.valueOf(it) }
+        ?.also { s.theme = it }
   }
 
   companion object {
