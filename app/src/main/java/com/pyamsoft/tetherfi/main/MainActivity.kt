@@ -4,6 +4,8 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
@@ -11,6 +13,7 @@ import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.navigator.Navigator
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
+import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -18,13 +21,35 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.databinding.ActivityMainBinding
 import com.pyamsoft.tetherfi.settings.SettingsDialog
+import com.pyamsoft.tetherfi.status.PermissionRequests
+import com.pyamsoft.tetherfi.status.PermissionResponse
 import javax.inject.Inject
+import javax.inject.Named
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: MainViewModeler? = null
 
   @Inject @JvmField internal var navigator: Navigator<MainView>? = null
+
+  @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
+  @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
+
+  @JvmField
+  @Inject
+  @Named("server")
+  internal var serverPermissionRequester: PermissionRequester? = null
+
+  @JvmField
+  @Inject
+  @Named("notification")
+  internal var notificationPermissionRequester: PermissionRequester? = null
+
+  private var serverRequester: PermissionRequester.Requester? = null
+  private var notificationRequester: PermissionRequester.Requester? = null
 
   private var viewBinding: ActivityMainBinding? = null
 
@@ -46,6 +71,54 @@ class MainActivity : AppCompatActivity() {
                 }
               },
       )
+    }
+  }
+
+  private fun registerToSendPermissionResults() {
+    serverRequester?.unregister()
+    notificationRequester?.unregister()
+
+    serverRequester =
+        serverPermissionRequester.requireNotNull().registerRequester(this) { granted ->
+          if (granted) {
+            Timber.d("Network permission granted, toggle proxy")
+
+            // Broadcast in the background
+            lifecycleScope.launch(context = Dispatchers.IO) {
+              permissionResponseBus.requireNotNull().send(PermissionResponse.ToggleProxy)
+            }
+          } else {
+            Timber.w("Network permission not granted")
+          }
+        }
+
+    notificationRequester =
+        notificationPermissionRequester.requireNotNull().registerRequester(this) { granted ->
+          if (granted) {
+            Timber.d("Notification permission granted")
+
+            // Broadcast in the background
+            lifecycleScope.launch(context = Dispatchers.IO) {
+              permissionResponseBus.requireNotNull().send(PermissionResponse.RefreshNotification)
+            }
+          } else {
+            Timber.w("Notification permission not granted")
+          }
+        }
+  }
+
+  private fun registerToRespondToPermissionRequests() {
+    lifecycleScope.launch(context = Dispatchers.IO) {
+      permissionRequestBus.requireNotNull().onEvent {
+        when (it) {
+          is PermissionRequests.Notification -> {
+            notificationRequester.requireNotNull().requestPermissions()
+          }
+          is PermissionRequests.Server -> {
+            serverRequester.requireNotNull().requestPermissions()
+          }
+        }
+      }
     }
   }
 
@@ -76,6 +149,10 @@ class MainActivity : AppCompatActivity() {
 
     super.onCreate(savedInstanceState)
     stableLayoutHideNavigation()
+
+    // Must happen during onCreate or app crashes
+    registerToRespondToPermissionRequests()
+    registerToSendPermissionResults()
 
     val vm = viewModel.requireNotNull()
     val navi = navigator.requireNotNull()
@@ -121,6 +198,14 @@ class MainActivity : AppCompatActivity() {
     super.onDestroy()
     viewBinding?.apply { mainTopBar.dispose() }
 
+    notificationRequester?.unregister()
+    serverRequester?.unregister()
+
+    serverPermissionRequester = null
+    notificationPermissionRequester = null
+    permissionRequestBus = null
+    serverRequester = null
+    notificationRequester = null
     viewBinding = null
     viewModel = null
     navigator = null

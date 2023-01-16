@@ -25,7 +25,6 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnResume
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -43,6 +42,7 @@ internal class StatusInjector : ComposableInjector() {
   @JvmField @Inject internal var notifyGuard: NotifyGuard? = null
   @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
+  @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
 
   override fun onInject(activity: FragmentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).plusStatus().create().inject(this)
@@ -53,6 +53,7 @@ internal class StatusInjector : ComposableInjector() {
     notifyGuard = null
     notificationRefreshBus = null
     permissionRequestBus = null
+    permissionResponseBus = null
   }
 }
 
@@ -80,7 +81,7 @@ private data class MountHookResults(
 @Composable
 private fun RegisterPermissionRequests(
     notificationPermissionState: MutableState<Boolean>,
-    permissionRequestBus: EventBus<PermissionRequests>,
+    permissionResponseBus: EventBus<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
 ) {
@@ -88,21 +89,23 @@ private fun RegisterPermissionRequests(
   val handleToggleProxy = rememberUpdatedState(onToggleProxy)
 
   LaunchedEffect(
-      permissionRequestBus,
+      permissionResponseBus,
       handleToggleProxy,
       notificationRefreshBus,
       notificationPermissionState,
   ) {
     val scope = this
     scope.launch(context = Dispatchers.Main) {
-      permissionRequestBus.onEvent { request ->
-        when (request) {
-          is PermissionRequests.RefreshNotificationPermission -> {
+
+      // See MainActivity
+      permissionResponseBus.onEvent { resp ->
+        when (resp) {
+          is PermissionResponse.RefreshNotification -> {
             // Update state variable
             notificationPermissionState.value = true
             notificationRefreshBus.send(NotificationRefreshEvent)
           }
-          is PermissionRequests.ToggleProxy -> {
+          is PermissionResponse.ToggleProxy -> {
             handleToggleProxy.value.invoke()
           }
         }
@@ -120,7 +123,7 @@ private fun mountHooks(
 ): MountHookResults {
   val viewModel = rememberNotNull(component.viewModel)
   val notifyGuard = rememberNotNull(component.notifyGuard)
-  val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
+  val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
   val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
   val notificationState = remember { mutableStateOf(notifyGuard.canPostNotification()) }
@@ -129,7 +132,7 @@ private fun mountHooks(
   RegisterPermissionRequests(
       notificationPermissionState = notificationState,
       notificationRefreshBus = notificationRefreshBus,
-      permissionRequestBus = permissionRequestBus,
+      permissionResponseBus = permissionResponseBus,
       onToggleProxy = onToggleProxy,
   )
 
@@ -174,11 +177,10 @@ private fun mountHooks(
 fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
-    notificationRequester: PermissionRequester.Requester,
-    serverRequester: PermissionRequester.Requester,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
+  val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
 
   val activity = rememberActivity()
   val owner = LocalLifecycleOwner.current
@@ -203,7 +205,12 @@ fun StatusEntry(
   }
 
   val handleRequestNotificationPermission by rememberUpdatedState {
-    notificationRequester.requestPermissions()
+    owner.lifecycleScope.launch(context = Dispatchers.IO) {
+      // See MainActivity
+      permissionRequestBus.send(PermissionRequests.Notification)
+    }
+
+    return@rememberUpdatedState
   }
 
   val handleSsidChanged by rememberUpdatedState { ssid: String ->
@@ -249,7 +256,12 @@ fun StatusEntry(
     viewModel.handlePermissionsExplained()
 
     // Request permissions
-    serverRequester.requestPermissions()
+    owner.lifecycleScope.launch(context = Dispatchers.IO) {
+      // See MainActivity
+      permissionRequestBus.send(PermissionRequests.Server)
+    }
+
+    return@rememberUpdatedState
   }
 
   val handleOpenApplicationSettings by rememberUpdatedState {

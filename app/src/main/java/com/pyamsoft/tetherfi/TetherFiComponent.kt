@@ -21,6 +21,7 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
+import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import dagger.Binds
@@ -120,6 +121,13 @@ internal interface TetherFiComponent {
       @JvmStatic
       @Singleton
       internal fun providePermissionRequestBus(): EventBus<PermissionRequests> {
+        return EventBus.create()
+      }
+
+      @Provides
+      @JvmStatic
+      @Singleton
+      internal fun providePermissionResponseBus(): EventBus<PermissionResponse> {
         return EventBus.create()
       }
     }
