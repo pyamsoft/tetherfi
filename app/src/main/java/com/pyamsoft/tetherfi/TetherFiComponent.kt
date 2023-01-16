@@ -7,6 +7,7 @@ import android.content.Context
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import coil.ImageLoader
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -19,6 +20,7 @@ import com.pyamsoft.tetherfi.server.ServerModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import dagger.Binds
@@ -112,6 +114,13 @@ internal interface TetherFiComponent {
       @JvmStatic
       internal fun provideTileServiceClass(): Class<out TileService> {
         return ProxyTileService::class.java
+      }
+
+      @Provides
+      @JvmStatic
+      @Singleton
+      internal fun providePermissionRequestBus(): EventBus<PermissionRequests> {
+        return EventBus.create()
       }
     }
   }

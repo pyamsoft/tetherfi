@@ -24,6 +24,8 @@ internal interface InfoComponent {
 
   fun inject(fragment: InfoFragment)
 
+  fun inject(injector: InfoInjector)
+
   @Subcomponent.Factory
   interface Factory {
 

@@ -23,9 +23,8 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.MainView
 import javax.inject.Inject
 
-class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.main.MainView> {
+class InfoFragment : Fragment(), FragmentNavigator.Screen<MainView> {
 
-  @JvmField @Inject internal var viewModel: InfoViewModeler? = null
   @JvmField @Inject internal var theming: Theming? = null
 
   override fun onCreateView(
@@ -34,10 +33,8 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.
       savedInstanceState: Bundle?
   ): View {
     val act = requireActivity()
-
     ObjectGraph.ActivityScope.retrieve(act).plusInfo().create().inject(this)
 
-    val vm = viewModel.requireNotNull()
     val appName = act.getString(R.string.app_name)
 
     val themeProvider = act.asThemeProvider(theming.requireNotNull())
@@ -46,9 +43,8 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.
 
       setContent {
         act.TetherFiTheme(themeProvider) {
-          InfoScreen(
+          InfoEntry(
               modifier = Modifier.fillMaxSize(),
-              state = vm.state(),
               appName = appName,
           )
         }
@@ -56,24 +52,22 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.
     }
   }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    viewModel.requireNotNull().also { vm ->
-      vm.restoreState(savedInstanceState)
-      vm.bind(scope = viewLifecycleOwner.lifecycleScope)
-    }
-  }
+//  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//    super.onViewCreated(view, savedInstanceState)
+//    viewModel.requireNotNull().also { vm ->
+//      vm.restoreState(savedInstanceState)
+//    }
+//  }
 
   override fun onResume() {
     super.onResume()
-    viewModel.requireNotNull().refreshConnectionInfo(scope = viewLifecycleOwner.lifecycleScope)
     requireActivity().reportFullyDrawn()
   }
 
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    viewModel?.saveState(outState)
-  }
+//  override fun onSaveInstanceState(outState: Bundle) {
+//    super.onSaveInstanceState(outState)
+//    viewModel?.saveState(outState)
+//  }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
@@ -85,11 +79,10 @@ class InfoFragment : Fragment(), FragmentNavigator.Screen<com.pyamsoft.tetherfi.
     dispose()
 
     theming = null
-    viewModel = null
   }
 
-  override fun getScreenId(): com.pyamsoft.tetherfi.main.MainView {
-    return com.pyamsoft.tetherfi.main.MainView.Info
+  override fun getScreenId(): MainView {
+    return MainView.Info
   }
 
   companion object {
