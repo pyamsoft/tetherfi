@@ -22,8 +22,6 @@ import dagger.Subcomponent
 @Subcomponent
 internal interface StatusComponent {
 
-  fun inject(fragment: StatusFragment)
-
   fun inject(injector: StatusInjector)
 
   @Subcomponent.Factory

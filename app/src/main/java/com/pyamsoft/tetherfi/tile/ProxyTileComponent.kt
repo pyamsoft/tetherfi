@@ -26,6 +26,8 @@ internal interface ProxyTileComponent {
 
   fun inject(activity: ProxyTileActivity)
 
+  fun inject(injector: ProxyTileInjector)
+
   @Subcomponent.Factory
   interface Factory {
 

@@ -22,10 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
+import com.pyamsoft.pydroid.ui.app.PaddedDialog
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
@@ -110,37 +110,37 @@ fun ProxyTileScreen(
       onDismissed = onDismissed,
   )
 
-  Box(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
-      contentAlignment = Alignment.Center,
-  ) {
-    if (isShowing) {
-      Dialog(
-          onDismissRequest = onDismissed,
-          properties =
-              DialogProperties(
-                  dismissOnBackPress = isInitialStatusError,
-                  dismissOnClickOutside = isInitialStatusError,
-              ),
+  val properties =
+      remember(isInitialStatusError) {
+        DialogProperties(
+            dismissOnBackPress = isInitialStatusError,
+            dismissOnClickOutside = isInitialStatusError,
+        )
+      }
+
+  if (isShowing) {
+    PaddedDialog(
+        onDismissRequest = onDismissed,
+        properties = properties,
+    ) {
+      Surface(
+          modifier = modifier,
+          shape = MaterialTheme.shapes.medium,
+          elevation = DialogDefaults.Elevation,
       ) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            elevation = DialogDefaults.Elevation,
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
         ) {
-          Column(
-              modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-          ) {
-            StatusText(
-                modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
-                status = status,
-            )
-            ProgressStepper(
-                modifier = Modifier.fillMaxWidth(),
-                isError = isError,
-                isMiddleStep = isMiddleStep,
-                isFinalStep = isFinalStep,
-            )
-          }
+          StatusText(
+              modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
+              status = status,
+          )
+          ProgressStepper(
+              modifier = Modifier.fillMaxWidth(),
+              isError = isError,
+              isMiddleStep = isMiddleStep,
+              isFinalStep = isFinalStep,
+          )
         }
       }
     }

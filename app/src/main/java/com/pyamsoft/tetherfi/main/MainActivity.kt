@@ -12,8 +12,6 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
-import com.pyamsoft.pydroid.ui.util.dispose
-import com.pyamsoft.pydroid.ui.util.recompose
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
@@ -58,12 +56,8 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  change("A more reliable Quick Tile Toggle with new UI")
-                  change("Remove broken UDP traffic support")
-                  change("More information displayed on status screen")
-                  change("Clarify setup instructions")
-                  bugfix("Faster TCP performance using native operations")
-                  bugfix("Less memory used for hotspot creation")
+                  change("Full usage of Jetpack Compose")
+                  feature("Allow horizontal swiping between pages")
                 }
               },
       )
@@ -133,6 +127,7 @@ class MainActivity : AppCompatActivity() {
     val vm = viewModel.requireNotNull()
 
     val appName = getString(R.string.app_name)
+
     setContent {
       val state = vm.state()
 
@@ -157,12 +152,10 @@ class MainActivity : AppCompatActivity() {
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
     viewModel.requireNotNull().handleSyncDarkTheme(this)
-    recompose()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    dispose()
 
     notificationRequester?.unregister()
     serverRequester?.unregister()

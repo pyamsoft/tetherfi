@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
@@ -17,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 
 @Composable
 fun SettingsToolbar(
@@ -25,7 +25,7 @@ fun SettingsToolbar(
 ) {
   Surface(
       modifier = modifier,
-      elevation = AppBarDefaults.TopAppBarElevation,
+      elevation = ZeroElevation,
       contentColor = MaterialTheme.colors.onPrimary,
       color = MaterialTheme.colors.primary,
       shape =
@@ -43,7 +43,7 @@ fun SettingsToolbar(
           modifier = Modifier.fillMaxWidth(),
           backgroundColor = Color.Transparent,
           contentColor = contentColor,
-          elevation = AppBarDefaults.TopAppBarElevation,
+          elevation = ZeroElevation,
           title = {
             Text(
                 text = "Settings",

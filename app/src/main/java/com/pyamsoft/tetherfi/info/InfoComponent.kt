@@ -22,8 +22,6 @@ import dagger.Subcomponent
 @Subcomponent
 internal interface InfoComponent {
 
-  fun inject(fragment: InfoFragment)
-
   fun inject(injector: InfoInjector)
 
   @Subcomponent.Factory
