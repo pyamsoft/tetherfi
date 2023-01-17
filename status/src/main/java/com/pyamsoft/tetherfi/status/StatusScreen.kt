@@ -185,9 +185,7 @@ fun StatusScreen(
       }
 
       when (state.loadingState) {
-        StatusViewState.LoadingState.NONE -> {
-          // Nothing is happening by default, intentionally blank
-        }
+        StatusViewState.LoadingState.NONE,
         StatusViewState.LoadingState.LOADING -> {
           item {
             Box(
