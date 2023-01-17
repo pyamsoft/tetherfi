@@ -110,18 +110,14 @@ fun ProxyTileScreen(
       onDismissed = onDismissed,
   )
 
-  val properties =
-      remember(isInitialStatusError) {
-        DialogProperties(
-            dismissOnBackPress = isInitialStatusError,
-            dismissOnClickOutside = isInitialStatusError,
-        )
-      }
-
   if (isShowing) {
     PaddedDialog(
         onDismissRequest = onDismissed,
-        properties = properties,
+        properties =
+            DialogProperties(
+                dismissOnBackPress = isInitialStatusError,
+                dismissOnClickOutside = isInitialStatusError,
+            ),
     ) {
       Surface(
           modifier = modifier,
