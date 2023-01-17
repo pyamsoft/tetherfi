@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -55,7 +55,7 @@ fun MainEntry(
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
 
-  val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
+  val (showDialog, setShowDialog) = rememberSaveable { mutableStateOf(false) }
   val handleDismissSettings by rememberUpdatedState { setShowDialog(false) }
   val handleShowSettings by rememberUpdatedState { setShowDialog(true) }
 

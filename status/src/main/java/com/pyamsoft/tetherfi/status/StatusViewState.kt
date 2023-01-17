@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @Stable
 interface StatusViewState : UiViewState {
-  val preferencesLoaded: Boolean
+  val loadingState: LoadingState
 
   val group: WiDiNetworkStatus.GroupInfo?
   val wiDiStatus: RunningStatus
@@ -32,11 +32,17 @@ interface StatusViewState : UiViewState {
   // Extras
   val keepWakeLock: Boolean
   val isBatteryOptimizationsIgnored: Boolean
+
+  enum class LoadingState {
+    NONE,
+    LOADING,
+    DONE
+  }
 }
 
 @ActivityScope
 internal class MutableStatusViewState @Inject internal constructor() : StatusViewState {
-  override var preferencesLoaded by mutableStateOf(false)
+  override var loadingState by mutableStateOf(StatusViewState.LoadingState.NONE)
 
   override var group by mutableStateOf<WiDiNetworkStatus.GroupInfo?>(null)
   override var wiDiStatus by mutableStateOf<RunningStatus>(RunningStatus.NotRunning)

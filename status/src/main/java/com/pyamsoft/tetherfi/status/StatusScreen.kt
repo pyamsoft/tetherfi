@@ -65,7 +65,6 @@ fun StatusScreen(
 ) {
   val wiDiStatus = state.wiDiStatus
   val proxyStatus = state.proxyStatus
-  val isLoaded = state.preferencesLoaded
 
   val hotspotStatus =
       remember(
@@ -185,21 +184,27 @@ fun StatusScreen(
         )
       }
 
-      if (isLoaded) {
-        loadedContent()
-      } else {
-        item {
-          Box(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(top = MaterialTheme.keylines.content)
-                      .padding(horizontal = MaterialTheme.keylines.content),
-              contentAlignment = Alignment.Center,
-          ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(120.dp),
-            )
+      when (state.loadingState) {
+        StatusViewState.LoadingState.NONE -> {
+          // Nothing is happening by default, intentionally blank
+        }
+        StatusViewState.LoadingState.LOADING -> {
+          item {
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(top = MaterialTheme.keylines.content)
+                        .padding(horizontal = MaterialTheme.keylines.content),
+                contentAlignment = Alignment.Center,
+            ) {
+              CircularProgressIndicator(
+                  modifier = Modifier.size(120.dp),
+              )
+            }
           }
+        }
+        StatusViewState.LoadingState.DONE -> {
+          loadedContent()
         }
       }
     }

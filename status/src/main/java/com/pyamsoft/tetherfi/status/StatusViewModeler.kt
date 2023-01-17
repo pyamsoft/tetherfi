@@ -43,7 +43,7 @@ internal constructor(
 
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port && config.wakelock && config.ssid && config.password && config.band) {
-      state.preferencesLoaded = true
+      state.loadingState = StatusViewState.LoadingState.DONE
     }
   }
 
@@ -88,11 +88,19 @@ internal constructor(
       andThen: () -> Unit,
   ) {
     val s = state
-    if (s.preferencesLoaded) {
+
+    // If we are already loading, ignore this call
+    if (s.loadingState == StatusViewState.LoadingState.LOADING) {
+      return
+    }
+
+    // If we have already finished loading, just run callback
+    if (s.loadingState == StatusViewState.LoadingState.DONE) {
       andThen()
       return
     }
 
+    // Make this load config that we will update as things load in
     val config =
         LoadConfig(
             port = false,
@@ -102,13 +110,16 @@ internal constructor(
             band = false,
         )
 
+    // Start loading
+    s.loadingState = StatusViewState.LoadingState.LOADING
+
     scope.launch(context = Dispatchers.Main) {
       // Always populate the latest port value
       servicePreferences.listenForWakeLockChanges().collectLatest { keep ->
         s.keepWakeLock = keep
 
         // Watch constantly but only update the initial load config if we haven't loaded yet
-        if (!s.preferencesLoaded) {
+        if (s.loadingState != StatusViewState.LoadingState.DONE) {
           config.wakelock = true
           markPreferencesLoaded(config)
         }
@@ -145,7 +156,7 @@ internal constructor(
           s.band = band
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (!s.preferencesLoaded) {
+          if (s.loadingState != StatusViewState.LoadingState.DONE) {
             config.band = true
             markPreferencesLoaded(config)
           }
