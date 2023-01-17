@@ -16,7 +16,6 @@ import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
-import com.pyamsoft.pydroid.ui.widget.ShowDataPolicyDialog
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
@@ -25,6 +24,7 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
+import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.Dispatchers
@@ -142,9 +142,7 @@ class MainActivity : AppCompatActivity() {
           theme = state.theme,
       ) {
         SystemBars()
-
-        ShowDataPolicyDialog()
-
+        InstallPYDroidExtras()
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
