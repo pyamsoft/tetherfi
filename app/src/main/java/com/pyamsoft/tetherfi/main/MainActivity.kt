@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
@@ -17,11 +16,13 @@ import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.util.dispose
 import com.pyamsoft.pydroid.ui.util.recompose
+import com.pyamsoft.pydroid.ui.widget.ShowDataPolicyDialog
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
+import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import javax.inject.Inject
@@ -31,6 +32,8 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
+
+  @Inject @JvmField internal var viewModel: MainViewModeler? = null
 
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
   @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
@@ -129,21 +132,38 @@ class MainActivity : AppCompatActivity() {
     component.inject(this)
     ObjectGraph.ActivityScope.install(this, component)
 
+    val vm = viewModel.requireNotNull()
+
     val appName = getString(R.string.app_name)
     setContent {
-      SystemBars()
-      MainEntry(
-          modifier = Modifier.fillMaxSize(),
-          appName = appName,
-      )
+      val state = vm.state()
+
+      TetherFiTheme(
+          theme = state.theme,
+      ) {
+        SystemBars()
+
+        ShowDataPolicyDialog()
+
+        MainEntry(
+            modifier = Modifier.fillMaxSize(),
+            appName = appName,
+        )
+      }
     }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    viewModel.requireNotNull().handleSyncDarkTheme(this)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
+    viewModel.requireNotNull().handleSyncDarkTheme(this)
+
     val existingComposeView =
         window.decorView.findViewById<ViewGroup>(android.R.id.content).getChildAt(0) as? ComposeView
-
     existingComposeView?.recompose()
   }
 
@@ -151,7 +171,6 @@ class MainActivity : AppCompatActivity() {
     super.onDestroy()
     val existingComposeView =
         window.decorView.findViewById<ViewGroup>(android.R.id.content).getChildAt(0) as? ComposeView
-
     existingComposeView?.dispose()
 
     notificationRequester?.unregister()
@@ -162,5 +181,6 @@ class MainActivity : AppCompatActivity() {
     permissionRequestBus = null
     serverRequester = null
     notificationRequester = null
+    viewModel = null
   }
 }

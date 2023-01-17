@@ -3,9 +3,7 @@ package com.pyamsoft.tetherfi.main
 import android.app.Activity
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.pydroid.ui.arch.ComposableViewModeler
 import com.pyamsoft.pydroid.ui.theme.Theming
-import java.security.KeyStore.Entry
 import javax.inject.Inject
 
 class MainViewModeler
@@ -13,7 +11,7 @@ class MainViewModeler
 internal constructor(
     private val state: MutableMainViewState,
     private val theming: Theming,
-) : AbstractViewModeler<MainViewState>(state), ComposableViewModeler {
+) : AbstractViewModeler<MainViewState>(state) {
 
   fun handleSyncDarkTheme(activity: Activity) {
     val isDark = theming.isDarkTheme(activity)
