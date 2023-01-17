@@ -126,7 +126,6 @@ class MainActivity : AppCompatActivity() {
     ObjectGraph.ActivityScope.install(this, component)
 
     val vm = viewModel.requireNotNull()
-
     val appName = getString(R.string.app_name)
 
     setContent {
@@ -166,9 +165,10 @@ class MainActivity : AppCompatActivity() {
     notificationRequester?.unregister()
     serverRequester?.unregister()
 
+    permissionRequestBus = null
+    permissionResponseBus = null
     serverPermissionRequester = null
     notificationPermissionRequester = null
-    permissionRequestBus = null
     serverRequester = null
     notificationRequester = null
     viewModel = null
