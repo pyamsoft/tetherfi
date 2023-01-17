@@ -10,9 +10,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -25,7 +25,6 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
-import com.pyamsoft.pydroid.util.doOnResume
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -136,23 +135,15 @@ private fun mountHooks(
       onToggleProxy = onToggleProxy,
   )
 
-  val owner = LocalLifecycleOwner.current
-  val activity = rememberActivity()
+  val scope = rememberCoroutineScope()
 
   LaunchedEffect(
       viewModel,
-      owner,
+      scope,
   ) {
-    viewModel.refreshGroupInfo(scope = owner.lifecycleScope)
-  }
-
-  LaunchedEffect(viewModel, owner) { viewModel.watchStatusUpdates(scope = owner.lifecycleScope) }
-
-  LaunchedEffect(viewModel, owner, activity) {
-    viewModel.loadPreferences(scope = owner.lifecycleScope) {
-      // Vitals after prefs are loaded
-      owner.doOnResume { activity.reportFullyDrawn() }
-    }
+    viewModel.refreshGroupInfo(scope = scope)
+    viewModel.loadPreferences(scope = scope)
+    viewModel.watchStatusUpdates(scope = scope)
   }
 
   LifecycleEffect {
@@ -183,12 +174,10 @@ fun StatusEntry(
   val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
 
   val activity = rememberActivity()
-  val owner = LocalLifecycleOwner.current
+  val scope = rememberCoroutineScope()
 
   // Since our mount hooks use this callback in bind, we must declare it first
-  val handleToggleProxy by rememberUpdatedState {
-    viewModel.handleToggleProxy(scope = owner.lifecycleScope)
-  }
+  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy(scope = scope) }
 
   // Hooks that run on mount
   val hooks =
@@ -205,7 +194,7 @@ fun StatusEntry(
   }
 
   val handleRequestNotificationPermission by rememberUpdatedState {
-    owner.lifecycleScope.launch(context = Dispatchers.IO) {
+    scope.launch(context = Dispatchers.IO) {
       // See MainActivity
       permissionRequestBus.send(PermissionRequests.Notification)
     }
@@ -215,21 +204,21 @@ fun StatusEntry(
 
   val handleSsidChanged by rememberUpdatedState { ssid: String ->
     viewModel.handleSsidChanged(
-        scope = owner.lifecycleScope,
+        scope = scope,
         ssid = ssid.trim(),
     )
   }
 
   val handlePasswordChanged by rememberUpdatedState { password: String ->
     viewModel.handlePasswordChanged(
-        scope = owner.lifecycleScope,
+        scope = scope,
         password = password,
     )
   }
 
   val handlePortChanged by rememberUpdatedState { port: String ->
     viewModel.handlePortChanged(
-        scope = owner.lifecycleScope,
+        scope = scope,
         port = port,
     )
   }
@@ -240,13 +229,13 @@ fun StatusEntry(
 
   val handleToggleProxyWakelock by rememberUpdatedState {
     viewModel.handleToggleProxyWakelock(
-        scope = owner.lifecycleScope,
+        scope = scope,
     )
   }
 
   val handleChangeBand by rememberUpdatedState { band: ServerNetworkBand ->
     viewModel.handleChangeBand(
-        scope = owner.lifecycleScope,
+        scope = scope,
         band = band,
     )
   }
@@ -256,7 +245,7 @@ fun StatusEntry(
     viewModel.handlePermissionsExplained()
 
     // Request permissions
-    owner.lifecycleScope.launch(context = Dispatchers.IO) {
+    scope.launch(context = Dispatchers.IO) {
       // See MainActivity
       permissionRequestBus.send(PermissionRequests.Server)
     }

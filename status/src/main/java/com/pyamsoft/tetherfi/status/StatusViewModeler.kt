@@ -83,20 +83,11 @@ internal constructor(
     }
   }
 
-  fun loadPreferences(
-      scope: CoroutineScope,
-      andThen: () -> Unit,
-  ) {
+  fun loadPreferences(scope: CoroutineScope) {
     val s = state
 
     // If we are already loading, ignore this call
-    if (s.loadingState == StatusViewState.LoadingState.LOADING) {
-      return
-    }
-
-    // If we have already finished loading, just run callback
-    if (s.loadingState == StatusViewState.LoadingState.DONE) {
-      andThen()
+    if (s.loadingState != StatusViewState.LoadingState.NONE) {
       return
     }
 
@@ -174,8 +165,6 @@ internal constructor(
       config.band = true
       markPreferencesLoaded(config)
     }
-
-    andThen()
   }
 
   fun refreshSystemInfo(scope: CoroutineScope) {

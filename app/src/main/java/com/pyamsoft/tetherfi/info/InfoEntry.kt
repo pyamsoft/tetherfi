@@ -2,8 +2,8 @@ package com.pyamsoft.tetherfi.info
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -30,13 +30,13 @@ internal class InfoInjector : ComposableInjector() {
 
 @Composable
 private fun MountHooks(viewModel: InfoViewModeler) {
-  val owner = LocalLifecycleOwner.current
+  val scope = rememberCoroutineScope()
 
   LaunchedEffect(
       viewModel,
-      owner,
+      scope,
   ) {
-    viewModel.bind(scope = owner.lifecycleScope)
+    viewModel.bind(scope = scope)
   }
 
   LifecycleEffect {
