@@ -19,18 +19,12 @@ package com.pyamsoft.tetherfi.main
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.info.InfoComponent
-import com.pyamsoft.tetherfi.settings.AppSettingsComponent
-import com.pyamsoft.tetherfi.settings.SettingsComponent
 import com.pyamsoft.tetherfi.status.StatusComponent
 import dagger.Subcomponent
 
 @ActivityScope
 @Subcomponent
 internal interface MainComponent {
-
-  @CheckResult fun plusAppSettings(): AppSettingsComponent.Factory
-
-  @CheckResult fun plusSettings(): SettingsComponent.Factory
 
   @CheckResult fun plusStatus(): StatusComponent.Factory
 

@@ -2,12 +2,10 @@ package com.pyamsoft.tetherfi.main
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.ViewGroup
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -159,17 +157,12 @@ class MainActivity : AppCompatActivity() {
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
     viewModel.requireNotNull().handleSyncDarkTheme(this)
-
-    val existingComposeView =
-        window.decorView.findViewById<ViewGroup>(android.R.id.content).getChildAt(0) as? ComposeView
-    existingComposeView?.recompose()
+    recompose()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    val existingComposeView =
-        window.decorView.findViewById<ViewGroup>(android.R.id.content).getChildAt(0) as? ComposeView
-    existingComposeView?.dispose()
+    dispose()
 
     notificationRequester?.unregister()
     serverRequester?.unregister()

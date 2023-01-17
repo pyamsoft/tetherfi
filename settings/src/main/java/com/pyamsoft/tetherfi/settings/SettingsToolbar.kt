@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 
 @Composable
 fun SettingsToolbar(
@@ -44,7 +43,7 @@ fun SettingsToolbar(
           modifier = Modifier.fillMaxWidth(),
           backgroundColor = Color.Transparent,
           contentColor = contentColor,
-          elevation = ZeroElevation,
+          elevation = AppBarDefaults.TopAppBarElevation,
           title = {
             Text(
                 text = "Settings",

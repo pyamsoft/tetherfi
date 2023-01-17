@@ -3,13 +3,14 @@ package com.pyamsoft.tetherfi.main
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
@@ -53,9 +54,10 @@ fun MainEntry(
 ) {
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
-  val activity = rememberActivity()
 
-  val handleSettingsOpen by rememberUpdatedState { SettingsDialog.show(activity) }
+  val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
+  val handleDismissSettings by rememberUpdatedState { setShowDialog(false) }
+  val handleShowSettings by rememberUpdatedState { setShowDialog(true) }
 
   MountHooks(
       pagerState = pagerState,
@@ -67,6 +69,12 @@ fun MainEntry(
       appName = appName,
       pagerState = pagerState,
       allTabs = allTabs,
-      onSettingsOpen = handleSettingsOpen,
+      onSettingsOpen = handleShowSettings,
   )
+
+  if (showDialog) {
+    SettingsDialog(
+        onDismiss = handleDismissSettings,
+    )
+  }
 }
