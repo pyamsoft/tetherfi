@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.main
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -144,6 +145,11 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
+
   override fun onResume() {
     super.onResume()
     viewModel.requireNotNull().handleSyncDarkTheme(this)
@@ -151,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
-    viewModel.requireNotNull().handleSyncDarkTheme(this)
+    viewModel?.handleSyncDarkTheme(this)
   }
 
   override fun onDestroy() {
