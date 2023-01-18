@@ -15,7 +15,15 @@ internal constructor(
 
   fun handleSyncDarkTheme(activity: Activity) {
     val isDark = theming.isDarkTheme(activity)
-    state.theme = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+  }
+
+  fun handleOpenSettings() {
+    state.isSettingsOpen.value = true
+  }
+
+  fun handleCloseSettings() {
+    state.isSettingsOpen.value = false
   }
 
   override fun registerSaveState(
@@ -24,7 +32,8 @@ internal constructor(
       mutableListOf<SaveableStateRegistry.Entry>().apply {
         val s = state
 
-        registry.registerProvider(KEY_THEME) { s.theme.name }.also { add(it) }
+        registry.registerProvider(KEY_THEME) { s.theme.value.name }.also { add(it) }
+        registry.registerProvider(KEY_IS_SETTINGS_OPEN) { s.isSettingsOpen.value }.also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
@@ -33,11 +42,17 @@ internal constructor(
         .consumeRestored(KEY_THEME)
         ?.let { it as String }
         ?.let { Theming.Mode.valueOf(it) }
-        ?.also { s.theme = it }
+        ?.also { s.theme.value = it }
+
+    registry
+        .consumeRestored(KEY_IS_SETTINGS_OPEN)
+        ?.let { it as Boolean }
+        ?.also { s.isSettingsOpen.value = it }
   }
 
   companion object {
 
     private const val KEY_THEME = "theme"
+    private const val KEY_IS_SETTINGS_OPEN = "is_settings_open"
   }
 }

@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
@@ -30,11 +32,12 @@ class ProxyTileActivity : AppCompatActivity() {
 
     setContent {
       val state = vm.state()
+      val theme by state.theme.collectAsState()
 
       SystemBars()
 
       TetherFiTheme(
-          theme = state.theme,
+          theme = theme,
       ) {
         ProxyTileEntry(
             modifier = Modifier.fillMaxWidth(),

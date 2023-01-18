@@ -2,10 +2,8 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -54,13 +52,13 @@ private fun MountHooks(
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    state: MainViewState,
+    onOpenSettings: () -> Unit,
+    onCloseSettings: () -> Unit,
 ) {
+  val showDialog by state.isSettingsOpen.collectAsState()
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
-
-  val (showDialog, setShowDialog) = rememberSaveable { mutableStateOf(false) }
-  val handleDismissSettings by rememberUpdatedState { setShowDialog(false) }
-  val handleShowSettings by rememberUpdatedState { setShowDialog(true) }
 
   MountHooks(
       pagerState = pagerState,
@@ -72,12 +70,12 @@ fun MainEntry(
       appName = appName,
       pagerState = pagerState,
       allTabs = allTabs,
-      onSettingsOpen = handleShowSettings,
+      onSettingsOpen = onOpenSettings,
   )
 
   if (showDialog) {
     SettingsDialog(
-        onDismiss = handleDismissSettings,
+        onDismiss = onCloseSettings,
     )
   }
 }

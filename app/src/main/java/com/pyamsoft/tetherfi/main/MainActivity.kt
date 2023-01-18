@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
@@ -130,15 +132,19 @@ class MainActivity : AppCompatActivity() {
 
     setContent {
       val state = vm.state()
+      val theme by state.theme.collectAsState()
 
       TetherFiTheme(
-          theme = state.theme,
+          theme = theme,
       ) {
         SystemBars()
         InstallPYDroidExtras()
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            state = state,
+            onOpenSettings = { vm.handleOpenSettings() },
+            onCloseSettings = { vm.handleCloseSettings() },
         )
       }
     }
