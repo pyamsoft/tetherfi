@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
+import com.pyamsoft.tetherfi.ui.SafeList
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -17,7 +18,7 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
-    allTabs: List<MainView>,
+    allTabs: SafeList<MainView>,
     onSettingsOpen: () -> Unit,
 ) {
   Scaffold(

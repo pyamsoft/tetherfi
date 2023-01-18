@@ -85,11 +85,10 @@ private fun RegisterPermissionRequests(
     onToggleProxy: () -> Unit,
 ) {
   // Create requesters
-  val handleToggleProxy = rememberUpdatedState(onToggleProxy)
+  val handleToggleProxy by rememberUpdatedState(onToggleProxy)
 
   LaunchedEffect(
       permissionResponseBus,
-      handleToggleProxy,
       notificationRefreshBus,
       notificationPermissionState,
   ) {
@@ -105,7 +104,7 @@ private fun RegisterPermissionRequests(
             notificationRefreshBus.send(NotificationRefreshEvent)
           }
           is PermissionResponse.ToggleProxy -> {
-            handleToggleProxy.value.invoke()
+            handleToggleProxy()
           }
         }
       }
@@ -135,15 +134,10 @@ private fun mountHooks(
       onToggleProxy = onToggleProxy,
   )
 
-  val scope = rememberCoroutineScope()
-
-  LaunchedEffect(
-      viewModel,
-      scope,
-  ) {
-    viewModel.refreshGroupInfo(scope = scope)
-    viewModel.loadPreferences(scope = scope)
-    viewModel.watchStatusUpdates(scope = scope)
+  LaunchedEffect(viewModel) {
+    viewModel.refreshGroupInfo(scope = this)
+    viewModel.loadPreferences(scope = this)
+    viewModel.watchStatusUpdates(scope = this)
   }
 
   LifecycleEffect {
@@ -186,7 +180,6 @@ fun StatusEntry(
           onToggleProxy = handleToggleProxy,
       )
 
-  //
   val notificationState = hooks.notificationState
 
   val handleStatusUpdated by rememberUpdatedState { _: RunningStatus ->

@@ -31,18 +31,20 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
+import com.pyamsoft.pydroid.ui.util.rememberAsStateList
+import com.pyamsoft.tetherfi.ui.SafeList
+import com.pyamsoft.tetherfi.ui.rememberSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
 @CheckResult
-fun rememberAllTabs(): List<MainView> {
-  return remember {
-    listOf(
-        MainView.Status,
-        MainView.Info,
-    )
-  }
+fun rememberAllTabs(): SafeList<MainView> {
+  return listOf(
+          MainView.Status,
+          MainView.Info,
+      )
+      .rememberSafe()
 }
 
 @Composable
@@ -51,7 +53,7 @@ fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
-    allTabs: List<MainView>,
+    allTabs: SafeList<MainView>,
     onSettingsOpen: () -> Unit,
 ) {
   Surface(
@@ -105,8 +107,9 @@ fun MainTopBar(
             },
         ) {
           val scope = rememberCoroutineScope()
-          for (index in allTabs.indices) {
-            val tab = allTabs[index]
+          val tabs = allTabs.list.rememberAsStateList()
+          for (index in tabs.indices) {
+            val tab = tabs[index]
             val isSelected =
                 remember(
                     index,

@@ -1,5 +1,10 @@
 package com.pyamsoft.tetherfi.server
 
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+
+@Stable
+@Immutable
 enum class ServerNetworkBand(
     val displayName: String,
     val description: String,

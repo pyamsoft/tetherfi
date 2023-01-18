@@ -69,6 +69,9 @@ dependencies {
 
   api "com.jakewharton.timber:timber:$timber"
 
+  // Compose runtime for annotations
+  api "androidx.compose.runtime:runtime:$compose_version"
+
   // PYDroid
   api "com.github.pyamsoft.pydroid:arch:$pydroid"
   api "com.github.pyamsoft.pydroid:ui:$pydroid"
