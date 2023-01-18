@@ -9,6 +9,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -120,9 +121,12 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
+
+          val port =
+              remember(state.port) { if (state.port <= 1024) "INVALID PORT" else "${state.port}" }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = "${state.port}",
+              text = port,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,

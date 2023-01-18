@@ -1,7 +1,6 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import androidx.annotation.CheckResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +22,8 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -117,26 +114,20 @@ fun StatusScreen(
         }
       }
 
-  val scaffoldState = rememberScaffoldState()
-
-  val loadedContent =
-      rememberPreparedLoadedContent(
-          appName = appName,
-          state = state,
-          hotspotStatus = hotspotStatus,
-          hasNotificationPermission = hasNotificationPermission,
-          onSsidChanged = onSsidChanged,
-          onPasswordChanged = onPasswordChanged,
-          onPortChanged = onPortChanged,
-          onOpenBatterySettings = onOpenBatterySettings,
-          onToggleKeepWakeLock = onToggleKeepWakeLock,
-          onSelectBand = onSelectBand,
-          onRequestNotificationPermission = onRequestNotificationPermission,
-      )
+  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
+  val isEditable =
+      remember(hotspotStatus) {
+        when (hotspotStatus) {
+          is RunningStatus.Running,
+          is RunningStatus.Starting,
+          is RunningStatus.Stopping -> false
+          else -> true
+        }
+      }
+  val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
 
   Scaffold(
       modifier = modifier,
-      scaffoldState = scaffoldState,
   ) { pv ->
     PermissionExplanationDialog(
         modifier = Modifier.padding(pv),
@@ -198,7 +189,21 @@ fun StatusScreen(
           }
         }
         StatusViewState.LoadingState.DONE -> {
-          loadedContent()
+          renderLoadedContent(
+              appName = appName,
+              state = state,
+              isEditable = isEditable,
+              canUseCustomConfig = canUseCustomConfig,
+              showNotificationSettings = showNotificationSettings,
+              hasNotificationPermission = hasNotificationPermission,
+              onSsidChanged = onSsidChanged,
+              onPasswordChanged = onPasswordChanged,
+              onPortChanged = onPortChanged,
+              onOpenBatterySettings = onOpenBatterySettings,
+              onToggleKeepWakeLock = onToggleKeepWakeLock,
+              onSelectBand = onSelectBand,
+              onRequestNotificationPermission = onRequestNotificationPermission,
+          )
         }
       }
     }
@@ -253,115 +258,81 @@ private fun StatusCard(
   }
 }
 
-@Composable
-@CheckResult
-private fun rememberPreparedLoadedContent(
+private fun LazyListScope.renderLoadedContent(
     appName: String,
+    canUseCustomConfig: Boolean,
     state: StatusViewState,
-    hotspotStatus: RunningStatus,
+    isEditable: Boolean,
+    showNotificationSettings: Boolean,
     hasNotificationPermission: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
+    onSelectBand: (ServerNetworkBand) -> Unit,
     onOpenBatterySettings: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
-    onSelectBand: (ServerNetworkBand) -> Unit,
     onRequestNotificationPermission: () -> Unit,
-): LazyListScope.() -> Unit {
-  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
-  val isEditable =
-      remember(hotspotStatus) {
-        when (hotspotStatus) {
-          is RunningStatus.Running,
-          is RunningStatus.Starting,
-          is RunningStatus.Stopping -> false
-          else -> true
-        }
-      }
+) {
+  renderNetworkInformation(
+      itemModifier = Modifier.fillMaxWidth(),
+      isEditable = isEditable,
+      canUseCustomConfig = canUseCustomConfig,
+      appName = appName,
+      state = state,
+      onSsidChanged = onSsidChanged,
+      onPasswordChanged = onPasswordChanged,
+      onPortChanged = onPortChanged,
+      onSelectBand = onSelectBand,
+  )
 
-  val keylines = MaterialTheme.keylines
+  item {
+    Spacer(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .height(MaterialTheme.keylines.content),
+    )
+  }
 
-  val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
+  renderBatteryAndPerformance(
+      itemModifier = Modifier.fillMaxWidth(),
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      onToggleKeepWakeLock = onToggleKeepWakeLock,
+      onDisableBatteryOptimizations = onOpenBatterySettings,
+  )
 
-  val handleRequestNotificationPermission by rememberUpdatedState(onRequestNotificationPermission)
-  val handleSsidChanged by rememberUpdatedState(onSsidChanged)
-  val handlePasswordChanged by rememberUpdatedState(onPasswordChanged)
-  val handlePortChanged by rememberUpdatedState(onPortChanged)
-  val handleToggleKeepWakeLock by rememberUpdatedState(onToggleKeepWakeLock)
-  val handleSelectBand by rememberUpdatedState(onSelectBand)
-  val handleOpenBatterySettings by rememberUpdatedState(onOpenBatterySettings)
+  item {
+    Spacer(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .height(MaterialTheme.keylines.content),
+    )
+  }
 
-  return remember(
-      keylines,
-      appName,
-      state,
-      isEditable,
-      hasNotificationPermission,
-      showNotificationSettings,
-  ) {
-    {
-      renderNetworkInformation(
-          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
-          isEditable = isEditable,
-          canUseCustomConfig = canUseCustomConfig,
-          appName = appName,
-          state = state,
-          onSsidChanged = handleSsidChanged,
-          onPasswordChanged = handlePasswordChanged,
-          onPortChanged = handlePortChanged,
-          onSelectBand = handleSelectBand,
+  if (showNotificationSettings) {
+    renderNotificationSettings(
+        itemModifier = Modifier.fillMaxWidth(),
+        hasPermission = hasNotificationPermission,
+        onRequest = onRequestNotificationPermission,
+    )
+
+    item {
+      Spacer(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .padding(horizontal = MaterialTheme.keylines.content)
+                  .height(MaterialTheme.keylines.content),
       )
-
-      item {
-        Spacer(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = keylines.content)
-                    .height(keylines.content),
-        )
-      }
-
-      renderBatteryAndPerformance(
-          itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
-          isEditable = isEditable,
-          appName = appName,
-          state = state,
-          onToggleKeepWakeLock = handleToggleKeepWakeLock,
-          onDisableBatteryOptimizations = handleOpenBatterySettings,
-      )
-
-      item {
-        Spacer(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = keylines.content)
-                    .height(keylines.content),
-        )
-      }
-
-      if (showNotificationSettings) {
-        renderNotificationSettings(
-            itemModifier = Modifier.fillMaxWidth().padding(horizontal = keylines.content),
-            hasPermission = hasNotificationPermission,
-            onRequest = handleRequestNotificationPermission,
-        )
-
-        item {
-          Spacer(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(horizontal = MaterialTheme.keylines.content)
-                      .height(MaterialTheme.keylines.content),
-          )
-        }
-      }
-
-      item {
-        Spacer(
-            modifier = Modifier.padding(top = keylines.content).navigationBarsPadding(),
-        )
-      }
     }
+  }
+
+  item {
+    Spacer(
+        modifier = Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
+    )
   }
 }
 
@@ -381,11 +352,13 @@ private fun LazyListScope.renderNetworkInformation(
     val showErrorHintMessage = remember(state) { state.wiDiStatus is RunningStatus.Error }
 
     AnimatedVisibility(
-        modifier = itemModifier,
         visible = showErrorHintMessage,
     ) {
       Box(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+          modifier =
+              itemModifier
+                  .padding(horizontal = MaterialTheme.keylines.content)
+                  .padding(bottom = MaterialTheme.keylines.content),
       ) {
         Text(
             text =
@@ -401,11 +374,13 @@ private fun LazyListScope.renderNetworkInformation(
 
   item {
     AnimatedVisibility(
-        modifier = itemModifier,
         visible = state.requiresPermissions,
     ) {
       Box(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.content)
+                  .padding(horizontal = MaterialTheme.keylines.content),
       ) {
         Text(
             text = "$appName requires permissions: Click the button and grant permissions",
@@ -423,17 +398,22 @@ private fun LazyListScope.renderNetworkInformation(
       val ssid =
           remember(
               canUseCustomConfig,
-              state,
+              state.ssid,
           ) {
             if (canUseCustomConfig) state.ssid else SYSTEM_DEFINED
           }
 
+      val handleSsidChanged by rememberUpdatedState(onSsidChanged)
+
       StatusEditor(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           enabled = canUseCustomConfig,
           title = "HOTSPOT NAME/SSID",
           value = ssid,
-          onChange = onSsidChanged,
+          onChange = handleSsidChanged,
       )
     }
 
@@ -441,17 +421,22 @@ private fun LazyListScope.renderNetworkInformation(
       val password =
           remember(
               canUseCustomConfig,
-              state,
+              state.password,
           ) {
             if (canUseCustomConfig) state.password else SYSTEM_DEFINED
           }
 
+      val handlePasswordChanged by rememberUpdatedState(onPasswordChanged)
+
       StatusEditor(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           enabled = canUseCustomConfig,
           title = "HOTSPOT PASSWORD",
           value = password,
-          onChange = onPasswordChanged,
+          onChange = handlePasswordChanged,
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Password,
@@ -460,13 +445,18 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val port = remember(state) { if (state.port <= 0) "NO PORT" else "${state.port}" }
+      val port = remember(state.port) { "${state.port}" }
+
+      val handlePortChanged by rememberUpdatedState(onPortChanged)
 
       StatusEditor(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY PORT",
           value = port,
-          onChange = onPortChanged,
+          onChange = handlePortChanged,
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Number,
@@ -475,10 +465,13 @@ private fun LazyListScope.renderNetworkInformation(
     }
   } else {
     item {
-      val ssid = remember(state) { state.group?.ssid ?: "NO SSID" }
+      val ssid = remember(state.group) { state.group?.ssid ?: "NO SSID" }
 
       StatusItem(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           title = "HOTSPOT NAME/SSID",
           value = ssid,
           valueStyle =
@@ -489,10 +482,13 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val password = remember(state) { state.group?.password ?: "NO PASSWORD" }
+      val password = remember(state.group) { state.group?.password ?: "NO PASSWORD" }
 
       StatusItem(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content * 2),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.content * 2)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           title = "HOTSPOT PASSWORD",
           value = password,
           valueStyle =
@@ -503,9 +499,12 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val ip = remember(state) { state.ip.ifBlank { "NO IP ADDRESS" } }
+      val ip = remember(state.ip) { state.ip.ifBlank { "NO IP ADDRESS" } }
       StatusItem(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY URL/HOSTNAME",
           value = ip,
           valueStyle =
@@ -516,10 +515,13 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val port = remember(state) { if (state.port <= 0) "NO PORT" else "${state.port}" }
+      val port = remember(state.port) { if (state.port <= 1024) "INVALID PORT" else "${state.port}" }
 
       StatusItem(
-          modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+          modifier =
+              itemModifier
+                  .padding(bottom = MaterialTheme.keylines.baseline)
+                  .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY PORT",
           value = port,
           valueStyle =
@@ -530,12 +532,17 @@ private fun LazyListScope.renderNetworkInformation(
     }
   }
   item {
+    val handleSelectBand by rememberUpdatedState(onSelectBand)
+
     NetworkBands(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        modifier =
+            itemModifier
+                .padding(top = MaterialTheme.keylines.content)
+                .padding(horizontal = MaterialTheme.keylines.content),
         isEnabled = canUseCustomConfig,
         isEditable = isEditable,
         band = state.band,
-        onSelectBand = onSelectBand,
+        onSelectBand = handleSelectBand,
     )
   }
 }
@@ -552,6 +559,7 @@ private fun LazyListScope.renderBatteryAndPerformance(
     Label(
         modifier =
             itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         text = "Battery and Performance",
@@ -559,22 +567,28 @@ private fun LazyListScope.renderBatteryAndPerformance(
   }
 
   item {
+    val handleToggleKeepWakeLock by rememberUpdatedState(onToggleKeepWakeLock)
     CpuWakelock(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        modifier =
+            itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
         keepWakeLock = state.keepWakeLock,
-        onToggleKeepWakeLock = onToggleKeepWakeLock,
+        onToggleKeepWakeLock = handleToggleKeepWakeLock,
     )
   }
 
   item {
+    val handleOpenBatterySettings by rememberUpdatedState(onDisableBatteryOptimizations)
+
     BatteryOptimization(
-        modifier = itemModifier,
+        modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
         isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
-        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+        onDisableBatteryOptimizations = handleOpenBatterySettings,
     )
   }
 }
