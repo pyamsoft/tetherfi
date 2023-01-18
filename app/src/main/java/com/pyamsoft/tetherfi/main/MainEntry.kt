@@ -5,13 +5,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.pyamsoft.pydroid.ui.util.rememberAsStateList
 import com.pyamsoft.tetherfi.settings.SettingsDialog
-import com.pyamsoft.tetherfi.ui.SafeList
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
@@ -19,17 +18,16 @@ import timber.log.Timber
 @OptIn(ExperimentalPagerApi::class)
 private fun WatchTabSwipe(
     pagerState: PagerState,
-    allTabs: SafeList<MainView>,
+    allTabs: SnapshotStateList<MainView>,
 ) {
   // Watch for a swipe causing a page change and update accordingly
-  val list = allTabs.list.rememberAsStateList()
   LaunchedEffect(
       pagerState,
-      list,
+      allTabs,
   ) {
     snapshotFlow { pagerState.currentPage }
         .collectLatest { index ->
-          val page = list[index]
+          val page = allTabs[index]
           Timber.d("Page swiped: $page")
         }
   }
@@ -39,7 +37,7 @@ private fun WatchTabSwipe(
 @OptIn(ExperimentalPagerApi::class)
 private fun MountHooks(
     pagerState: PagerState,
-    allTabs: SafeList<MainView>,
+    allTabs: SnapshotStateList<MainView>,
 ) {
   WatchTabSwipe(
       pagerState = pagerState,

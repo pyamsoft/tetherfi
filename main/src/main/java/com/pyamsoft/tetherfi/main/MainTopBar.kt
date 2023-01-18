@@ -20,8 +20,10 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,20 +33,18 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
-import com.pyamsoft.pydroid.ui.util.rememberAsStateList
-import com.pyamsoft.tetherfi.ui.SafeList
-import com.pyamsoft.tetherfi.ui.rememberSafe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
 @CheckResult
-fun rememberAllTabs(): SafeList<MainView> {
-  return listOf(
-          MainView.Status,
-          MainView.Info,
-      )
-      .rememberSafe()
+fun rememberAllTabs(): SnapshotStateList<MainView> {
+  return remember {
+    mutableStateListOf(
+        MainView.Status,
+        MainView.Info,
+    )
+  }
 }
 
 @Composable
@@ -53,7 +53,7 @@ fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
-    allTabs: SafeList<MainView>,
+    allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
 ) {
   Surface(
@@ -107,9 +107,8 @@ fun MainTopBar(
             },
         ) {
           val scope = rememberCoroutineScope()
-          val tabs = allTabs.list.rememberAsStateList()
-          for (index in tabs.indices) {
-            val tab = tabs[index]
+          for (index in allTabs.indices) {
+            val tab = allTabs[index]
             val isSelected =
                 remember(
                     index,

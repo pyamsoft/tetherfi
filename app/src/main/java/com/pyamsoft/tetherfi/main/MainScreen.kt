@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
-import com.pyamsoft.tetherfi.ui.SafeList
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -18,7 +18,7 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
-    allTabs: SafeList<MainView>,
+    allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
 ) {
   Scaffold(
