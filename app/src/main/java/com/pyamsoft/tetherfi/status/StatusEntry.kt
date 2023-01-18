@@ -26,8 +26,6 @@ import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
@@ -180,99 +178,72 @@ fun StatusEntry(
           onToggleProxy = handleToggleProxy,
       )
 
-  val notificationState = hooks.notificationState
-
-  val handleStatusUpdated by rememberUpdatedState { _: RunningStatus ->
-    ProxyTileService.updateTile(activity)
-  }
-
-  val handleRequestNotificationPermission by rememberUpdatedState {
-    scope.launch(context = Dispatchers.IO) {
-      // See MainActivity
-      permissionRequestBus.send(PermissionRequests.Notification)
-    }
-
-    return@rememberUpdatedState
-  }
-
-  val handleSsidChanged by rememberUpdatedState { ssid: String ->
-    viewModel.handleSsidChanged(
-        scope = scope,
-        ssid = ssid.trim(),
-    )
-  }
-
-  val handlePasswordChanged by rememberUpdatedState { password: String ->
-    viewModel.handlePasswordChanged(
-        scope = scope,
-        password = password,
-    )
-  }
-
-  val handlePortChanged by rememberUpdatedState { port: String ->
-    viewModel.handlePortChanged(
-        scope = scope,
-        port = port,
-    )
-  }
-
-  val handleOpenBatterySettings by rememberUpdatedState {
-    safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-  }
-
-  val handleToggleProxyWakelock by rememberUpdatedState {
-    viewModel.handleToggleProxyWakelock(
-        scope = scope,
-    )
-  }
-
-  val handleChangeBand by rememberUpdatedState { band: ServerNetworkBand ->
-    viewModel.handleChangeBand(
-        scope = scope,
-        band = band,
-    )
-  }
-
-  val handleRequestServerPermissions by rememberUpdatedState {
-    // Close dialog
-    viewModel.handlePermissionsExplained()
-
-    // Request permissions
-    scope.launch(context = Dispatchers.IO) {
-      // See MainActivity
-      permissionRequestBus.send(PermissionRequests.Server)
-    }
-
-    return@rememberUpdatedState
-  }
-
-  val handleOpenApplicationSettings by rememberUpdatedState {
-    viewModel.handlePermissionsExplained()
-
-    // Open settings
-    safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-  }
-
-  val handleDismissPermissionExplanation by rememberUpdatedState {
-    viewModel.handlePermissionsExplained()
-  }
+  val notificationState by hooks.notificationState
 
   StatusScreen(
       modifier = modifier,
       state = viewModel.state(),
       appName = appName,
-      hasNotificationPermission = notificationState.value,
+      hasNotificationPermission = notificationState,
       onToggle = handleToggleProxy,
-      onSsidChanged = handleSsidChanged,
-      onPasswordChanged = handlePasswordChanged,
-      onPortChanged = handlePortChanged,
-      onOpenBatterySettings = handleOpenBatterySettings,
-      onDismissPermissionExplanation = handleDismissPermissionExplanation,
-      onRequestPermissions = handleRequestServerPermissions,
-      onOpenPermissionSettings = handleOpenApplicationSettings,
-      onToggleKeepWakeLock = handleToggleProxyWakelock,
-      onSelectBand = handleChangeBand,
-      onRequestNotificationPermission = handleRequestNotificationPermission,
-      onStatusUpdated = handleStatusUpdated,
+      onSsidChanged = {
+        viewModel.handleSsidChanged(
+            scope = scope,
+            ssid = it.trim(),
+        )
+      },
+      onPasswordChanged = {
+        viewModel.handlePasswordChanged(
+            scope = scope,
+            password = it,
+        )
+      },
+      onPortChanged = {
+        viewModel.handlePortChanged(
+            scope = scope,
+            port = it,
+        )
+      },
+      onOpenBatterySettings = {
+        safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+      },
+      onDismissPermissionExplanation = {
+        // Close dialog
+        viewModel.handlePermissionsExplained()
+      },
+      onRequestPermissions = {
+        // Close dialog
+        viewModel.handlePermissionsExplained()
+
+        // Request permissions
+        scope.launch(context = Dispatchers.IO) {
+          // See MainActivity
+          permissionRequestBus.send(PermissionRequests.Server)
+        }
+      },
+      onOpenPermissionSettings = {
+        // Close dialog
+        viewModel.handlePermissionsExplained()
+
+        safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+      },
+      onToggleKeepWakeLock = {
+        viewModel.handleToggleProxyWakelock(
+            scope = scope,
+        )
+      },
+      onSelectBand = {
+        viewModel.handleChangeBand(
+            scope = scope,
+            band = it,
+        )
+      },
+      onRequestNotificationPermission = {
+        scope.launch(context = Dispatchers.IO) {
+          // See MainActivity
+          permissionRequestBus.send(PermissionRequests.Notification)
+        }
+      },
+      onStatusUpdated = { ProxyTileService.updateTile(activity) },
   )
 }

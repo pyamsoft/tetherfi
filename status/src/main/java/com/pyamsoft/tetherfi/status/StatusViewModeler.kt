@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -43,7 +44,7 @@ internal constructor(
 
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port && config.wakelock && config.ssid && config.password && config.band) {
-      state.loadingState = StatusViewState.LoadingState.DONE
+      state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
 
@@ -52,8 +53,8 @@ internal constructor(
 
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
-    s.requiresPermissions = requiresPermissions
-    s.explainPermissions = requiresPermissions
+    s.requiresPermissions.value = requiresPermissions
+    s.explainPermissions.value = requiresPermissions
 
     // If we do not have permission, stop here. s.explainPermissions will cause the permission
     // dialog
@@ -87,7 +88,7 @@ internal constructor(
     val s = state
 
     // If we are already loading, ignore this call
-    if (s.loadingState != StatusViewState.LoadingState.NONE) {
+    if (s.loadingState.value != StatusViewState.LoadingState.NONE) {
       return
     }
 
@@ -102,15 +103,15 @@ internal constructor(
         )
 
     // Start loading
-    s.loadingState = StatusViewState.LoadingState.LOADING
+    s.loadingState.value = StatusViewState.LoadingState.LOADING
 
     scope.launch(context = Dispatchers.Main) {
       // Always populate the latest port value
       servicePreferences.listenForWakeLockChanges().collectLatest { keep ->
-        s.keepWakeLock = keep
+        s.keepWakeLock.value = keep
 
         // Watch constantly but only update the initial load config if we haven't loaded yet
-        if (s.loadingState != StatusViewState.LoadingState.DONE) {
+        if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
           config.wakelock = true
           markPreferencesLoaded(config)
         }
@@ -119,7 +120,7 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       // Only pull once since after this point, the state will be driven by the input
-      s.port = serverPreferences.listenForPortChanges().first()
+      s.port.value = serverPreferences.listenForPortChanges().first()
 
       config.port = true
       markPreferencesLoaded(config)
@@ -128,7 +129,7 @@ internal constructor(
     if (ServerDefaults.canUseCustomConfig()) {
       scope.launch(context = Dispatchers.Main) {
         // Only pull once since after this point, the state will be driven by the input
-        s.ssid = serverPreferences.listenForSsidChanges().first()
+        s.ssid.value = serverPreferences.listenForSsidChanges().first()
 
         config.ssid = true
         markPreferencesLoaded(config)
@@ -136,7 +137,7 @@ internal constructor(
 
       scope.launch(context = Dispatchers.Main) {
         // Only pull once since after this point, the state will be driven by the input
-        s.password = serverPreferences.listenForPasswordChanges().first()
+        s.password.value = serverPreferences.listenForPasswordChanges().first()
 
         config.password = true
         markPreferencesLoaded(config)
@@ -144,10 +145,10 @@ internal constructor(
 
       scope.launch(context = Dispatchers.Main) {
         serverPreferences.listenForNetworkBandChanges().collectLatest { band ->
-          s.band = band
+          s.band.value = band
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState != StatusViewState.LoadingState.DONE) {
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.band = true
             markPreferencesLoaded(config)
           }
@@ -155,9 +156,9 @@ internal constructor(
       }
     } else {
       // No custom WiFi Direct config is allowed, fallback
-      s.ssid = ""
-      s.password = ""
-      s.band = null
+      s.ssid.value = ""
+      s.password.value = ""
+      s.band.value = null
 
       // Mark loaded and attempt flag setting
       config.ssid = true
@@ -172,37 +173,37 @@ internal constructor(
       val s = state
 
       // Battery optimization
-      s.isBatteryOptimizationsIgnored = batteryOptimizer.isOptimizationsIgnored()
+      s.isBatteryOptimizationsIgnored.value = batteryOptimizer.isOptimizationsIgnored()
 
       // If we are in an error state, we tried to run the proxy
       // If the proxy fails, we should at least check that the permission req is not the cause.
-      if (s.wiDiStatus is RunningStatus.Error || s.proxyStatus is RunningStatus.Error) {
+      if (s.wiDiStatus.value is RunningStatus.Error || s.proxyStatus.value is RunningStatus.Error) {
         val requiresPermissions = !permissions.canCreateWiDiNetwork()
-        s.requiresPermissions = requiresPermissions
+        s.requiresPermissions.value = requiresPermissions
       }
     }
   }
 
   fun refreshGroupInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) { state.group = network.getGroupInfo() }
+    scope.launch(context = Dispatchers.Main) { state.group.value = network.getGroupInfo() }
   }
 
   fun handlePermissionsExplained() {
-    state.explainPermissions = false
+    state.explainPermissions.value = false
   }
 
   fun watchStatusUpdates(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Main) {
       network.onProxyStatusChanged { status ->
         Timber.d("Proxy Status Changed: $status")
-        state.proxyStatus = status
+        state.proxyStatus.value = status
       }
     }
 
     scope.launch(context = Dispatchers.Main) {
       network.onStatusChanged { status ->
         Timber.d("WiDi Status Changed: $status")
-        state.wiDiStatus = status
+        state.wiDiStatus.value = status
       }
     }
 
@@ -210,7 +211,7 @@ internal constructor(
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
-            state.ip = event.ip
+            state.ip.value = event.ip
             refreshGroupInfo(scope = scope)
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
@@ -244,31 +245,33 @@ internal constructor(
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
-    state.ssid = ssid
+    state.ssid.value = ssid
     scope.launch(context = Dispatchers.Main) { serverPreferences.setSsid(ssid) }
   }
 
   fun handlePasswordChanged(scope: CoroutineScope, password: String) {
-    state.password = password
+    state.password.value = password
     scope.launch(context = Dispatchers.Main) { serverPreferences.setPassword(password) }
   }
 
   fun handlePortChanged(scope: CoroutineScope, port: String) {
     val portValue = port.toIntOrNull()
     if (portValue != null) {
-      state.port = portValue
+      state.port.value = portValue
       scope.launch(context = Dispatchers.Main) { serverPreferences.setPort(portValue) }
     }
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {
     val s = state
-    s.keepWakeLock = !s.keepWakeLock
-    scope.launch(context = Dispatchers.Main) { servicePreferences.setWakeLock(s.keepWakeLock) }
+    s.keepWakeLock.update { !it }
+    scope.launch(context = Dispatchers.Main) {
+      servicePreferences.setWakeLock(s.keepWakeLock.value)
+    }
   }
 
   fun handleChangeBand(scope: CoroutineScope, band: ServerNetworkBand) {
-    state.band = band
+    state.band.value = band
     scope.launch(context = Dispatchers.Main) { serverPreferences.setNetworkBand(band) }
   }
 }

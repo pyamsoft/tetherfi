@@ -24,6 +24,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -62,8 +63,8 @@ fun StatusScreen(
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
 ) {
-  val wiDiStatus = state.wiDiStatus
-  val proxyStatus = state.proxyStatus
+  val wiDiStatus by state.wiDiStatus.collectAsState()
+  val proxyStatus by state.proxyStatus.collectAsState()
 
   val hotspotStatus =
       remember(
@@ -124,7 +125,9 @@ fun StatusScreen(
           else -> true
         }
       }
+
   val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
+  val loadingState by state.loadingState.collectAsState()
 
   Scaffold(
       modifier = modifier,
@@ -171,7 +174,7 @@ fun StatusScreen(
         )
       }
 
-      when (state.loadingState) {
+      when (loadingState) {
         StatusViewState.LoadingState.NONE,
         StatusViewState.LoadingState.LOADING -> {
           item {
@@ -193,6 +196,7 @@ fun StatusScreen(
               appName = appName,
               state = state,
               isEditable = isEditable,
+              wiDiStatus = wiDiStatus,
               canUseCustomConfig = canUseCustomConfig,
               showNotificationSettings = showNotificationSettings,
               hasNotificationPermission = hasNotificationPermission,
@@ -263,6 +267,7 @@ private fun LazyListScope.renderLoadedContent(
     canUseCustomConfig: Boolean,
     state: StatusViewState,
     isEditable: Boolean,
+    wiDiStatus: RunningStatus,
     showNotificationSettings: Boolean,
     hasNotificationPermission: Boolean,
     onSsidChanged: (String) -> Unit,
@@ -279,6 +284,7 @@ private fun LazyListScope.renderLoadedContent(
       canUseCustomConfig = canUseCustomConfig,
       appName = appName,
       state = state,
+      wiDiStatus = wiDiStatus,
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
       onPortChanged = onPortChanged,
@@ -341,6 +347,7 @@ private fun LazyListScope.renderNetworkInformation(
     state: StatusViewState,
     isEditable: Boolean,
     appName: String,
+    wiDiStatus: RunningStatus,
     canUseCustomConfig: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -349,7 +356,7 @@ private fun LazyListScope.renderNetworkInformation(
 ) {
 
   item {
-    val showErrorHintMessage = remember(state) { state.wiDiStatus is RunningStatus.Error }
+    val showErrorHintMessage = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
 
     AnimatedVisibility(
         visible = showErrorHintMessage,
@@ -373,8 +380,10 @@ private fun LazyListScope.renderNetworkInformation(
   }
 
   item {
+    val requiresPermissions by state.requiresPermissions.collectAsState()
+
     AnimatedVisibility(
-        visible = state.requiresPermissions,
+        visible = requiresPermissions,
     ) {
       Box(
           modifier =
@@ -395,15 +404,14 @@ private fun LazyListScope.renderNetworkInformation(
 
   if (isEditable) {
     item {
-      val ssid =
+      val ssid by state.ssid.collectAsState()
+      val hotspotSsid =
           remember(
               canUseCustomConfig,
-              state.ssid,
+              ssid,
           ) {
-            if (canUseCustomConfig) state.ssid else SYSTEM_DEFINED
+            if (canUseCustomConfig) ssid else SYSTEM_DEFINED
           }
-
-      val handleSsidChanged by rememberUpdatedState(onSsidChanged)
 
       StatusEditor(
           modifier =
@@ -412,21 +420,20 @@ private fun LazyListScope.renderNetworkInformation(
                   .padding(horizontal = MaterialTheme.keylines.content),
           enabled = canUseCustomConfig,
           title = "HOTSPOT NAME/SSID",
-          value = ssid,
-          onChange = handleSsidChanged,
+          value = hotspotSsid,
+          onChange = onSsidChanged,
       )
     }
 
     item {
-      val password =
+      val password by state.password.collectAsState()
+      val hotspotPassword =
           remember(
               canUseCustomConfig,
-              state.password,
+              password,
           ) {
-            if (canUseCustomConfig) state.password else SYSTEM_DEFINED
+            if (canUseCustomConfig) password else SYSTEM_DEFINED
           }
-
-      val handlePasswordChanged by rememberUpdatedState(onPasswordChanged)
 
       StatusEditor(
           modifier =
@@ -435,8 +442,8 @@ private fun LazyListScope.renderNetworkInformation(
                   .padding(horizontal = MaterialTheme.keylines.content),
           enabled = canUseCustomConfig,
           title = "HOTSPOT PASSWORD",
-          value = password,
-          onChange = handlePasswordChanged,
+          value = hotspotPassword,
+          onChange = onPasswordChanged,
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Password,
@@ -445,9 +452,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val port = remember(state.port) { "${state.port}" }
-
-      val handlePortChanged by rememberUpdatedState(onPortChanged)
+      val port by state.port.collectAsState()
+      val portNumber = remember(port) { "$port" }
 
       StatusEditor(
           modifier =
@@ -455,8 +461,8 @@ private fun LazyListScope.renderNetworkInformation(
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY PORT",
-          value = port,
-          onChange = handlePortChanged,
+          value = portNumber,
+          onChange = onPortChanged,
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Number,
@@ -465,7 +471,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
   } else {
     item {
-      val ssid = remember(state.group) { state.group?.ssid ?: "NO SSID" }
+      val group by state.group.collectAsState()
+      val ssid = remember(group) { group?.ssid ?: "NO SSID" }
 
       StatusItem(
           modifier =
@@ -482,7 +489,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val password = remember(state.group) { state.group?.password ?: "NO PASSWORD" }
+      val group by state.group.collectAsState()
+      val password = remember(group) { group?.password ?: "NO PASSWORD" }
 
       StatusItem(
           modifier =
@@ -499,14 +507,15 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val ip = remember(state.ip) { state.ip.ifBlank { "NO IP ADDRESS" } }
+      val ip by state.ip.collectAsState()
+      val ipAddress = remember(ip) { ip.ifBlank { "NO IP ADDRESS" } }
       StatusItem(
           modifier =
               itemModifier
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY URL/HOSTNAME",
-          value = ip,
+          value = ipAddress,
           valueStyle =
               MaterialTheme.typography.h6.copy(
                   fontWeight = FontWeight.W400,
@@ -515,7 +524,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val port = remember(state.port) { if (state.port <= 1024) "INVALID PORT" else "${state.port}" }
+      val port by state.port.collectAsState()
+      val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
 
       StatusItem(
           modifier =
@@ -523,7 +533,7 @@ private fun LazyListScope.renderNetworkInformation(
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           title = "PROXY PORT",
-          value = port,
+          value = portNumber,
           valueStyle =
               MaterialTheme.typography.h6.copy(
                   fontWeight = FontWeight.W400,
@@ -532,7 +542,7 @@ private fun LazyListScope.renderNetworkInformation(
     }
   }
   item {
-    val handleSelectBand by rememberUpdatedState(onSelectBand)
+    val band by state.band.collectAsState()
 
     NetworkBands(
         modifier =
@@ -541,8 +551,8 @@ private fun LazyListScope.renderNetworkInformation(
                 .padding(horizontal = MaterialTheme.keylines.content),
         isEnabled = canUseCustomConfig,
         isEditable = isEditable,
-        band = state.band,
-        onSelectBand = handleSelectBand,
+        band = band,
+        onSelectBand = onSelectBand,
     )
   }
 }
@@ -567,7 +577,8 @@ private fun LazyListScope.renderBatteryAndPerformance(
   }
 
   item {
-    val handleToggleKeepWakeLock by rememberUpdatedState(onToggleKeepWakeLock)
+    val keepWakeLock by state.keepWakeLock.collectAsState()
+
     CpuWakelock(
         modifier =
             itemModifier
@@ -575,20 +586,20 @@ private fun LazyListScope.renderBatteryAndPerformance(
                 .padding(bottom = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
-        keepWakeLock = state.keepWakeLock,
-        onToggleKeepWakeLock = handleToggleKeepWakeLock,
+        keepWakeLock = keepWakeLock,
+        onToggleKeepWakeLock = onToggleKeepWakeLock,
     )
   }
 
   item {
-    val handleOpenBatterySettings by rememberUpdatedState(onDisableBatteryOptimizations)
+    val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
 
     BatteryOptimization(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
-        isBatteryOptimizationDisabled = state.isBatteryOptimizationsIgnored,
-        onDisableBatteryOptimizations = handleOpenBatterySettings,
+        isBatteryOptimizationDisabled = isBatteryOptimizationDisabled,
+        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
     )
   }
 }

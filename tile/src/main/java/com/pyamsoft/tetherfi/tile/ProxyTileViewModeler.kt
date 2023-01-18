@@ -22,11 +22,11 @@ internal constructor(
 
   init {
     // Sync up the network state on init so that we can immediately capture it in the View
-    state.status = handler.getNetworkStatus()
+    state.status.value = handler.getNetworkStatus()
   }
 
   fun handleDismissed() {
-    state.isShowing = false
+    state.isShowing.value = false
   }
 
   fun bind(scope: CoroutineScope) {
@@ -34,11 +34,11 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       handler.bind(
-          onNetworkError = { err -> s.status = err },
-          onNetworkStarting = { s.status = RunningStatus.Starting },
-          onNetworkStopping = { s.status = RunningStatus.Stopping },
-          onNetworkNotRunning = { s.status = RunningStatus.NotRunning },
-          onNetworkRunning = { s.status = RunningStatus.Running },
+          onNetworkError = { err -> s.status.value = err },
+          onNetworkStarting = { s.status.value = RunningStatus.Starting },
+          onNetworkStopping = { s.status.value = RunningStatus.Stopping },
+          onNetworkNotRunning = { s.status.value = RunningStatus.NotRunning },
+          onNetworkRunning = { s.status.value = RunningStatus.Running },
       )
     }
   }
@@ -54,7 +54,7 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
-      s.status = RunningStatus.Error("Missing required permission, cannot start Hotspot")
+      s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
       serviceLauncher.stopForeground()
       return
     }
