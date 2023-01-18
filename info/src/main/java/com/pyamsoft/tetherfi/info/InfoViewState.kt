@@ -19,7 +19,7 @@ interface InfoViewState : UiViewState {
 
 @Stable
 @ActivityScope
-internal class MutableInfoViewState @Inject internal constructor() : InfoViewState {
+class MutableInfoViewState @Inject internal constructor() : InfoViewState {
   override val ssid = MutableStateFlow("")
   override val password = MutableStateFlow("")
   override val ip = MutableStateFlow("")

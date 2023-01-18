@@ -132,20 +132,20 @@ class MainActivity : AppCompatActivity() {
     val appName = getString(R.string.app_name)
 
     setContent {
-      val state = vm.state()
+      val state = vm.state
       val theme by state.theme.collectAsState()
 
       TetherFiTheme(
-          theme = theme,
+        theme = theme,
       ) {
         SystemBars()
         InstallPYDroidExtras()
         MainEntry(
-            modifier = Modifier.fillMaxSize(),
-            appName = appName,
-            state = state,
-            onOpenSettings = { vm.handleOpenSettings() },
-            onCloseSettings = { vm.handleCloseSettings() },
+          modifier = Modifier.fillMaxSize(),
+          appName = appName,
+          state = state,
+          onOpenSettings = { vm.handleOpenSettings() },
+          onCloseSettings = { vm.handleCloseSettings() },
         )
       }
     }

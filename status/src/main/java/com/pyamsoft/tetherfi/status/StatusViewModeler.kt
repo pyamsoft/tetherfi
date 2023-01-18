@@ -24,7 +24,7 @@ import timber.log.Timber
 class StatusViewModeler
 @Inject
 internal constructor(
-    private val state: MutableStatusViewState,
+    override val state: MutableStatusViewState,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
     private val network: WiDiNetworkStatus,

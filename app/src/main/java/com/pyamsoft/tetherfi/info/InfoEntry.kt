@@ -53,9 +53,9 @@ fun InfoEntry(
       viewModel = viewModel,
   )
 
-  InfoScreen(
-      modifier = modifier,
-      state = viewModel.state(),
-      appName = appName,
-  )
+    InfoScreen(
+        modifier = modifier,
+        state = viewModel.state,
+        appName = appName,
+    )
 }

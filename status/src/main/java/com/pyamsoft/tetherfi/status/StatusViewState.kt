@@ -44,7 +44,7 @@ interface StatusViewState : UiViewState {
 
 @Stable
 @ActivityScope
-internal class MutableStatusViewState @Inject internal constructor() : StatusViewState {
+class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val loadingState = MutableStateFlow(StatusViewState.LoadingState.NONE)
 
   override val group = MutableStateFlow<WiDiNetworkStatus.GroupInfo?>(null)

@@ -180,70 +180,70 @@ fun StatusEntry(
 
   val notificationState by hooks.notificationState
 
-  StatusScreen(
-      modifier = modifier,
-      state = viewModel.state(),
-      appName = appName,
-      hasNotificationPermission = notificationState,
-      onToggle = handleToggleProxy,
-      onSsidChanged = {
-        viewModel.handleSsidChanged(
-            scope = scope,
-            ssid = it.trim(),
-        )
-      },
-      onPasswordChanged = {
-        viewModel.handlePasswordChanged(
-            scope = scope,
-            password = it,
-        )
-      },
-      onPortChanged = {
-        viewModel.handlePortChanged(
-            scope = scope,
-            port = it,
-        )
-      },
-      onOpenBatterySettings = {
-        safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-      },
-      onDismissPermissionExplanation = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
-      },
-      onRequestPermissions = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
+    StatusScreen(
+        modifier = modifier,
+        state = viewModel.state,
+        appName = appName,
+        hasNotificationPermission = notificationState,
+        onToggle = handleToggleProxy,
+        onSsidChanged = {
+            viewModel.handleSsidChanged(
+                scope = scope,
+                ssid = it.trim(),
+            )
+        },
+        onPasswordChanged = {
+            viewModel.handlePasswordChanged(
+                scope = scope,
+                password = it,
+            )
+        },
+        onPortChanged = {
+            viewModel.handlePortChanged(
+                scope = scope,
+                port = it,
+            )
+        },
+        onOpenBatterySettings = {
+            safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        },
+        onDismissPermissionExplanation = {
+            // Close dialog
+            viewModel.handlePermissionsExplained()
+        },
+        onRequestPermissions = {
+            // Close dialog
+            viewModel.handlePermissionsExplained()
 
-        // Request permissions
-        scope.launch(context = Dispatchers.IO) {
-          // See MainActivity
-          permissionRequestBus.send(PermissionRequests.Server)
-        }
-      },
-      onOpenPermissionSettings = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
+            // Request permissions
+            scope.launch(context = Dispatchers.IO) {
+                // See MainActivity
+                permissionRequestBus.send(PermissionRequests.Server)
+            }
+        },
+        onOpenPermissionSettings = {
+            // Close dialog
+            viewModel.handlePermissionsExplained()
 
-        safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-      },
-      onToggleKeepWakeLock = {
-        viewModel.handleToggleProxyWakelock(
-            scope = scope,
-        )
-      },
-      onSelectBand = {
-        viewModel.handleChangeBand(
-            scope = scope,
-            band = it,
-        )
-      },
-      onRequestNotificationPermission = {
-        scope.launch(context = Dispatchers.IO) {
-          // See MainActivity
-          permissionRequestBus.send(PermissionRequests.Notification)
-        }
-      },
-      onStatusUpdated = { ProxyTileService.updateTile(activity) },
-  )
+            safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        },
+        onToggleKeepWakeLock = {
+            viewModel.handleToggleProxyWakelock(
+                scope = scope,
+            )
+        },
+        onSelectBand = {
+            viewModel.handleChangeBand(
+                scope = scope,
+                band = it,
+            )
+        },
+        onRequestNotificationPermission = {
+            scope.launch(context = Dispatchers.IO) {
+                // See MainActivity
+                permissionRequestBus.send(PermissionRequests.Notification)
+            }
+        },
+        onStatusUpdated = { ProxyTileService.updateTile(activity) },
+    )
 }

@@ -31,16 +31,16 @@ class ProxyTileActivity : AppCompatActivity() {
     val vm = viewModel.requireNotNull()
 
     setContent {
-      val state = vm.state()
+      val state = vm.state
       val theme by state.theme.collectAsState()
 
       SystemBars()
 
       TetherFiTheme(
-          theme = theme,
+        theme = theme,
       ) {
         ProxyTileEntry(
-            modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth(),
         )
       }
     }

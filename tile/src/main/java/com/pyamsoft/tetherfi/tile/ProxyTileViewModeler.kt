@@ -14,7 +14,7 @@ import timber.log.Timber
 class ProxyTileViewModeler
 @Inject
 internal constructor(
-    private val state: MutableProxyTileViewState,
+    override val state: MutableProxyTileViewState,
     private val permissions: PermissionGuard,
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,

@@ -9,7 +9,7 @@ import javax.inject.Inject
 class MainViewModeler
 @Inject
 internal constructor(
-    private val state: MutableMainViewState,
+    override val state: MutableMainViewState,
     private val theming: Theming,
 ) : AbstractViewModeler<MainViewState>(state) {
 

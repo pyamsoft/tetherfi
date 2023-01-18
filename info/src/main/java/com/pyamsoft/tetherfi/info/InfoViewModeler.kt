@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 class InfoViewModeler
 @Inject
 internal constructor(
-    private val state: MutableInfoViewState,
+    override val state: MutableInfoViewState,
     private val network: WiDiNetworkStatus,
     private val serverPreferences: ServerPreferences,
     private val wiDiReceiver: WiDiReceiver,

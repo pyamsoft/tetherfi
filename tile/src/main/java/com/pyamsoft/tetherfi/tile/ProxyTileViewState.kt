@@ -16,7 +16,7 @@ interface ProxyTileViewState : UiViewState {
 }
 
 @Stable
-internal class MutableProxyTileViewState @Inject internal constructor() : ProxyTileViewState {
+class MutableProxyTileViewState @Inject internal constructor() : ProxyTileViewState {
   override val isShowing = MutableStateFlow(false)
   override val status = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
 }

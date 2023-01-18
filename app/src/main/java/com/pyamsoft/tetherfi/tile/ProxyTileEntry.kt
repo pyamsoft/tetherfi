@@ -64,11 +64,11 @@ fun ProxyTileEntry(
 
   val activity = rememberActivity()
 
-  ProxyTileScreen(
-      modifier = modifier,
-      state = viewModel.state(),
-      onDismissed = { viewModel.handleDismissed() },
-      onComplete = { activity.finishAndRemoveTask() },
-      onStatusUpdated = { ProxyTileService.updateTile(activity) },
-  )
+    ProxyTileScreen(
+        modifier = modifier,
+        state = viewModel.state,
+        onDismissed = { viewModel.handleDismissed() },
+        onComplete = { activity.finishAndRemoveTask() },
+        onStatusUpdated = { ProxyTileService.updateTile(activity) },
+    )
 }

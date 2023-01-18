@@ -16,7 +16,7 @@ interface MainViewState : UiViewState {
 }
 
 @Stable
-internal class MutableMainViewState @Inject internal constructor() : MainViewState {
+class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val theme = MutableStateFlow(Theming.Mode.SYSTEM)
   override val isSettingsOpen = MutableStateFlow(false)
 }
