@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 override val changelog = buildChangeLog {
                   change("Full usage of Jetpack Compose")
                   feature("Allow horizontal swiping between pages")
+                  bugfix("Major performance gains by optimizing a bunch of Compose code")
                 }
               },
       )
