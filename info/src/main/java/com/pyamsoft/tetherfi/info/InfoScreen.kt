@@ -46,10 +46,10 @@ private fun PreviewInfoScreen() {
       appName = "TEST",
       state =
           MutableInfoViewState().apply {
-            ip = "192.168.0.1"
-            ssid = "TEST NETWORK"
-            password = "TEST PASSWORD"
-            port = 8228
+            ip.value = "192.168.0.1"
+            ssid.value = "TEST NETWORK"
+            password.value = "TEST PASSWORD"
+            port.value = 8228
           },
   )
 }

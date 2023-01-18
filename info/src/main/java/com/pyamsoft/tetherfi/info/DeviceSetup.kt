@@ -9,6 +9,8 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -52,9 +54,11 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
+
+          val ssid by state.ssid.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = state.ssid,
+              text = ssid,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -73,9 +77,11 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
+
+          val password by state.password.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = state.password,
+              text = password,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -100,9 +106,11 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
+
+          val ip by state.ip.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = state.ip,
+              text = ip,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -122,11 +130,11 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val port =
-              remember(state.port) { if (state.port <= 1024) "INVALID PORT" else "${state.port}" }
+          val port by state.port.collectAsState()
+          val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = port,
+              text = portNumber,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -170,10 +178,10 @@ private fun PreviewDeviceSetup() {
         appName = "TEST",
         state =
             MutableInfoViewState().apply {
-              ip = "192.168.0.1"
-              ssid = "TEST NETWORK"
-              password = "TEST PASSWORD"
-              port = 8228
+              ip.value = "192.168.0.1"
+              ssid.value = "TEST NETWORK"
+              password.value = "TEST PASSWORD"
+              port.value = 8228
             },
     )
   }

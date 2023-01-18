@@ -26,11 +26,11 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) {
       val grp = network.getGroupInfo()
       if (grp == null) {
-        s.ssid = "NO SSID"
-        s.password = "NO PASSWORD"
+        s.ssid.value = "NO SSID"
+        s.password.value = "NO PASSWORD"
       } else {
-        s.ssid = grp.ssid
-        s.password = grp.password
+        s.ssid.value = grp.ssid
+        s.password.value = grp.password
       }
     }
   }
@@ -38,7 +38,7 @@ internal constructor(
   fun bind(scope: CoroutineScope) {
     val s = state
     scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPortChanges().collectLatest { s.port = it }
+      serverPreferences.listenForPortChanges().collectLatest { s.port.value = it }
     }
 
     scope.launch(context = Dispatchers.Main) {
@@ -46,7 +46,7 @@ internal constructor(
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
             refreshGroupInfo(scope)
-            s.ip = event.ip
+            s.ip.value = event.ip
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
             refreshGroupInfo(scope)
@@ -77,9 +77,9 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) {
       val conn = network.getConnectionInfo()
       if (conn == null) {
-        s.ip = "NO IP ADDRESS"
+        s.ip.value = "NO IP ADDRESS"
       } else {
-        s.ip = conn.ip
+        s.ip.value = conn.ip
       }
     }
 
