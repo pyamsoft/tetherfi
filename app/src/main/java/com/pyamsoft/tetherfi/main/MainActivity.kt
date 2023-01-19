@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -134,6 +135,8 @@ class MainActivity : AppCompatActivity() {
     setContent {
       val state = vm.state
       val theme by state.theme.collectAsState()
+
+      SaveStateDisposableEffect(vm)
 
       TetherFiTheme(
         theme = theme,
