@@ -27,12 +27,6 @@ internal fun LazyListScope.renderNotificationSettings(
   }
 
   item {
-    val handleRequestNotificationPermission by rememberUpdatedState {
-      if (!hasPermission) {
-        onRequest()
-      }
-    }
-
     MaterialCheckable(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
         isEditable = !hasPermission,
@@ -43,7 +37,11 @@ internal fun LazyListScope.renderNotificationSettings(
             |
             |Without a notification, the Hotspot may be stopped randomly."""
                 .trimMargin(),
-        onClick = { handleRequestNotificationPermission() },
+        onClick = {
+            if (!hasPermission) {
+                onRequest()
+            }
+        },
     )
   }
 }

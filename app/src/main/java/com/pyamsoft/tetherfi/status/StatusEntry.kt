@@ -26,8 +26,6 @@ import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
@@ -171,7 +169,7 @@ fun StatusEntry(
   val scope = rememberCoroutineScope()
 
   // Since our mount hooks use this callback in bind, we must declare it first
-  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy(scope = scope) }
+  val handleToggleProxy = { viewModel.handleToggleProxy(scope = scope) }
 
   // Hooks that run on mount
   val hooks =
@@ -182,12 +180,14 @@ fun StatusEntry(
 
   val notificationState by hooks.notificationState
 
-  StatusPage(
+  val dismissPermissionPopup = { viewModel.handlePermissionsExplained() }
+
+  StatusScreen(
       modifier = modifier,
       state = viewModel.state,
       appName = appName,
       hasNotificationPermission = notificationState,
-      onToggle = { handleToggleProxy() },
+      onToggle = handleToggleProxy,
       onSsidChanged = {
         viewModel.handleSsidChanged(
             scope = scope,
@@ -209,13 +209,9 @@ fun StatusEntry(
       onOpenBatterySettings = {
         safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
-      onDismissPermissionExplanation = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
-      },
+      onDismissPermissionExplanation = dismissPermissionPopup,
       onRequestPermissions = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
+        dismissPermissionPopup()
 
         // Request permissions
         scope.launch(context = Dispatchers.IO) {
@@ -224,8 +220,7 @@ fun StatusEntry(
         }
       },
       onOpenPermissionSettings = {
-        // Close dialog
-        viewModel.handlePermissionsExplained()
+        dismissPermissionPopup()
 
         safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
       },
@@ -247,44 +242,5 @@ fun StatusEntry(
         }
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
-  )
-}
-
-@Composable
-private fun StatusPage(
-    modifier: Modifier = Modifier,
-    appName: String,
-    state: StatusViewState,
-    hasNotificationPermission: Boolean,
-    onToggle: () -> Unit,
-    onSsidChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onPortChanged: (String) -> Unit,
-    onDismissPermissionExplanation: () -> Unit,
-    onOpenBatterySettings: () -> Unit,
-    onOpenPermissionSettings: () -> Unit,
-    onRequestPermissions: () -> Unit,
-    onToggleKeepWakeLock: () -> Unit,
-    onSelectBand: (ServerNetworkBand) -> Unit,
-    onRequestNotificationPermission: () -> Unit,
-    onStatusUpdated: (RunningStatus) -> Unit,
-) {
-  StatusScreen(
-      modifier = modifier,
-      appName = appName,
-      state = state,
-      hasNotificationPermission = hasNotificationPermission,
-      onToggle = onToggle,
-      onSsidChanged = onSsidChanged,
-      onPasswordChanged = onPasswordChanged,
-      onPortChanged = onPortChanged,
-      onDismissPermissionExplanation = onDismissPermissionExplanation,
-      onOpenBatterySettings = onOpenBatterySettings,
-      onOpenPermissionSettings = onOpenPermissionSettings,
-      onRequestPermissions = onRequestPermissions,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
-      onSelectBand = onSelectBand,
-      onRequestNotificationPermission = onRequestNotificationPermission,
-      onStatusUpdated = onStatusUpdated,
   )
 }

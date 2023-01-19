@@ -53,22 +53,9 @@ fun InfoEntry(
       viewModel = viewModel,
   )
 
-  InfoPage(
-      modifier = modifier,
-      state = viewModel.state,
-      appName = appName,
-  )
-}
-
-@Composable
-private fun InfoPage(
-    modifier: Modifier = Modifier,
-    appName: String,
-    state: InfoViewState,
-) {
   InfoScreen(
       modifier = modifier,
-      state = state,
+      state = viewModel.state,
       appName = appName,
   )
 }
