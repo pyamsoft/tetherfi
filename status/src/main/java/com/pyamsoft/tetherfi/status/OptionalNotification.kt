@@ -43,7 +43,7 @@ internal fun LazyListScope.renderNotificationSettings(
             |
             |Without a notification, the Hotspot may be stopped randomly."""
                 .trimMargin(),
-        onClick = handleRequestNotificationPermission,
+        onClick = { handleRequestNotificationPermission() },
     )
   }
 }

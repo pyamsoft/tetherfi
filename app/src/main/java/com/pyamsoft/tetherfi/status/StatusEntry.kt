@@ -187,7 +187,7 @@ fun StatusEntry(
       state = viewModel.state,
       appName = appName,
       hasNotificationPermission = notificationState,
-      onToggle = handleToggleProxy,
+      onToggle = { handleToggleProxy() },
       onSsidChanged = {
         viewModel.handleSsidChanged(
             scope = scope,
