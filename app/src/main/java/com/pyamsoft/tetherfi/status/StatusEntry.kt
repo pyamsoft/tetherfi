@@ -187,7 +187,7 @@ fun StatusEntry(
       state = viewModel.state,
       appName = appName,
       hasNotificationPermission = notificationState,
-      onToggle = handleToggleProxy,
+      onToggleProxy = handleToggleProxy,
       onSsidChanged = {
         viewModel.handleSsidChanged(
             scope = scope,
@@ -242,5 +242,6 @@ fun StatusEntry(
         }
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
+      onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
   )
 }

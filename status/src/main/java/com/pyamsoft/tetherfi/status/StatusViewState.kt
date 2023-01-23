@@ -30,6 +30,7 @@ interface StatusViewState : UiViewState {
   val explainPermissions: StateFlow<Boolean>
 
   // Extras
+  val isPasswordVisible: StateFlow<Boolean>
   val keepWakeLock: StateFlow<Boolean>
   val isBatteryOptimizationsIgnored: StateFlow<Boolean>
 
@@ -60,6 +61,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val requiresPermissions = MutableStateFlow(false)
   override val explainPermissions = MutableStateFlow(false)
 
+  override val isPasswordVisible = MutableStateFlow(false)
   override val keepWakeLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
 }

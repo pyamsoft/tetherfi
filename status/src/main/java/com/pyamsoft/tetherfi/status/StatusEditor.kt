@@ -7,6 +7,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 internal fun StatusEditor(
@@ -14,6 +15,7 @@ internal fun StatusEditor(
     enabled: Boolean = true,
     title: String,
     value: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -27,6 +29,7 @@ internal fun StatusEditor(
         enabled = enabled,
         keyboardOptions = keyboardOptions,
         value = value,
+        visualTransformation = visualTransformation,
         onValueChange = onChange,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,

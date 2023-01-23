@@ -29,7 +29,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.trimmedLength
@@ -50,6 +51,8 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.icons.Visibility
+import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
@@ -60,7 +63,7 @@ fun StatusScreen(
     appName: String,
     state: StatusViewState,
     hasNotificationPermission: Boolean,
-    onToggle: () -> Unit,
+    onToggleProxy: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
@@ -69,6 +72,7 @@ fun StatusScreen(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
@@ -163,7 +167,7 @@ fun StatusScreen(
                     .padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
             enabled = isButtonEnabled,
-            onClick = onToggle,
+            onClick = onToggleProxy,
         ) {
           Text(
               text = buttonText,
@@ -217,6 +221,7 @@ fun StatusScreen(
               onToggleKeepWakeLock = onToggleKeepWakeLock,
               onSelectBand = onSelectBand,
               onRequestNotificationPermission = onRequestNotificationPermission,
+              onTogglePasswordVisibility = onTogglePasswordVisibility,
           )
         }
       }
@@ -287,6 +292,7 @@ private fun LazyListScope.renderLoadedContent(
     onOpenBatterySettings: () -> Unit,
     onToggleKeepWakeLock: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -299,6 +305,7 @@ private fun LazyListScope.renderLoadedContent(
       onPasswordChanged = onPasswordChanged,
       onPortChanged = onPortChanged,
       onSelectBand = onSelectBand,
+      onTogglePasswordVisibility = onTogglePasswordVisibility,
   )
 
   item {
@@ -359,6 +366,7 @@ private fun LazyListScope.renderNetworkInformation(
     appName: String,
     wiDiStatus: RunningStatus,
     canUseCustomConfig: Boolean,
+    onTogglePasswordVisibility: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
@@ -428,7 +436,7 @@ private fun LazyListScope.renderNetworkInformation(
               canUseCustomConfig,
               ssid,
           ) {
-            if (canUseCustomConfig) ssid.trimmedLength() >= 6 else true
+            if (canUseCustomConfig) ssid.isNotBlank() else true
           }
 
       StatusEditor(
@@ -448,7 +456,7 @@ private fun LazyListScope.renderNetworkInformation(
                   style =
                       textStyle.copy(
                           color =
-                              textStyle.color.copy(
+                              MaterialTheme.colors.onSurface.copy(
                                   alpha = ContentAlpha.disabled,
                               ),
                       ),
@@ -475,6 +483,7 @@ private fun LazyListScope.renderNetworkInformation(
 
     item {
       val password by state.password.collectAsState()
+      val isPasswordVisible by state.isPasswordVisible.collectAsState()
       val hotspotPassword =
           remember(
               canUseCustomConfig,
@@ -488,7 +497,7 @@ private fun LazyListScope.renderNetworkInformation(
               canUseCustomConfig,
               password,
           ) {
-            if (canUseCustomConfig) password.trimmedLength() >= 8 else true
+            if (canUseCustomConfig) password.trimmedLength() in 8..63 else true
           }
 
       StatusEditor(
@@ -500,6 +509,8 @@ private fun LazyListScope.renderNetworkInformation(
           title = "HOTSPOT PASSWORD",
           value = hotspotPassword,
           onChange = onPasswordChanged,
+          visualTransformation =
+              if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
           keyboardOptions =
               KeyboardOptions(
                   keyboardType = KeyboardType.Password,
@@ -508,6 +519,18 @@ private fun LazyListScope.renderNetworkInformation(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+              IconButton(
+                  onClick = onTogglePasswordVisibility,
+              ) {
+                Icon(
+                    imageVector =
+                        if (isPasswordVisible) Icons.Filled.VisibilityOff
+                        else Icons.Filled.Visibility,
+                    contentDescription =
+                        if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                )
+              }
+
               if (isValid) {
                 Icon(
                     imageVector = Icons.Filled.Check,
@@ -519,15 +542,6 @@ private fun LazyListScope.renderNetworkInformation(
                     imageVector = Icons.Filled.Close,
                     tint = MaterialTheme.colors.error,
                     contentDescription = "Password is Invalid",
-                )
-              }
-
-              IconButton(
-                  onClick = {},
-              ) {
-                Icon(
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = "Password Visible",
                 )
               }
             }
@@ -590,20 +604,50 @@ private fun LazyListScope.renderNetworkInformation(
 
     item {
       val group by state.group.collectAsState()
-      val password = remember(group) { group?.password ?: "NO PASSWORD" }
+      val isPasswordVisible by state.isPasswordVisible.collectAsState()
+      val password =
+          remember(
+              group,
+              isPasswordVisible,
+          ) {
+            val pw = group?.password ?: "NO PASSWORD"
 
-      StatusItem(
+            // If hidden password, map each char to the password star
+            return@remember if (isPasswordVisible) {
+              pw
+            } else {
+              pw.map { '\u2022' }.joinToString("")
+            }
+          }
+
+      Row(
           modifier =
               itemModifier
                   .padding(bottom = MaterialTheme.keylines.content * 2)
                   .padding(horizontal = MaterialTheme.keylines.content),
-          title = "HOTSPOT PASSWORD",
-          value = password,
-          valueStyle =
-              MaterialTheme.typography.h6.copy(
-                  fontWeight = FontWeight.W400,
-              ),
-      )
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        StatusItem(
+            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+            title = "HOTSPOT PASSWORD",
+            value = password,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                ),
+        )
+
+        IconButton(
+            onClick = onTogglePasswordVisibility,
+        ) {
+          Icon(
+              imageVector =
+                  if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+              contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
+              tint = MaterialTheme.colors.primary,
+          )
+        }
+      }
     }
 
     item {
@@ -708,8 +752,8 @@ private fun LazyListScope.renderBatteryAndPerformance(
 private fun PreviewStatusScreen(
     isLoading: Boolean,
     ssid: String = "MySsid",
-password: String = "MyPassword",
-port: Int = 8228,
+    password: String = "MyPassword",
+    port: Int = 8228,
 ) {
   StatusScreen(
       state =
@@ -735,7 +779,8 @@ port: Int = 8228,
       onPortChanged = {},
       onRequestPermissions = {},
       onSsidChanged = {},
-      onToggle = {},
+      onToggleProxy = {},
+      onTogglePasswordVisibility = {},
   )
 }
 
@@ -758,35 +803,35 @@ private fun PreviewStatusScreenEditing() {
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadSsid() {
-    PreviewStatusScreen(
-        isLoading = false,
-        ssid = "nope",
-    )
+  PreviewStatusScreen(
+      isLoading = false,
+      ssid = "nope",
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPassword() {
-    PreviewStatusScreen(
-        isLoading = false,
-        password = "nope",
-    )
+  PreviewStatusScreen(
+      isLoading = false,
+      password = "nope",
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPort1() {
-    PreviewStatusScreen(
-        isLoading = false,
-        port = 1,
-    )
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPort2() {
-    PreviewStatusScreen(
-        isLoading = false,
-        port = 1_000_000,
-    )
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1_000_000,
+  )
 }

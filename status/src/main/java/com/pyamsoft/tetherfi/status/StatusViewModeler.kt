@@ -55,6 +55,7 @@ internal constructor(
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
     s.requiresPermissions.value = requiresPermissions
     s.explainPermissions.value = requiresPermissions
+    s.isPasswordVisible.value = false
 
     // If we do not have permission, stop here. s.explainPermissions will cause the permission
     // dialog
@@ -273,5 +274,9 @@ internal constructor(
   fun handleChangeBand(scope: CoroutineScope, band: ServerNetworkBand) {
     state.band.value = band
     scope.launch(context = Dispatchers.Main) { serverPreferences.setNetworkBand(band) }
+  }
+
+  fun handleTogglePasswordVisibility() {
+    state.isPasswordVisible.update { !it }
   }
 }
