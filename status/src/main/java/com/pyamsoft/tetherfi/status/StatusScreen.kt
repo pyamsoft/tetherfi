@@ -20,9 +20,16 @@ import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,7 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.trimmedLength
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -414,34 +423,54 @@ private fun LazyListScope.renderNetworkInformation(
             if (canUseCustomConfig) ssid else SYSTEM_DEFINED
           }
 
-      Row(
-          modifier =
-              itemModifier
-                  .padding(bottom = MaterialTheme.keylines.baseline)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        if (canUseCustomConfig) {
-          Text(
-              modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
-              text = remember { ServerDefaults.getSsidPrefix() },
-              style =
-                  MaterialTheme.typography.body2.copy(
-                      color =
-                          MaterialTheme.colors.onBackground.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
-                  ),
-          )
-        }
-        StatusEditor(
-            modifier = Modifier.weight(1F),
-            enabled = canUseCustomConfig,
-            title = "HOTSPOT NAME/SSID",
-            value = hotspotSsid,
-            onChange = onSsidChanged,
-        )
-      }
+      val isValid =
+          remember(
+              canUseCustomConfig,
+              ssid,
+          ) {
+            if (canUseCustomConfig) ssid.trimmedLength() >= 6 else true
+          }
+
+      StatusEditor(
+          itemModifier
+              .padding(bottom = MaterialTheme.keylines.baseline)
+              .padding(horizontal = MaterialTheme.keylines.content),
+          enabled = canUseCustomConfig,
+          title = "HOTSPOT NAME/SSID",
+          value = hotspotSsid,
+          onChange = onSsidChanged,
+          leadingIcon = {
+            if (canUseCustomConfig) {
+              val textStyle = LocalTextStyle.current
+              Text(
+                  modifier = Modifier.padding(horizontal = MaterialTheme.keylines.baseline),
+                  text = remember { ServerDefaults.getSsidPrefix() },
+                  style =
+                      textStyle.copy(
+                          color =
+                              textStyle.color.copy(
+                                  alpha = ContentAlpha.disabled,
+                              ),
+                      ),
+              )
+            }
+          },
+          trailingIcon = {
+            if (isValid) {
+              Icon(
+                  imageVector = Icons.Filled.Check,
+                  tint = MaterialTheme.colors.success,
+                  contentDescription = "SSID is Valid",
+              )
+            } else {
+              Icon(
+                  imageVector = Icons.Filled.Close,
+                  tint = MaterialTheme.colors.error,
+                  contentDescription = "SSID is Invalid",
+              )
+            }
+          },
+      )
     }
 
     item {
@@ -452,6 +481,14 @@ private fun LazyListScope.renderNetworkInformation(
               password,
           ) {
             if (canUseCustomConfig) password else SYSTEM_DEFINED
+          }
+
+      val isValid =
+          remember(
+              canUseCustomConfig,
+              password,
+          ) {
+            if (canUseCustomConfig) password.trimmedLength() >= 8 else true
           }
 
       StatusEditor(
@@ -467,12 +504,41 @@ private fun LazyListScope.renderNetworkInformation(
               KeyboardOptions(
                   keyboardType = KeyboardType.Password,
               ),
+          trailingIcon = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+              if (isValid) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    tint = MaterialTheme.colors.success,
+                    contentDescription = "Password is Valid",
+                )
+              } else {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    tint = MaterialTheme.colors.error,
+                    contentDescription = "Password is Invalid",
+                )
+              }
+
+              IconButton(
+                  onClick = {},
+              ) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "Password Visible",
+                )
+              }
+            }
+          },
       )
     }
 
     item {
       val port by state.port.collectAsState()
       val portNumber = remember(port) { "$port" }
+      val isValid = remember(port) { port in 1025..64000 }
 
       StatusEditor(
           modifier =
@@ -486,6 +552,21 @@ private fun LazyListScope.renderNetworkInformation(
               KeyboardOptions(
                   keyboardType = KeyboardType.Number,
               ),
+          trailingIcon = {
+            if (isValid) {
+              Icon(
+                  imageVector = Icons.Filled.Check,
+                  tint = MaterialTheme.colors.success,
+                  contentDescription = "Port is Valid",
+              )
+            } else {
+              Icon(
+                  imageVector = Icons.Filled.Close,
+                  tint = MaterialTheme.colors.error,
+                  contentDescription = "Port is Invalid",
+              )
+            }
+          },
       )
     }
   } else {
@@ -626,6 +707,9 @@ private fun LazyListScope.renderBatteryAndPerformance(
 @Composable
 private fun PreviewStatusScreen(
     isLoading: Boolean,
+    ssid: String = "MySsid",
+password: String = "MyPassword",
+port: Int = 8228,
 ) {
   StatusScreen(
       state =
@@ -633,9 +717,9 @@ private fun PreviewStatusScreen(
             loadingState.value =
                 if (isLoading) StatusViewState.LoadingState.LOADING
                 else StatusViewState.LoadingState.DONE
-            ssid.value = "MySsid"
-            password.value = "MyPassword"
-            port.value = 8228
+            this.ssid.value = ssid
+            this.password.value = password
+            this.port.value = port
             band.value = ServerNetworkBand.LEGACY
           },
       appName = "TEST",
@@ -669,4 +753,40 @@ private fun PreviewStatusScreenEditing() {
   PreviewStatusScreen(
       isLoading = false,
   )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenEditingBadSsid() {
+    PreviewStatusScreen(
+        isLoading = false,
+        ssid = "nope",
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenEditingBadPassword() {
+    PreviewStatusScreen(
+        isLoading = false,
+        password = "nope",
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenEditingBadPort1() {
+    PreviewStatusScreen(
+        isLoading = false,
+        port = 1,
+    )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenEditingBadPort2() {
+    PreviewStatusScreen(
+        isLoading = false,
+        port = 1_000_000,
+    )
 }

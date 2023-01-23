@@ -16,6 +16,8 @@ internal fun StatusEditor(
     value: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onChange: (String) -> Unit,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
   Column(
       modifier = modifier,
@@ -26,6 +28,8 @@ internal fun StatusEditor(
         keyboardOptions = keyboardOptions,
         value = value,
         onValueChange = onChange,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
         label = {
           Text(
               text = title,
