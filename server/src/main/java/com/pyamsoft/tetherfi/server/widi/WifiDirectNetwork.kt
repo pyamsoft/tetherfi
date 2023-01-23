@@ -167,7 +167,7 @@ protected constructor(
         }
 
         val runningStatus = createGroup(channel)
-        if (runningStatus == RunningStatus.Running) {
+        if (runningStatus is RunningStatus.Running) {
           Timber.d("Network started")
 
           // Only store the channel if it successfully "finished" creating.

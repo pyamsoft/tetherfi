@@ -86,22 +86,22 @@ fun StatusScreen(
           proxyStatus,
       ) {
         // If either is starting, mark us starting
-        if (wiDiStatus == RunningStatus.Starting || proxyStatus == RunningStatus.Starting) {
+        if (wiDiStatus is RunningStatus.Starting || proxyStatus is RunningStatus.Starting) {
           return@remember RunningStatus.Starting
         }
 
         // If either is stopping, mark us stopping
-        if (wiDiStatus == RunningStatus.Stopping || proxyStatus == RunningStatus.Stopping) {
+        if (wiDiStatus is RunningStatus.Stopping || proxyStatus is RunningStatus.Stopping) {
           return@remember RunningStatus.Stopping
         }
 
         // If we are not running
-        if (wiDiStatus == RunningStatus.NotRunning && proxyStatus == RunningStatus.NotRunning) {
+        if (wiDiStatus is RunningStatus.NotRunning && proxyStatus is RunningStatus.NotRunning) {
           return@remember RunningStatus.NotRunning
         }
 
         // If we are running
-        if (wiDiStatus == RunningStatus.Running && proxyStatus == RunningStatus.Running) {
+        if (wiDiStatus is RunningStatus.Running && proxyStatus is RunningStatus.Running) {
           return@remember RunningStatus.Running
         }
 
