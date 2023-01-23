@@ -56,6 +56,7 @@ import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
+private val HOTSPOT_ERROR_STATUS = RunningStatus.Error("Unable to start Hotspot")
 
 @Composable
 fun StatusScreen(
@@ -85,6 +86,10 @@ fun StatusScreen(
           wiDiStatus,
           proxyStatus,
       ) {
+        if (wiDiStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
+          return@remember HOTSPOT_ERROR_STATUS
+        }
+
         // If either is starting, mark us starting
         if (wiDiStatus is RunningStatus.Starting || proxyStatus is RunningStatus.Starting) {
           return@remember RunningStatus.Starting
@@ -108,9 +113,6 @@ fun StatusScreen(
         // Otherwise fallback to wiDi status
         return@remember wiDiStatus
       }
-
-  val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
-  LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
 
   val isButtonEnabled =
       remember(hotspotStatus) {
@@ -142,6 +144,9 @@ fun StatusScreen(
 
   val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
   val loadingState by state.loadingState.collectAsState()
+
+  val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
+  LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
 
   Scaffold(
       modifier = modifier,
@@ -517,6 +522,7 @@ private fun LazyListScope.renderNetworkInformation(
               ),
           trailingIcon = {
             Row(
+                modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
               IconButton(

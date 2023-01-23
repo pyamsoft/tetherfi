@@ -32,7 +32,7 @@ internal fun DisplayStatus(
   val text =
       remember(status) {
         when (status) {
-          is RunningStatus.Error -> "Error: ${status.message}"
+          is RunningStatus.Error -> status.message
           is RunningStatus.NotRunning -> "Not Running"
           is RunningStatus.Running -> "Running"
           is RunningStatus.Starting -> "Starting"

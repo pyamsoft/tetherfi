@@ -33,6 +33,7 @@ internal fun StatusEditor(
         onValueChange = onChange,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
+        singleLine = true,
         label = {
           Text(
               text = title,
