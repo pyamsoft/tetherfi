@@ -74,6 +74,8 @@ buildscript {
     materialDesign = "1.7.0"
 
     ktor = "2.2.2"
+
+    qrCode = "3.3.0"
   }
 
   dependencies {

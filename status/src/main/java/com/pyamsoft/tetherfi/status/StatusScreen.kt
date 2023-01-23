@@ -29,6 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -77,6 +78,7 @@ fun StatusScreen(
     onSelectBand: (ServerNetworkBand) -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
+    onShowQRCodeDialog: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
   val proxyStatus by state.proxyStatus.collectAsState()
@@ -227,6 +229,7 @@ fun StatusScreen(
               onSelectBand = onSelectBand,
               onRequestNotificationPermission = onRequestNotificationPermission,
               onTogglePasswordVisibility = onTogglePasswordVisibility,
+              onShowQRCodeDialog = onShowQRCodeDialog,
           )
         }
       }
@@ -298,6 +301,7 @@ private fun LazyListScope.renderLoadedContent(
     onToggleKeepWakeLock: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+    onShowQRCodeDialog: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -311,6 +315,7 @@ private fun LazyListScope.renderLoadedContent(
       onPortChanged = onPortChanged,
       onSelectBand = onSelectBand,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
+      onShowQRCodeDialog = onShowQRCodeDialog,
   )
 
   item {
@@ -376,6 +381,7 @@ private fun LazyListScope.renderNetworkInformation(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onShowQRCodeDialog: () -> Unit,
 ) {
 
   item {
@@ -653,6 +659,15 @@ private fun LazyListScope.renderNetworkInformation(
               tint = MaterialTheme.colors.primary,
           )
         }
+        IconButton(
+            onClick = onShowQRCodeDialog,
+        ) {
+          Icon(
+              imageVector = Icons.Filled.QrCode,
+              contentDescription = "QR Code",
+              tint = MaterialTheme.colors.primary,
+          )
+        }
       }
     }
 
@@ -787,6 +802,7 @@ private fun PreviewStatusScreen(
       onSsidChanged = {},
       onToggleProxy = {},
       onTogglePasswordVisibility = {},
+      onShowQRCodeDialog = {},
   )
 }
 

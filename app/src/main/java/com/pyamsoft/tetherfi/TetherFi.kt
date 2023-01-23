@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi
 import android.app.Application
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
+import com.pyamsoft.pydroid.bootstrap.libraries.OssLicenses
 import com.pyamsoft.pydroid.ui.ModuleProvider
 import com.pyamsoft.pydroid.ui.PYDroid
 import com.pyamsoft.pydroid.ui.installPYDroid
@@ -83,6 +84,13 @@ class TetherFi : Application() {
           "Accompanist Pager",
           "https://google.github.io/accompanist/pager/",
           "A library which provides paging layouts for Jetpack Compose.",
+      )
+
+      OssLibraries.add(
+          "QRCode-Kotlin",
+          "https://github.com/g0dkar/qrcode-kotlin#installation",
+          "QRCode Generator implemented in pure Kotlin",
+          license = OssLicenses.MIT,
       )
     }
   }

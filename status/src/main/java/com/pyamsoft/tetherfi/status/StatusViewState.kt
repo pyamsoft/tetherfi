@@ -34,6 +34,8 @@ interface StatusViewState : UiViewState {
   val keepWakeLock: StateFlow<Boolean>
   val isBatteryOptimizationsIgnored: StateFlow<Boolean>
 
+  val isShowingQRCodeDialog: StateFlow<Boolean>
+
   @Stable
   @Immutable
   enum class LoadingState {
@@ -64,4 +66,6 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isPasswordVisible = MutableStateFlow(false)
   override val keepWakeLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
+
+  override val isShowingQRCodeDialog = MutableStateFlow(false)
 }

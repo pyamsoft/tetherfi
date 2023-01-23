@@ -14,30 +14,25 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.main
+package com.pyamsoft.tetherfi.qr
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.core.ActivityScope
-import com.pyamsoft.tetherfi.info.InfoComponent
-import com.pyamsoft.tetherfi.qr.QRCodeComponent
-import com.pyamsoft.tetherfi.status.StatusComponent
+import dagger.BindsInstance
 import dagger.Subcomponent
+import javax.inject.Named
 
-@ActivityScope
 @Subcomponent
-internal interface MainComponent {
+internal interface QRCodeComponent {
 
-  @CheckResult fun plusStatus(): StatusComponent.Factory
-
-  @CheckResult fun plusInfo(): InfoComponent.Factory
-
-  @CheckResult fun plusQR(): QRCodeComponent.Factory
-
-  fun inject(activity: MainActivity)
+  fun inject(injector: QRCodeInjector)
 
   @Subcomponent.Factory
   interface Factory {
 
-    @CheckResult fun create(): MainComponent
+    @CheckResult
+    fun create(
+        @BindsInstance @Named("ssid") ssid: String,
+        @BindsInstance @Named("password") password: String,
+    ): QRCodeComponent
   }
 }

@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.status
 
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -83,6 +84,26 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
+  }
+
+  override fun registerSaveState(
+      registry: SaveableStateRegistry
+  ): List<SaveableStateRegistry.Entry> =
+      mutableListOf<SaveableStateRegistry.Entry>().apply {
+        val s = state
+
+        registry
+            .registerProvider(KEY_IS_SHOWING_QR) { s.isShowingQRCodeDialog.value }
+            .also { add(it) }
+      }
+
+  override fun consumeRestoredState(registry: SaveableStateRegistry) {
+    val s = state
+
+    registry
+        .consumeRestored(KEY_IS_SHOWING_QR)
+        ?.let { it as Boolean }
+        ?.also { s.isShowingQRCodeDialog.value = it }
   }
 
   fun loadPreferences(scope: CoroutineScope) {
@@ -278,5 +299,17 @@ internal constructor(
 
   fun handleTogglePasswordVisibility() {
     state.isPasswordVisible.update { !it }
+  }
+
+  fun handleOpenQRCodeDialog() {
+    state.isShowingQRCodeDialog.value = true
+  }
+
+  fun handleCloseQRCodeDialog() {
+    state.isShowingQRCodeDialog.value = false
+  }
+
+  companion object {
+    private const val KEY_IS_SHOWING_QR = "show_qr"
   }
 }

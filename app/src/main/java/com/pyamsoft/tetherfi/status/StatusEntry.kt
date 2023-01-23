@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
@@ -182,9 +184,11 @@ fun StatusEntry(
 
   val dismissPermissionPopup = { viewModel.handlePermissionsExplained() }
 
+  val state = viewModel.state
+
   StatusScreen(
       modifier = modifier,
-      state = viewModel.state,
+      state = state,
       appName = appName,
       hasNotificationPermission = notificationState,
       onToggleProxy = handleToggleProxy,
@@ -243,5 +247,18 @@ fun StatusEntry(
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
+      onShowQRCodeDialog = { viewModel.handleOpenQRCodeDialog() },
   )
+
+  val isShowingQRCodeDialog by state.isShowingQRCodeDialog.collectAsState()
+  val group by state.group.collectAsState()
+  if (isShowingQRCodeDialog) {
+    val ssid = remember(group) { group?.ssid ?: "NO SSID" }
+    val password = remember(group) { group?.password ?: "NO PASSWORD" }
+    QRCodeEntry(
+        ssid = ssid,
+        password = password,
+        onDismiss = { viewModel.handleCloseQRCodeDialog() },
+    )
+  }
 }
