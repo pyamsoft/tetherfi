@@ -12,7 +12,7 @@ setting it's proxy server settings to the server created by the TetherFi applica
 Please note that TetherFi is still a work in progress and not everything will work. For example,
 using TetherFi to get an open NAT type on consoles is currently not possible, and TetherFi
 also currently fails to connect correctly to the Playstation Network. General "normal" internet
-browsing should work fine - however it is depedent on the speed and availability of your Android
+browsing should work fine - however it is dependent on the speed and availability of your Android
 device's internet connection.
 
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"

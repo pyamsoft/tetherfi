@@ -200,7 +200,7 @@ protected constructor(
     Enforcer.assertOffMainThread()
 
     mutex.withLock {
-      // This may fail if WiFi is off, but thats fine since if WiFi is off,
+      // This may fail if WiFi is off, but that's fine since if WiFi is off,
       // the system has already cleaned us up.
       removeGroup(channel)
 
@@ -218,7 +218,7 @@ protected constructor(
 
     val channel = getChannel()
 
-    // If we have no channel, we haven't started yet. Make sure we are clean, but shi
+    // If we have no channel, we haven't started yet. Make sure we are clean, but this
     // is basically a no-op
     if (channel == null) {
       completeStop {
