@@ -54,6 +54,11 @@ Thus, all devices connected to TetherFi form their own local area network. You c
 interesting things with this, like sharing the VPN connection from your Android with another device
 (your VPN app must support accessing Local Area Network devices)
 
+**Your home router has reached the device connection limit**
+
+TetherFi acts as the "router" and provides a access point for your other devices to connect to.
+Thus, devices connected to TetherFi do not count towards your real router's connection limit.
+
 ## Privacy
 
 TetherFi respects your privacy. TetherFi is open source, and always will be. TetherFi
