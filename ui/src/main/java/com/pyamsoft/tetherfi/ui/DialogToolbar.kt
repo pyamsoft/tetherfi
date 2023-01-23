@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.settings
+package com.pyamsoft.tetherfi.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,9 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 
 @Composable
-fun SettingsToolbar(
+fun DialogToolbar(
     modifier: Modifier = Modifier,
     onClose: () -> Unit,
+    title: @Composable () -> Unit,
 ) {
   Surface(
       modifier = modifier,
@@ -44,11 +45,7 @@ fun SettingsToolbar(
           backgroundColor = Color.Transparent,
           contentColor = contentColor,
           elevation = ZeroElevation,
-          title = {
-            Text(
-                text = "Settings",
-            )
-          },
+          title = title,
           navigationIcon = {
             IconButton(
                 onClick = onClose,
@@ -66,8 +63,12 @@ fun SettingsToolbar(
 
 @Preview
 @Composable
-private fun PreviewSettingsToolbar() {
-  SettingsToolbar(
+private fun PreviewDialogToolbar() {
+  DialogToolbar(
       onClose = {},
-  )
+  ) {
+    Text(
+        text = "Testing",
+    )
+  }
 }

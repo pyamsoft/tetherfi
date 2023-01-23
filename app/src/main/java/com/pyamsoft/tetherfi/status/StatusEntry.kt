@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -131,6 +132,7 @@ private fun MountHooks(
     viewModel.refreshGroupInfo(scope = this)
     viewModel.loadPreferences(scope = this)
     viewModel.watchStatusUpdates(scope = this)
+    handleRefreshSystemInfo(this)
   }
 
   LifecycleEffect {
