@@ -24,6 +24,36 @@ device's internet connection.
 
 or get the APK from the [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
 
+## TetherFi may be for you if:
+
+**You want to share your Android's WiFi or Mobile Data**
+
+TetherFi can share your Android device's Internet connection with one or more non-connected devices.
+
+**You have a Hotspot plan from your Mobile Carrier, but it has a data cap**
+
+TetherFi works by proxying your device traffic through your Android device. Since all the traffic
+"looks" like it is coming from your Android device (which is not capped in this case), your
+TetherFi hotspot traffic will not be capped either.
+
+**You have a Hotspot plan from your Mobile Carrier, but it has a data throttling**
+
+TetherFi works by proxying your device traffic through your Android device. Since all the traffic
+"looks" like it is coming from your Android device (which is not throttled in this case), your
+TetherFi hotspot traffic will not be throttled either.
+
+**You do not have a mobile Hotspot plan**
+
+TetherFi creates its own access point and network, so you do not need a carrier provided mobile
+hotspot plan to use it.
+
+**You wish to create a LAN between devices**
+
+TetherFi acts as the "router" and provides a access point for your other devices to connect to.
+Thus, all devices connected to TetherFi form their own local area network. You can possibly do
+interesting things with this, like sharing the VPN connection from your Android with another device
+(your VPN app must support accessing Local Area Network devices)
+
 ## Privacy
 
 TetherFi respects your privacy. TetherFi is open source, and always will be. TetherFi
