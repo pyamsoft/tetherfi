@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -413,16 +414,34 @@ private fun LazyListScope.renderNetworkInformation(
             if (canUseCustomConfig) ssid else SYSTEM_DEFINED
           }
 
-      StatusEditor(
+      Row(
           modifier =
               itemModifier
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
-          enabled = canUseCustomConfig,
-          title = "HOTSPOT NAME/SSID",
-          value = hotspotSsid,
-          onChange = onSsidChanged,
-      )
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        if (canUseCustomConfig) {
+          Text(
+              modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
+              text = remember { ServerDefaults.getSsidPrefix() },
+              style =
+                  MaterialTheme.typography.body2.copy(
+                      color =
+                          MaterialTheme.colors.onBackground.copy(
+                              alpha = ContentAlpha.medium,
+                          ),
+                  ),
+          )
+        }
+        StatusEditor(
+            modifier = Modifier.weight(1F),
+            enabled = canUseCustomConfig,
+            title = "HOTSPOT NAME/SSID",
+            value = hotspotSsid,
+            onChange = onSsidChanged,
+        )
+      }
     }
 
     item {
@@ -604,11 +623,21 @@ private fun LazyListScope.renderBatteryAndPerformance(
   }
 }
 
-@Preview
 @Composable
-private fun PreviewStatusScreen() {
+private fun PreviewStatusScreen(
+    isLoading: Boolean,
+) {
   StatusScreen(
-      state = MutableStatusViewState(),
+      state =
+          MutableStatusViewState().apply {
+            loadingState.value =
+                if (isLoading) StatusViewState.LoadingState.LOADING
+                else StatusViewState.LoadingState.DONE
+            ssid.value = "MySsid"
+            password.value = "MyPassword"
+            port.value = 8228
+            band.value = ServerNetworkBand.LEGACY
+          },
       appName = "TEST",
       hasNotificationPermission = false,
       onStatusUpdated = {},
@@ -623,5 +652,21 @@ private fun PreviewStatusScreen() {
       onRequestPermissions = {},
       onSsidChanged = {},
       onToggle = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenLoading() {
+  PreviewStatusScreen(
+      isLoading = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewStatusScreenEditing() {
+  PreviewStatusScreen(
+      isLoading = false,
   )
 }

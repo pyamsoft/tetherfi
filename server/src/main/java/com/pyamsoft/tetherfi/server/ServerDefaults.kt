@@ -11,8 +11,14 @@ object ServerDefaults {
 
   @JvmStatic
   @CheckResult
+  fun getSsidPrefix(): String {
+    return "DIRECT-TF-"
+  }
+
+  @JvmStatic
+  @CheckResult
   fun asSsid(ssid: String): String {
-    return "DIRECT-TF-${ssid}"
+    return "${getSsidPrefix()}${ssid}"
   }
 
   @CheckResult
