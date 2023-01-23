@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -29,6 +30,7 @@ internal constructor(
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
     private val network: WiDiNetworkStatus,
+    private val notifyGuard: NotifyGuard,
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val wiDiReceiver: WiDiReceiver,
@@ -196,6 +198,9 @@ internal constructor(
 
       // Battery optimization
       s.isBatteryOptimizationsIgnored.value = batteryOptimizer.isOptimizationsIgnored()
+
+      // Notifications
+      s.hasNotificationPermission.value = notifyGuard.canPostNotification()
 
       // If we are in an error state, we tried to run the proxy
       // If the proxy fails, we should at least check that the permission req is not the cause.

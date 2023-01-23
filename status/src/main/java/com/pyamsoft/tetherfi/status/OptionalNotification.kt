@@ -3,8 +3,8 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
@@ -12,7 +12,7 @@ import com.pyamsoft.tetherfi.ui.Label
 
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
-    hasPermission: Boolean,
+    state: StatusViewState,
     onRequest: () -> Unit,
 ) {
   item {
@@ -27,6 +27,8 @@ internal fun LazyListScope.renderNotificationSettings(
   }
 
   item {
+    val hasPermission by state.hasNotificationPermission.collectAsState()
+
     MaterialCheckable(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
         isEditable = !hasPermission,
@@ -38,9 +40,9 @@ internal fun LazyListScope.renderNotificationSettings(
             |Without a notification, the Hotspot may be stopped randomly."""
                 .trimMargin(),
         onClick = {
-            if (!hasPermission) {
-                onRequest()
-            }
+          if (!hasPermission) {
+            onRequest()
+          }
         },
     )
   }

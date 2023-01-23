@@ -64,7 +64,6 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
-    hasNotificationPermission: Boolean,
     onToggleProxy: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -220,7 +219,6 @@ fun StatusScreen(
               wiDiStatus = wiDiStatus,
               canUseCustomConfig = canUseCustomConfig,
               showNotificationSettings = showNotificationSettings,
-              hasNotificationPermission = hasNotificationPermission,
               onSsidChanged = onSsidChanged,
               onPasswordChanged = onPasswordChanged,
               onPortChanged = onPortChanged,
@@ -292,7 +290,6 @@ private fun LazyListScope.renderLoadedContent(
     isEditable: Boolean,
     wiDiStatus: RunningStatus,
     showNotificationSettings: Boolean,
-    hasNotificationPermission: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
@@ -348,7 +345,7 @@ private fun LazyListScope.renderLoadedContent(
   if (showNotificationSettings) {
     renderNotificationSettings(
         itemModifier = Modifier.fillMaxWidth(),
-        hasPermission = hasNotificationPermission,
+        state = state,
         onRequest = onRequestNotificationPermission,
     )
 
@@ -788,7 +785,6 @@ private fun PreviewStatusScreen(
             band.value = ServerNetworkBand.LEGACY
           },
       appName = "TEST",
-      hasNotificationPermission = false,
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
       onToggleKeepWakeLock = {},

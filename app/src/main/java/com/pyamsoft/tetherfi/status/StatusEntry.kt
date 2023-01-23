@@ -2,14 +2,10 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.annotation.CheckResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -20,7 +16,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
@@ -31,6 +26,7 @@ import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -38,7 +34,6 @@ import timber.log.Timber
 internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
-  @JvmField @Inject internal var notifyGuard: NotifyGuard? = null
   @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
   @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
@@ -49,7 +44,6 @@ internal class StatusInjector : ComposableInjector() {
 
   override fun onDispose() {
     viewModel = null
-    notifyGuard = null
     notificationRefreshBus = null
     permissionRequestBus = null
     permissionResponseBus = null
@@ -72,25 +66,21 @@ private fun safeOpenSettingsIntent(
   }
 }
 
-private data class MountHookResults(
-    val notificationState: State<Boolean>,
-)
-
 /** Sets up permission request interaction */
 @Composable
 private fun RegisterPermissionRequests(
-    notificationPermissionState: MutableState<Boolean>,
     permissionResponseBus: EventBus<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
+    onRefreshSystemInfo: CoroutineScope.() -> Unit,
 ) {
   // Create requesters
   val handleToggleProxy by rememberUpdatedState(onToggleProxy)
+  val handleRefreshSystemInfo by rememberUpdatedState(onRefreshSystemInfo)
 
   LaunchedEffect(
       permissionResponseBus,
       notificationRefreshBus,
-      notificationPermissionState,
   ) {
     val scope = this
     scope.launch(context = Dispatchers.Main) {
@@ -99,9 +89,11 @@ private fun RegisterPermissionRequests(
       permissionResponseBus.onEvent { resp ->
         when (resp) {
           is PermissionResponse.RefreshNotification -> {
-            // Update state variable
-            notificationPermissionState.value = true
+            // Tell the service to refresh
             notificationRefreshBus.send(NotificationRefreshEvent)
+
+            // Call to the VM to refresh info
+            handleRefreshSystemInfo()
           }
           is PermissionResponse.ToggleProxy -> {
             handleToggleProxy()
@@ -114,24 +106,25 @@ private fun RegisterPermissionRequests(
 
 /** On mount hooks */
 @Composable
-@CheckResult
-private fun mountHooks(
+private fun MountHooks(
     component: StatusInjector,
     onToggleProxy: () -> Unit,
-): MountHookResults {
+) {
   val viewModel = rememberNotNull(component.viewModel)
-  val notifyGuard = rememberNotNull(component.notifyGuard)
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
   val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
-  val notificationState = remember { mutableStateOf(notifyGuard.canPostNotification()) }
+  // Wrap in lambda when calling or else bad
+  val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
+    viewModel.refreshSystemInfo(scope = scope)
+  }
 
   // As early as possible because of Lifecycle quirks
   RegisterPermissionRequests(
-      notificationPermissionState = notificationState,
       notificationRefreshBus = notificationRefreshBus,
       permissionResponseBus = permissionResponseBus,
       onToggleProxy = onToggleProxy,
+      onRefreshSystemInfo = { handleRefreshSystemInfo(this) },
   )
 
   LaunchedEffect(viewModel) {
@@ -144,17 +137,9 @@ private fun mountHooks(
     object : DefaultLifecycleObserver {
 
       override fun onResume(owner: LifecycleOwner) {
-        viewModel.refreshSystemInfo(scope = owner.lifecycleScope)
+        handleRefreshSystemInfo(owner.lifecycleScope)
       }
     }
-  }
-
-  return remember(
-      notificationState,
-  ) {
-    MountHookResults(
-        notificationState = notificationState,
-    )
   }
 }
 
@@ -174,13 +159,10 @@ fun StatusEntry(
   val handleToggleProxy = { viewModel.handleToggleProxy(scope = scope) }
 
   // Hooks that run on mount
-  val hooks =
-      mountHooks(
-          component = component,
-          onToggleProxy = handleToggleProxy,
-      )
-
-  val notificationState by hooks.notificationState
+  MountHooks(
+      component = component,
+      onToggleProxy = handleToggleProxy,
+  )
 
   val dismissPermissionPopup = { viewModel.handlePermissionsExplained() }
 
@@ -190,7 +172,6 @@ fun StatusEntry(
       modifier = modifier,
       state = state,
       appName = appName,
-      hasNotificationPermission = notificationState,
       onToggleProxy = handleToggleProxy,
       onSsidChanged = {
         viewModel.handleSsidChanged(

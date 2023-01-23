@@ -28,6 +28,7 @@ interface StatusViewState : UiViewState {
   // Permissions
   val requiresPermissions: StateFlow<Boolean>
   val explainPermissions: StateFlow<Boolean>
+  val hasNotificationPermission: StateFlow<Boolean>
 
   // Extras
   val isPasswordVisible: StateFlow<Boolean>
@@ -62,6 +63,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
 
   override val requiresPermissions = MutableStateFlow(false)
   override val explainPermissions = MutableStateFlow(false)
+  override val hasNotificationPermission = MutableStateFlow(false)
 
   override val isPasswordVisible = MutableStateFlow(false)
   override val keepWakeLock = MutableStateFlow(false)
