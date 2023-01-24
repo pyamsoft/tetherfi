@@ -60,8 +60,12 @@ class MainActivity : AppCompatActivity() {
 
                 override val changelog = buildChangeLog {
                   change("Full usage of Jetpack Compose")
-                  feature("Allow horizontal swiping between pages")
                   bugfix("Major performance gains by optimizing a bunch of Compose code")
+                  feature("Allow horizontal swiping between pages")
+                  feature("Allow Hotspot network access via QR Code")
+                  feature("Hide password by default, click Eye to display")
+                  feature("Prefix the network name with required DIRECT-TF-")
+                  feature("Show when the network name, password, or port is invalid")
                 }
               },
       )

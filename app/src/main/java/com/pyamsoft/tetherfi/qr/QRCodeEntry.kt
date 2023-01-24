@@ -63,7 +63,7 @@ private fun rememberQRCodeWidth(): Dp {
       width,
   ) {
     if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-      width.dp / 3 * 2
+      width.dp / 4 * 3
     } else {
       width.dp / 3
     }
