@@ -25,9 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
+import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
@@ -115,7 +115,7 @@ fun ProxyTileScreen(
     Dialog(
         onDismissRequest = onDismissed,
         properties =
-            DialogProperties(
+            rememberDialogProperties(
                 dismissOnBackPress = isInitialStatusError,
                 dismissOnClickOutside = isInitialStatusError,
             ),

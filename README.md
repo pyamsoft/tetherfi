@@ -29,6 +29,8 @@ or get the APK from the [Releases Section](https://github.com/pyamsoft/tetherfi/
 **You want to share your Android's WiFi or Mobile Data**
 
 TetherFi can share your Android device's Internet connection with one or more non-connected devices.
+It is most useful for a device which has an Unlimited Mobile Data plan with your mobile carrier,
+or a strong unmetered WiFi connection. You do not need a Hotspot data plan to use TetherFi.
 
 **You have a Hotspot plan from your Mobile Carrier, but it has a data cap**
 

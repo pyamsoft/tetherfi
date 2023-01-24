@@ -37,10 +37,10 @@ class ProxyTileActivity : AppCompatActivity() {
       SystemBars()
 
       TetherFiTheme(
-        theme = theme,
+          theme = theme,
       ) {
         ProxyTileEntry(
-          modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         )
       }
     }

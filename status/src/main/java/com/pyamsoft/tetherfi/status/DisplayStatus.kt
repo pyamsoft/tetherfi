@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -107,8 +106,7 @@ internal fun DisplayStatus(
       value = text,
       color = fgColor,
       valueModifier =
-          Modifier
-              .run {
+          Modifier.run {
                 when (size) {
                   StatusSize.SMALL -> this
                   StatusSize.NORMAL -> padding(top = MaterialTheme.keylines.typography)

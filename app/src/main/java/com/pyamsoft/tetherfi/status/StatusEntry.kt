@@ -2,7 +2,6 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState

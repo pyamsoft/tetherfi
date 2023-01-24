@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.qr
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.MaterialTheme
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.FragmentActivity
 import coil.ImageLoader
+import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -94,12 +94,13 @@ fun QRCodeEntry(
 
   // We need to tell this how large it is in advance or the Dialog sizes weird
   Dialog(
+      properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
   ) {
     val qrCodeSize = rememberQRCodeWidth()
 
     Column(
-        modifier = modifier.width(qrCodeSize).heightIn(min = qrCodeSize * 1.6F),
+        modifier = modifier.width(qrCodeSize),
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),

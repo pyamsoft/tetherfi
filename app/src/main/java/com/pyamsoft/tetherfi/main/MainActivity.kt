@@ -139,16 +139,16 @@ class MainActivity : AppCompatActivity() {
       SaveStateDisposableEffect(vm)
 
       TetherFiTheme(
-        theme = theme,
+          theme = theme,
       ) {
         SystemBars()
         InstallPYDroidExtras()
         MainEntry(
-          modifier = Modifier.fillMaxSize(),
-          appName = appName,
-          state = state,
-          onOpenSettings = { vm.handleOpenSettings() },
-          onCloseSettings = { vm.handleCloseSettings() },
+            modifier = Modifier.fillMaxSize(),
+            appName = appName,
+            state = state,
+            onOpenSettings = { vm.handleOpenSettings() },
+            onCloseSettings = { vm.handleCloseSettings() },
         )
       }
     }
