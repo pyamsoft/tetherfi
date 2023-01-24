@@ -27,19 +27,6 @@ internal constructor(
   private val isNetworkCurrentlyRunning =
       MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
 
-  private fun clearNetworkInfo(
-      clearIp: Boolean,
-  ) {
-    state.ssid.value = ""
-    state.password.value = ""
-
-    if (clearIp) {
-      state.ip.value = ""
-    }
-
-    // Don't clear port since this is not decided by the network, but by preferences
-  }
-
   private fun refreshGroupInfo(scope: CoroutineScope) {
     val s = state
 
@@ -47,9 +34,8 @@ internal constructor(
       val grp = network.getGroupInfo()
       if (grp == null) {
         // Blank out since we have no valid data
-        clearNetworkInfo(
-            clearIp = false,
-        )
+        state.ssid.value = ""
+        state.password.value = ""
       } else {
         s.ssid.value = grp.ssid
         s.password.value = grp.password
@@ -69,10 +55,13 @@ internal constructor(
 
         // If the network was switched off, clear everything
         if (wasRunning && !currentlyRunning) {
-          Timber.d("Hotspot was turned OFF, clear network settings")
-          clearNetworkInfo(
-              clearIp = true,
-          )
+          Timber.d("Hotspot was turned OFF, refresh network settings to clear")
+
+          // Refresh connection info, should blank out
+          refreshConnectionInfo(scope = this)
+
+          // Explicitly close the QR code
+          handleCloseQRCodeDialog()
         }
       }
     }
@@ -120,7 +109,8 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) {
       val conn = network.getConnectionInfo()
       if (conn == null) {
-        s.ip.value = "NO IP ADDRESS"
+        // Blank so we handle in the View
+        s.ip.value = ""
       } else {
         s.ip.value = conn.ip
       }

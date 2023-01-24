@@ -281,8 +281,11 @@ protected constructor(
       // Strict Mode violation
       withContext(context = dispatcher) {
         WiDiNetworkStatus.ConnectionInfo(
-            ip = connectionInfo.hostAddress ?: "No IP Address",
-            hostName = connectionInfo.hostName ?: "No Host Name",
+            // Blank strings are fail value, to be handled in the View
+            ip = connectionInfo.hostAddress ?: "",
+
+            // Blank strings are fail value, to be handled in the View
+            hostName = connectionInfo.hostName ?: "",
         )
       }
     }

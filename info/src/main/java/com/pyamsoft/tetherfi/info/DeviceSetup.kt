@@ -185,9 +185,10 @@ internal fun LazyListScope.renderDeviceSetup(
           )
 
           val ip by serverViewState.ip.collectAsState()
+          val ipAddress = remember(ip) { ip.ifBlank { "NO IP ADDRESS" } }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = ip,
+              text = ipAddress,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
