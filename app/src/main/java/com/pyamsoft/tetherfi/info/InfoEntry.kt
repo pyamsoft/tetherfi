@@ -28,6 +28,7 @@ fun InfoEntry(
     modifier: Modifier = Modifier,
     appName: String,
     serverViewState: ServerViewState,
+    onShowQRCode: () -> Unit,
 ) {
   val component = rememberComposableInjector { InfoInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -37,6 +38,7 @@ fun InfoEntry(
       state = viewModel.state,
       appName = appName,
       serverViewState = serverViewState,
+      onShowQRCode = onShowQRCode,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
   )
 }

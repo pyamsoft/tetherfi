@@ -3,14 +3,17 @@ package com.pyamsoft.tetherfi.main
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MainViewModeler
 @Inject
@@ -21,6 +24,22 @@ internal constructor(
     private val wiDiReceiver: WiDiReceiver,
 ) : AbstractViewModeler<MainViewState>(state) {
 
+  private val isNetworkCurrentlyRunning =
+      MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
+
+  private fun clearNetworkInfo(
+      clearIp: Boolean,
+  ) {
+    state.ssid.value = ""
+    state.password.value = ""
+
+    if (clearIp) {
+      state.ip.value = ""
+    }
+
+    // Don't clear port since this is not decided by the network, but by preferences
+  }
+
   private fun refreshGroupInfo(scope: CoroutineScope) {
     val s = state
 
@@ -28,8 +47,9 @@ internal constructor(
       val grp = network.getGroupInfo()
       if (grp == null) {
         // Blank out since we have no valid data
-        s.ssid.value = ""
-        s.password.value = ""
+        clearNetworkInfo(
+            clearIp = false,
+        )
       } else {
         s.ssid.value = grp.ssid
         s.password.value = grp.password
@@ -39,18 +59,27 @@ internal constructor(
 
   fun bind(scope: CoroutineScope) {
     val s = state
+
+    // Watch the server status and update if it is running
+    scope.launch(context = Dispatchers.Main) {
+      network.onStatusChanged { s ->
+        val wasRunning = isNetworkCurrentlyRunning.value
+        val currentlyRunning = s == RunningStatus.Running
+        isNetworkCurrentlyRunning.value = currentlyRunning
+
+        // If the network was switched off, clear everything
+        if (wasRunning && !currentlyRunning) {
+          Timber.d("Hotspot was turned OFF, clear network settings")
+          clearNetworkInfo(
+              clearIp = true,
+          )
+        }
+      }
+    }
+
+    // Port is its own thing, not part of group info
     scope.launch(context = Dispatchers.Main) {
       serverPreferences.listenForPortChanges().collectLatest { s.port.value = it }
-    }
-
-    // UI editor changes override group
-    scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPasswordChanges().collectLatest { s.password.value = it }
-    }
-
-    // UI editor changes override group
-    scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForSsidChanges().collectLatest { s.ssid.value = it }
     }
 
     // But then once we are done editing and we start getting events from the receiver, take them
@@ -135,7 +164,9 @@ internal constructor(
   }
 
   fun handleOpenQRCodeDialog() {
-    state.isShowingQRCodeDialog.value = true
+    // If the hotspot is valid, we will have this from the group
+    val isHotspotDataValid = state.ssid.value.isNotBlank() && state.password.value.isNotBlank()
+    state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
   }
 
   fun handleCloseQRCodeDialog() {

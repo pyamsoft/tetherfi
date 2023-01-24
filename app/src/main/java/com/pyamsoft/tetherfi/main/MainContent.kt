@@ -41,14 +41,15 @@ fun MainContent(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
             serverViewState = state,
+            onShowQRCode = onShowQRCode,
         )
       }
       is MainView.Status -> {
         StatusEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
-            onShowQRCode = onShowQRCode,
             serverViewState = state,
+            onShowQRCode = onShowQRCode,
         )
       }
     }

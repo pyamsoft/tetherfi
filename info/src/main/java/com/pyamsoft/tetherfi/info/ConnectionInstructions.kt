@@ -17,6 +17,7 @@ internal fun LazyListScope.renderConnectionInstructions(
     appName: String,
     state: InfoViewState,
     serverViewState: ServerViewState,
+    onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
   item {
@@ -52,6 +53,7 @@ internal fun LazyListScope.renderConnectionInstructions(
       state = state,
       serverViewState = serverViewState,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
+      onShowQRCode = onShowQRCode,
   )
 
   item {
@@ -81,6 +83,7 @@ private fun PreviewConnectionInstructions() {
         serverViewState = TestServerViewState(),
         state = MutableInfoViewState(),
         onTogglePasswordVisibility = {},
+        onShowQRCode = {},
     )
   }
 }

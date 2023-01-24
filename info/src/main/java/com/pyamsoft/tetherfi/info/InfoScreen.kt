@@ -21,6 +21,7 @@ fun InfoScreen(
     state: InfoViewState,
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
   val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
 
@@ -35,6 +36,7 @@ fun InfoScreen(
         state = state,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
+        onShowQRCode = onShowQRCode,
     )
 
     item {
@@ -53,5 +55,6 @@ private fun PreviewInfoScreen() {
       state = MutableInfoViewState(),
       serverViewState = TestServerViewState(),
       onTogglePasswordVisibility = {},
+      onShowQRCode = {},
   )
 }

@@ -13,6 +13,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ internal fun LazyListScope.renderDeviceSetup(
     appName: String,
     state: InfoViewState,
     serverViewState: ServerViewState,
+    onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
   item {
@@ -79,6 +81,33 @@ internal fun LazyListScope.renderDeviceSetup(
                       fontFamily = FontFamily.Monospace,
                   ),
           )
+
+          val password by serverViewState.password.collectAsState()
+          val isNetworkReadyForQRCode =
+              remember(
+                  ssid,
+                  password,
+              ) {
+                ssid.isNotBlank() && password.isNotBlank()
+              }
+
+          if (isNetworkReadyForQRCode) {
+            // Don't use IconButton because we don't care about minimum touch target size
+            Box(
+                modifier =
+                    Modifier.padding(start = MaterialTheme.keylines.baseline)
+                        .clickable { onShowQRCode() }
+                        .padding(MaterialTheme.keylines.typography),
+                contentAlignment = Alignment.Center,
+            ) {
+              Icon(
+                  modifier = Modifier.size(16.dp),
+                  imageVector = Icons.Filled.QrCode,
+                  contentDescription = "QR Code",
+                  tint = MaterialTheme.colors.primary,
+              )
+            }
+          }
         }
 
         Row {
@@ -229,6 +258,7 @@ private fun PreviewDeviceSetup() {
         serverViewState = TestServerViewState(),
         state = MutableInfoViewState(),
         onTogglePasswordVisibility = {},
+        onShowQRCode = {},
     )
   }
 }
