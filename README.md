@@ -32,17 +32,17 @@ TetherFi can share your Android device's Internet connection with one or more no
 It is most useful for a device which has an Unlimited Mobile Data plan with your mobile carrier,
 or a strong unmetered WiFi connection. You do not need a Hotspot data plan to use TetherFi.
 
-**You have a Hotspot plan from your Mobile Carrier, but it has a data cap**
+**You have a Unlimited Data and a Hotspot plan from your Carrier, but Hotspot has a data cap**
 
 TetherFi works by proxying your device traffic through your Android device. Since all the traffic
-"looks" like it is coming from your Android device (which is not capped in this case), your
-TetherFi hotspot traffic will not be capped either.
+"looks" like it is coming from your Android device, your TetherFi hotspot traffic will not be
+capped either.
 
-**You have a Hotspot plan from your Mobile Carrier, but it has a data throttling**
+**You have a Unlimited Data and a Hotspot plan from your Carrier, but Hotspot has throttling**
 
 TetherFi works by proxying your device traffic through your Android device. Since all the traffic
-"looks" like it is coming from your Android device (which is not throttled in this case), your
-TetherFi hotspot traffic will not be throttled either.
+"looks" like it is coming from your Android device, your TetherFi hotspot traffic will not be
+throttled either.
 
 **You do not have a mobile Hotspot plan**
 
