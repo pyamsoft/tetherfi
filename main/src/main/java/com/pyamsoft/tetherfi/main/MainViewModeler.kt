@@ -58,10 +58,15 @@ internal constructor(
           Timber.d("Hotspot was turned OFF, refresh network settings to clear")
 
           // Refresh connection info, should blank out
-          refreshConnectionInfo(scope = this)
+          handleRefreshConnectionInfo(scope = this)
 
           // Explicitly close the QR code
           handleCloseQRCodeDialog()
+        } else if (!wasRunning && currentlyRunning) {
+          Timber.d("Hotspot was turned ON, refresh network settings to update")
+
+          // Refresh connection info, should populate
+          handleRefreshConnectionInfo(scope = this)
         }
       }
     }
@@ -77,32 +82,30 @@ internal constructor(
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
-            refreshGroupInfo(scope)
             s.ip.value = event.ip
+            handleRefreshConnectionInfo(scope)
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
-            refreshGroupInfo(scope)
+            handleRefreshConnectionInfo(scope)
           }
           is WidiNetworkEvent.PeersChanged -> {
-            refreshGroupInfo(scope)
+            handleRefreshConnectionInfo(scope)
           }
           is WidiNetworkEvent.WifiDisabled -> {
-            refreshGroupInfo(scope)
+            handleRefreshConnectionInfo(scope)
           }
           is WidiNetworkEvent.WifiEnabled -> {
-            refreshGroupInfo(scope)
+            handleRefreshConnectionInfo(scope)
           }
           is WidiNetworkEvent.DiscoveryChanged -> {
-            refreshGroupInfo(scope)
+            handleRefreshConnectionInfo(scope)
           }
         }
       }
     }
-
-    refreshConnectionInfo(scope = scope)
   }
 
-  fun refreshConnectionInfo(scope: CoroutineScope) {
+  fun handleRefreshConnectionInfo(scope: CoroutineScope) {
     val s = state
 
     // Pull connection info

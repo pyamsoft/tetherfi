@@ -76,7 +76,7 @@ private fun MountHooks(
     object : DefaultLifecycleObserver {
 
       override fun onResume(owner: LifecycleOwner) {
-        viewModel.refreshConnectionInfo(scope = owner.lifecycleScope)
+        viewModel.handleRefreshConnectionInfo(scope = owner.lifecycleScope)
       }
     }
   }
