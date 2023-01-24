@@ -29,7 +29,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,6 +54,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
