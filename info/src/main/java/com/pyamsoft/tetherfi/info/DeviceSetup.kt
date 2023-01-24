@@ -147,22 +147,25 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          // Don't use IconButton because we don't care about minimum touch target size
-          Box(
-              modifier =
-                  Modifier.padding(start = MaterialTheme.keylines.baseline)
-                      .clickable { onTogglePasswordVisibility() }
-                      .padding(MaterialTheme.keylines.typography),
-              contentAlignment = Alignment.Center,
-          ) {
-            Icon(
-                modifier = Modifier.size(16.dp),
-                imageVector =
-                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                contentDescription =
-                    if (isPasswordVisible) "Password Visible" else "Password Hidden",
-                tint = MaterialTheme.colors.primary,
-            )
+          if (password.isNotBlank()) {
+            // Don't use IconButton because we don't care about minimum touch target size
+            Box(
+                modifier =
+                    Modifier.padding(start = MaterialTheme.keylines.baseline)
+                        .clickable { onTogglePasswordVisibility() }
+                        .padding(MaterialTheme.keylines.typography),
+                contentAlignment = Alignment.Center,
+            ) {
+              Icon(
+                  modifier = Modifier.size(16.dp),
+                  imageVector =
+                      if (isPasswordVisible) Icons.Filled.VisibilityOff
+                      else Icons.Filled.Visibility,
+                  contentDescription =
+                      if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                  tint = MaterialTheme.colors.primary,
+              )
+            }
           }
         }
 
