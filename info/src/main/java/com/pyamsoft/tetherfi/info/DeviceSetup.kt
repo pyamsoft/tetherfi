@@ -56,7 +56,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Row {
           Text(
-              text = "Name/SSID",
+              text = "Name",
               style =
                   MaterialTheme.typography.body1.copy(
                       color =
@@ -142,7 +142,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Row {
           Text(
-              text = "URL/Hostname",
+              text = "URL",
               style =
                   MaterialTheme.typography.body1.copy(
                       color =

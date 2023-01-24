@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -463,6 +464,7 @@ private fun LazyListScope.renderNetworkInformation(
                   text = remember { ServerDefaults.getSsidPrefix() },
                   style =
                       textStyle.copy(
+                          fontFamily = FontFamily.Monospace,
                           color =
                               MaterialTheme.colors.onSurface.copy(
                                   alpha = ContentAlpha.disabled,
@@ -597,18 +599,34 @@ private fun LazyListScope.renderNetworkInformation(
       val group by state.group.collectAsState()
       val ssid = remember(group) { group?.ssid ?: "NO SSID" }
 
-      StatusItem(
+      Row(
           modifier =
               itemModifier
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
-          title = "HOTSPOT NAME/SSID",
-          value = ssid,
-          valueStyle =
-              MaterialTheme.typography.h6.copy(
-                  fontWeight = FontWeight.W400,
-              ),
-      )
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        StatusItem(
+            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+            title = "HOTSPOT NAME/SSID",
+            value = ssid,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
+                ),
+        )
+
+        IconButton(
+            onClick = onShowQRCodeDialog,
+        ) {
+          Icon(
+              imageVector = Icons.Filled.QrCode,
+              contentDescription = "QR Code",
+              tint = MaterialTheme.colors.primary,
+          )
+        }
+      }
     }
 
     item {
@@ -643,6 +661,7 @@ private fun LazyListScope.renderNetworkInformation(
             valueStyle =
                 MaterialTheme.typography.h6.copy(
                     fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
                 ),
         )
 
@@ -653,15 +672,6 @@ private fun LazyListScope.renderNetworkInformation(
               imageVector =
                   if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
               contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
-              tint = MaterialTheme.colors.primary,
-          )
-        }
-        IconButton(
-            onClick = onShowQRCodeDialog,
-        ) {
-          Icon(
-              imageVector = Icons.Filled.QrCode,
-              contentDescription = "QR Code",
               tint = MaterialTheme.colors.primary,
           )
         }
@@ -681,6 +691,7 @@ private fun LazyListScope.renderNetworkInformation(
           valueStyle =
               MaterialTheme.typography.h6.copy(
                   fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
               ),
       )
     }
@@ -699,6 +710,7 @@ private fun LazyListScope.renderNetworkInformation(
           valueStyle =
               MaterialTheme.typography.h6.copy(
                   fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
               ),
       )
     }
