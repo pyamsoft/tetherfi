@@ -9,6 +9,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class InfoViewModeler
@@ -68,6 +69,10 @@ internal constructor(
     }
 
     refreshConnectionInfo(scope = scope)
+  }
+
+  fun handleTogglePasswordVisibility() {
+    state.isPasswordVisible.update { !it }
   }
 
   fun refreshConnectionInfo(scope: CoroutineScope) {

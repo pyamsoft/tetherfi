@@ -15,6 +15,8 @@ interface InfoViewState : UiViewState {
   val password: StateFlow<String>
   val ip: StateFlow<String>
   val port: StateFlow<Int>
+
+  val isPasswordVisible: StateFlow<Boolean>
 }
 
 @Stable
@@ -24,4 +26,6 @@ class MutableInfoViewState @Inject internal constructor() : InfoViewState {
   override val password = MutableStateFlow("")
   override val ip = MutableStateFlow("")
   override val port = MutableStateFlow(0)
+
+  override val isPasswordVisible = MutableStateFlow(false)
 }

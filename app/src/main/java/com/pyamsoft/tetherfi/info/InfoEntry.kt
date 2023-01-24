@@ -57,5 +57,6 @@ fun InfoEntry(
       modifier = modifier,
       state = viewModel.state,
       appName = appName,
+      onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
   )
 }

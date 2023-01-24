@@ -1,26 +1,37 @@
 package com.pyamsoft.tetherfi.info
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.ui.icons.Visibility
+import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
+    onTogglePasswordVisibility: () -> Unit,
 ) {
   item {
     OtherInstruction(
@@ -62,6 +73,7 @@ internal fun LazyListScope.renderDeviceSetup(
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
+                      fontFamily = FontFamily.Monospace,
                   ),
           )
         }
@@ -78,15 +90,48 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val password by state.password.collectAsState()
+          val rawPassword by state.password.collectAsState()
+          val isPasswordVisible by state.isPasswordVisible.collectAsState()
+          val password =
+              remember(
+                  rawPassword,
+                  isPasswordVisible,
+              ) {
+                // If hidden password, map each char to the password star
+                return@remember if (isPasswordVisible) {
+                  rawPassword
+                } else {
+                  rawPassword.map { '\u2022' }.joinToString("")
+                }
+              }
+
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = password,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
+                      fontFamily = FontFamily.Monospace,
                   ),
           )
+
+          // Don't use IconButton because we don't care about minimum touch target size
+          Box(
+              modifier =
+                  Modifier.padding(start = MaterialTheme.keylines.baseline)
+                      .clickable { onTogglePasswordVisibility() }
+                      .padding(MaterialTheme.keylines.typography),
+              contentAlignment = Alignment.Center,
+          ) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector =
+                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                contentDescription =
+                    if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                tint = MaterialTheme.colors.primary,
+            )
+          }
         }
 
         Text(
@@ -114,6 +159,7 @@ internal fun LazyListScope.renderDeviceSetup(
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
+                      fontFamily = FontFamily.Monospace,
                   ),
           )
         }
@@ -138,6 +184,7 @@ internal fun LazyListScope.renderDeviceSetup(
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
+                      fontFamily = FontFamily.Monospace,
                   ),
           )
         }
@@ -183,6 +230,7 @@ private fun PreviewDeviceSetup() {
               password.value = "TEST PASSWORD"
               port.value = 8228
             },
+        onTogglePasswordVisibility = {},
     )
   }
 }

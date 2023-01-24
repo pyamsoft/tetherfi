@@ -17,6 +17,7 @@ fun InfoScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
+    onTogglePasswordVisibility: () -> Unit,
 ) {
   val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
 
@@ -29,6 +30,7 @@ fun InfoScreen(
         itemModifier = itemModifier,
         appName = appName,
         state = state,
+        onTogglePasswordVisibility = onTogglePasswordVisibility,
     )
 
     item {
@@ -51,5 +53,6 @@ private fun PreviewInfoScreen() {
             password.value = "TEST PASSWORD"
             port.value = 8228
           },
+      onTogglePasswordVisibility = {},
   )
 }

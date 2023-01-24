@@ -14,6 +14,7 @@ internal fun LazyListScope.renderConnectionInstructions(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
+    onTogglePasswordVisibility: () -> Unit,
 ) {
   item {
     Spacer(
@@ -46,6 +47,7 @@ internal fun LazyListScope.renderConnectionInstructions(
       itemModifier = itemModifier,
       appName = appName,
       state = state,
+      onTogglePasswordVisibility = onTogglePasswordVisibility,
   )
 
   item {
@@ -79,6 +81,7 @@ private fun PreviewConnectionInstructions() {
               password.value = "TEST PASSWORD"
               port.value = 8228
             },
+        onTogglePasswordVisibility = {},
     )
   }
 }
