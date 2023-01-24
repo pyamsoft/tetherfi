@@ -39,30 +39,34 @@ internal fun DisplayStatus(
         }
       }
 
-  val colors = MaterialTheme.colors
+  val errorColor = MaterialTheme.colors.error
+  val runningColor = MaterialTheme.colors.success
   val color =
       remember(
           status,
-          colors,
+          errorColor,
+          runningColor,
       ) {
         when (status) {
-          is RunningStatus.Error -> colors.error
+          is RunningStatus.Error -> errorColor
           is RunningStatus.NotRunning -> Color.Unspecified
-          is RunningStatus.Running -> colors.success
+          is RunningStatus.Running -> runningColor
           is RunningStatus.Starting -> Color.Cyan
           is RunningStatus.Stopping -> Color.Magenta
         }
       }
 
-  val typography = MaterialTheme.typography
+  val smallStyle = MaterialTheme.typography.body1
+  val normalStyle = MaterialTheme.typography.h5
   val valueStyle =
       remember(
-          typography,
+          smallStyle,
+          normalStyle,
           size,
       ) {
         when (size) {
-          StatusSize.SMALL -> typography.body1
-          StatusSize.NORMAL -> typography.h5
+          StatusSize.SMALL -> smallStyle
+          StatusSize.NORMAL -> normalStyle
         }
       }
 
@@ -77,15 +81,16 @@ internal fun DisplayStatus(
         }
       }
 
+  val backgroundColor = MaterialTheme.colors.onBackground
   val borderColor =
       remember(
           size,
           color,
-          colors,
+          backgroundColor,
       ) {
         when (size) {
           StatusSize.SMALL -> Color.Unspecified
-          StatusSize.NORMAL -> if (color.isUnspecified) colors.onBackground else color
+          StatusSize.NORMAL -> if (color.isUnspecified) backgroundColor else color
         }
       }
 

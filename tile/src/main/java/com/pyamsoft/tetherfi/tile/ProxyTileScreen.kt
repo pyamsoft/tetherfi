@@ -248,19 +248,23 @@ private fun Step(
     isError: Boolean,
     isDone: Boolean,
 ) {
-  val colors = MaterialTheme.colors
+  val errorColor = MaterialTheme.colors.error
+  val runningColor = MaterialTheme.colors.success
+  val defaultColor = MaterialTheme.colors.onSurface
   val color =
       remember(
           isError,
           isDone,
-          colors,
+          errorColor,
+          runningColor,
+          defaultColor,
       ) {
         if (isError) {
-          colors.error
+          errorColor
         } else if (isDone) {
-          colors.success
+          runningColor
         } else {
-          colors.onSurface
+          defaultColor
         }
       }
 
@@ -284,22 +288,28 @@ private fun Connector(
     isDone: Boolean,
     inProgress: Boolean,
 ) {
-  val colors = MaterialTheme.colors
+  val errorColor = MaterialTheme.colors.error
+  val runningColor = MaterialTheme.colors.success
+  val primaryColor = MaterialTheme.colors.primary
+  val defaultColor = MaterialTheme.colors.onSurface
   val color =
       remember(
           isError,
           isDone,
           inProgress,
-          colors,
+          errorColor,
+          runningColor,
+          primaryColor,
+          defaultColor,
       ) {
         if (isError) {
-          colors.error
+          errorColor
         } else if (isDone) {
-          colors.success
+          runningColor
         } else if (inProgress) {
-          colors.primary
+          primaryColor
         } else {
-          colors.onSurface
+          defaultColor
         }
       }
 

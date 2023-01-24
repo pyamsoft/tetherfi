@@ -73,8 +73,14 @@ private fun ThisDevice(
     modifier: Modifier = Modifier,
     small: Boolean,
 ) {
-  val keylines = MaterialTheme.keylines
-  val sizeAdjustment = remember(small, keylines) { if (small) keylines.typography else ZeroSize }
+  val adjustment = MaterialTheme.keylines.typography
+  val sizeAdjustment =
+      remember(
+          small,
+          adjustment,
+      ) {
+        if (small) adjustment else ZeroSize
+      }
 
   Icon(
       modifier =
@@ -93,8 +99,14 @@ private fun OtherDevice(
     modifier: Modifier = Modifier,
     small: Boolean,
 ) {
-  val keylines = MaterialTheme.keylines
-  val sizeAdjustment = remember(small, keylines) { if (small) keylines.typography else ZeroSize }
+  val adjustment = MaterialTheme.keylines.typography
+  val sizeAdjustment =
+      remember(
+          small,
+          adjustment,
+      ) {
+        if (small) adjustment else ZeroSize
+      }
 
   Icon(
       modifier =
