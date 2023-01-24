@@ -13,13 +13,13 @@ import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
-import com.pyamsoft.tetherfi.main.MainViewModeler
 import com.pyamsoft.tetherfi.main.SystemBars
+import com.pyamsoft.tetherfi.main.ThemeViewModeler
 import javax.inject.Inject
 
 class ProxyTileActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var viewModel: MainViewModeler? = null
+  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     setTheme(R.style.Theme_TetherFi_Tile)

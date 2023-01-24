@@ -10,6 +10,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.pyamsoft.tetherfi.info.InfoEntry
 import com.pyamsoft.tetherfi.status.StatusEntry
+import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -17,7 +18,9 @@ fun MainContent(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
+    state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,
+    onShowQRCode: () -> Unit,
 ) {
   HorizontalPager(
       modifier = modifier,
@@ -37,12 +40,15 @@ fun MainContent(
         InfoEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            serverViewState = state,
         )
       }
       is MainView.Status -> {
         StatusEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            onShowQRCode = onShowQRCode,
+            serverViewState = state,
         )
       }
     }

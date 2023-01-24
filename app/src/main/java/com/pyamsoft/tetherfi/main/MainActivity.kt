@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -33,7 +32,7 @@ import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var viewModel: MainViewModeler? = null
+  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
   @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
@@ -136,8 +135,6 @@ class MainActivity : AppCompatActivity() {
       val state = vm.state
       val theme by state.theme.collectAsState()
 
-      SaveStateDisposableEffect(vm)
-
       TetherFiTheme(
           theme = theme,
       ) {
@@ -146,9 +143,6 @@ class MainActivity : AppCompatActivity() {
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
-            state = state,
-            onOpenSettings = { vm.handleOpenSettings() },
-            onCloseSettings = { vm.handleCloseSettings() },
         )
       }
     }

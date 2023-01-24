@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 @Composable
@@ -17,6 +19,7 @@ fun InfoScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
+    serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
 ) {
   val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
@@ -30,6 +33,7 @@ fun InfoScreen(
         itemModifier = itemModifier,
         appName = appName,
         state = state,
+        serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
     )
 
@@ -46,13 +50,8 @@ fun InfoScreen(
 private fun PreviewInfoScreen() {
   InfoScreen(
       appName = "TEST",
-      state =
-          MutableInfoViewState().apply {
-            ip.value = "192.168.0.1"
-            ssid.value = "TEST NETWORK"
-            password.value = "TEST PASSWORD"
-            port.value = 8228
-          },
+      state = MutableInfoViewState(),
+      serverViewState = TestServerViewState(),
       onTogglePasswordVisibility = {},
   )
 }

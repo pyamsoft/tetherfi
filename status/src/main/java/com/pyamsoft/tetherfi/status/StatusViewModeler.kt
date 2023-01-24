@@ -1,6 +1,5 @@
 package com.pyamsoft.tetherfi.status
 
-import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -51,7 +50,7 @@ internal constructor(
     }
   }
 
-  private fun toggleProxy() {
+  fun handleToggleProxy() {
     val s = state
 
     // Refresh these state bits
@@ -86,26 +85,6 @@ internal constructor(
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
       }
     }
-  }
-
-  override fun registerSaveState(
-      registry: SaveableStateRegistry
-  ): List<SaveableStateRegistry.Entry> =
-      mutableListOf<SaveableStateRegistry.Entry>().apply {
-        val s = state
-
-        registry
-            .registerProvider(KEY_IS_SHOWING_QR) { s.isShowingQRCodeDialog.value }
-            .also { add(it) }
-      }
-
-  override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    val s = state
-
-    registry
-        .consumeRestored(KEY_IS_SHOWING_QR)
-        ?.let { it as Boolean }
-        ?.also { s.isShowingQRCodeDialog.value = it }
   }
 
   fun loadPreferences(scope: CoroutineScope) {
@@ -211,10 +190,6 @@ internal constructor(
     }
   }
 
-  fun refreshGroupInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) { state.group.value = network.getGroupInfo() }
-  }
-
   fun handlePermissionsExplained() {
     state.explainPermissions.value = false
   }
@@ -237,38 +212,18 @@ internal constructor(
     scope.launch(context = Dispatchers.Main) {
       wiDiReceiver.onEvent { event ->
         when (event) {
-          is WidiNetworkEvent.ConnectionChanged -> {
-            state.ip.value = event.ip
-            refreshGroupInfo(scope = scope)
-          }
-          is WidiNetworkEvent.ThisDeviceChanged -> {
-            refreshGroupInfo(scope = scope)
-          }
-          is WidiNetworkEvent.PeersChanged -> {
-            refreshGroupInfo(scope = scope)
-          }
+          is WidiNetworkEvent.ConnectionChanged -> {}
+          is WidiNetworkEvent.ThisDeviceChanged -> {}
+          is WidiNetworkEvent.PeersChanged -> {}
           is WidiNetworkEvent.WifiDisabled -> {
-            refreshGroupInfo(scope = scope)
-
             Timber.d("Stop ForegroundService when WiFi Disabled")
             serviceLauncher.stopForeground()
           }
-          is WidiNetworkEvent.WifiEnabled -> {
-            refreshGroupInfo(scope = scope)
-          }
-          is WidiNetworkEvent.DiscoveryChanged -> {
-            refreshGroupInfo(scope = scope)
-          }
+          is WidiNetworkEvent.WifiEnabled -> {}
+          is WidiNetworkEvent.DiscoveryChanged -> {}
         }
       }
     }
-  }
-
-  fun handleToggleProxy(
-      scope: CoroutineScope,
-  ) {
-    toggleProxy()
-    refreshGroupInfo(scope = scope)
   }
 
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
@@ -304,17 +259,5 @@ internal constructor(
 
   fun handleTogglePasswordVisibility() {
     state.isPasswordVisible.update { !it }
-  }
-
-  fun handleOpenQRCodeDialog() {
-    state.isShowingQRCodeDialog.value = true
-  }
-
-  fun handleCloseQRCodeDialog() {
-    state.isShowingQRCodeDialog.value = false
-  }
-
-  companion object {
-    private const val KEY_IS_SHOWING_QR = "show_qr"
   }
 }

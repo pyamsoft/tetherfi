@@ -11,15 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
+import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
+    state: ServerViewState,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
   Scaffold(
       modifier = modifier.fillMaxSize(),
@@ -38,7 +41,9 @@ fun MainScreen(
           modifier = Modifier.fillMaxWidth().weight(1F).padding(pv),
           appName = appName,
           pagerState = pagerState,
+          state = state,
           allTabs = allTabs,
+          onShowQRCode = onShowQRCode,
       )
     }
   }

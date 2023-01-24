@@ -1,21 +1,129 @@
 package com.pyamsoft.tetherfi.main
 
-import android.app.Activity
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainViewModeler
 @Inject
 internal constructor(
     override val state: MutableMainViewState,
-    private val theming: Theming,
+    private val network: WiDiNetworkStatus,
+    private val serverPreferences: ServerPreferences,
+    private val wiDiReceiver: WiDiReceiver,
 ) : AbstractViewModeler<MainViewState>(state) {
 
-  fun handleSyncDarkTheme(activity: Activity) {
-    val isDark = theming.isDarkTheme(activity)
-    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+  private fun refreshGroupInfo(scope: CoroutineScope) {
+    val s = state
+
+    scope.launch(context = Dispatchers.Main) {
+      val grp = network.getGroupInfo()
+      if (grp == null) {
+        // Blank out since we have no valid data
+        s.ssid.value = ""
+        s.password.value = ""
+      } else {
+        s.ssid.value = grp.ssid
+        s.password.value = grp.password
+      }
+    }
+  }
+
+  fun bind(scope: CoroutineScope) {
+    val s = state
+    scope.launch(context = Dispatchers.Main) {
+      serverPreferences.listenForPortChanges().collectLatest { s.port.value = it }
+    }
+
+    // UI editor changes override group
+    scope.launch(context = Dispatchers.Main) {
+      serverPreferences.listenForPasswordChanges().collectLatest { s.password.value = it }
+    }
+
+    // UI editor changes override group
+    scope.launch(context = Dispatchers.Main) {
+      serverPreferences.listenForSsidChanges().collectLatest { s.ssid.value = it }
+    }
+
+    // But then once we are done editing and we start getting events from the receiver, take them
+    // instead
+    scope.launch(context = Dispatchers.Main) {
+      wiDiReceiver.onEvent { event ->
+        when (event) {
+          is WidiNetworkEvent.ConnectionChanged -> {
+            refreshGroupInfo(scope)
+            s.ip.value = event.ip
+          }
+          is WidiNetworkEvent.ThisDeviceChanged -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.PeersChanged -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.WifiDisabled -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.WifiEnabled -> {
+            refreshGroupInfo(scope)
+          }
+          is WidiNetworkEvent.DiscoveryChanged -> {
+            refreshGroupInfo(scope)
+          }
+        }
+      }
+    }
+
+    refreshConnectionInfo(scope = scope)
+  }
+
+  fun refreshConnectionInfo(scope: CoroutineScope) {
+    val s = state
+
+    // Pull connection info
+    scope.launch(context = Dispatchers.Main) {
+      val conn = network.getConnectionInfo()
+      if (conn == null) {
+        s.ip.value = "NO IP ADDRESS"
+      } else {
+        s.ip.value = conn.ip
+      }
+    }
+
+    // Pull group info
+    refreshGroupInfo(scope)
+  }
+
+  override fun registerSaveState(
+      registry: SaveableStateRegistry
+  ): List<SaveableStateRegistry.Entry> =
+      mutableListOf<SaveableStateRegistry.Entry>().apply {
+        val s = state
+
+        registry.registerProvider(KEY_IS_SETTINGS_OPEN) { s.isSettingsOpen.value }.also { add(it) }
+        registry
+            .registerProvider(KEY_IS_SHOWING_QR) { s.isShowingQRCodeDialog.value }
+            .also { add(it) }
+      }
+
+  override fun consumeRestoredState(registry: SaveableStateRegistry) {
+    val s = state
+    registry
+        .consumeRestored(KEY_IS_SETTINGS_OPEN)
+        ?.let { it as Boolean }
+        ?.also { s.isSettingsOpen.value = it }
+
+    registry
+        .consumeRestored(KEY_IS_SHOWING_QR)
+        ?.let { it as Boolean }
+        ?.also { s.isShowingQRCodeDialog.value = it }
   }
 
   fun handleOpenSettings() {
@@ -26,33 +134,17 @@ internal constructor(
     state.isSettingsOpen.value = false
   }
 
-  override fun registerSaveState(
-      registry: SaveableStateRegistry
-  ): List<SaveableStateRegistry.Entry> =
-      mutableListOf<SaveableStateRegistry.Entry>().apply {
-        val s = state
+  fun handleOpenQRCodeDialog() {
+    state.isShowingQRCodeDialog.value = true
+  }
 
-        registry.registerProvider(KEY_THEME) { s.theme.value.name }.also { add(it) }
-        registry.registerProvider(KEY_IS_SETTINGS_OPEN) { s.isSettingsOpen.value }.also { add(it) }
-      }
-
-  override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    val s = state
-    registry
-        .consumeRestored(KEY_THEME)
-        ?.let { it as String }
-        ?.let { Theming.Mode.valueOf(it) }
-        ?.also { s.theme.value = it }
-
-    registry
-        .consumeRestored(KEY_IS_SETTINGS_OPEN)
-        ?.let { it as Boolean }
-        ?.also { s.isSettingsOpen.value = it }
+  fun handleCloseQRCodeDialog() {
+    state.isShowingQRCodeDialog.value = false
   }
 
   companion object {
 
-    private const val KEY_THEME = "theme"
     private const val KEY_IS_SETTINGS_OPEN = "is_settings_open"
+    private const val KEY_IS_SHOWING_QR = "show_qr"
   }
 }

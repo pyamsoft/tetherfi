@@ -24,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 
@@ -31,6 +33,7 @@ internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
+    serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
 ) {
   item {
@@ -66,10 +69,10 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val ssid by state.ssid.collectAsState()
+          val ssid by serverViewState.ssid.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = ssid,
+              text = remember(ssid) { ssid.ifBlank { "NO SSID" } },
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -90,7 +93,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val rawPassword by state.password.collectAsState()
+          val rawPassword by serverViewState.password.collectAsState()
           val isPasswordVisible by state.isPasswordVisible.collectAsState()
           val password =
               remember(
@@ -107,7 +110,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = password,
+              text = remember(password) { password.ifBlank { "NO PASSWORD" } },
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -152,7 +155,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val ip by state.ip.collectAsState()
+          val ip by serverViewState.ip.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = ip,
@@ -176,7 +179,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val port by state.port.collectAsState()
+          val port by serverViewState.port.collectAsState()
           val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
@@ -223,13 +226,8 @@ private fun PreviewDeviceSetup() {
   LazyColumn {
     renderDeviceSetup(
         appName = "TEST",
-        state =
-            MutableInfoViewState().apply {
-              ip.value = "192.168.0.1"
-              ssid.value = "TEST NETWORK"
-              password.value = "TEST PASSWORD"
-              port.value = 8228
-            },
+        serverViewState = TestServerViewState(),
+        state = MutableInfoViewState(),
         onTogglePasswordVisibility = {},
     )
   }

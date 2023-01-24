@@ -4,9 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -22,9 +20,9 @@ import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
+import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -128,7 +126,6 @@ private fun MountHooks(
   )
 
   LaunchedEffect(viewModel) {
-    viewModel.refreshGroupInfo(scope = this)
     viewModel.loadPreferences(scope = this)
     viewModel.watchStatusUpdates(scope = this)
     handleRefreshSystemInfo(this)
@@ -148,6 +145,8 @@ private fun MountHooks(
 fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    serverViewState: ServerViewState,
+    onShowQRCode: () -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -157,7 +156,7 @@ fun StatusEntry(
   val scope = rememberCoroutineScope()
 
   // Since our mount hooks use this callback in bind, we must declare it first
-  val handleToggleProxy = { viewModel.handleToggleProxy(scope = scope) }
+  val handleToggleProxy = { viewModel.handleToggleProxy() }
 
   // Hooks that run on mount
   MountHooks(
@@ -172,6 +171,7 @@ fun StatusEntry(
   StatusScreen(
       modifier = modifier,
       state = state,
+      serverViewState = serverViewState,
       appName = appName,
       onToggleProxy = handleToggleProxy,
       onSsidChanged = {
@@ -229,18 +229,6 @@ fun StatusEntry(
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
-      onShowQRCodeDialog = { viewModel.handleOpenQRCodeDialog() },
+      onShowQRCode = onShowQRCode,
   )
-
-  val isShowingQRCodeDialog by state.isShowingQRCodeDialog.collectAsState()
-  val group by state.group.collectAsState()
-  if (isShowingQRCodeDialog) {
-    val ssid = remember(group) { group?.ssid ?: "NO SSID" }
-    val password = remember(group) { group?.password ?: "NO PASSWORD" }
-    QRCodeEntry(
-        ssid = ssid,
-        password = password,
-        onDismiss = { viewModel.handleCloseQRCodeDialog() },
-    )
-  }
 }

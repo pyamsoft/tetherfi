@@ -53,6 +53,8 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
@@ -65,6 +67,7 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     onToggleProxy: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -78,7 +81,7 @@ fun StatusScreen(
     onSelectBand: (ServerNetworkBand) -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
-    onShowQRCodeDialog: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
   val proxyStatus by state.proxyStatus.collectAsState()
@@ -216,6 +219,7 @@ fun StatusScreen(
           renderLoadedContent(
               appName = appName,
               state = state,
+              serverViewState = serverViewState,
               isEditable = isEditable,
               wiDiStatus = wiDiStatus,
               canUseCustomConfig = canUseCustomConfig,
@@ -228,7 +232,7 @@ fun StatusScreen(
               onSelectBand = onSelectBand,
               onRequestNotificationPermission = onRequestNotificationPermission,
               onTogglePasswordVisibility = onTogglePasswordVisibility,
-              onShowQRCodeDialog = onShowQRCodeDialog,
+              onShowQRCode = onShowQRCode,
           )
         }
       }
@@ -288,6 +292,7 @@ private fun LazyListScope.renderLoadedContent(
     appName: String,
     canUseCustomConfig: Boolean,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     isEditable: Boolean,
     wiDiStatus: RunningStatus,
     showNotificationSettings: Boolean,
@@ -299,7 +304,7 @@ private fun LazyListScope.renderLoadedContent(
     onToggleKeepWakeLock: () -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
-    onShowQRCodeDialog: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -307,13 +312,14 @@ private fun LazyListScope.renderLoadedContent(
       canUseCustomConfig = canUseCustomConfig,
       appName = appName,
       state = state,
+      serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
       onPortChanged = onPortChanged,
       onSelectBand = onSelectBand,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
-      onShowQRCodeDialog = onShowQRCodeDialog,
+      onShowQRCode = onShowQRCode,
   )
 
   item {
@@ -370,6 +376,7 @@ private fun LazyListScope.renderLoadedContent(
 private fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     isEditable: Boolean,
     appName: String,
     wiDiStatus: RunningStatus,
@@ -379,7 +386,7 @@ private fun LazyListScope.renderNetworkInformation(
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
-    onShowQRCodeDialog: () -> Unit,
+    onShowQRCode: () -> Unit,
 ) {
 
   item {
@@ -596,8 +603,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
   } else {
     item {
-      val group by state.group.collectAsState()
-      val ssid = remember(group) { group?.ssid ?: "NO SSID" }
+      val serverSsid by serverViewState.ssid.collectAsState()
+      val ssid = remember(serverSsid) { serverSsid.ifBlank { "NO SSID" } }
 
       Row(
           modifier =
@@ -618,7 +625,7 @@ private fun LazyListScope.renderNetworkInformation(
         )
 
         IconButton(
-            onClick = onShowQRCodeDialog,
+            onClick = onShowQRCode,
         ) {
           Icon(
               imageVector = Icons.Filled.QrCode,
@@ -630,22 +637,21 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val group by state.group.collectAsState()
+      val serverPassword by serverViewState.password.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
-      val password =
+      val currentPassword =
           remember(
-              group,
+              serverPassword,
               isPasswordVisible,
           ) {
-            val pw = group?.password ?: "NO PASSWORD"
-
             // If hidden password, map each char to the password star
             return@remember if (isPasswordVisible) {
-              pw
+              serverPassword
             } else {
-              pw.map { '\u2022' }.joinToString("")
+              serverPassword.map { '\u2022' }.joinToString("")
             }
           }
+      val password = remember(currentPassword) { currentPassword.ifBlank { "NO PASSWORD" } }
 
       Row(
           modifier =
@@ -679,7 +685,7 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val ip by state.ip.collectAsState()
+      val ip by serverViewState.ip.collectAsState()
       val ipAddress = remember(ip) { ip.ifBlank { "NO IP ADDRESS" } }
       StatusItem(
           modifier =
@@ -697,7 +703,7 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
-      val port by state.port.collectAsState()
+      val port by serverViewState.port.collectAsState()
       val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
 
       StatusItem(
@@ -796,6 +802,7 @@ private fun PreviewStatusScreen(
             this.port.value = port
             band.value = ServerNetworkBand.LEGACY
           },
+      serverViewState = TestServerViewState(),
       appName = "TEST",
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
@@ -810,7 +817,7 @@ private fun PreviewStatusScreen(
       onSsidChanged = {},
       onToggleProxy = {},
       onTogglePasswordVisibility = {},
-      onShowQRCodeDialog = {},
+      onShowQRCode = {},
   )
 }
 

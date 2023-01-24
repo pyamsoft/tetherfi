@@ -4,15 +4,41 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.ui.inject.ComposableInjector
+import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
+import com.pyamsoft.pydroid.ui.util.LifecycleEffect
+import com.pyamsoft.pydroid.ui.util.rememberNotNull
+import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.settings.SettingsDialog
+import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
+
+internal class MainInjector @Inject internal constructor() : ComposableInjector() {
+
+  @JvmField @Inject internal var viewModel: MainViewModeler? = null
+
+  override fun onInject(activity: FragmentActivity) {
+    ObjectGraph.ActivityScope.retrieve(activity).inject(this)
+  }
+
+  override fun onDispose() {
+    viewModel = null
+  }
+}
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -36,6 +62,7 @@ private fun WatchTabSwipe(
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 private fun MountHooks(
+    viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
 ) {
@@ -43,6 +70,17 @@ private fun MountHooks(
       pagerState = pagerState,
       allTabs = allTabs,
   )
+
+  LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
+
+  LifecycleEffect {
+    object : DefaultLifecycleObserver {
+
+      override fun onResume(owner: LifecycleOwner) {
+        viewModel.refreshConnectionInfo(scope = owner.lifecycleScope)
+      }
+    }
+  }
 }
 
 @Composable
@@ -50,30 +88,49 @@ private fun MountHooks(
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,
-    state: MainViewState,
-    onOpenSettings: () -> Unit,
-    onCloseSettings: () -> Unit,
 ) {
-  val showDialog by state.isSettingsOpen.collectAsState()
+  val component = rememberComposableInjector { MainInjector() }
+  val viewModel = rememberNotNull(component.viewModel)
+
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
 
+  val state = viewModel.state
+
   MountHooks(
+      viewModel = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
   )
+  SaveStateDisposableEffect(viewModel)
 
   MainScreen(
       modifier = modifier,
       appName = appName,
+      state = state,
       pagerState = pagerState,
       allTabs = allTabs,
-      onSettingsOpen = onOpenSettings,
+      onSettingsOpen = { viewModel.handleOpenSettings() },
+      onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
   )
 
-  if (showDialog) {
+  val isSettingsOpen by state.isSettingsOpen.collectAsState()
+  if (isSettingsOpen) {
     SettingsDialog(
-        onDismiss = onCloseSettings,
+        onDismiss = { viewModel.handleCloseSettings() },
+    )
+  }
+
+  val isShowingQRCodeDialog by state.isShowingQRCodeDialog.collectAsState()
+  if (isShowingQRCodeDialog) {
+    val currentSsid by state.ssid.collectAsState()
+    val currentPassword by state.ssid.collectAsState()
+    val ssid = remember(currentSsid) { currentSsid.ifBlank { "NO SSID" } }
+    val password = remember(currentPassword) { currentPassword.ifBlank { "NO PASSWORD" } }
+    QRCodeEntry(
+        ssid = ssid,
+        password = password,
+        onDismiss = { viewModel.handleCloseQRCodeDialog() },
     )
   }
 }
