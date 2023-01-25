@@ -102,6 +102,17 @@ subprojects {
       }
     }
 
+    // Configure matching toolchains
+    // https://kotlinlang.org/docs/gradle-configure-project.html#2c42d1dc
+    kotlin {
+      jvmToolchain(11)
+    }
+    java {
+      toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+      }
+    }
+
     dependencies {
       // Apply core library desugaring at the most recent version
       coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.0"
