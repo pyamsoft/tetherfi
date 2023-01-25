@@ -15,8 +15,6 @@
  */
 
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
-apply plugin: "kotlin-kapt"
 
 //noinspection GroovyMissingReturnStatement
 android {
@@ -54,21 +52,7 @@ android {
   }
 }
 
-// Kapt flags
-kapt {
-  correctErrorTypes = true
-  useBuildCache = true
-  mapDiagnosticLocations = true
-
-  javacOptions {
-    option("-Xlint:unchecked")
-    option("-Xlint:deprecation")
-    option("-Xmaxerrs", 10000)
-  }
-}
-
 dependencies {
-  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
   kapt "com.google.dagger:dagger-compiler:$dagger"
 
   // Compose
@@ -79,7 +63,7 @@ dependencies {
   api "androidx.compose.animation:animation:$compose_version"
   api "androidx.compose.ui:ui-tooling-preview:$compose_version"
   debugApi "androidx.compose.ui:ui-tooling:$compose_version"
-//  api "androidx.compose.material:material-icons-extended:1.3.1"
+  //  api "androidx.compose.material:material-icons-extended:1.3.1"
 
   api "com.github.pyamsoft.pydroid:bootstrap:$pydroid"
 

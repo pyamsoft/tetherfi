@@ -15,8 +15,6 @@
  */
 
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
-apply plugin: "kotlin-kapt"
 
 //noinspection GroovyMissingReturnStatement
 android {
@@ -54,23 +52,7 @@ android {
   }
 }
 
-// Kapt flags
-kapt {
-  correctErrorTypes = true
-  useBuildCache = true
-  mapDiagnosticLocations = true
-
-  javacOptions {
-    option("-Xlint:unchecked")
-    option("-Xlint:deprecation")
-    option("-Xmaxerrs", 10000)
-  }
-}
-
 dependencies {
-  coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
-
-  // Dagger
   kapt "com.google.dagger:dagger-compiler:$dagger"
 
   api project(":ui")

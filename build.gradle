@@ -18,31 +18,7 @@
 
 buildscript {
   ext {
-    kotlin_version = '1.8.0'
-    desugar = "1.2.2"
-    compose_version = "1.3.3"
-    compose_compiler_version = "1.4.0"
-  }
-
-  repositories {
-    mavenLocal()
-    google()
-    mavenCentral()
-
-    maven {
-      url "https://jitpack.io"
-      content {
-        includeGroup("com.github.pyamsoft.pydroid")
-        includeGroup("com.github.pyamsoft")
-      }
-    }
-
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-
-  ext {
+    // SDK
     minSdk = 24
     targetSdk = 33
     compileSdk = 33
@@ -60,6 +36,8 @@ buildscript {
     dagger = "2.44.2"
 
     // Compose
+    compose_version = "1.3.3"
+    compose_compiler_version = "1.4.0"
     composeActivity = "1.6.1"
     composeMaterial = "1.3.1"
     accompanist = "0.28.0"
@@ -77,38 +55,103 @@ buildscript {
 
     qrCode = "3.3.0"
   }
-
-  dependencies {
-    classpath 'com.android.tools.build:gradle:7.4.0'
-
-    // Gradle version checker
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.44.0'
-
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-
-    // Spotless
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.13.0"
-
-    //        classpath 'com.google.gms:google-services:4.3.2'
-  }
 }
 
 plugins {
+  // Android AGP
+  // https://developer.android.com/studio/build#top-level
+  id 'com.android.library' version '7.4.0' apply false
+
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
   id "org.gradle.android.cache-fix" version "2.6.2" apply false
+
+  // Kotlin
+  // https://developer.android.com/studio/build#top-level
+  id 'org.jetbrains.kotlin.android' version "1.8.0" apply false
+
+  // Gradle version checker
+  // https://github.com/ben-manes/gradle-versions-plugin
+  id 'com.github.ben-manes.versions' version '0.44.0' apply false
+
+  // Spotless
+  // https://github.com/diffplug/spotless
+  id "com.diffplug.spotless" version "6.13.0" apply false
 }
 
 subprojects {
+  // If this project has an Android plugin applied
   plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
+    // Apply Cache Fix
     project.apply plugin: "org.gradle.android.cache-fix"
+
+    // Apply Kotlin and Kapt
+    project.apply plugin: 'kotlin-android'
+    project.apply plugin: 'kotlin-kapt'
+
+    // Kapt flags
+    kapt {
+      correctErrorTypes = true
+      useBuildCache = true
+      mapDiagnosticLocations = true
+
+      javacOptions {
+        option("-Xlint:unchecked")
+        option("-Xlint:deprecation")
+        option("-Xmaxerrs", 10000)
+      }
+    }
+
+    dependencies {
+      // Apply core library desugaring at the most recent version
+      coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.0"
+
+      // Can't kapt dagger-compiler here, must do so in every module gradle
+      // or else Kotlin-Android through an error about the :app module. Odd I know.
+      // kapt "com.google.dagger:dagger-compiler:$dagger"
+    }
   }
 }
 
 allprojects {
-  apply plugin: "com.github.ben-manes.versions"
   apply plugin: "com.diffplug.spotless"
+  apply plugin: 'com.github.ben-manes.versions'
 
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+
+    // Jitpack
+    maven {
+      url 'https://jitpack.io'
+      content {
+        includeGroup("com.github.pyamsoft.pydroid")
+        includeGroup("com.github.pyamsoft")
+      }
+    }
+  }
+
+  // Java compile show
+  tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+    options.deprecation = true
+  }
+
+  // Version Plugin ignore non-stable releases
+  def isNonStable = { version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+  }
+  tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+      isNonStable(it.candidate.version)
+    }
+  }
+
+  // Spotless plugin
   spotless {
     java {
       target "src/**/*.java"
@@ -134,41 +177,5 @@ allprojects {
       endWithNewline()
       indentWithSpaces(2)
     }
-  }
-
-  // Ignore non-release libraries
-  def isNonStable = { version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-  }
-
-  tasks.named("dependencyUpdates").configure {
-    rejectVersionIf {
-      isNonStable(it.candidate.version)
-    }
-  }
-
-  repositories {
-    mavenLocal()
-    google()
-    mavenCentral()
-
-    maven {
-      url "https://jitpack.io"
-      content {
-        includeGroup("com.github.pyamsoft.pydroid")
-        includeGroup("com.github.pyamsoft")
-      }
-    }
-
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-
-  tasks.withType(JavaCompile) {
-    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
-    options.deprecation = true
   }
 }

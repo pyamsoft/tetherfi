@@ -1,3 +1,11 @@
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    google()
+    mavenCentral()
+  }
+}
+
 rootProject.name = "TetherFi"
 include ':app'
 include ':server'
