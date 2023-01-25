@@ -49,7 +49,7 @@ buildscript {
     appCompat = "1.6.0"
 
     // Material Design
-    materialDesign = "1.7.0"
+    materialDesign = "1.8.0"
 
     ktor = "2.2.2"
 
