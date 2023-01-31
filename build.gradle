@@ -72,7 +72,7 @@ plugins {
 
   // Gradle version checker
   // https://github.com/ben-manes/gradle-versions-plugin
-  id 'com.github.ben-manes.versions' version '0.44.0' apply false
+  id 'com.github.ben-manes.versions' version '0.45.0' apply false
 
   // Spotless
   // https://github.com/diffplug/spotless
