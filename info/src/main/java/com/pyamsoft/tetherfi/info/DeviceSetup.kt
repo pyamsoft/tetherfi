@@ -74,7 +74,7 @@ internal fun LazyListScope.renderDeviceSetup(
           val ssid by serverViewState.ssid.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = remember(ssid) { ssid.ifBlank { "NO SSID" } },
+              text = remember(ssid) { ssid.ifBlank { "NO NAME" } },
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,

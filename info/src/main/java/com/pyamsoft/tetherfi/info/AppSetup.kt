@@ -74,7 +74,7 @@ internal fun LazyListScope.renderAppSetup(
       ) {
         Text(
             text =
-                "You can optionally configure the Name/SSID, Password, Proxy Port and Broadcast Frequency Band. This is not required, and the defaults will work fine for most people.",
+                "You can optionally configure the Name, Password, Proxy Port and Broadcast Frequency Band. This is not required, and the defaults will work fine for most people.",
             style =
                 MaterialTheme.typography.body2.copy(
                     color =

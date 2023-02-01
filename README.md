@@ -4,7 +4,7 @@ TetherFi
 Share your Android device's Internet connection with other devices without needing Root.
 
 TetherFi works by creating a Wi-Fi Direct legacy group and an HTTP proxy server. Devices can
-connect to the broadcasted WiFi network by locating the WiFi SSID displayed in the application
+connect to the broadcasted WiFi network by locating the WiFi name displayed in the application
 and using the password. Once connected to the network, a device can connect to the Internet by
 setting it's proxy server settings to the server created by the TetherFi application at
 `192.168.49.1` port `8228`.
