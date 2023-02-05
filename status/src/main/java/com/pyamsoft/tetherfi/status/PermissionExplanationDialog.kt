@@ -56,6 +56,7 @@ internal fun PermissionExplanationDialog(
       visible = explainPermissions,
   ) {
     AlertDialog(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
         onDismissRequest = onDismissPermissionExplanation,
         title = {
           Row(
