@@ -52,11 +52,10 @@ internal fun PermissionExplanationDialog(
   val explainPermissions by state.explainPermissions.collectAsState()
 
   AnimatedVisibility(
-      modifier = modifier,
       visible = explainPermissions,
   ) {
     AlertDialog(
-        modifier = Modifier.padding(MaterialTheme.keylines.content),
+        modifier = modifier.padding(MaterialTheme.keylines.content),
         onDismissRequest = onDismissPermissionExplanation,
         title = {
           Row(
