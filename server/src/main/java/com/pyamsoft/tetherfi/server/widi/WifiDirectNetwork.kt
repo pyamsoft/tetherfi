@@ -277,7 +277,8 @@ protected constructor(
         cont.resume(
             WiDiNetworkStatus.GroupInfo.Error(
                 error = e,
-            ))
+            ),
+        )
       }
     }
 

@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.Icon
@@ -22,6 +23,7 @@ import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 fun DialogToolbar(
     modifier: Modifier = Modifier,
     onClose: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
     title: @Composable () -> Unit,
 ) {
   Surface(
@@ -56,6 +58,7 @@ fun DialogToolbar(
               )
             }
           },
+          actions = actions,
       )
     }
   }
