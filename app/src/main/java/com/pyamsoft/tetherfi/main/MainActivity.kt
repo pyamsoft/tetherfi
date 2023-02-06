@@ -59,13 +59,10 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  change("Full usage of Jetpack Compose")
-                  bugfix("Major performance gains by optimizing a bunch of Compose code")
-                  feature("Allow horizontal swiping between pages")
-                  feature("Allow Hotspot network access via QR Code")
-                  feature("Hide password by default, click Eye to display")
-                  feature("Prefix the network name with required DIRECT-TF-")
-                  feature("Show when the network name, password, or port is invalid")
+                  change("Rework how the network is created for more reliable setup")
+                  bugfix("Change padding and text on various screens")
+                  change("Where possible, hotspot network errors in the app")
+                  change("Update networking libraries")
                 }
               },
       )
