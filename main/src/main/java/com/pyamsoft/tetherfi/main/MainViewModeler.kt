@@ -76,10 +76,10 @@ internal constructor(
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
             s.connection.update { info ->
-              when (info) {
-                is WiDiNetworkStatus.ConnectionInfo.Connected -> info.copy(ip = event.ip)
-                is WiDiNetworkStatus.ConnectionInfo.Empty -> info
-                is WiDiNetworkStatus.ConnectionInfo.Error -> info
+              info.update {
+                it.copy(
+                    ip = event.ip,
+                )
               }
             }
             handleRefreshConnectionInfo()
@@ -155,6 +155,5 @@ internal constructor(
 
     private const val KEY_IS_SETTINGS_OPEN = "is_settings_open"
     private const val KEY_IS_SHOWING_QR = "show_qr"
-    private const val MAX_ATTEMPT_COUNT = 5
   }
 }

@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.server.widi
 
+import androidx.annotation.CheckResult
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.Server
@@ -28,6 +29,15 @@ interface WiDiNetworkStatus : Server {
     object Empty : GroupInfo()
 
     data class Error internal constructor(val error: Throwable) : GroupInfo()
+
+    @CheckResult
+    fun update(onUpdate: (Connected) -> Connected): GroupInfo {
+      return when (this) {
+        is Connected -> onUpdate(this)
+        is Empty -> this
+        is Error -> this
+      }
+    }
   }
 
   @Stable
@@ -42,5 +52,14 @@ interface WiDiNetworkStatus : Server {
     object Empty : ConnectionInfo()
 
     data class Error internal constructor(val error: Throwable) : ConnectionInfo()
+
+    @CheckResult
+    fun update(onUpdate: (Connected) -> Connected): ConnectionInfo {
+      return when (this) {
+        is Connected -> onUpdate(this)
+        is Empty -> this
+        is Error -> this
+      }
+    }
   }
 }
