@@ -72,7 +72,12 @@ internal constructor(
 
   private suspend fun handleConnectionChangedAction(intent: Intent) {
     val ip = resolveWifiGroupIp(intent)
-    eventBus.send(WidiNetworkEvent.ConnectionChanged(ip = ip))
+    if (ip.isNotBlank()) {
+      eventBus.send(
+          WidiNetworkEvent.ConnectionChanged(
+              ip = ip,
+          ))
+    }
   }
 
   private suspend fun handleDiscoveryChangedAction(intent: Intent) {
