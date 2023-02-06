@@ -2,39 +2,15 @@ package com.pyamsoft.tetherfi.status
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -51,13 +27,10 @@ import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.Label
-import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.*
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
-import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 private val HOTSPOT_ERROR_STATUS = RunningStatus.Error("Unable to start Hotspot")
@@ -607,8 +580,8 @@ private fun LazyListScope.renderNetworkInformation(
     }
   } else {
     item {
-      val serverSsid by serverViewState.ssid.collectAsState()
-      val ssid = remember(serverSsid) { serverSsid.ifBlank { "NO NAME" } }
+      val group by serverViewState.group.collectAsState()
+      val ssid = rememberServerSSID(group)
 
       Row(
           modifier =
@@ -637,25 +610,19 @@ private fun LazyListScope.renderNetworkInformation(
               tint = MaterialTheme.colors.primary,
           )
         }
+
+        GroupInfoErrorDialog(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            group = group,
+        )
       }
     }
 
     item {
-      val serverPassword by serverViewState.password.collectAsState()
+      val group by serverViewState.group.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
-      val currentPassword =
-          remember(
-              serverPassword,
-              isPasswordVisible,
-          ) {
-            // If hidden password, map each char to the password star
-            return@remember if (isPasswordVisible) {
-              serverPassword
-            } else {
-              serverPassword.map { '\u2022' }.joinToString("")
-            }
-          }
-      val password = remember(currentPassword) { currentPassword.ifBlank { "NO PASSWORD" } }
+      val rawPassword = rememberServerRawPassword(group)
+      val password = rememberServerPassword(group, isPasswordVisible)
 
       Row(
           modifier =
@@ -675,22 +642,31 @@ private fun LazyListScope.renderNetworkInformation(
                 ),
         )
 
-        IconButton(
-            onClick = onTogglePasswordVisibility,
-        ) {
-          Icon(
-              imageVector =
-                  if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-              contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
-              tint = MaterialTheme.colors.primary,
-          )
+        if (rawPassword.isNotBlank()) {
+          IconButton(
+              onClick = onTogglePasswordVisibility,
+          ) {
+            Icon(
+                imageVector =
+                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                contentDescription =
+                    if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                tint = MaterialTheme.colors.primary,
+            )
+          }
         }
+
+        GroupInfoErrorDialog(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            group = group,
+        )
       }
     }
 
     item {
-      val ip by serverViewState.ip.collectAsState()
-      val ipAddress = remember(ip) { ip.ifBlank { "NO IP ADDRESS" } }
+      val connection by serverViewState.connection.collectAsState()
+      val ipAddress = rememberServerIp(connection)
+
       StatusItem(
           modifier =
               itemModifier
@@ -703,6 +679,11 @@ private fun LazyListScope.renderNetworkInformation(
                   fontWeight = FontWeight.W400,
                   fontFamily = FontFamily.Monospace,
               ),
+      )
+
+      ConnectionInfoErrorDialog(
+          modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+          connection = connection,
       )
     }
 

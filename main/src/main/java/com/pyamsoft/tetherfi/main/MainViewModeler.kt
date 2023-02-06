@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -27,24 +28,16 @@ internal constructor(
   private val isNetworkCurrentlyRunning =
       MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
 
-  private fun refreshGroupInfo(scope: CoroutineScope) {
-    val s = state
-
-    scope.launch(context = Dispatchers.Main) {
-      val grp = network.getGroupInfo()
-      if (grp == null) {
-        // Blank out since we have no valid data
-        state.ssid.value = ""
-        state.password.value = ""
-      } else {
-        s.ssid.value = grp.ssid
-        s.password.value = grp.password
-      }
-    }
-  }
-
   fun bind(scope: CoroutineScope) {
     val s = state
+
+    // Watch group info
+    scope.launch(context = Dispatchers.Main) { network.onGroupInfoChanged { s.group.value = it } }
+
+    // Watch connection info
+    scope.launch(context = Dispatchers.Main) {
+      network.onConnectionInfoChanged { s.connection.value = it }
+    }
 
     // Watch the server status and update if it is running
     scope.launch(context = Dispatchers.Main) {
@@ -58,7 +51,7 @@ internal constructor(
           Timber.d("Hotspot was turned OFF, refresh network settings to clear")
 
           // Refresh connection info, should blank out
-          handleRefreshConnectionInfo(scope = this)
+          handleRefreshConnectionInfo()
 
           // Explicitly close the QR code
           handleCloseQRCodeDialog()
@@ -66,7 +59,7 @@ internal constructor(
           Timber.d("Hotspot was turned ON, refresh network settings to update")
 
           // Refresh connection info, should populate
-          handleRefreshConnectionInfo(scope = this)
+          handleRefreshConnectionInfo()
         }
       }
     }
@@ -82,45 +75,37 @@ internal constructor(
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {
-            s.ip.value = event.ip
-            handleRefreshConnectionInfo(scope)
+            s.connection.update { info ->
+              when (info) {
+                is WiDiNetworkStatus.ConnectionInfo.Connected -> info.copy(ip = event.ip)
+                is WiDiNetworkStatus.ConnectionInfo.Empty -> info
+                is WiDiNetworkStatus.ConnectionInfo.Error -> info
+              }
+            }
+            handleRefreshConnectionInfo()
           }
           is WidiNetworkEvent.ThisDeviceChanged -> {
-            handleRefreshConnectionInfo(scope)
+            handleRefreshConnectionInfo()
           }
           is WidiNetworkEvent.PeersChanged -> {
-            handleRefreshConnectionInfo(scope)
+            handleRefreshConnectionInfo()
           }
           is WidiNetworkEvent.WifiDisabled -> {
-            handleRefreshConnectionInfo(scope)
+            handleRefreshConnectionInfo()
           }
           is WidiNetworkEvent.WifiEnabled -> {
-            handleRefreshConnectionInfo(scope)
+            handleRefreshConnectionInfo()
           }
           is WidiNetworkEvent.DiscoveryChanged -> {
-            handleRefreshConnectionInfo(scope)
+            handleRefreshConnectionInfo()
           }
         }
       }
     }
   }
 
-  fun handleRefreshConnectionInfo(scope: CoroutineScope) {
-    val s = state
-
-    // Pull connection info
-    scope.launch(context = Dispatchers.Main) {
-      val conn = network.getConnectionInfo()
-      if (conn == null) {
-        // Blank so we handle in the View
-        s.ip.value = ""
-      } else {
-        s.ip.value = conn.ip
-      }
-    }
-
-    // Pull group info
-    refreshGroupInfo(scope)
+  fun handleRefreshConnectionInfo() {
+    network.updateNetworkInfo()
   }
 
   override fun registerSaveState(
@@ -158,7 +143,7 @@ internal constructor(
 
   fun handleOpenQRCodeDialog() {
     // If the hotspot is valid, we will have this from the group
-    val isHotspotDataValid = state.ssid.value.isNotBlank() && state.password.value.isNotBlank()
+    val isHotspotDataValid = state.group.value is WiDiNetworkStatus.GroupInfo.Connected
     state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
   }
 
@@ -170,5 +155,6 @@ internal constructor(
 
     private const val KEY_IS_SETTINGS_OPEN = "is_settings_open"
     private const val KEY_IS_SHOWING_QR = "show_qr"
+    private const val MAX_ATTEMPT_COUNT = 5
   }
 }

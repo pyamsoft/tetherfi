@@ -1,11 +1,7 @@
 package com.pyamsoft.tetherfi.info
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ContentAlpha
@@ -24,8 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.*
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -60,6 +55,18 @@ internal fun LazyListScope.renderDeviceSetup(
         )
 
         Row {
+          val group by serverViewState.group.collectAsState()
+          val ssid = rememberServerSSID(group)
+
+          val password = rememberServerRawPassword(group)
+          val isNetworkReadyForQRCode =
+              remember(
+                  ssid,
+                  password,
+              ) {
+                ssid.isNotBlank() && password.isNotBlank()
+              }
+
           Text(
               text = "Name",
               style =
@@ -71,25 +78,15 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val ssid by serverViewState.ssid.collectAsState()
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = remember(ssid) { ssid.ifBlank { "NO NAME" } },
+              text = ssid,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
           )
-
-          val password by serverViewState.password.collectAsState()
-          val isNetworkReadyForQRCode =
-              remember(
-                  ssid,
-                  password,
-              ) {
-                ssid.isNotBlank() && password.isNotBlank()
-              }
 
           if (isNetworkReadyForQRCode) {
             // Don't use IconButton because we don't care about minimum touch target size
@@ -108,9 +105,20 @@ internal fun LazyListScope.renderDeviceSetup(
               )
             }
           }
+
+          GroupInfoErrorDialog(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              group = group,
+              iconModifier = Modifier.size(16.dp),
+          )
         }
 
         Row {
+          val group by serverViewState.group.collectAsState()
+          val isPasswordVisible by state.isPasswordVisible.collectAsState()
+          val password = rememberServerPassword(group, isPasswordVisible)
+          val rawPassword = rememberServerRawPassword(group)
+
           Text(
               text = "Password",
               style =
@@ -121,25 +129,9 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
-
-          val rawPassword by serverViewState.password.collectAsState()
-          val isPasswordVisible by state.isPasswordVisible.collectAsState()
-          val password =
-              remember(
-                  rawPassword,
-                  isPasswordVisible,
-              ) {
-                // If hidden password, map each char to the password star
-                return@remember if (isPasswordVisible) {
-                  rawPassword
-                } else {
-                  rawPassword.map { '\u2022' }.joinToString("")
-                }
-              }
-
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = remember(password) { password.ifBlank { "NO PASSWORD" } },
+              text = password,
               style =
                   MaterialTheme.typography.body1.copy(
                       fontWeight = FontWeight.W700,
@@ -147,7 +139,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          if (password.isNotBlank()) {
+          if (rawPassword.isNotBlank()) {
             // Don't use IconButton because we don't care about minimum touch target size
             Box(
                 modifier =
@@ -167,6 +159,12 @@ internal fun LazyListScope.renderDeviceSetup(
               )
             }
           }
+
+          GroupInfoErrorDialog(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              group = group,
+              iconModifier = Modifier.size(16.dp),
+          )
         }
 
         Text(
@@ -176,6 +174,9 @@ internal fun LazyListScope.renderDeviceSetup(
         )
 
         Row {
+          val connection by serverViewState.connection.collectAsState()
+          val ipAddress = rememberServerIp(connection)
+
           Text(
               text = "URL",
               style =
@@ -186,9 +187,6 @@ internal fun LazyListScope.renderDeviceSetup(
                           ),
                   ),
           )
-
-          val ip by serverViewState.ip.collectAsState()
-          val ipAddress = remember(ip) { ip.ifBlank { "NO IP ADDRESS" } }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = ipAddress,
@@ -197,6 +195,12 @@ internal fun LazyListScope.renderDeviceSetup(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
+          )
+
+          ConnectionInfoErrorDialog(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              connection = connection,
+              iconModifier = Modifier.size(16.dp),
           )
         }
 

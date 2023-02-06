@@ -79,4 +79,5 @@ dependencies {
   implementation "io.github.g0dkar:qrcode-kotlin-android:$qrCode"
 
   api project(":core")
+  api project(":server")
 }

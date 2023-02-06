@@ -1,16 +1,11 @@
 package com.pyamsoft.tetherfi.main
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
@@ -21,6 +16,7 @@ import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
@@ -76,7 +72,7 @@ private fun MountHooks(
     object : DefaultLifecycleObserver {
 
       override fun onResume(owner: LifecycleOwner) {
-        viewModel.handleRefreshConnectionInfo(scope = owner.lifecycleScope)
+        viewModel.handleRefreshConnectionInfo()
       }
     }
   }
@@ -122,13 +118,14 @@ fun MainEntry(
 
   val isShowingQRCodeDialog by state.isShowingQRCodeDialog.collectAsState()
   if (isShowingQRCodeDialog) {
-    val ssid by state.ssid.collectAsState()
-    val password by state.password.collectAsState()
+    val group by state.group.collectAsState()
 
-    QRCodeEntry(
-        ssid = ssid,
-        password = password,
-        onDismiss = { viewModel.handleCloseQRCodeDialog() },
-    )
+    (group as? WiDiNetworkStatus.GroupInfo.Connected)?.also { grp ->
+      QRCodeEntry(
+          ssid = grp.ssid,
+          password = grp.password,
+          onDismiss = { viewModel.handleCloseQRCodeDialog() },
+      )
+    }
   }
 }

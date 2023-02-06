@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.Stable
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +15,10 @@ interface MainViewState : ServerViewState {
 
 @Stable
 class MutableMainViewState @Inject internal constructor() : MainViewState {
-  override val ssid = MutableStateFlow("")
-  override val password = MutableStateFlow("")
-  override val ip = MutableStateFlow("")
+  override val group =
+      MutableStateFlow<WiDiNetworkStatus.GroupInfo>(WiDiNetworkStatus.GroupInfo.Empty)
+  override val connection =
+      MutableStateFlow<WiDiNetworkStatus.ConnectionInfo>(WiDiNetworkStatus.ConnectionInfo.Empty)
   override val port = MutableStateFlow(0)
 
   override val isSettingsOpen = MutableStateFlow(false)
