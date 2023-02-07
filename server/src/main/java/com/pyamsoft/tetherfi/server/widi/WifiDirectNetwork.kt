@@ -3,6 +3,8 @@ package com.pyamsoft.tetherfi.server.widi
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pConfig
+import android.net.wifi.p2p.WifiP2pGroup
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.WifiP2pManager.Channel
 import android.os.Build
@@ -19,6 +21,7 @@ import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import java.util.*
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -248,81 +251,41 @@ protected constructor(
 
   @CheckResult
   @SuppressLint("MissingPermission")
-  private suspend fun resolveCurrentGroup(channel: Channel): WiDiNetworkStatus.GroupInfo {
+  private suspend fun resolveCurrentGroup(channel: Channel): WifiP2pGroup? {
     Enforcer.assertOffMainThread()
 
-    val group: WiDiNetworkStatus.GroupInfo = suspendCoroutine { cont ->
+    return suspendCoroutine { cont ->
       try {
         Enforcer.assertOffMainThread()
 
-        wifiP2PManager.requestGroupInfo(channel) { group ->
-          if (group == null) {
-            Timber.w("WiFi Direct did not return Group Info")
-            cont.resume(
-                WiDiNetworkStatus.GroupInfo.Error(
-                    error = IllegalStateException("WiFi Direct did not return Group Info"),
-                ),
-            )
-          } else {
-            cont.resume(
-                WiDiNetworkStatus.GroupInfo.Connected(
-                    ssid = group.networkName,
-                    password = group.passphrase,
-                ),
-            )
-          }
+        wifiP2PManager.requestGroupInfo(channel) {
+          // We are still on the Main Thread here, so don't unpack anything yet.
+          cont.resume(it)
         }
       } catch (e: Throwable) {
         Timber.e(e, "Error getting WiFi Direct Group Info")
-        cont.resume(
-            WiDiNetworkStatus.GroupInfo.Error(
-                error = e,
-            ),
-        )
+        cont.resumeWithException(e)
       }
     }
-
-    Timber.d("WiFi Group Info: $group")
-    return group
   }
 
   @CheckResult
-  private suspend fun resolveConnectionInfo(channel: Channel): WiDiNetworkStatus.ConnectionInfo {
+  private suspend fun resolveConnectionInfo(channel: Channel): WifiP2pInfo? {
     Enforcer.assertOffMainThread()
 
-    val connectionInfo: WiDiNetworkStatus.ConnectionInfo = suspendCoroutine { cont ->
+    return suspendCoroutine { cont ->
       Enforcer.assertOffMainThread()
 
       try {
-        wifiP2PManager.requestConnectionInfo(channel) { info ->
-          val host = info?.groupOwnerAddress
-          if (host == null) {
-            Timber.w("WiFi Direct did not return Connection Info")
-            cont.resume(
-                WiDiNetworkStatus.ConnectionInfo.Error(
-                    error = IllegalStateException("WiFi Direct did not return Connection Info"),
-                ),
-            )
-          } else {
-            cont.resume(
-                WiDiNetworkStatus.ConnectionInfo.Connected(
-                    ip = host.hostAddress.orEmpty(),
-                    hostName = host.hostName.orEmpty(),
-                ),
-            )
-          }
+        wifiP2PManager.requestConnectionInfo(channel) {
+          // We are still on the Main Thread here, so don't unpack anything yet.
+          cont.resume(it)
         }
       } catch (e: Throwable) {
         Timber.e(e, "Error getting WiFi Direct Connection Info")
-        cont.resume(
-            WiDiNetworkStatus.ConnectionInfo.Error(
-                error = e,
-            ))
+        cont.resumeWithException(e)
       }
     }
-
-    Timber.d("WiFi Connection Info: $connectionInfo")
-    return connectionInfo
   }
 
   @CheckResult
@@ -341,7 +304,21 @@ protected constructor(
           return@withContext WiDiNetworkStatus.GroupInfo.Empty
         }
 
-        return@withContext resolveCurrentGroup(channel)
+        val group = resolveCurrentGroup(channel)
+        if (group == null) {
+          Timber.w("WiFi Direct did not return Group Info")
+          return@withContext WiDiNetworkStatus.GroupInfo.Error(
+              error = IllegalStateException("WiFi Direct did not return Group Info"),
+          )
+        }
+
+        val info =
+            WiDiNetworkStatus.GroupInfo.Connected(
+                ssid = group.networkName,
+                password = group.passphrase,
+            )
+        Timber.d("WiFi Direct Group Info: $info")
+        return@withContext info
       }
 
   @CheckResult
@@ -360,7 +337,23 @@ protected constructor(
           return@withContext WiDiNetworkStatus.ConnectionInfo.Empty
         }
 
-        return@withContext resolveConnectionInfo(channel)
+        val info = resolveConnectionInfo(channel)
+
+        val host = info?.groupOwnerAddress
+        if (host == null) {
+          Timber.w("WiFi Direct did not return Connection Info")
+          return@withContext WiDiNetworkStatus.ConnectionInfo.Error(
+              error = IllegalStateException("WiFi Direct did not return Connection Info"),
+          )
+        }
+
+        val connection =
+            WiDiNetworkStatus.ConnectionInfo.Connected(
+                ip = host.hostAddress.orEmpty(),
+                hostName = host.hostName.orEmpty(),
+            )
+        Timber.d("WiFi Direct Connection Info: $connection")
+        return@withContext connection
       }
 
   private suspend fun updateNetworkInfoChannels() =
