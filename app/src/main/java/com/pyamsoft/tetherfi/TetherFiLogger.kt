@@ -3,11 +3,14 @@ package com.pyamsoft.tetherfi
 import android.app.Application
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.PYDroidLogger
+import com.pyamsoft.pydroid.ui.debug.InAppDebugLogger.Companion.createInAppDebugLogger
 import com.pyamsoft.pydroid.util.isDebugMode
 import timber.log.Timber
 
 fun Application.installLogger() {
+  val self = this
   if (isDebugMode()) {
+    // For debug logcat
     Timber.plant(
         object : Timber.DebugTree() {
           override fun createStackElementTag(element: StackTraceElement): String {
@@ -16,6 +19,18 @@ fun Application.installLogger() {
         },
     )
   }
+
+  // For optional in-app debug
+  Timber.plant(
+      object : Timber.Tree() {
+
+        private val logger = self.createInAppDebugLogger()
+
+        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+          logger.log(priority, tag, message, t)
+        }
+      },
+  )
 }
 
 @CheckResult
