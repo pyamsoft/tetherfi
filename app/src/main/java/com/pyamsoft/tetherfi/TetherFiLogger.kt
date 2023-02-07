@@ -34,36 +34,32 @@ fun Application.installLogger() {
 }
 
 @CheckResult
-fun Application.createLogger(): PYDroidLogger? {
-  if (isDebugMode()) {
-    return object : PYDroidLogger {
+fun createLogger(): PYDroidLogger {
+  return object : PYDroidLogger {
 
-      override fun d(
-          tag: String,
-          message: String,
-          vararg args: Any,
-      ) {
-        Timber.tag(tag).d(message, args)
-      }
-
-      override fun w(
-          tag: String,
-          message: String,
-          vararg args: Any,
-      ) {
-        Timber.tag(tag).w(message, args)
-      }
-
-      override fun e(
-          tag: String,
-          throwable: Throwable,
-          message: String,
-          vararg args: Any,
-      ) {
-        Timber.tag(tag).e(throwable, message, args)
-      }
+    override fun d(
+        tag: String,
+        message: String,
+        vararg args: Any,
+    ) {
+      Timber.tag(tag).d(message, args)
     }
-  } else {
-    return null
+
+    override fun w(
+        tag: String,
+        message: String,
+        vararg args: Any,
+    ) {
+      Timber.tag(tag).w(message, args)
+    }
+
+    override fun e(
+        tag: String,
+        throwable: Throwable,
+        message: String,
+        vararg args: Any,
+    ) {
+      Timber.tag(tag).e(throwable, message, args)
+    }
   }
 }
