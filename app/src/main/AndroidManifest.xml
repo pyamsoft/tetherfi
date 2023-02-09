@@ -39,7 +39,7 @@
             android:name=".foreground.ProxyForegroundService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="" />
+            android:foregroundServiceType="connectedDevice" />
 
         <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
         <service
