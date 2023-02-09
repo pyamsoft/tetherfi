@@ -1,7 +1,7 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.pyamsoft.tetherfi.ui.*
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
+import kotlinx.coroutines.delay
 
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 private val HOTSPOT_ERROR_STATUS = RunningStatus.Error("Unable to start Hotspot")
@@ -112,7 +114,6 @@ fun StatusScreen(
         }
       }
 
-  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val isEditable =
       remember(hotspotStatus) {
         when (hotspotStatus) {
@@ -198,7 +199,6 @@ fun StatusScreen(
               serverViewState = serverViewState,
               isEditable = isEditable,
               wiDiStatus = wiDiStatus,
-              canUseCustomConfig = canUseCustomConfig,
               showNotificationSettings = showNotificationSettings,
               onSsidChanged = onSsidChanged,
               onPasswordChanged = onPasswordChanged,
@@ -268,7 +268,6 @@ private fun StatusCard(
 
 private fun LazyListScope.renderLoadedContent(
     appName: String,
-    canUseCustomConfig: Boolean,
     state: StatusViewState,
     serverViewState: ServerViewState,
     isEditable: Boolean,
@@ -289,7 +288,6 @@ private fun LazyListScope.renderLoadedContent(
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
       isEditable = isEditable,
-      canUseCustomConfig = canUseCustomConfig,
       appName = appName,
       state = state,
       serverViewState = serverViewState,
@@ -362,7 +360,6 @@ private fun LazyListScope.renderNetworkInformation(
     isEditable: Boolean,
     appName: String,
     wiDiStatus: RunningStatus,
-    canUseCustomConfig: Boolean,
     onTogglePasswordVisibility: () -> Unit,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -372,7 +369,6 @@ private fun LazyListScope.renderNetworkInformation(
     onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
-
   item {
     val showErrorHintMessage = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
 
@@ -422,6 +418,7 @@ private fun LazyListScope.renderNetworkInformation(
 
   if (isEditable) {
     item {
+      val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
       val ssid by state.ssid.collectAsState()
       val hotspotSsid =
           remember(
@@ -487,6 +484,7 @@ private fun LazyListScope.renderNetworkInformation(
     }
 
     item {
+      val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
       val password by state.password.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
       val hotspotPassword =
@@ -612,14 +610,16 @@ private fun LazyListScope.renderNetworkInformation(
                 ),
         )
 
-        IconButton(
-            onClick = onShowQRCode,
-        ) {
-          Icon(
-              imageVector = Icons.Filled.QrCode,
-              contentDescription = "QR Code",
-              tint = MaterialTheme.colors.primary,
-          )
+        if (group is WiDiNetworkStatus.GroupInfo.Connected) {
+          IconButton(
+              onClick = onShowQRCode,
+          ) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR Code",
+                tint = MaterialTheme.colors.primary,
+            )
+          }
         }
 
         GroupInfoErrorDialog(
@@ -627,7 +627,7 @@ private fun LazyListScope.renderNetworkInformation(
             group = group,
         )
 
-        (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
+        if (group !is WiDiNetworkStatus.GroupInfo.Connected) {
           ErrorRefresh(
               modifier = Modifier.padding(start = MaterialTheme.keylines.content),
               onClick = onRefreshGroup,
@@ -673,18 +673,6 @@ private fun LazyListScope.renderNetworkInformation(
             )
           }
         }
-
-        GroupInfoErrorDialog(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            group = group,
-        )
-
-        (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
-          ErrorRefresh(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              onClick = onRefreshGroup,
-          )
-        }
       }
     }
 
@@ -692,30 +680,34 @@ private fun LazyListScope.renderNetworkInformation(
       val connection by serverViewState.connection.collectAsState()
       val ipAddress = rememberServerIp(connection)
 
-      StatusItem(
+      Row(
           modifier =
               itemModifier
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
-          title = "PROXY URL/HOSTNAME",
-          value = ipAddress,
-          valueStyle =
-              MaterialTheme.typography.h6.copy(
-                  fontWeight = FontWeight.W400,
-                  fontFamily = FontFamily.Monospace,
-              ),
-      )
-
-      ConnectionInfoErrorDialog(
-          modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-          connection = connection,
-      )
-
-      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also {
-        ErrorRefresh(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            onClick = onRefreshConnection,
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        StatusItem(
+            title = "PROXY URL/HOSTNAME",
+            value = ipAddress,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
+                ),
         )
+
+        ConnectionInfoErrorDialog(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            connection = connection,
+        )
+
+        if (connection !is WiDiNetworkStatus.ConnectionInfo.Connected) {
+          ErrorRefresh(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              onClick = onRefreshConnection,
+          )
+        }
       }
     }
 
@@ -746,7 +738,6 @@ private fun LazyListScope.renderNetworkInformation(
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(horizontal = MaterialTheme.keylines.content),
-        isEnabled = canUseCustomConfig,
         isEditable = isEditable,
         band = band,
         onSelectBand = onSelectBand,
@@ -806,13 +797,44 @@ private fun ErrorRefresh(
     modifier: Modifier,
     onClick: () -> Unit,
 ) {
-  OutlinedButton(
+  val (fakeSpin, setFakeSpin) = remember { mutableStateOf(false) }
+
+  val handleResetFakeSpin by rememberUpdatedState { setFakeSpin(false) }
+
+  LaunchedEffect(fakeSpin) {
+    if (fakeSpin) {
+      delay(1000L)
+      handleResetFakeSpin()
+    }
+  }
+
+  Row(
       modifier = modifier,
-      onClick = onClick,
+      verticalAlignment = Alignment.CenterVertically,
   ) {
-    Text(
-        text = "Refresh",
-    )
+    OutlinedButton(
+        modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
+        onClick = {
+          onClick()
+          setFakeSpin(true)
+        },
+    ) {
+      Text(
+          text = "Refresh",
+      )
+    }
+
+    AnimatedVisibility(
+        visible = fakeSpin,
+        enter = fadeIn() + expandIn(),
+        exit = fadeOut() + shrinkOut(),
+    ) {
+      Icon(
+          modifier = Modifier.size(16.dp),
+          imageVector = Icons.Filled.Refresh,
+          contentDescription = "Refresh",
+      )
+    }
   }
 }
 

@@ -12,7 +12,7 @@ fun rememberServerSSID(group: WiDiNetworkStatus.GroupInfo): String {
     when (group) {
       is WiDiNetworkStatus.GroupInfo.Connected -> group.ssid
       is WiDiNetworkStatus.GroupInfo.Empty -> "NO NAME"
-      is WiDiNetworkStatus.GroupInfo.Error -> "ERROR NAME"
+      is WiDiNetworkStatus.GroupInfo.Error -> "ERROR"
     }
   }
 }
@@ -55,7 +55,7 @@ fun rememberServerPassword(
         "NO PASSWORD"
       }
       is WiDiNetworkStatus.GroupInfo.Error -> {
-        "ERROR PASSWORD"
+        "ERROR"
       }
     }
   }
@@ -67,8 +67,8 @@ fun rememberServerIp(connection: WiDiNetworkStatus.ConnectionInfo): String {
   return remember(connection) {
     when (connection) {
       is WiDiNetworkStatus.ConnectionInfo.Connected -> connection.ip
-      is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO IP ADDRESS"
-      is WiDiNetworkStatus.ConnectionInfo.Error -> "ERROR IP ADDRESS"
+      is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO IP"
+      is WiDiNetworkStatus.ConnectionInfo.Error -> "ERROR"
     }
   }
 }

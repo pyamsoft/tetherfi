@@ -15,17 +15,18 @@ import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
 import com.pyamsoft.pydroid.ui.widget.rememberMaterialCheckableHeightMatcherGenerator
+import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.ui.Label
 
 @Composable
 internal fun NetworkBands(
     modifier: Modifier = Modifier,
-    isEnabled: Boolean,
     isEditable: Boolean,
     band: ServerNetworkBand?,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
+  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   Column(
       modifier = modifier,
   ) {
@@ -35,7 +36,7 @@ internal fun NetworkBands(
         modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
         text = "Broadcast Frequency",
     )
-    if (isEnabled) {
+    if (canUseCustomConfig) {
       val bands = remember { ServerNetworkBand.values() }
       val bandIterator = remember(bands) { bands.withIndex() }
       val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()

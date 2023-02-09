@@ -8,7 +8,6 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
@@ -66,8 +65,7 @@ internal fun LazyListScope.renderAppSetup(
   }
 
   item {
-    val canConfigure = remember { ServerDefaults.canUseCustomConfig() }
-    if (canConfigure) {
+    if (ServerDefaults.canUseCustomConfig()) {
       ThisInstruction(
           modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
           small = true,

@@ -14,6 +14,7 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -37,6 +38,7 @@ protected constructor(
     private val permissionGuard: PermissionGuard,
     private val dispatcher: CoroutineDispatcher,
     private val config: WiDiConfig,
+    private val appEnvironment: AppDevEnvironment,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
@@ -289,6 +291,32 @@ protected constructor(
   }
 
   @CheckResult
+  private fun handleGroupDebugEnvironment(): WiDiNetworkStatus.GroupInfo? {
+    val debugGroup = appEnvironment.group
+    if (debugGroup.isEmpty.value) {
+      Timber.w("DEBUG forcing Empty group response")
+      return WiDiNetworkStatus.GroupInfo.Empty
+    }
+
+    if (debugGroup.isError.value) {
+      Timber.w("DEBUG forcing Error group response")
+      return WiDiNetworkStatus.GroupInfo.Error(
+          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
+      )
+    }
+
+    if (debugGroup.isConnected.value) {
+      Timber.w("DEBUG forcing Connected group response")
+      return WiDiNetworkStatus.GroupInfo.Connected(
+          ssid = "DEBUG SSID",
+          password = "DEBUG PASSWORD",
+      )
+    }
+
+    return null
+  }
+
+  @CheckResult
   private suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo =
       withContext(context = dispatcher) {
         Enforcer.assertOffMainThread()
@@ -304,22 +332,55 @@ protected constructor(
           return@withContext WiDiNetworkStatus.GroupInfo.Empty
         }
 
+        val result: WiDiNetworkStatus.GroupInfo
         val group = resolveCurrentGroup(channel)
         if (group == null) {
           Timber.w("WiFi Direct did not return Group Info")
-          return@withContext WiDiNetworkStatus.GroupInfo.Error(
-              error = IllegalStateException("WiFi Direct did not return Group Info"),
-          )
+          result =
+              WiDiNetworkStatus.GroupInfo.Error(
+                  error = IllegalStateException("WiFi Direct did not return Group Info"),
+              )
+        } else {
+          result =
+              WiDiNetworkStatus.GroupInfo.Connected(
+                  ssid = group.networkName,
+                  password = group.passphrase,
+              )
+          Timber.d("WiFi Direct Group Info: $result")
         }
 
-        val info =
-            WiDiNetworkStatus.GroupInfo.Connected(
-                ssid = group.networkName,
-                password = group.passphrase,
-            )
-        Timber.d("WiFi Direct Group Info: $info")
-        return@withContext info
+        val forcedDebugResult = handleGroupDebugEnvironment()
+        if (forcedDebugResult != null) {
+          Timber.w("Returning DEBUG result which overrides real: $result")
+          return@withContext forcedDebugResult
+        } else {
+          return@withContext result
+        }
       }
+
+  @CheckResult
+  private fun handleConnectionDebugEnvironment(): WiDiNetworkStatus.ConnectionInfo? {
+    val debugConnection = appEnvironment.connection
+    if (debugConnection.isEmpty.value) {
+      Timber.w("DEBUG forcing Empty connection response")
+      return WiDiNetworkStatus.ConnectionInfo.Empty
+    }
+
+    if (debugConnection.isError.value) {
+      Timber.w("DEBUG forcing Error connection response")
+      return WiDiNetworkStatus.ConnectionInfo.Error(
+          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
+      )
+    }
+
+    if (debugConnection.isConnected.value) {
+      Timber.w("DEBUG forcing Connected connection response")
+      return WiDiNetworkStatus.ConnectionInfo.Connected(
+          ip = "DEBUG IP", hostName = "DEBUG HOSTNAME")
+    }
+
+    return null
+  }
 
   @CheckResult
   private suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo =
@@ -337,23 +398,31 @@ protected constructor(
           return@withContext WiDiNetworkStatus.ConnectionInfo.Empty
         }
 
+        val result: WiDiNetworkStatus.ConnectionInfo
         val info = resolveConnectionInfo(channel)
-
         val host = info?.groupOwnerAddress
         if (host == null) {
           Timber.w("WiFi Direct did not return Connection Info")
-          return@withContext WiDiNetworkStatus.ConnectionInfo.Error(
-              error = IllegalStateException("WiFi Direct did not return Connection Info"),
-          )
+          result =
+              WiDiNetworkStatus.ConnectionInfo.Error(
+                  error = IllegalStateException("WiFi Direct did not return Connection Info"),
+              )
+        } else {
+          result =
+              WiDiNetworkStatus.ConnectionInfo.Connected(
+                  ip = host.hostAddress.orEmpty(),
+                  hostName = host.hostName.orEmpty(),
+              )
+          Timber.d("WiFi Direct Connection Info: $result")
         }
 
-        val connection =
-            WiDiNetworkStatus.ConnectionInfo.Connected(
-                ip = host.hostAddress.orEmpty(),
-                hostName = host.hostName.orEmpty(),
-            )
-        Timber.d("WiFi Direct Connection Info: $connection")
-        return@withContext connection
+        val forcedDebugResult = handleConnectionDebugEnvironment()
+        if (forcedDebugResult != null) {
+          Timber.w("Returning DEBUG result which overrides real: $result")
+          return@withContext forcedDebugResult
+        } else {
+          return@withContext result
+        }
       }
 
   private suspend fun updateNetworkInfoChannels() =

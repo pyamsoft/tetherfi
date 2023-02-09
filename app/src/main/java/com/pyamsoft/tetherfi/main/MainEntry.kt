@@ -15,6 +15,7 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
@@ -25,6 +26,7 @@ import timber.log.Timber
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: MainViewModeler? = null
+  @JvmField @Inject internal var appEnvironment: AppDevEnvironment? = null
 
   override fun onInject(activity: FragmentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).inject(this)
@@ -32,6 +34,7 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 
   override fun onDispose() {
     viewModel = null
+    appEnvironment = null
   }
 }
 
@@ -86,6 +89,7 @@ fun MainEntry(
 ) {
   val component = rememberComposableInjector { MainInjector() }
   val viewModel = rememberNotNull(component.viewModel)
+  val appEnvironment = rememberNotNull(component.appEnvironment)
 
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
@@ -114,6 +118,7 @@ fun MainEntry(
   val isSettingsOpen by state.isSettingsOpen.collectAsState()
   if (isSettingsOpen) {
     SettingsDialog(
+        appEnvironment = appEnvironment,
         onDismiss = { viewModel.handleCloseSettings() },
     )
   }

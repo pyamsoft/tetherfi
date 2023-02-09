@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-internal class StatusInjector : ComposableInjector() {
+internal class StatusInjector() : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null

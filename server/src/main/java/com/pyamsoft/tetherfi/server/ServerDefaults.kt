@@ -5,6 +5,7 @@ import androidx.annotation.CheckResult
 import androidx.annotation.ChecksSdkIntAtLeast
 
 object ServerDefaults {
+
   const val SSID = "TetherFi"
   const val PORT = 8228
   val NETWORK_BAND = ServerNetworkBand.LEGACY

@@ -4,12 +4,15 @@ import android.net.wifi.p2p.WifiP2pConfig
 import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.annotation.RequiresApi
+import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 
 @Singleton
 internal class WiDiConfigImpl
@@ -39,15 +42,22 @@ internal constructor(
     }
   }
 
-  override suspend fun getConfiguration(): WifiP2pConfig? {
-    return if (ServerDefaults.canUseCustomConfig()) {
-      WifiP2pConfig.Builder()
-          .setNetworkName(ServerDefaults.asSsid(getPreferredSsid()))
-          .setPassphrase(getPreferredPassword())
-          .setGroupOperatingBand(getPreferredBand())
-          .build()
-    } else {
-      null
-    }
-  }
+  override suspend fun getConfiguration(): WifiP2pConfig? =
+      withContext(context = Dispatchers.IO) {
+        Enforcer.assertOffMainThread()
+
+        if (!ServerDefaults.canUseCustomConfig()) {
+          return@withContext null
+        }
+
+        val ssid = ServerDefaults.asSsid(getPreferredSsid())
+        val passwd = getPreferredPassword()
+        val band = getPreferredBand()
+
+        return@withContext WifiP2pConfig.Builder()
+            .setNetworkName(ssid)
+            .setPassphrase(passwd)
+            .setGroupOperatingBand(band)
+            .build()
+      }
 }
