@@ -2,11 +2,7 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
@@ -147,6 +143,8 @@ fun StatusEntry(
     appName: String,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
+    onRefreshGroup: () -> Unit,
+    onRefreshConnection: () -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -230,5 +228,7 @@ fun StatusEntry(
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
       onShowQRCode = onShowQRCode,
+      onRefreshGroup = onRefreshGroup,
+      onRefreshConnection = onRefreshConnection,
   )
 }

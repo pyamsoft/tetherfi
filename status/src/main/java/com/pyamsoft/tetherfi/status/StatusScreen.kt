@@ -27,6 +27,7 @@ import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.*
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -55,6 +56,8 @@ fun StatusScreen(
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
     onShowQRCode: () -> Unit,
+    onRefreshGroup: () -> Unit,
+    onRefreshConnection: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
   val proxyStatus by state.proxyStatus.collectAsState()
@@ -206,6 +209,8 @@ fun StatusScreen(
               onRequestNotificationPermission = onRequestNotificationPermission,
               onTogglePasswordVisibility = onTogglePasswordVisibility,
               onShowQRCode = onShowQRCode,
+              onRefreshGroup = onRefreshGroup,
+              onRefreshConnection = onRefreshConnection,
           )
         }
       }
@@ -278,6 +283,8 @@ private fun LazyListScope.renderLoadedContent(
     onRequestNotificationPermission: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
+    onRefreshGroup: () -> Unit,
+    onRefreshConnection: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -293,6 +300,8 @@ private fun LazyListScope.renderLoadedContent(
       onSelectBand = onSelectBand,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
+      onRefreshGroup = onRefreshGroup,
+      onRefreshConnection = onRefreshConnection,
   )
 
   item {
@@ -360,6 +369,8 @@ private fun LazyListScope.renderNetworkInformation(
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
     onShowQRCode: () -> Unit,
+    onRefreshGroup: () -> Unit,
+    onRefreshConnection: () -> Unit,
 ) {
 
   item {
@@ -615,6 +626,13 @@ private fun LazyListScope.renderNetworkInformation(
             modifier = Modifier.padding(start = MaterialTheme.keylines.content),
             group = group,
         )
+
+        (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
+          ErrorRefresh(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              onClick = onRefreshGroup,
+          )
+        }
       }
     }
 
@@ -660,6 +678,13 @@ private fun LazyListScope.renderNetworkInformation(
             modifier = Modifier.padding(start = MaterialTheme.keylines.content),
             group = group,
         )
+
+        (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
+          ErrorRefresh(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              onClick = onRefreshGroup,
+          )
+        }
       }
     }
 
@@ -685,6 +710,13 @@ private fun LazyListScope.renderNetworkInformation(
           modifier = Modifier.padding(start = MaterialTheme.keylines.content),
           connection = connection,
       )
+
+      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also {
+        ErrorRefresh(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            onClick = onRefreshConnection,
+        )
+      }
     }
 
     item {
@@ -770,6 +802,21 @@ private fun LazyListScope.renderBatteryAndPerformance(
 }
 
 @Composable
+private fun ErrorRefresh(
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+  OutlinedButton(
+      modifier = modifier,
+      onClick = onClick,
+  ) {
+    Text(
+        text = "Refresh",
+    )
+  }
+}
+
+@Composable
 private fun PreviewStatusScreen(
     isLoading: Boolean,
     ssid: String = "MySsid",
@@ -803,6 +850,8 @@ private fun PreviewStatusScreen(
       onToggleProxy = {},
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
+      onRefreshConnection = {},
+      onRefreshGroup = {},
   )
 }
 

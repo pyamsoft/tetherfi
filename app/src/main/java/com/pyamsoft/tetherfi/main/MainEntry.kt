@@ -107,6 +107,8 @@ fun MainEntry(
       allTabs = allTabs,
       onSettingsOpen = { viewModel.handleOpenSettings() },
       onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
+      onRefreshGroup = {viewModel.handleRefreshConnectionInfo() },
+      onRefreshConnection = { viewModel.handleRefreshConnectionInfo() },
   )
 
   val isSettingsOpen by state.isSettingsOpen.collectAsState()
