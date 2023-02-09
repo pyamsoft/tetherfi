@@ -1,7 +1,8 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -610,36 +612,19 @@ private fun LazyListScope.renderNetworkInformation(
                 ),
         )
 
-        if (group is WiDiNetworkStatus.GroupInfo.Connected) {
-          IconButton(
-              onClick = onShowQRCode,
-          ) {
-            Icon(
-                imageVector = Icons.Filled.QrCode,
-                contentDescription = "QR Code",
-                tint = MaterialTheme.colors.primary,
-            )
-          }
-        }
-
-        GroupInfoErrorDialog(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            group = group,
+        AttemptRefresh(
+            onClick = onRefreshGroup,
         )
 
-        if (group !is WiDiNetworkStatus.GroupInfo.Connected) {
-          ErrorRefresh(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              onClick = onRefreshGroup,
-          )
-        }
+        GroupInfoErrorDialog(
+            group = group,
+        )
       }
     }
 
     item {
       val group by serverViewState.group.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
-      val rawPassword = rememberServerRawPassword(group)
       val password = rememberServerPassword(group, isPasswordVisible)
 
       Row(
@@ -660,7 +645,7 @@ private fun LazyListScope.renderNetworkInformation(
                 ),
         )
 
-        if (rawPassword.isNotBlank()) {
+        if (group is WiDiNetworkStatus.GroupInfo.Connected) {
           IconButton(
               onClick = onTogglePasswordVisibility,
           ) {
@@ -669,6 +654,16 @@ private fun LazyListScope.renderNetworkInformation(
                     if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                 contentDescription =
                     if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                tint = MaterialTheme.colors.primary,
+            )
+          }
+
+          IconButton(
+              onClick = onShowQRCode,
+          ) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR Code",
                 tint = MaterialTheme.colors.primary,
             )
           }
@@ -697,17 +692,13 @@ private fun LazyListScope.renderNetworkInformation(
                 ),
         )
 
-        ConnectionInfoErrorDialog(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            connection = connection,
+        AttemptRefresh(
+            onClick = onRefreshConnection,
         )
 
-        if (connection !is WiDiNetworkStatus.ConnectionInfo.Connected) {
-          ErrorRefresh(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              onClick = onRefreshConnection,
-          )
-        }
+        ConnectionInfoErrorDialog(
+            connection = connection,
+        )
       }
     }
 
@@ -793,8 +784,8 @@ private fun LazyListScope.renderBatteryAndPerformance(
 }
 
 @Composable
-private fun ErrorRefresh(
-    modifier: Modifier,
+private fun AttemptRefresh(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
   val (fakeSpin, setFakeSpin) = remember { mutableStateOf(false) }
@@ -808,33 +799,35 @@ private fun ErrorRefresh(
     }
   }
 
-  Row(
+  IconButton(
       modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
+      onClick = {
+        onClick()
+        setFakeSpin(true)
+      },
   ) {
-    OutlinedButton(
-        modifier = Modifier.padding(end = MaterialTheme.keylines.baseline),
-        onClick = {
-          onClick()
-          setFakeSpin(true)
-        },
-    ) {
-      Text(
-          text = "Refresh",
-      )
-    }
+    val angle by
+        rememberInfiniteTransition()
+            .animateFloat(
+                initialValue = 0F,
+                targetValue = 360F,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            tween(
+                                durationMillis = 500,
+                                easing = LinearEasing,
+                            ),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+            )
 
-    AnimatedVisibility(
-        visible = fakeSpin,
-        enter = fadeIn() + expandIn(),
-        exit = fadeOut() + shrinkOut(),
-    ) {
-      Icon(
-          modifier = Modifier.size(16.dp),
-          imageVector = Icons.Filled.Refresh,
-          contentDescription = "Refresh",
-      )
-    }
+    Icon(
+        modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
+        imageVector = Icons.Filled.Refresh,
+        contentDescription = "Refresh",
+        tint = MaterialTheme.colors.primary,
+    )
   }
 }
 
