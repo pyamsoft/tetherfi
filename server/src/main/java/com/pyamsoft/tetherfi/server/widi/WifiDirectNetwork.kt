@@ -20,26 +20,29 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.util.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-    private val shutdownBus: EventBus<ServerShutdownEvent>,
-    private val context: Context,
-    private val permissionGuard: PermissionGuard,
-    private val dispatcher: CoroutineDispatcher,
-    private val config: WiDiConfig,
-    private val appEnvironment: AppDevEnvironment,
-    status: WiDiStatus,
+  private val shutdownBus: EventBus<ServerShutdownEvent>,
+  private val context: Context,
+  private val permissionGuard: PermissionGuard,
+  private val dispatcher: CoroutineDispatcher,
+  private val config: WiDiConfig,
+  private val appEnvironment: AppDevEnvironment,
+  status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {

@@ -1,7 +1,11 @@
 package com.pyamsoft.tetherfi.info
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ContentAlpha
@@ -20,10 +24,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.ui.*
+import com.pyamsoft.tetherfi.ui.ConnectionInfoErrorDialog
+import com.pyamsoft.tetherfi.ui.GroupInfoErrorDialog
+import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
+import com.pyamsoft.tetherfi.ui.rememberServerIp
+import com.pyamsoft.tetherfi.ui.rememberServerPassword
+import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
+import com.pyamsoft.tetherfi.ui.rememberServerSSID
 
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,

@@ -2,7 +2,11 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
@@ -19,13 +23,13 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-internal class StatusInjector() : ComposableInjector() {
+internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
   @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
