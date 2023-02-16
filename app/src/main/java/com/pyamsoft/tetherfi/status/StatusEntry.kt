@@ -157,25 +157,21 @@ fun StatusEntry(
   val activity = rememberActivity()
   val scope = rememberCoroutineScope()
 
-  // Since our mount hooks use this callback in bind, we must declare it first
-  val handleToggleProxy = { viewModel.handleToggleProxy() }
+  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
+  val dismissPermissionPopup by rememberUpdatedState { viewModel.handlePermissionsExplained() }
 
   // Hooks that run on mount
   MountHooks(
       component = component,
-      onToggleProxy = handleToggleProxy,
+      onToggleProxy = { handleToggleProxy() },
   )
-
-  val dismissPermissionPopup = { viewModel.handlePermissionsExplained() }
-
-  val state = viewModel.state
 
   StatusScreen(
       modifier = modifier,
-      state = state,
+      state = viewModel.state,
       serverViewState = serverViewState,
       appName = appName,
-      onToggleProxy = handleToggleProxy,
+      onToggleProxy = { handleToggleProxy() },
       onSsidChanged = {
         viewModel.handleSsidChanged(
             scope = scope,
@@ -197,7 +193,7 @@ fun StatusEntry(
       onOpenBatterySettings = {
         safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
-      onDismissPermissionExplanation = dismissPermissionPopup,
+      onDismissPermissionExplanation = { dismissPermissionPopup() },
       onRequestPermissions = {
         dismissPermissionPopup()
 
