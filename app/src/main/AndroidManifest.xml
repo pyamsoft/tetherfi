@@ -21,7 +21,7 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:noHistory="false"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustPan">
 
             <!-- Launcher Activity -->
             <intent-filter>
@@ -73,7 +73,7 @@
             android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/Theme.TetherFi.Tile"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustPan" />
 
     </application>
 
