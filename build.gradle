@@ -51,7 +51,7 @@ buildscript {
     // Material Design
     materialDesign = "1.8.0"
 
-    ktor = "2.2.3"
+    ktor = "2.2.4"
 
     qrCode = "3.3.0"
   }
