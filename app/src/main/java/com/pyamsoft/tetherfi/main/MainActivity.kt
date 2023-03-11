@@ -59,8 +59,8 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  change("Rework how the network is created for more reliable setup")
-                  bugfix("Change padding and text on various screens")
+                  bugfix("Fix the display direction of hotspot info elements")
+                  change("Prepare compatibility for the next OS version")
                   change("Where possible, hotspot network errors in the app")
                   change("Update networking libraries")
                 }
