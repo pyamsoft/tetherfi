@@ -3,7 +3,6 @@ package com.pyamsoft.tetherfi.server.widi
 import android.content.Context
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
