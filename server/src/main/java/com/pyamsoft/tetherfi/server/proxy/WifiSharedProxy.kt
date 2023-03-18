@@ -6,8 +6,6 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -18,6 +16,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -44,10 +44,16 @@ internal constructor(
 
   @CheckResult
   private fun CoroutineScope.proxyLoop(type: SharedProxy.Type, port: Int): ProxyJob {
-    val manager = factory.create(type = type, port = port)
+    val manager = factory.create(type = type)
 
     Timber.d("${type.name} Begin proxy server loop $port")
-    val job = launch(context = dispatcher) { manager.loop() }
+    val job =
+        launch(context = dispatcher) {
+          manager.loop(
+              context = dispatcher,
+              port = port,
+          )
+        }
     return ProxyJob(type = type, job = job)
   }
 

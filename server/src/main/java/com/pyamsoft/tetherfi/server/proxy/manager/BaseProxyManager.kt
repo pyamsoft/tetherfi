@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ProxyDebug
+import com.pyamsoft.tetherfi.server.proxy.ProxyLogger
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
@@ -11,43 +12,26 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
-import kotlinx.coroutines.CoroutineDispatcher
-import timber.log.Timber
+import kotlin.coroutines.CoroutineContext
 
 internal abstract class BaseProxyManager<S : ASocket>(
-    private val proxyType: SharedProxy.Type,
-    private val dispatcher: CoroutineDispatcher,
-    private val port: Int,
-    private val proxyDebug: ProxyDebug,
-) : ProxyManager {
+    proxyType: SharedProxy.Type,
+    proxyDebug: ProxyDebug,
+) :
+    ProxyManager,
+    ProxyLogger(
+        proxyType,
+        proxyDebug,
+    ) {
 
   @CheckResult
   private fun getServerAddress(port: Int): SocketAddress {
     return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
-
-  /** Log only when session is in debug mode */
-  protected inline fun debugLog(message: () -> String) {
-    if (proxyDebug.isAllowed(proxyType)) {
-      Timber.d("${proxyType.name}: ${message()}")
-    }
-  }
-
-  /** Log only when session is in debug mode */
-  protected inline fun warnLog(message: () -> String) {
-    if (proxyDebug.isAllowed(proxyType)) {
-      Timber.w("${proxyType.name}: ${message()}")
-    }
-  }
-
-  /** Log only when session is in debug mode */
-  protected inline fun errorLog(throwable: Throwable, message: () -> String) {
-    if (proxyDebug.isAllowed(proxyType)) {
-      Timber.e(throwable, "${proxyType.name}: ${message()}")
-    }
-  }
-
-  override suspend fun loop() {
+  override suspend fun loop(
+      context: CoroutineContext,
+      port: Int,
+  ) {
     Enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
@@ -55,18 +39,21 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
     val server =
         openServer(
-            builder = aSocket(ActorSelectorManager(context = dispatcher)),
+            builder = aSocket(ActorSelectorManager(context = context)),
             localAddress = getServerAddress(port = port),
         )
     try {
-      runServer(server)
+      runServer(context, server)
     } finally {
       server.dispose()
       onServerClosed()
     }
   }
 
-  protected abstract suspend fun runServer(server: S)
+  protected abstract suspend fun runServer(
+      context: CoroutineContext,
+      server: S,
+  )
 
   @CheckResult
   protected abstract suspend fun openServer(

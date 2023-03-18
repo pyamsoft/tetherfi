@@ -25,23 +25,22 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import java.net.URI
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.net.URI
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
 @Singleton
 internal class TcpProxySession
 @Inject
 internal constructor(
-    @ServerInternalApi proxyDebug: ProxyDebug,
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
+    @ServerInternalApi proxyDebug: ProxyDebug,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -308,6 +307,7 @@ internal constructor(
   }
 
   private suspend fun exchangeInternet(
+      context: CoroutineContext,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
@@ -331,7 +331,7 @@ internal constructor(
       // Exchange data until completed
       debugLog { "Exchange rest of data: $request" }
       val job =
-          launch(context = dispatcher) {
+          launch(context = context) {
             // Send data from the internet back to the proxy in a different thread
             talk(
                 input = internetInput,
@@ -366,7 +366,7 @@ internal constructor(
    * socket
    */
   @CheckResult
-  private suspend fun connectToInternet(request: ProxyRequest): Socket {
+  private suspend fun connectToInternet(context: CoroutineContext, request: ProxyRequest): Socket {
     // Tag sockets for Android O strict mode
     tagSocket()
 
@@ -379,11 +379,14 @@ internal constructor(
             port = request.port,
         )
 
-    val rawSocket = aSocket(ActorSelectorManager(context = dispatcher))
+    val rawSocket = aSocket(ActorSelectorManager(context = context))
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
-  override suspend fun exchange(data: TcpProxyData) {
+  override suspend fun exchange(
+      context: CoroutineContext,
+      data: TcpProxyData,
+  ) {
     Enforcer.assertOffMainThread()
 
     /** The Proxy is our device */
@@ -404,20 +407,25 @@ internal constructor(
       }
 
       // Given the request, connect to the Web
-      connectToInternet(request).use { internet ->
-        debugLog { "Proxy to: $request" }
-        val internetInput = internet.openReadChannel()
-        val internetOutput = internet.openWriteChannel(autoFlush = true)
+      connectToInternet(
+              context = context,
+              request = request,
+          )
+          .use { internet ->
+            debugLog { "Proxy to: $request" }
+            val internetInput = internet.openReadChannel()
+            val internetOutput = internet.openWriteChannel(autoFlush = true)
 
-        // Communicate between the web connection we've made and back to our client device
-        exchangeInternet(
-            proxyInput = proxyInput,
-            proxyOutput = proxyOutput,
-            internetInput = internetInput,
-            internetOutput = internetOutput,
-            request = request,
-        )
-      }
+            // Communicate between the web connection we've made and back to our client device
+            exchangeInternet(
+                context = context,
+                proxyInput = proxyInput,
+                proxyOutput = proxyOutput,
+                internetInput = internetInput,
+                internetOutput = internetOutput,
+                request = request,
+            )
+          }
     } catch (e: Throwable) {
       e.ifNotCancellation {
         errorLog(e) { "Error during connect to internet: $request" }

@@ -20,9 +20,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,11 +30,15 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
     private val shutdownBus: EventBus<ServerShutdownEvent>,
-    private val context: Context,
+    private val appContext: Context,
     private val permissionGuard: PermissionGuard,
     private val dispatcher: CoroutineDispatcher,
     private val config: WiDiConfig,
@@ -46,7 +47,7 @@ protected constructor(
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {
-    context.applicationContext.getSystemService<WifiP2pManager>().requireNotNull()
+    appContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
 
   private val scope by lazy { CoroutineScope(context = dispatcher) }
@@ -60,15 +61,15 @@ protected constructor(
   private var wifiChannel: Channel? = null
 
   @CheckResult
-  private fun createChannel(): Channel? {
+  private fun createChannel(context: CoroutineContext): Channel? {
     Timber.d("Creating WifiP2PManager Channel")
 
     // This can return null if initialization fails
     return wifiP2PManager.initialize(
-        context.applicationContext,
+        appContext,
         Looper.getMainLooper(),
     ) {
-      scope.launch(context = dispatcher) {
+      scope.launch(context = context) {
         Timber.d("WifiP2PManager Channel died. Kill network")
         stopNetwork(resetStatus = false)
       }
@@ -155,8 +156,8 @@ protected constructor(
         }
       }
 
-  private suspend fun startNetwork() =
-      withContext(context = dispatcher) {
+  private suspend fun startNetwork(context: CoroutineContext) =
+      withContext(context = context) {
         Enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -168,7 +169,7 @@ protected constructor(
         Timber.d("Start new network")
         status.set(RunningStatus.Starting)
 
-        val channel = createChannel()
+        val channel = createChannel(context = context)
         if (channel == null) {
           Timber.w("Failed to create channel, cannot initialize WiDi network")
 
@@ -186,8 +187,8 @@ protected constructor(
             wifiChannel = channel
           }
 
-          updateNetworkInfoChannels()
-          onNetworkStarted()
+          updateNetworkInfoChannels(context = context)
+          onNetworkStarted(context = context)
         } else {
           Timber.w("Group failed creation, stop proxy")
 
@@ -202,8 +203,10 @@ protected constructor(
 
   private suspend fun completeStop(onStop: () -> Unit) =
       withContext(context = Dispatchers.Main) {
-        updateNetworkInfoChannels()
-        onNetworkStopped()
+        val context = dispatcher
+
+        updateNetworkInfoChannels(context = context)
+        onNetworkStopped(context = context)
         onStop()
       }
 
@@ -320,8 +323,8 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo =
-      withContext(context = dispatcher) {
+  private suspend fun getGroupInfo(context: CoroutineContext): WiDiNetworkStatus.GroupInfo =
+      withContext(context = context) {
         Enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -386,8 +389,10 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo =
-      withContext(context = dispatcher) {
+  private suspend fun getConnectionInfo(
+      context: CoroutineContext
+  ): WiDiNetworkStatus.ConnectionInfo =
+      withContext(context = context) {
         Enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -428,29 +433,34 @@ protected constructor(
         }
       }
 
-  private suspend fun updateNetworkInfoChannels() =
-      withContext(context = dispatcher) {
+  private suspend fun updateNetworkInfoChannels(context: CoroutineContext) =
+      withContext(context = context) {
         Enforcer.assertOffMainThread()
-        groupInfoChannel.value = getGroupInfo()
-        connectionInfoChannel.value = getConnectionInfo()
+
+        groupInfoChannel.value = getGroupInfo(context = context)
+        connectionInfoChannel.value = getConnectionInfo(context = context)
       }
 
   final override fun updateNetworkInfo() {
-    scope.launch(context = dispatcher) {
+    val context = dispatcher
+
+    scope.launch(context = context) {
       Enforcer.assertOffMainThread()
 
-      updateNetworkInfoChannels()
+      updateNetworkInfoChannels(context = context)
     }
   }
 
   final override fun start() {
-    scope.launch(context = dispatcher) {
+    val context = dispatcher
+
+    scope.launch(context = context) {
       Enforcer.assertOffMainThread()
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
         stopNetwork(resetStatus = true)
-        startNetwork()
+        startNetwork(context = context)
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
@@ -492,9 +502,9 @@ protected constructor(
         groupInfoChannel.collectLatest { onChange(it) }
       }
 
-  protected abstract suspend fun onNetworkStarted()
+  protected abstract suspend fun onNetworkStarted(context: CoroutineContext)
 
-  protected abstract suspend fun onNetworkStopped()
+  protected abstract suspend fun onNetworkStopped(context: CoroutineContext)
 
   companion object {
 
