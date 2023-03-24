@@ -38,7 +38,7 @@ buildscript {
     // Compose
     compose_version = "1.4.0"
     compose_compiler_version = "1.4.3"
-    composeActivity = "1.6.1"
+    composeActivity = "1.7.0"
     composeMaterial = "1.4.0"
     accompanist = "0.28.0"
     coil = "2.2.2"
