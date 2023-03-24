@@ -45,7 +45,7 @@ buildscript {
 
     // AndroidX
     core = "1.9.0"
-    fragment = "1.5.5"
+    fragment = "1.5.6"
     appCompat = "1.6.1"
 
     // Material Design
