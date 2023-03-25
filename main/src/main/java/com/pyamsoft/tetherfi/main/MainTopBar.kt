@@ -14,23 +14,24 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Surface
 import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 import kotlinx.coroutines.Dispatchers
@@ -39,16 +40,12 @@ import kotlinx.coroutines.launch
 @Composable
 @CheckResult
 fun rememberAllTabs(): SnapshotStateList<MainView> {
-  return remember {
-    mutableStateListOf(
-        MainView.STATUS,
-        MainView.INFO,
-    )
-  }
+  return remember { MainView.values().toList().toMutableStateList() }
 }
 
+// Needs ExperimentalPagerApi even for new function (even though the annotation is deprecated)
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
@@ -95,7 +92,7 @@ fun MainTopBar(
         )
 
         val currentPage = pagerState.currentPage
-        TabRow(
+        ScrollableTabRow(
             modifier = Modifier.fillMaxWidth(),
             selectedTabIndex = currentPage,
             backgroundColor = Color.Transparent,

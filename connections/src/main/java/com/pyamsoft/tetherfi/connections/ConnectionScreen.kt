@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.connections
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
@@ -56,16 +58,27 @@ fun ConnectionScreen(
 
       group.also { gi ->
         if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
-          items(
-              items = clients,
-              key = { it.key() },
-          ) { client ->
-            ConnectionItem(
-                modifier = Modifier.fillMaxWidth(),
-                client = client,
-                blocked = blocked,
-                onClick = onToggleBlock,
-            )
+          if (clients.isEmpty()) {
+            item {
+              Text(
+                  modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+                  text = "No connections yet!",
+                  style = MaterialTheme.typography.h5,
+                  textAlign = TextAlign.Center,
+              )
+            }
+          } else {
+            items(
+                items = clients,
+                key = { it.key() },
+            ) { client ->
+              ConnectionItem(
+                  modifier = Modifier.fillMaxWidth(),
+                  client = client,
+                  blocked = blocked,
+                  onClick = onToggleBlock,
+              )
+            }
           }
         } else {
           item {
@@ -73,6 +86,7 @@ fun ConnectionScreen(
                 modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
                 text = "Start the Hotspot to view and manage connected devices.",
                 style = MaterialTheme.typography.h5,
+                textAlign = TextAlign.Center,
             )
           }
         }
@@ -126,30 +140,35 @@ private fun ConnectionItem(
         elevation = CardDefaults.Elevation,
         shape = MaterialTheme.shapes.medium,
     ) {
-      Row(
-          modifier = Modifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically,
+      Column(
+          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
       ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              modifier = Modifier.weight(1F),
+              text = name,
+              style = MaterialTheme.typography.h6,
+          )
+          Switch(
+              checked = isNotBlocked,
+              onCheckedChange = { onClick(client) },
+          )
+        }
+
         Text(
-            modifier = Modifier.weight(1F),
-            text = name,
-            style = MaterialTheme.typography.h6,
-        )
-        Switch(
-            checked = isNotBlocked,
-            onCheckedChange = { onClick(client) },
+            text = "First seen: $seenTime",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.medium,
+                        ),
+                ),
         )
       }
-      Text(
-          text = "First seen: $seenTime",
-          style =
-              MaterialTheme.typography.body2.copy(
-                  color =
-                      MaterialTheme.colors.onSurface.copy(
-                          alpha = ContentAlpha.medium,
-                      ),
-              ),
-      )
     }
   }
 }

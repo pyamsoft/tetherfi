@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 class ConnectionViewModel
@@ -24,12 +25,17 @@ internal constructor(
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
       connections.listenForClients().collectLatest { clients ->
-        state.connections.value = clients.toList().sortedBy { it.key() }
+        val list = clients.toList().sortedBy { it.key() }
+        Timber.d("New client list: $list")
+        state.connections.value = list
       }
     }
 
     scope.launch(context = Dispatchers.Default) {
-      blocked.listenForBlocked().collectLatest { state.blocked.value = it }
+      blocked.listenForBlocked().collectLatest { clients ->
+        Timber.d("New block list: $clients")
+        state.blocked.value = clients
+      }
     }
   }
 

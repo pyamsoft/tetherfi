@@ -7,7 +7,5 @@ interface SeenClients {
 
   @CheckResult fun listenForClients(): Flow<Set<TetherClient>>
 
-  @CheckResult fun seen(client: TetherClient)
-
-  @CheckResult fun clear()
+  fun seen(client: TetherClient)
 }

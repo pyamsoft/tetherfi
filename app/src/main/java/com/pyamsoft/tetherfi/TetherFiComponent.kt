@@ -19,7 +19,7 @@ import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import com.pyamsoft.tetherfi.service.ServiceModule
+import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
@@ -39,8 +39,12 @@ import javax.inject.Singleton
     modules =
         [
             TetherFiComponent.Provider::class,
+
+            // Server
             ServerAppModule::class,
-            ServiceModule::class,
+
+            // Android service
+            ServiceAppModule::class,
         ],
 )
 internal interface TetherFiComponent {

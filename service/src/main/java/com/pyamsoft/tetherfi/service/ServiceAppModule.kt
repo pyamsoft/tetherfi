@@ -19,7 +19,7 @@ import dagger.multibindings.IntoSet
 import javax.inject.Singleton
 
 @Module
-abstract class ServiceModule {
+abstract class ServiceAppModule {
 
   @Binds
   @IntoSet

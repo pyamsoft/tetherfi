@@ -9,10 +9,10 @@ import javax.inject.Singleton
 
 @Singleton
 internal class ClientManagerImpl @Inject internal constructor() :
-    BlockedClientTracker, BlockedClients, SeenClients {
+    BlockedClientTracker, BlockedClients, SeenClients, ClientEraser {
 
-  private val blockedClients = MutableStateFlow<MutableSet<TetherClient>>(mutableSetOf())
-  private val seenClients = MutableStateFlow<MutableSet<TetherClient>>(mutableSetOf())
+  private val blockedClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
+  private val seenClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
 
   @CheckResult
   private fun isMatchingClient(c1: TetherClient, c2: TetherClient): Boolean {
@@ -34,25 +34,33 @@ internal class ClientManagerImpl @Inject internal constructor() :
     }
   }
 
-  override fun block(client: TetherClient) {
-    blockedClients.update { clients ->
-      val existing = clients.firstOrNull { isMatchingClient(it, client) }
-      clients.apply {
-        if (existing == null) {
-          clients.add(client)
-        }
+  @CheckResult
+  private fun addToSet(set: Set<TetherClient>, client: TetherClient): Set<TetherClient> {
+    val existing = set.firstOrNull { isMatchingClient(it, client) }
+    return set.run {
+      if (existing == null) {
+        this + client
+      } else {
+        this
       }
     }
   }
 
-  override fun unblock(client: TetherClient) {
-    blockedClients.update { clients ->
-      clients.apply { clients.removeIf { isMatchingClient(it, client) } }
-    }
+  override fun block(client: TetherClient) {
+    blockedClients.update { addToSet(it, client) }
   }
 
-  override fun listenForBlocked(): Flow<Set<TetherClient>> {
-    return blockedClients
+  override fun unblock(client: TetherClient) {
+    blockedClients.update { clients ->
+      val existing = clients.firstOrNull { isMatchingClient(it, client) }
+      return@update clients.run {
+        if (existing == null) {
+          this
+        } else {
+          this - existing
+        }
+      }
+    }
   }
 
   override fun isBlocked(client: TetherClient): Boolean {
@@ -61,21 +69,19 @@ internal class ClientManagerImpl @Inject internal constructor() :
   }
 
   override fun seen(client: TetherClient) {
-    seenClients.update { clients ->
-      val existing = clients.firstOrNull { isMatchingClient(it, client) }
-      clients.apply {
-        if (existing == null) {
-          clients.add(client)
-        }
-      }
-    }
+    seenClients.update { addToSet(it, client) }
   }
 
   override fun clear() {
-    seenClients.update { it.apply { clear() } }
+    seenClients.value = emptySet()
+    blockedClients.value = emptySet()
   }
 
   override fun listenForClients(): Flow<Set<TetherClient>> {
     return seenClients
+  }
+
+  override fun listenForBlocked(): Flow<Set<TetherClient>> {
+    return blockedClients
   }
 }

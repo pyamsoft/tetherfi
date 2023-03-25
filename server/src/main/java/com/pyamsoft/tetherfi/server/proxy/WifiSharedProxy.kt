@@ -4,6 +4,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,6 +27,7 @@ internal constructor(
     private val preferences: ServerPreferences,
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val factory: ProxyManager.Factory,
+    private val eraser: ClientEraser,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -59,6 +61,7 @@ internal constructor(
 
   private suspend fun shutdown() {
     clearJobs()
+    eraser.clear()
   }
 
   private suspend fun clearJobs() {
