@@ -112,7 +112,6 @@ internal constructor(
     // Go async in case scope work takes a long time
     val pending = goAsync()
     workScope.launch(context = Dispatchers.IO) {
-      Enforcer.assertOffMainThread()
       try {
         when (val action = intent.action) {
           WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)
@@ -127,7 +126,6 @@ internal constructor(
         }
       } finally {
         withContext(context = Dispatchers.Main) {
-          Enforcer.assertOnMainThread()
           // Mark BR as finished
           pending.finish()
         }

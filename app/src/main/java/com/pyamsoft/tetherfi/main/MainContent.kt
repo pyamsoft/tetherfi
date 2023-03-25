@@ -1,19 +1,20 @@
 package com.pyamsoft.tetherfi.main
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
+import com.pyamsoft.tetherfi.connections.ConnectionEntry
 import com.pyamsoft.tetherfi.info.InfoEntry
 import com.pyamsoft.tetherfi.status.StatusEntry
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 fun MainContent(
     modifier: Modifier = Modifier,
     appName: String,
@@ -26,7 +27,7 @@ fun MainContent(
 ) {
   HorizontalPager(
       modifier = modifier,
-      count = allTabs.size,
+      pageCount = allTabs.size,
       state = pagerState,
   ) { page ->
     val screen =
@@ -38,7 +39,7 @@ fun MainContent(
         }
 
     when (screen) {
-      is MainView.Info -> {
+      MainView.INFO -> {
         InfoEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
@@ -46,7 +47,7 @@ fun MainContent(
             onShowQRCode = onShowQRCode,
         )
       }
-      is MainView.Status -> {
+      MainView.STATUS -> {
         StatusEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
@@ -54,6 +55,12 @@ fun MainContent(
             onShowQRCode = onShowQRCode,
             onRefreshGroup = onRefreshGroup,
             onRefreshConnection = onRefreshConnection,
+        )
+      }
+      MainView.CONNECTIONS -> {
+        ConnectionEntry(
+            modifier = Modifier.fillMaxSize(),
+            serverViewState = state,
         )
       }
     }

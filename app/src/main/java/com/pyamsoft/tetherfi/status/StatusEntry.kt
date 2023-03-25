@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -23,11 +24,11 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -81,7 +82,7 @@ private fun RegisterPermissionRequests(
       notificationRefreshBus,
   ) {
     val scope = this
-    scope.launch(context = Dispatchers.Main) {
+    scope.launch(context = Dispatchers.Default) {
 
       // See MainActivity
       permissionResponseBus.onEvent { resp ->
@@ -116,6 +117,8 @@ private fun MountHooks(
   val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
     viewModel.refreshSystemInfo(scope = scope)
   }
+
+  SaveStateDisposableEffect(viewModel)
 
   // As early as possible because of Lifecycle quirks
   RegisterPermissionRequests(

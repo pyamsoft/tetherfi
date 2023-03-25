@@ -4,7 +4,6 @@ import android.net.wifi.p2p.WifiP2pConfig
 import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.annotation.RequiresApi
-import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -44,8 +43,6 @@ internal constructor(
 
   override suspend fun getConfiguration(): WifiP2pConfig? =
       withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
         if (!ServerDefaults.canUseCustomConfig()) {
           return@withContext null
         }

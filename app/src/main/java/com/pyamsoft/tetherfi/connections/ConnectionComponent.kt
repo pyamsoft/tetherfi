@@ -14,35 +14,19 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.main
+package com.pyamsoft.tetherfi.connections
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.connections.ConnectionComponent
-import com.pyamsoft.tetherfi.core.ActivityScope
-import com.pyamsoft.tetherfi.info.InfoComponent
-import com.pyamsoft.tetherfi.qr.QRCodeComponent
-import com.pyamsoft.tetherfi.status.StatusComponent
 import dagger.Subcomponent
 
-@ActivityScope
 @Subcomponent
-internal interface MainComponent {
+internal interface ConnectionComponent {
 
-  @CheckResult fun plusStatus(): StatusComponent.Factory
-
-  @CheckResult fun plusConnection(): ConnectionComponent.Factory
-
-  @CheckResult fun plusInfo(): InfoComponent.Factory
-
-  @CheckResult fun plusQR(): QRCodeComponent.Factory
-
-  fun inject(activity: MainActivity)
-
-  fun inject(injector: MainInjector)
+  fun inject(injector: ConnectionInjector)
 
   @Subcomponent.Factory
   interface Factory {
 
-    @CheckResult fun create(): MainComponent
+    @CheckResult fun create(): ConnectionComponent
   }
 }

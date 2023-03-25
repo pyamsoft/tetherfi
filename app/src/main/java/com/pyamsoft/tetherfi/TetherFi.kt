@@ -35,10 +35,11 @@ class TetherFi : Application() {
     val component =
         DaggerTetherFiComponent.factory()
             .create(
-                application = this,
                 debug = isDebugMode(),
+                application = this,
                 imageLoader = mods.imageLoader(),
                 theming = mods.theming(),
+                enforcer = mods.enforcer(),
             )
     ObjectGraph.ApplicationScope.install(this, component)
   }
@@ -81,7 +82,7 @@ class TetherFi : Application() {
       )
 
       OssLibraries.add(
-          "Accompanist Pager",
+          "Accompanist Pager Indicators",
           "https://google.github.io/accompanist/pager/",
           "A library which provides paging layouts for Jetpack Compose.",
       )

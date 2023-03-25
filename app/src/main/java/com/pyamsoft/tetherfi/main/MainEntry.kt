@@ -1,5 +1,8 @@
 package com.pyamsoft.tetherfi.main
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -10,9 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -23,9 +23,9 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
-import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
@@ -43,7 +43,7 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 private fun WatchTabSwipe(
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -62,12 +62,16 @@ private fun WatchTabSwipe(
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
-    viewModel: MainViewModeler,
+    component: MainInjector,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
 ) {
+  val viewModel = rememberNotNull(component.viewModel)
+
+  SaveStateDisposableEffect(viewModel)
+
   WatchTabSwipe(
       pagerState = pagerState,
       allTabs = allTabs,
@@ -86,7 +90,7 @@ private fun MountHooks(
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,
@@ -101,11 +105,10 @@ fun MainEntry(
   val state = viewModel.state
 
   MountHooks(
-      viewModel = viewModel,
+      component = component,
       pagerState = pagerState,
       allTabs = allTabs,
   )
-  SaveStateDisposableEffect(viewModel)
 
   MainScreen(
       modifier = modifier,

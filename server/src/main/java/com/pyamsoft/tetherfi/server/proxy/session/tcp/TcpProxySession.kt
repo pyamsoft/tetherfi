@@ -1,7 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ProxyDebug
@@ -49,6 +49,7 @@ internal constructor(
     private val blockedClients: BlockedClients,
     private val seenClients: SeenClients,
     private val clock: Clock,
+    private val enforcer: ThreadEnforcer,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -414,12 +415,7 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun markClientSeen(client: TetherClient) {
-    seenClients.seen(client)
-  }
-
-  @CheckResult
-  private suspend fun isBlockedClient(client: TetherClient): Boolean {
+  private fun isBlockedClient(client: TetherClient): Boolean {
     debugLog { "Check if client is blocked: $client" }
     return blockedClients.isBlocked(client)
   }
@@ -428,7 +424,7 @@ internal constructor(
       context: CoroutineContext,
       data: TcpProxyData,
   ) {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     /** The Proxy is our device */
     val connection = data.connection
@@ -456,7 +452,7 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    markClientSeen(client)
+    seenClients.seen(client)
 
     if (isBlockedClient(client)) {
       val msg = "Client is marked blocked: $client"

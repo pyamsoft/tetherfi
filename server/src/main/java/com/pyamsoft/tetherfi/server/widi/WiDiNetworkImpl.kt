@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.server.widi
 
 import android.content.Context
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -20,6 +21,7 @@ internal constructor(
     @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi dispatcher: CoroutineDispatcher,
     @ServerInternalApi config: WiDiConfig,
+    enforcer: ThreadEnforcer,
     shutdownBus: EventBus<ServerShutdownEvent>,
     context: Context,
     permissionGuard: PermissionGuard,
@@ -33,6 +35,7 @@ internal constructor(
         dispatcher,
         config,
         appEnvironment,
+        enforcer,
         status,
     ) {
 

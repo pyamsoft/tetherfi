@@ -7,5 +7,5 @@ interface BlockedClients {
 
   @CheckResult fun listenForBlocked(): Flow<Set<TetherClient>>
 
-  @CheckResult suspend fun isBlocked(client: TetherClient): Boolean
+  @CheckResult fun isBlocked(client: TetherClient): Boolean
 }

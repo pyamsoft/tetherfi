@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.annotation.CheckResult
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.booleanFlow
 import com.pyamsoft.pydroid.util.intFlow
 import com.pyamsoft.pydroid.util.stringFlow
@@ -12,60 +12,43 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
 @Inject
 internal constructor(
+    enforcer: ThreadEnforcer,
     context: Context,
 ) : ServerPreferences, ServicePreferences {
 
   private val preferences by lazy {
+    enforcer.assertOffMainThread()
     PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
   }
 
   private val fallbackPassword by lazy(LazyThreadSafetyMode.NONE) { generateRandomPassword() }
 
   override suspend fun listenForWakeLockChanges(): Flow<Boolean> =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
-        return@withContext preferences.booleanFlow(WAKE_LOCK, true)
-      }
+      withContext(context = Dispatchers.IO) { preferences.booleanFlow(WAKE_LOCK, true) }
 
   override suspend fun setWakeLock(keep: Boolean) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
-        preferences.edit { putBoolean(WAKE_LOCK, keep) }
-      }
+      withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WAKE_LOCK, keep) } }
 
   override suspend fun listenForSsidChanges(): Flow<String> =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
-        val fallback = ServerDefaults.SSID
-        return@withContext preferences.stringFlow(SSID, fallback)
-      }
+      withContext(context = Dispatchers.IO) { preferences.stringFlow(SSID, ServerDefaults.SSID) }
 
   override suspend fun setSsid(ssid: String) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
-        preferences.edit { putString(SSID, ssid) }
-      }
+      withContext(context = Dispatchers.IO) { preferences.edit { putString(SSID, ssid) } }
 
   override suspend fun listenForPasswordChanges(): Flow<String> =
       withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
         var pass = preferences.getString(PASSWORD, "")
 
         // Ensure a random password is generated
@@ -78,28 +61,16 @@ internal constructor(
       }
 
   override suspend fun setPassword(password: String) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
-        preferences.edit { putString(PASSWORD, password) }
-      }
+      withContext(context = Dispatchers.IO) { preferences.edit { putString(PASSWORD, password) } }
 
   override suspend fun listenForPortChanges(): Flow<Int> =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-        return@withContext preferences.intFlow(PORT, ServerDefaults.PORT)
-      }
+      withContext(context = Dispatchers.IO) { preferences.intFlow(PORT, ServerDefaults.PORT) }
 
   override suspend fun setPort(port: Int) =
-      withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-        preferences.edit { putInt(PORT, port) }
-      }
+      withContext(context = Dispatchers.IO) { preferences.edit { putInt(PORT, port) } }
 
   override suspend fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
         val fallback = ServerDefaults.NETWORK_BAND.name
         return@withContext preferences.stringFlow(NETWORK_BAND, fallback).map {
           ServerNetworkBand.valueOf(it)
@@ -108,8 +79,6 @@ internal constructor(
 
   override suspend fun setNetworkBand(band: ServerNetworkBand) =
       withContext(context = Dispatchers.IO) {
-        Enforcer.assertOffMainThread()
-
         preferences.edit { putString(NETWORK_BAND, band.name) }
       }
 

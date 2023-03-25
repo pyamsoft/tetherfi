@@ -1,9 +1,12 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.annotation.CheckResult
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.Icon
@@ -28,10 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,14 +41,14 @@ import kotlinx.coroutines.launch
 fun rememberAllTabs(): SnapshotStateList<MainView> {
   return remember {
     mutableStateListOf(
-        MainView.Status,
-        MainView.Info,
+        MainView.STATUS,
+        MainView.INFO,
     )
   }
 }
 
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
@@ -148,7 +148,7 @@ private fun MainTab(
       onClick = onSelected,
       text = {
         Text(
-            text = tab.name,
+            text = tab.displayName,
             style =
                 textStyle.copy(
                     fontWeight = if (isSelected) FontWeight.W700 else null,
@@ -160,7 +160,7 @@ private fun MainTab(
 
 @Preview
 @Composable
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainTopBar() {
   MainTopBar(
       appName = "TEST",

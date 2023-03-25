@@ -2,7 +2,7 @@ package com.pyamsoft.tetherfi.server.clients
 
 interface BlockedClientTracker {
 
-  suspend fun block(client: TetherClient)
+  fun block(client: TetherClient)
 
-  suspend fun unblock(client: TetherClient)
+  fun unblock(client: TetherClient)
 }

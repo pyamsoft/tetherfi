@@ -1,7 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.proxy.ProxyLogger
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -17,6 +17,7 @@ import kotlin.coroutines.CoroutineContext
 internal abstract class BaseProxyManager<S : ASocket>(
     proxyType: SharedProxy.Type,
     proxyDebug: ProxyDebug,
+    private val enforcer: ThreadEnforcer,
 ) :
     ProxyManager,
     ProxyLogger(
@@ -28,11 +29,12 @@ internal abstract class BaseProxyManager<S : ASocket>(
   private fun getServerAddress(port: Int): SocketAddress {
     return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
+
   override suspend fun loop(
       context: CoroutineContext,
       port: Int,
   ) {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
     tagSocket()

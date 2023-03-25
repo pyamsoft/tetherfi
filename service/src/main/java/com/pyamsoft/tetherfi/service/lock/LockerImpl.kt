@@ -5,11 +5,9 @@ import android.content.Context
 import android.os.PowerManager
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
@@ -17,11 +15,14 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class LockerImpl
 @Inject
 internal constructor(
+    enforcer: ThreadEnforcer,
     context: Context,
     private val preferences: ServicePreferences,
 ) : Locker {
@@ -30,6 +31,8 @@ internal constructor(
   private val mutex = Mutex()
 
   private val wakeLock by lazy {
+    enforcer.assertOffMainThread()
+
     val powerManager = context.getSystemService<PowerManager>().requireNotNull()
     return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, wakeLockTag)
   }
@@ -63,8 +66,6 @@ internal constructor(
 
   override suspend fun acquire() =
       withContext(context = Dispatchers.IO + NonCancellable) {
-        Enforcer.assertOffMainThread()
-
         releaseWakelock()
 
         if (preferences.listenForWakeLockChanges().first()) {
@@ -73,11 +74,7 @@ internal constructor(
       }
 
   override suspend fun release() =
-      withContext(context = Dispatchers.IO + NonCancellable) {
-        Enforcer.assertOffMainThread()
-
-        releaseWakelock()
-      }
+      withContext(context = Dispatchers.IO + NonCancellable) { releaseWakelock() }
 
   companion object {
 

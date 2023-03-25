@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -17,11 +18,13 @@ internal class DefaultProxyManagerFactory
 internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val proxyDebug: ProxyDebug,
+    private val enforcer: ThreadEnforcer,
 ) : ProxyManager.Factory {
 
   @CheckResult
   private fun createTcp(): ProxyManager {
     return TcpProxyManager(
+        enforcer = enforcer,
         session = tcpSession,
         proxyDebug = proxyDebug,
     )

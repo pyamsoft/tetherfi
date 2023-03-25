@@ -112,6 +112,7 @@ dependencies {
   api "androidx.fragment:fragment-ktx:$fragment"
   api "androidx.appcompat:appcompat:$appCompat"
 
+  api project(":connections")
   api project(":info")
   api project(":main")
   api project(":server")

@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 33
 
     // Us
-    pydroid = "26.2.1"
+    pydroid = "26.3.0"
 
     // Leak Canary
     leakCanary = "2.10"

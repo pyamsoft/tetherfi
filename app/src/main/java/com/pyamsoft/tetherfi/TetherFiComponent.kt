@@ -8,6 +8,7 @@ import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import coil.ImageLoader
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -55,10 +56,11 @@ internal interface TetherFiComponent {
 
     @CheckResult
     fun create(
-        @BindsInstance application: Application,
         @Named("debug") @BindsInstance debug: Boolean,
+        @BindsInstance application: Application,
         @BindsInstance imageLoader: ImageLoader,
         @BindsInstance theming: Theming,
+        @BindsInstance enforcer: ThreadEnforcer,
     ): TetherFiComponent
   }
 

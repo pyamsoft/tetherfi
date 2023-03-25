@@ -1,6 +1,6 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -11,19 +11,21 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 internal class TcpProxyManager
 internal constructor(
-    private val session: ProxySession<TcpProxyData>,
     proxyDebug: ProxyDebug,
+    private val enforcer: ThreadEnforcer,
+    private val session: ProxySession<TcpProxyData>,
 ) :
     BaseProxyManager<ServerSocket>(
         SharedProxy.Type.TCP,
         proxyDebug,
+        enforcer,
     ) {
 
   private suspend fun runSession(
@@ -58,7 +60,7 @@ internal constructor(
       context: CoroutineContext,
       server: ServerSocket,
   ) = coroutineScope {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     // In a loop, we wait for new TCP connections and then offload them to their own routine.
     while (isActive && !server.isClosed) {

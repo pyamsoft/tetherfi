@@ -7,6 +7,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberActivity
@@ -34,6 +35,8 @@ private fun MountHooks(
     onToggleProxy: () -> Unit,
 ) {
   val viewModel = rememberNotNull(component.viewModel)
+
+  SaveStateDisposableEffect(viewModel)
 
   DisposableEffect(
       viewModel,

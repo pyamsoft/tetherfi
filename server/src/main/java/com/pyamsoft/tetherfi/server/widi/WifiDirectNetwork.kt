@@ -12,7 +12,7 @@ import android.os.Looper
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.Enforcer
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.BaseServer
@@ -20,6 +20,10 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,10 +34,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -43,6 +43,7 @@ protected constructor(
     private val dispatcher: CoroutineDispatcher,
     private val config: WiDiConfig,
     private val appEnvironment: AppDevEnvironment,
+    private val enforcer: ThreadEnforcer,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
@@ -158,7 +159,7 @@ protected constructor(
 
   private suspend fun startNetwork(context: CoroutineContext) =
       withContext(context = context) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions for making WiDi network")
@@ -212,7 +213,7 @@ protected constructor(
 
   // Lock the mutex to avoid anyone else from using the channel during closing
   private suspend fun shutdownWifiNetwork(channel: Channel) {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     mutex.withLock {
       // This may fail if WiFi is off, but that's fine since if WiFi is off,
@@ -229,7 +230,7 @@ protected constructor(
   }
 
   private suspend fun stopNetwork(resetStatus: Boolean) {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     val channel = getChannel()
 
@@ -260,12 +261,10 @@ protected constructor(
   @CheckResult
   @SuppressLint("MissingPermission")
   private suspend fun resolveCurrentGroup(channel: Channel): WifiP2pGroup? {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     return suspendCoroutine { cont ->
       try {
-        Enforcer.assertOffMainThread()
-
         wifiP2PManager.requestGroupInfo(channel) {
           // We are still on the Main Thread here, so don't unpack anything yet.
           cont.resume(it)
@@ -279,11 +278,9 @@ protected constructor(
 
   @CheckResult
   private suspend fun resolveConnectionInfo(channel: Channel): WifiP2pInfo? {
-    Enforcer.assertOffMainThread()
+    enforcer.assertOffMainThread()
 
     return suspendCoroutine { cont ->
-      Enforcer.assertOffMainThread()
-
       try {
         wifiP2PManager.requestConnectionInfo(channel) {
           // We are still on the Main Thread here, so don't unpack anything yet.
@@ -325,7 +322,7 @@ protected constructor(
   @CheckResult
   private suspend fun getGroupInfo(context: CoroutineContext): WiDiNetworkStatus.GroupInfo =
       withContext(context = context) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions, cannot get Group Info")
@@ -393,7 +390,7 @@ protected constructor(
       context: CoroutineContext
   ): WiDiNetworkStatus.ConnectionInfo =
       withContext(context = context) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
 
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions, cannot get Connection Info")
@@ -435,7 +432,7 @@ protected constructor(
 
   private suspend fun updateNetworkInfoChannels(context: CoroutineContext) =
       withContext(context = context) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
 
         groupInfoChannel.value = getGroupInfo(context = context)
         connectionInfoChannel.value = getConnectionInfo(context = context)
@@ -445,7 +442,7 @@ protected constructor(
     val context = dispatcher
 
     scope.launch(context = context) {
-      Enforcer.assertOffMainThread()
+      enforcer.assertOffMainThread()
 
       updateNetworkInfoChannels(context = context)
     }
@@ -455,7 +452,7 @@ protected constructor(
     val context = dispatcher
 
     scope.launch(context = context) {
-      Enforcer.assertOffMainThread()
+      enforcer.assertOffMainThread()
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
@@ -470,7 +467,7 @@ protected constructor(
 
   final override fun stop() {
     scope.launch(context = dispatcher) {
-      Enforcer.assertOffMainThread()
+      enforcer.assertOffMainThread()
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
@@ -492,13 +489,13 @@ protected constructor(
       onChange: (WiDiNetworkStatus.ConnectionInfo) -> Unit
   ) =
       withContext(context = dispatcher) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
         connectionInfoChannel.collectLatest { onChange(it) }
       }
 
   override suspend fun onGroupInfoChanged(onChange: (WiDiNetworkStatus.GroupInfo) -> Unit) =
       withContext(context = dispatcher) {
-        Enforcer.assertOffMainThread()
+        enforcer.assertOffMainThread()
         groupInfoChannel.collectLatest { onChange(it) }
       }
 
