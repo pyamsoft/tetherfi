@@ -64,6 +64,24 @@ fun ConnectionScreen(
               )
             }
           } else {
+            item {
+              Text(
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .padding(MaterialTheme.keylines.content)
+                          .padding(top = MaterialTheme.keylines.content * 3),
+                  text =
+                      "By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.",
+                  style =
+                      MaterialTheme.typography.body2.copy(
+                          color =
+                              MaterialTheme.colors.onBackground.copy(
+                                  alpha = ContentAlpha.medium,
+                              )),
+                  textAlign = TextAlign.Center,
+              )
+            }
+
             items(
                 items = clients,
                 key = { it.key() },
@@ -88,38 +106,38 @@ fun ConnectionScreen(
                 textAlign = TextAlign.Center,
             )
           }
-
-          item {
-            Text(
-                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-                text =
-                    "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
-                style =
-                    MaterialTheme.typography.body2.copy(
-                        color =
-                            MaterialTheme.colors.onBackground.copy(
-                                alpha = ContentAlpha.disabled,
-                            ),
-                    ),
-                textAlign = TextAlign.Center,
-            )
-          }
-
-          item {
-            Text(
-                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-                text = "A more friendly solution is being actively investigated.",
-                style =
-                    MaterialTheme.typography.body2.copy(
-                        color =
-                            MaterialTheme.colors.onBackground.copy(
-                                alpha = ContentAlpha.disabled,
-                            ),
-                    ),
-                textAlign = TextAlign.Center,
-            )
-          }
         }
+      }
+
+      item {
+        Text(
+            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+            text =
+                "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onBackground.copy(
+                            alpha = ContentAlpha.disabled,
+                        ),
+                ),
+            textAlign = TextAlign.Center,
+        )
+      }
+
+      item {
+        Text(
+            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+            text = "A more friendly solution is being actively investigated.",
+            style =
+                MaterialTheme.typography.body2.copy(
+                    color =
+                        MaterialTheme.colors.onBackground.copy(
+                            alpha = ContentAlpha.disabled,
+                        ),
+                ),
+            textAlign = TextAlign.Center,
+        )
       }
 
       item {
