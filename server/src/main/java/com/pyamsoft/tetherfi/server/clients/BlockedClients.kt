@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BlockedClients {
 
-  @CheckResult fun listenForChanges(): Flow<Set<TetherClient>>
+  @CheckResult fun listenForBlocked(): Flow<Set<TetherClient>>
 
   @CheckResult suspend fun isBlocked(client: TetherClient): Boolean
 }

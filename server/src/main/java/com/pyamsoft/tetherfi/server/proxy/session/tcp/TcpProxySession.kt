@@ -7,6 +7,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -32,6 +33,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.net.URI
+import java.time.Clock
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -44,6 +47,8 @@ internal constructor(
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi proxyDebug: ProxyDebug,
     private val blockedClients: BlockedClients,
+    private val seenClients: SeenClients,
+    private val clock: Clock,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -387,24 +392,34 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun isBlockedClient(connection: Socket): Boolean {
+  private fun resolveClient(connection: Socket): TetherClient? {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
       warnLog { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
-      return true
+      return null
     }
 
     val hostNameOrIp = remote.hostname
-    val client =
-        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-          TetherClient.IpAddress(
-              ip = hostNameOrIp,
-          )
-        } else {
-          TetherClient.HostName(
-              hostname = hostNameOrIp,
-          )
-        }
+    return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+      TetherClient.IpAddress(
+          ip = hostNameOrIp,
+          firstSeen = LocalDateTime.now(clock),
+      )
+    } else {
+      TetherClient.HostName(
+          hostname = hostNameOrIp,
+          firstSeen = LocalDateTime.now(clock),
+      )
+    }
+  }
+
+  @CheckResult
+  private suspend fun markClientSeen(client: TetherClient) {
+    seenClients.seen(client)
+  }
+
+  @CheckResult
+  private suspend fun isBlockedClient(client: TetherClient): Boolean {
     debugLog { "Check if client is blocked: $client" }
     return blockedClients.isBlocked(client)
   }
@@ -421,8 +436,30 @@ internal constructor(
     val proxyOutput = connection.openWriteChannel(autoFlush = true)
 
     // Reject the connection if it is a blocked client
-    if (isBlockedClient(connection)) {
-      val msg = "Client connection is marked blocked: $connection"
+    val client = resolveClient(connection)
+    if (client == null) {
+      val msg = "Unable to resolve TetherClient for connection: $connection"
+      warnLog { msg }
+      writeError(proxyOutput)
+      proxyInput.cancel()
+      proxyOutput.close()
+      return
+    }
+
+    // Mark all client connections as seen
+    //
+    // We need to do this because we have access to the MAC address via the GroupInfo.clientList
+    // but not the IP address. Android does not let us access the system ARP table so we cannot map
+    // MACs to IPs. Thus we need to basically hold our own table of "known" IP addresses and allow
+    // a user to block them as they see fit. This is UX wise, not great at all, since a user must
+    // eliminate a "bad" IP address by first knowing all the good ones.
+    //
+    // Though, arguably, blocking is only a nice to have. Real network security should be handled
+    // via the password.
+    markClientSeen(client)
+
+    if (isBlockedClient(client)) {
+      val msg = "Client is marked blocked: $client"
       warnLog { msg }
       writeError(proxyOutput)
       proxyInput.cancel()

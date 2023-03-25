@@ -9,6 +9,7 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
+import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
@@ -66,6 +67,8 @@ abstract class ServerAppModule {
   @Binds
   @CheckResult
   internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
+
+  @Binds @CheckResult internal abstract fun bindSeenClients(impl: ClientManagerImpl): SeenClients
 
   @Binds
   @CheckResult

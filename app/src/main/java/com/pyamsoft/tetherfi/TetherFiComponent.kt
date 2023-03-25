@@ -29,6 +29,7 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import java.time.Clock
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -129,6 +130,13 @@ internal interface TetherFiComponent {
       @Singleton
       internal fun providePermissionResponseBus(): EventBus<PermissionResponse> {
         return EventBus.create()
+      }
+
+      @Provides
+      @JvmStatic
+      @Singleton
+      internal fun provideClock(): Clock {
+        return Clock.systemDefaultZone()
       }
     }
   }

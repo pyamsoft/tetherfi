@@ -12,23 +12,10 @@ import javax.inject.Singleton
 
 @Singleton
 internal class ClientManagerImpl @Inject internal constructor() :
-    BlockedClientTracker, BlockedClients {
+    BlockedClientTracker, BlockedClients, SeenClients {
 
   private val blockedClients = MutableStateFlow<MutableSet<TetherClient>>(mutableSetOf())
-
-  override suspend fun block(client: TetherClient) =
-      withContext(context = Dispatchers.Default) {
-        blockedClients.update { it.apply { add(client) } }
-      }
-
-  override suspend fun unblock(client: TetherClient) =
-      withContext(context = Dispatchers.Default) {
-        blockedClients.update { it.apply { remove(client) } }
-      }
-
-  override fun listenForChanges(): Flow<Set<TetherClient>> {
-    return blockedClients
-  }
+  private val seenClients = MutableStateFlow<MutableSet<TetherClient>>(mutableSetOf())
 
   @CheckResult
   private fun isMatchingClient(c1: TetherClient, c2: TetherClient): Boolean {
@@ -50,9 +37,51 @@ internal class ClientManagerImpl @Inject internal constructor() :
     }
   }
 
+  override suspend fun block(client: TetherClient) =
+      withContext(context = Dispatchers.Default) {
+        blockedClients.update { clients ->
+          val existing = clients.firstOrNull { isMatchingClient(it, client) }
+          clients.apply {
+            if (existing == null) {
+              clients.add(client)
+            }
+          }
+        }
+      }
+
+  override suspend fun unblock(client: TetherClient) =
+      withContext(context = Dispatchers.Default) {
+        blockedClients.update { clients ->
+          clients.apply { clients.removeIf { isMatchingClient(it, client) } }
+        }
+      }
+
+  override fun listenForBlocked(): Flow<Set<TetherClient>> {
+    return blockedClients
+  }
+
   override suspend fun isBlocked(client: TetherClient): Boolean =
       withContext(context = Dispatchers.Default) {
-        val blocked = listenForChanges().first()
+        val blocked = listenForBlocked().first()
         return@withContext blocked.firstOrNull { isMatchingClient(it, client) } != null
       }
+
+  override suspend fun seen(client: TetherClient) =
+      withContext(context = Dispatchers.Default) {
+        seenClients.update { clients ->
+          val existing = clients.firstOrNull { isMatchingClient(it, client) }
+          clients.apply {
+            if (existing == null) {
+              clients.add(client)
+            }
+          }
+        }
+      }
+
+  override suspend fun clear() =
+      withContext(context = Dispatchers.Default) { seenClients.update { it.apply { clear() } } }
+
+  override fun listenForClients(): Flow<Set<TetherClient>> {
+    return seenClients
+  }
 }
