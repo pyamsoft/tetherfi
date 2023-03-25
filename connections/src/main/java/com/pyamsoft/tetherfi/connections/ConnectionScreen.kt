@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
@@ -50,18 +49,15 @@ fun ConnectionScreen(
       modifier = modifier,
   ) { pv ->
     LazyColumn {
-      item {
-        Spacer(
-            modifier = Modifier.statusBarsPadding().padding(pv),
-        )
-      }
-
       group.also { gi ->
         if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
           if (clients.isEmpty()) {
             item {
               Text(
-                  modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .padding(MaterialTheme.keylines.content)
+                          .padding(top = MaterialTheme.keylines.content * 3),
                   text = "No connections yet!",
                   style = MaterialTheme.typography.h5,
                   textAlign = TextAlign.Center,
@@ -83,7 +79,10 @@ fun ConnectionScreen(
         } else {
           item {
             Text(
-                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(MaterialTheme.keylines.content)
+                        .padding(top = MaterialTheme.keylines.content * 3),
                 text = "Start the Hotspot to view and manage connected devices.",
                 style = MaterialTheme.typography.h5,
                 textAlign = TextAlign.Center,
@@ -94,7 +93,7 @@ fun ConnectionScreen(
             Text(
                 modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
                 text =
-                    "The system isn't perfect. Android does not let me see which device is which, so this screen can only allow you to manage things by IP address.",
+                    "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
                 style =
                     MaterialTheme.typography.body2.copy(
                         color =
