@@ -40,7 +40,7 @@ buildscript {
     compose_compiler_version = "1.4.4"
     composeActivity = "1.7.0"
     composeMaterial = "1.4.0"
-    accompanist = "0.28.0"
+    accompanist = "0.30.0"
     coil = "2.2.2"
 
     // AndroidX
