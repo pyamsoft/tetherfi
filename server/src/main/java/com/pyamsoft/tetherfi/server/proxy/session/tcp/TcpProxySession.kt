@@ -6,6 +6,8 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
@@ -41,6 +43,7 @@ internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
     @ServerInternalApi proxyDebug: ProxyDebug,
+    private val blockedClients: BlockedClients,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -383,6 +386,29 @@ internal constructor(
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
+  @CheckResult
+  private suspend fun isBlockedClient(connection: Socket): Boolean {
+    val remote = connection.remoteAddress
+    if (remote !is InetSocketAddress) {
+      warnLog { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
+      return true
+    }
+
+    val hostNameOrIp = remote.hostname
+    val client =
+        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+          TetherClient.IpAddress(
+              ip = hostNameOrIp,
+          )
+        } else {
+          TetherClient.HostName(
+              hostname = hostNameOrIp,
+          )
+        }
+    debugLog { "Check if client is blocked: $client" }
+    return blockedClients.isBlocked(client)
+  }
+
   override suspend fun exchange(
       context: CoroutineContext,
       data: TcpProxyData,
@@ -393,6 +419,16 @@ internal constructor(
     val connection = data.connection
     val proxyInput = connection.openReadChannel()
     val proxyOutput = connection.openWriteChannel(autoFlush = true)
+
+    // Reject the connection if it is a blocked client
+    if (isBlockedClient(connection)) {
+      val msg = "Client connection is marked blocked: $connection"
+      warnLog { msg }
+      writeError(proxyOutput)
+      proxyInput.cancel()
+      proxyOutput.close()
+      return
+    }
 
     /** We use a string parsing to figure out what this HTTP request wants to do */
     val request = parseRequest(proxyInput)
@@ -441,6 +477,15 @@ internal constructor(
   )
 
   companion object {
+
+    /**
+     * What the fuck is this
+     * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
+     *
+     * Tests if a given string is an IP address
+     */
+    private val IP_ADDRESS_REGEX =
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
 
     private const val LINE_ENDING = "\r\n"
 

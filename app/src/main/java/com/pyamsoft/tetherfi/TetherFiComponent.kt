@@ -16,7 +16,7 @@ import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
 import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
-import com.pyamsoft.tetherfi.server.ServerModule
+import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
@@ -37,7 +37,7 @@ import javax.inject.Singleton
     modules =
         [
             TetherFiComponent.Provider::class,
-            ServerModule::class,
+            ServerAppModule::class,
             ServiceModule::class,
         ],
 )

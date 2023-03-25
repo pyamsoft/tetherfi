@@ -47,6 +47,7 @@ internal constructor(
 
     private val ALWAYS_PERMISSIONS =
         listOf(
+            // To open Wifi direct network
             android.Manifest.permission.ACCESS_WIFI_STATE,
             android.Manifest.permission.CHANGE_WIFI_STATE,
         )

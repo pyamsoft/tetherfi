@@ -6,6 +6,9 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
+import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
+import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
@@ -31,14 +34,14 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executors
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
 
 @Module
-abstract class ServerModule {
+abstract class ServerAppModule {
 
   @Binds
   @CheckResult
@@ -59,6 +62,14 @@ abstract class ServerModule {
   @Binds
   @CheckResult
   internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindBlockedClientTracker(impl: ClientManagerImpl): BlockedClientTracker
 
   // Internals
 

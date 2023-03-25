@@ -7,20 +7,21 @@ import android.content.IntentFilter
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
+import android.os.Parcelable
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.Enforcer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -35,23 +36,6 @@ internal constructor(
   private val workScope by lazy { CoroutineScope(context = Dispatchers.IO) }
 
   private var registered = false
-
-  @CheckResult
-  private fun resolveWifiGroupIp(intent: Intent): String {
-    val p2pInfo = getWifiP2PInfo(intent)
-    if (p2pInfo == null) {
-      Timber.w("No P2P Info in connection intent")
-      return ""
-    }
-
-    val address = p2pInfo.groupOwnerAddress
-    if (address == null) {
-      Timber.w("No Group owner address in connection intent")
-      return ""
-    }
-
-    return address.hostAddress.orEmpty()
-  }
 
   private suspend fun handleStateChangedAction(intent: Intent) {
     when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
@@ -76,7 +60,8 @@ internal constructor(
       eventBus.send(
           WidiNetworkEvent.ConnectionChanged(
               ip = ip,
-          ))
+          ),
+      )
     }
   }
 
@@ -153,11 +138,30 @@ internal constructor(
   companion object {
 
     @CheckResult
-    @Suppress("DEPRECATION")
-    private fun getWifiP2PInfo(intent: Intent): WifiP2pInfo? {
-      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-          intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO, WifiP2pInfo::class.java)
-      else intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+    private inline fun <reified T : Parcelable> Intent.resolveParcelableExtra(name: String): T? {
+      val self = this
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        self.getParcelableExtra(name, T::class.java)
+      } else {
+        @Suppress("DEPRECATION") self.getParcelableExtra(name)
+      }
+    }
+
+    @CheckResult
+    private fun resolveWifiGroupIp(intent: Intent): String {
+      val p2pInfo: WifiP2pInfo? = intent.resolveParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+      if (p2pInfo == null) {
+        Timber.w("No P2P Info in connection intent")
+        return ""
+      }
+
+      val address = p2pInfo.groupOwnerAddress
+      if (address == null) {
+        Timber.w("No Group owner address in connection intent")
+        return ""
+      }
+
+      return address.hostAddress.orEmpty()
     }
 
     private val INTENT_FILTER =
