@@ -20,10 +20,10 @@ import com.pyamsoft.pydroid.notify.NotifyDispatcher
 import com.pyamsoft.pydroid.notify.NotifyId
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.R
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
-import timber.log.Timber
 
 @Singleton
 internal class ServiceDispatcher
@@ -97,11 +97,15 @@ internal constructor(
   }
 
   @CheckResult
-  private fun resolveContentText(status: RunningStatus): String {
-    return when (status) {
-      is RunningStatus.Error -> "Hotspot Error, click to restart hotspot"
+  private fun resolveContentText(
+      appName: String,
+      notification: ServerNotificationData,
+  ): String {
+    return when (notification.status) {
+      is RunningStatus.Error -> "Hotspot Error. Please open $appName and restart the Hotspot."
       is RunningStatus.NotRunning -> "Hotspot preparing..."
-      is RunningStatus.Running -> "Hotspot Ready, click to view connection instructions"
+      is RunningStatus.Running ->
+          "Hotspot Ready. ${notification.clientCount} Clients. ${notification.blockCount} Blocked."
       is RunningStatus.Starting -> "Hotspot starting..."
       is RunningStatus.Stopping -> "Hotspot stopping..."
     }
@@ -112,10 +116,11 @@ internal constructor(
       channelInfo: NotifyChannelInfo,
       notification: ServerNotificationData
   ): Notification {
+    val appName = context.getString(appNameRes)
     guaranteeNotificationChannelExists(channelInfo)
     return createNotificationBuilder(channelInfo)
-        .setContentTitle(context.getString(appNameRes))
-        .setContentText(resolveContentText(notification.status))
+        .setContentTitle(appName)
+        .setContentText(resolveContentText(appName, notification))
         .build()
   }
 
