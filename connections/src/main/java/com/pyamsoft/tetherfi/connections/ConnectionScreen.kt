@@ -89,6 +89,37 @@ fun ConnectionScreen(
                 textAlign = TextAlign.Center,
             )
           }
+
+          item {
+            Text(
+                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+                text =
+                    "The system isn't perfect. Android does not let me see which device is which, so this screen can only allow you to manage things by IP address.",
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.onBackground.copy(
+                                alpha = ContentAlpha.disabled,
+                            ),
+                    ),
+                textAlign = TextAlign.Center,
+            )
+          }
+
+          item {
+            Text(
+                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+                text = "A more friendly solution is being actively investigated.",
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.onBackground.copy(
+                                alpha = ContentAlpha.disabled,
+                            ),
+                    ),
+                textAlign = TextAlign.Center,
+            )
+          }
         }
       }
 
