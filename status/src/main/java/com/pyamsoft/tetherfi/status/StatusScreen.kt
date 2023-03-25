@@ -8,6 +8,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,6 +31,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -45,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -63,6 +68,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ConnectionInfoErrorDialog
 import com.pyamsoft.tetherfi.ui.GroupInfoErrorDialog
+import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
@@ -98,7 +104,6 @@ fun StatusScreen(
     onRequestNotificationPermission: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
@@ -249,7 +254,6 @@ fun StatusScreen(
               onRequestNotificationPermission = onRequestNotificationPermission,
               onTogglePasswordVisibility = onTogglePasswordVisibility,
               onShowQRCode = onShowQRCode,
-              onRefreshGroup = onRefreshGroup,
               onRefreshConnection = onRefreshConnection,
           )
         }
@@ -322,7 +326,6 @@ private fun LazyListScope.renderLoadedContent(
     onRequestNotificationPermission: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   renderNetworkInformation(
@@ -338,7 +341,6 @@ private fun LazyListScope.renderLoadedContent(
       onSelectBand = onSelectBand,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
-      onRefreshGroup = onRefreshGroup,
       onRefreshConnection = onRefreshConnection,
   )
 
@@ -406,7 +408,6 @@ private fun LazyListScope.renderNetworkInformation(
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   item {
@@ -423,7 +424,7 @@ private fun LazyListScope.renderNetworkInformation(
       ) {
         Text(
             text =
-                "Wi-Fi must be turned on for the hotspot to work. Try toggling this device's Wi-Fi off and on, then try again.",
+                "Wi-Fi must be turned on for the hotspot to work. It also must not be connected to any other Wi-Fi networks. Try toggling this device's Wi-Fi off and on, then try again.",
             style =
                 MaterialTheme.typography.body1.copy(
                     color = MaterialTheme.colors.error,
@@ -649,14 +650,6 @@ private fun LazyListScope.renderNetworkInformation(
                     fontFamily = FontFamily.Monospace,
                 ),
         )
-
-        AttemptRefresh(
-            onClick = onRefreshGroup,
-        )
-
-        GroupInfoErrorDialog(
-            group = group,
-        )
       }
     }
 
@@ -668,7 +661,7 @@ private fun LazyListScope.renderNetworkInformation(
       Row(
           modifier =
               itemModifier
-                  .padding(bottom = MaterialTheme.keylines.content * 2)
+                  .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           verticalAlignment = Alignment.CenterVertically,
       ) {
@@ -692,16 +685,6 @@ private fun LazyListScope.renderNetworkInformation(
                     if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                 contentDescription =
                     if (isPasswordVisible) "Password Visible" else "Password Hidden",
-                tint = MaterialTheme.colors.primary,
-            )
-          }
-
-          IconButton(
-              onClick = onShowQRCode,
-          ) {
-            Icon(
-                imageVector = Icons.Filled.QrCode,
-                contentDescription = "QR Code",
                 tint = MaterialTheme.colors.primary,
             )
           }
@@ -729,14 +712,6 @@ private fun LazyListScope.renderNetworkInformation(
                     fontFamily = FontFamily.Monospace,
                 ),
         )
-
-        AttemptRefresh(
-            onClick = onRefreshConnection,
-        )
-
-        ConnectionInfoErrorDialog(
-            connection = connection,
-        )
       }
     }
 
@@ -758,7 +733,20 @@ private fun LazyListScope.renderNetworkInformation(
               ),
       )
     }
+
+    item {
+      val group by serverViewState.group.collectAsState()
+      val connection by serverViewState.connection.collectAsState()
+
+      TileSection(
+          group = group,
+          connection = connection,
+          onShowQRCode = onShowQRCode,
+          onRefreshConnection = onRefreshConnection,
+      )
+    }
   }
+
   item {
     val band by state.band.collectAsState()
 
@@ -771,6 +759,210 @@ private fun LazyListScope.renderNetworkInformation(
         band = band,
         onSelectBand = onSelectBand,
     )
+  }
+}
+
+@Composable
+private fun TileSection(
+    modifier: Modifier = Modifier,
+    group: WiDiNetworkStatus.GroupInfo,
+    connection: WiDiNetworkStatus.ConnectionInfo,
+    onShowQRCode: () -> Unit,
+    onRefreshConnection: () -> Unit,
+) {
+  val isFullError =
+      remember(
+          connection,
+          group,
+      ) {
+        connection is WiDiNetworkStatus.ConnectionInfo.Error &&
+            group is WiDiNetworkStatus.GroupInfo.Error
+      }
+
+  val isQREnabled =
+      remember(
+          connection,
+          group,
+      ) {
+        connection is WiDiNetworkStatus.ConnectionInfo.Connected &&
+            group is WiDiNetworkStatus.GroupInfo.Connected
+      }
+
+  Column(
+      modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+  ) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Tile(
+          modifier = Modifier.weight(1F),
+      ) {
+        AttemptRefresh(
+            onClick = onRefreshConnection,
+        ) { modifier, iconButton ->
+          Row(
+              modifier = Modifier.fillMaxWidth().then(modifier),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            val color = LocalContentColor.current
+
+            iconButton()
+
+            Text(
+                text = "Refresh Hotspot",
+                style =
+                    MaterialTheme.typography.caption.copy(
+                        color =
+                            color.copy(
+                                alpha = ContentAlpha.medium,
+                            ),
+                    ),
+            )
+          }
+        }
+      }
+
+      Spacer(
+          modifier = Modifier.width(MaterialTheme.keylines.content),
+      )
+
+      Tile(
+          modifier = Modifier.weight(1F),
+          enabled = isQREnabled,
+      ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(enabled = isQREnabled) { onShowQRCode() },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          val color = LocalContentColor.current
+
+          IconButton(
+              onClick = { onShowQRCode() },
+              enabled = isQREnabled,
+          ) {
+            Icon(
+                imageVector = Icons.Filled.QrCode,
+                contentDescription = "QR Code",
+                tint =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = if (isQREnabled) ContentAlpha.high else ContentAlpha.disabled,
+                    ),
+            )
+          }
+
+          Text(
+              text = "View QR Code",
+              style =
+                  MaterialTheme.typography.caption.copy(
+                      color =
+                          color.copy(
+                              alpha =
+                                  if (isQREnabled) ContentAlpha.medium else ContentAlpha.disabled,
+                          ),
+                  ),
+          )
+        }
+      }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also { c ->
+        Tile(
+            modifier = Modifier.weight(1F),
+            color = MaterialTheme.colors.error,
+        ) {
+          ConnectionInfoErrorDialog(
+              connection = c,
+          ) { modifier, iconButton ->
+            Row(
+                modifier = Modifier.fillMaxWidth().then(modifier),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+              val color = LocalContentColor.current
+
+              iconButton()
+
+              Text(
+                  text = "Network Error",
+                  style =
+                      MaterialTheme.typography.caption.copy(
+                          color =
+                              color.copy(
+                                  alpha = ContentAlpha.medium,
+                              ),
+                      ),
+              )
+            }
+          }
+        }
+      }
+
+      if (connection is WiDiNetworkStatus.ConnectionInfo.Error &&
+          group is WiDiNetworkStatus.GroupInfo.Error) {
+        Spacer(
+            modifier = Modifier.width(MaterialTheme.keylines.content),
+        )
+      }
+
+      (group as? WiDiNetworkStatus.GroupInfo.Error)?.also { g ->
+        Tile(
+            modifier = Modifier.weight(1F),
+            color = MaterialTheme.colors.error,
+        ) {
+          GroupInfoErrorDialog(
+              group = g,
+          ) { modifier, iconButton ->
+            Row(
+                modifier = Modifier.fillMaxWidth().then(modifier),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+              val color = LocalContentColor.current
+
+              iconButton()
+
+              Text(
+                  text = "Hotspot Error",
+                  style =
+                      MaterialTheme.typography.caption.copy(
+                          color =
+                              color.copy(
+                                  alpha = ContentAlpha.medium,
+                              ),
+                      ),
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun Tile(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+  Card(
+      modifier =
+          modifier.border(
+              width = 2.dp,
+              color =
+                  color.copy(
+                      alpha = if (enabled) ContentAlpha.medium else ContentAlpha.disabled,
+                  ),
+              shape = MaterialTheme.shapes.medium,
+          ),
+      shape = MaterialTheme.shapes.medium,
+      elevation = CardDefaults.Elevation,
+  ) {
+    content()
   }
 }
 
@@ -825,10 +1017,16 @@ private fun LazyListScope.renderBatteryAndPerformance(
 private fun AttemptRefresh(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    content: IconButtonContent,
 ) {
   val (fakeSpin, setFakeSpin) = remember { mutableStateOf(false) }
 
   val handleResetFakeSpin by rememberUpdatedState { setFakeSpin(false) }
+
+  val handleClick by rememberUpdatedState {
+    setFakeSpin(true)
+    onClick()
+  }
 
   LaunchedEffect(fakeSpin) {
     if (fakeSpin) {
@@ -837,35 +1035,36 @@ private fun AttemptRefresh(
     }
   }
 
-  IconButton(
-      modifier = modifier,
-      onClick = {
-        onClick()
-        setFakeSpin(true)
-      },
+  content(
+      Modifier.clickable { handleClick() },
   ) {
-    val angle by
-        rememberInfiniteTransition()
-            .animateFloat(
-                initialValue = 0F,
-                targetValue = 360F,
-                animationSpec =
-                    infiniteRepeatable(
-                        animation =
-                            tween(
-                                durationMillis = 500,
-                                easing = LinearEasing,
-                            ),
-                        repeatMode = RepeatMode.Restart,
-                    ),
-            )
+    IconButton(
+        modifier = modifier,
+        onClick = { handleClick() },
+    ) {
+      val angle by
+          rememberInfiniteTransition()
+              .animateFloat(
+                  initialValue = 0F,
+                  targetValue = 360F,
+                  animationSpec =
+                      infiniteRepeatable(
+                          animation =
+                              tween(
+                                  durationMillis = 500,
+                                  easing = LinearEasing,
+                              ),
+                          repeatMode = RepeatMode.Restart,
+                      ),
+              )
 
-    Icon(
-        modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
-        imageVector = Icons.Filled.Refresh,
-        contentDescription = "Refresh",
-        tint = MaterialTheme.colors.primary,
-    )
+      Icon(
+          modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
+          imageVector = Icons.Filled.Refresh,
+          contentDescription = "Refresh",
+          tint = MaterialTheme.colors.primary,
+      )
+    }
   }
 }
 
@@ -904,7 +1103,6 @@ private fun PreviewStatusScreen(
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onRefreshConnection = {},
-      onRefreshGroup = {},
   )
 }
 

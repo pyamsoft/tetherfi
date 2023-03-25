@@ -150,7 +150,6 @@ fun StatusEntry(
     appName: String,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
@@ -231,7 +230,6 @@ fun StatusEntry(
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
       onShowQRCode = onShowQRCode,
-      onRefreshGroup = onRefreshGroup,
       onRefreshConnection = onRefreshConnection,
   )
 }

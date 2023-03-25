@@ -24,8 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.ui.ConnectionInfoErrorDialog
-import com.pyamsoft.tetherfi.ui.GroupInfoErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
@@ -116,12 +114,6 @@ internal fun LazyListScope.renderDeviceSetup(
               )
             }
           }
-
-          GroupInfoErrorDialog(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              group = group,
-              iconModifier = Modifier.size(16.dp),
-          )
         }
 
         Row {
@@ -170,12 +162,6 @@ internal fun LazyListScope.renderDeviceSetup(
               )
             }
           }
-
-          GroupInfoErrorDialog(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              group = group,
-              iconModifier = Modifier.size(16.dp),
-          )
         }
 
         Text(
@@ -206,12 +192,6 @@ internal fun LazyListScope.renderDeviceSetup(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
-          )
-
-          ConnectionInfoErrorDialog(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-              connection = connection,
-              iconModifier = Modifier.size(16.dp),
           )
         }
 

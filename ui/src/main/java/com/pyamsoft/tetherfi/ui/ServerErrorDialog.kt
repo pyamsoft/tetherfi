@@ -1,92 +1,111 @@
 package com.pyamsoft.tetherfi.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import kotlinx.coroutines.delay
+
+typealias IconButtonContent =
+    @Composable
+    (
+        Modifier,
+        @Composable () -> Unit,
+    ) -> Unit
 
 @Composable
 fun GroupInfoErrorDialog(
     modifier: Modifier = Modifier,
-    iconModifier: Modifier = Modifier,
-    dialogModifier: Modifier = Modifier,
-    group: WiDiNetworkStatus.GroupInfo,
+    group: WiDiNetworkStatus.GroupInfo.Error,
+    content: IconButtonContent,
 ) {
-  (group as? WiDiNetworkStatus.GroupInfo.Error)?.also { err ->
-    ServerErrorDialog(
-        modifier = modifier,
-        iconModifier = iconModifier,
-        dialogModifier = dialogModifier,
-        title = "Group Info Error",
-        error = err.error,
-    )
-  }
+  ServerErrorDialog(
+      modifier = modifier,
+      title = "Hotspot Initialization Error",
+      error = group.error,
+      content = content,
+  )
 }
 
 @Composable
 fun ConnectionInfoErrorDialog(
     modifier: Modifier = Modifier,
-    iconModifier: Modifier = Modifier,
-    dialogModifier: Modifier = Modifier,
-    connection: WiDiNetworkStatus.ConnectionInfo,
+    connection: WiDiNetworkStatus.ConnectionInfo.Error,
+    content: IconButtonContent,
 ) {
-  (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also { err ->
-    ServerErrorDialog(
-        modifier = modifier,
-        iconModifier = iconModifier,
-        dialogModifier = dialogModifier,
-        title = "Connection Info Error",
-        error = err.error,
-    )
-  }
+  ServerErrorDialog(
+      modifier = modifier,
+      title = "Network Initialization Error",
+      error = connection.error,
+      content = content,
+  )
 }
 
 @Composable
 private fun ServerErrorDialog(
     modifier: Modifier,
-    iconModifier: Modifier,
-    dialogModifier: Modifier,
     title: String,
     error: Throwable,
+    content: IconButtonContent,
 ) {
+  /** Show the Dialog */
   val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
 
-  // Icon to click on to show the dialog
-  // Don't use IconButton because we don't care about minimum touch target size
-  Box(
-      modifier = modifier.clickable { setShowDialog(true) },
-      contentAlignment = Alignment.Center,
-  ) {
-    Icon(
-        modifier = iconModifier,
-        imageVector = Icons.Filled.Warning,
-        contentDescription = "Something went wrong",
-        tint = MaterialTheme.colors.error,
-    )
+  /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
+  val (showContent, setShowContent) = remember { mutableStateOf(false) }
+  val handleShowContent by rememberUpdatedState { setShowContent(true) }
+
+  LaunchedEffect(showContent) {
+    if (!showContent) {
+      // Wait a little bit in case the network is just starting up normally
+      delay(1000L)
+
+      // Mark the content as shown
+      handleShowContent()
+    }
   }
 
-  if (showDialog) {
+  AnimatedVisibility(
+      visible = showContent,
+  ) {
+    content(
+        Modifier.clickable { setShowDialog(true) },
+    ) {
+      IconButton(
+          onClick = { setShowDialog(true) },
+      ) {
+        Icon(
+            imageVector = Icons.Filled.Warning,
+            contentDescription = "Something went wrong",
+            tint = MaterialTheme.colors.error,
+        )
+      }
+    }
+  }
+
+  if (showDialog && showContent) {
     val onDismiss by rememberUpdatedState { setShowDialog(false) }
 
     Dialog(
@@ -94,7 +113,7 @@ private fun ServerErrorDialog(
         onDismissRequest = { onDismiss() },
     ) {
       Column(
-          modifier = dialogModifier.padding(MaterialTheme.keylines.content),
+          modifier = modifier.padding(MaterialTheme.keylines.content),
       ) {
         DialogToolbar(
             modifier = Modifier.fillMaxWidth(),

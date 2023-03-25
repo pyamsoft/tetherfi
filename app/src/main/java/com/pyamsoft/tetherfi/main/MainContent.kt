@@ -22,7 +22,6 @@ fun MainContent(
     state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   HorizontalPager(
@@ -53,7 +52,6 @@ fun MainContent(
             appName = appName,
             serverViewState = state,
             onShowQRCode = onShowQRCode,
-            onRefreshGroup = onRefreshGroup,
             onRefreshConnection = onRefreshConnection,
         )
       }

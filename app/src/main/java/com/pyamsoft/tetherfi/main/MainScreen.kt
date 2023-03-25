@@ -23,7 +23,6 @@ fun MainScreen(
     allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
     onShowQRCode: () -> Unit,
-    onRefreshGroup: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
   Scaffold(
@@ -46,7 +45,6 @@ fun MainScreen(
           state = state,
           allTabs = allTabs,
           onShowQRCode = onShowQRCode,
-          onRefreshGroup = onRefreshGroup,
           onRefreshConnection = onRefreshConnection,
       )
     }
