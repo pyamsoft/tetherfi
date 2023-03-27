@@ -41,7 +41,7 @@ buildscript {
     composeActivity = "1.7.0"
     composeMaterial = "1.4.0"
     accompanist = "0.30.0"
-    coil = "2.2.2"
+    coil = "2.3.0"
 
     // AndroidX
     core = "1.9.0"
