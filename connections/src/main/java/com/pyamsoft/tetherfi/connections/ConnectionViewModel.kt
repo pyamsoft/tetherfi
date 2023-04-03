@@ -22,12 +22,11 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 class ConnectionViewModel
 @Inject
@@ -40,7 +39,7 @@ internal constructor(
 
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
-      connections.listenForClients().collectLatest { clients ->
+      connections.listenForClients().collect { clients ->
         val list = clients.toList().sortedBy { it.key() }
         Timber.d("New client list: $list")
         state.connections.value = list
@@ -48,7 +47,7 @@ internal constructor(
     }
 
     scope.launch(context = Dispatchers.Default) {
-      blocked.listenForBlocked().collectLatest { clients ->
+      blocked.listenForBlocked().collect { clients ->
         Timber.d("New block list: $clients")
         state.blocked.value = clients
       }

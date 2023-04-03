@@ -44,7 +44,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -506,13 +505,13 @@ protected constructor(
   ) =
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
-        connectionInfoChannel.collectLatest { onChange(it) }
+        connectionInfoChannel.collect { onChange(it) }
       }
 
   override suspend fun onGroupInfoChanged(onChange: (WiDiNetworkStatus.GroupInfo) -> Unit) =
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
-        groupInfoChannel.collectLatest { onChange(it) }
+        groupInfoChannel.collect { onChange(it) }
       }
 
   protected abstract suspend fun onNetworkStarted(context: CoroutineContext)

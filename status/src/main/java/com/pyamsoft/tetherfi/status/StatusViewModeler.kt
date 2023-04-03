@@ -32,7 +32,6 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -126,7 +125,7 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Main) {
       // Always populate the latest port value
-      servicePreferences.listenForWakeLockChanges().collectLatest { keep ->
+      servicePreferences.listenForWakeLockChanges().collect { keep ->
         s.keepWakeLock.value = keep
 
         // Watch constantly but only update the initial load config if we haven't loaded yet
@@ -163,7 +162,7 @@ internal constructor(
       }
 
       scope.launch(context = Dispatchers.Main) {
-        serverPreferences.listenForNetworkBandChanges().collectLatest { band ->
+        serverPreferences.listenForNetworkBandChanges().collect { band ->
           s.band.value = band
 
           // Watch constantly but only update the initial load config if we haven't loaded yet

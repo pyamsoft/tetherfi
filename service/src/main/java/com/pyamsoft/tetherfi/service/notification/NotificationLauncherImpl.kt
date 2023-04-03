@@ -25,14 +25,13 @@ import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -103,7 +102,7 @@ internal constructor(
 
           // Listen for client updates
           launch(context = Dispatchers.Default) {
-            seenClients.listenForClients().collectLatest {
+            seenClients.listenForClients().collect {
               clientCount = it.size
               updateNotification()
             }
@@ -111,7 +110,7 @@ internal constructor(
 
           // Listen for block updates
           launch(context = Dispatchers.Default) {
-            blockedClients.listenForBlocked().collectLatest {
+            blockedClients.listenForBlocked().collect {
               blockCount = it.size
               updateNotification()
             }

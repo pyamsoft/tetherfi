@@ -27,7 +27,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -82,7 +81,7 @@ internal constructor(
 
     // Port is its own thing, not part of group info
     scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPortChanges().collectLatest { s.port.value = it }
+      serverPreferences.listenForPortChanges().collect { s.port.value = it }
     }
 
     // But then once we are done editing and we start getting events from the receiver, take them
