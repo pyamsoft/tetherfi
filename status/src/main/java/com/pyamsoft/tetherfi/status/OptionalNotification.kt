@@ -23,8 +23,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
@@ -45,7 +45,7 @@ internal fun LazyListScope.renderNotificationSettings(
   item {
     val hasPermission by state.hasNotificationPermission.collectAsState()
 
-    MaterialCheckable(
+    CheckableCard(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
         isEditable = !hasPermission,
         condition = hasPermission,

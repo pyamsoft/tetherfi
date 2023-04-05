@@ -29,11 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
-import com.pyamsoft.pydroid.ui.widget.rememberMaterialCheckableHeightMatcherGenerator
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
+import com.pyamsoft.tetherfi.ui.checkable.rememberHeightMatcherGenerator
 
 @Composable
 internal fun NetworkBands(
@@ -55,7 +55,7 @@ internal fun NetworkBands(
     if (canUseCustomConfig) {
       val bands = remember { ServerNetworkBand.values() }
       val bandIterator = remember(bands) { bands.withIndex() }
-      val generator = rememberMaterialCheckableHeightMatcherGenerator<ServerNetworkBand>()
+      val generator = rememberHeightMatcherGenerator<ServerNetworkBand>()
 
       // Then the buttons
       Row {
@@ -63,7 +63,7 @@ internal fun NetworkBands(
           val isSelected = remember(b, band) { b == band }
           val heightMatcher = generator.generateFor(b)
 
-          MaterialCheckable(
+          CheckableCard(
               modifier =
                   Modifier.weight(1F)
                       .then(heightMatcher.onSizeChangedModifier)

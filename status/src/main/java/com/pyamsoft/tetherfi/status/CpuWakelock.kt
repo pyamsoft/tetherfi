@@ -18,7 +18,7 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.pyamsoft.pydroid.ui.widget.MaterialCheckable
+import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
 @Composable
 internal fun CpuWakelock(
@@ -28,7 +28,7 @@ internal fun CpuWakelock(
     keepWakeLock: Boolean,
     onToggleKeepWakeLock: () -> Unit,
 ) {
-  MaterialCheckable(
+  CheckableCard(
       modifier = modifier,
       isEditable = isEditable,
       condition = keepWakeLock,
