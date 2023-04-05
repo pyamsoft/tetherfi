@@ -1,8 +1,9 @@
 package com.pyamsoft.tetherfi.service.lock
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.os.PowerManager
+import android.net.wifi.WifiManager
+import android.net.wifi.WifiManager.WifiLock
+import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
@@ -17,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-internal class WakeLocker
+internal class WiFiLocker
 @Inject
 internal constructor(
     enforcer: ThreadEnforcer,
@@ -31,19 +32,18 @@ internal constructor(
   private val lock by lazy {
     enforcer.assertOffMainThread()
 
-    val powerManager = context.getSystemService<PowerManager>().requireNotNull()
-    return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
+    val wifiManager = context.getSystemService<WifiManager>().requireNotNull()
+    return@lazy wifiManager.createLock(tag)
   }
 
   // Double check because we are also wrapped in a mutex
   private var wakeAcquired = AtomicBoolean(false)
 
-  @SuppressLint("WakelockTimeout")
   override suspend fun acquireLock() =
       mutex.withLock {
         if (!wakeAcquired.getAndSet(true)) {
           Timber.d("####################################")
-          Timber.d("Acquire CPU wakelock: $tag")
+          Timber.d("Acquire WiFi wakelock: $tag")
           Timber.d("####################################")
           lock.acquire()
         }
@@ -53,14 +53,14 @@ internal constructor(
       mutex.withLock {
         if (wakeAcquired.getAndSet(false)) {
           Timber.d("####################################")
-          Timber.d("Release CPU wakelock: $tag")
+          Timber.d("Release WIFI wakelock: $tag")
           Timber.d("####################################")
           lock.release()
         }
       }
 
   override suspend fun isEnabled(): Boolean {
-    return preferences.listenForWakeLockChanges().first()
+    return preferences.listenForWiFiLockChanges().first()
   }
 
   companion object {
@@ -68,7 +68,17 @@ internal constructor(
     @JvmStatic
     @CheckResult
     private fun createTag(name: String): String {
-      return "${name}:PROXY_WAKE_LOCK"
+      return "${name}:PROXY_WIFI_LOCK"
+    }
+
+    @JvmStatic
+    @CheckResult
+    private fun WifiManager.createLock(tag: String): WifiLock {
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        this.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, tag)
+      } else {
+        @Suppress("DEPRECATION") this.createWifiLock(tag)
+      }
     }
   }
 }

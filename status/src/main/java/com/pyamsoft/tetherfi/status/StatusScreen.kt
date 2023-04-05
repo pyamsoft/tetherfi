@@ -106,21 +106,36 @@ fun StatusScreen(
     appName: String,
     state: StatusViewState,
     serverViewState: ServerViewState,
+
+    // Proxy
     onToggleProxy: () -> Unit,
+    onStatusUpdated: (RunningStatus) -> Unit,
+
+    // Network
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onPortChanged: (String) -> Unit,
-    onDismissPermissionExplanation: () -> Unit,
-    onOpenBatterySettings: () -> Unit,
-    onOpenPermissionSettings: () -> Unit,
-    onRequestPermissions: () -> Unit,
-    onToggleKeepWakeLock: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onPortChanged: (String) -> Unit,
+
+    // Battery Optimization
+    onOpenBatterySettings: () -> Unit,
+
+    // Location Permission
+    onOpenPermissionSettings: () -> Unit,
+    onRequestPermissions: () -> Unit,
+    onDismissPermissionExplanation: () -> Unit,
+
+    // Notification
     onRequestNotificationPermission: () -> Unit,
-    onStatusUpdated: (RunningStatus) -> Unit,
+
+    // Status buttons
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Wake lock
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
   val proxyStatus by state.proxyStatus.collectAsState()
@@ -265,12 +280,13 @@ fun StatusScreen(
               onPasswordChanged = onPasswordChanged,
               onPortChanged = onPortChanged,
               onOpenBatterySettings = onOpenBatterySettings,
-              onToggleKeepWakeLock = onToggleKeepWakeLock,
               onSelectBand = onSelectBand,
               onRequestNotificationPermission = onRequestNotificationPermission,
               onTogglePasswordVisibility = onTogglePasswordVisibility,
               onShowQRCode = onShowQRCode,
               onRefreshConnection = onRefreshConnection,
+              onToggleKeepWakeLock = onToggleKeepWakeLock,
+              onToggleKeepWifiLock = onToggleKeepWifiLock,
           )
         }
       }
@@ -331,18 +347,29 @@ private fun LazyListScope.renderLoadedContent(
     state: StatusViewState,
     serverViewState: ServerViewState,
     isEditable: Boolean,
+
+    // Network
     wiDiStatus: RunningStatus,
-    showNotificationSettings: Boolean,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+
+    // Battery
     onOpenBatterySettings: () -> Unit,
-    onToggleKeepWakeLock: () -> Unit,
+
+    // Notification
+    showNotificationSettings: Boolean,
     onRequestNotificationPermission: () -> Unit,
-    onTogglePasswordVisibility: () -> Unit,
+
+    // Status button
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Wakelocks
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -374,8 +401,9 @@ private fun LazyListScope.renderLoadedContent(
       isEditable = isEditable,
       appName = appName,
       state = state,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
       onDisableBatteryOptimizations = onOpenBatterySettings,
+      onToggleKeepWakeLock = onToggleKeepWakeLock,
+      onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
 
   item {
@@ -786,15 +814,6 @@ private fun TileSection(
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
-  val isFullError =
-      remember(
-          connection,
-          group,
-      ) {
-        connection is WiDiNetworkStatus.ConnectionInfo.Error &&
-            group is WiDiNetworkStatus.GroupInfo.Error
-      }
-
   val isQREnabled =
       remember(
           connection,
@@ -987,8 +1006,13 @@ private fun LazyListScope.renderBatteryAndPerformance(
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,
-    onToggleKeepWakeLock: () -> Unit,
+
+    // Battery optimization
     onDisableBatteryOptimizations: () -> Unit,
+
+    // Wake lock
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
 ) {
   item {
     Label(
@@ -1002,17 +1026,16 @@ private fun LazyListScope.renderBatteryAndPerformance(
   }
 
   item {
-    val keepWakeLock by state.keepWakeLock.collectAsState()
-
-    CpuWakelock(
+    Wakelocks(
         modifier =
             itemModifier
                 .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
-        keepWakeLock = keepWakeLock,
+        state = state,
         onToggleKeepWakeLock = onToggleKeepWakeLock,
+        onToggleKeepWifiLock = onToggleKeepWifiLock,
     )
   }
 
@@ -1119,6 +1142,7 @@ private fun PreviewStatusScreen(
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onRefreshConnection = {},
+      onToggleKeepWifiLock = {},
   )
 }
 

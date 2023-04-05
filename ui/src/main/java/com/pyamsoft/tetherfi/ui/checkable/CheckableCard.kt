@@ -35,7 +35,7 @@ import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 
 @Composable
 @CheckResult
-internal fun rememberCheckableColor(
+fun rememberCheckableColor(
     condition: Boolean,
     selectedColor: Color,
 ): State<Color> {
@@ -102,7 +102,7 @@ private fun CheckableCard(
     onClick: () -> Unit,
 ) {
   val iconColor = rememberCheckableIconColor(condition)
-  val alphas = rememberCheckableAlpha(isEditable, condition)
+  val alphas = rememberCheckableAlpha(isEditable)
   val color by rememberCheckableColor(condition, selectedColor)
 
   val checkIcon =

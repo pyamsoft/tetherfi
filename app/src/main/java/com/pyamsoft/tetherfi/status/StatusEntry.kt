@@ -231,6 +231,11 @@ fun StatusEntry(
             scope = scope,
         )
       },
+      onToggleKeepWifiLock = {
+        viewModel.handleToggleProxyWifilock(
+            scope = scope,
+        )
+      },
       onSelectBand = {
         viewModel.handleChangeBand(
             scope = scope,

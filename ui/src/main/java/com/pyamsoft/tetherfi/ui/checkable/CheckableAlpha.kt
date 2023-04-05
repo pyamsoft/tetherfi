@@ -13,30 +13,19 @@ internal constructor(
 
 @Composable
 @CheckResult
-internal fun rememberCheckableAlpha(
-    isEditable: Boolean,
-    condition: Boolean
-): CheckableCardAlpha {
+internal fun rememberCheckableAlpha(isEditable: Boolean): CheckableCardAlpha {
   val highAlpha = ContentAlpha.high
   val mediumAlpha = ContentAlpha.medium
   val disabledAlpha = ContentAlpha.disabled
 
   return remember(
       isEditable,
-      condition,
       highAlpha,
       mediumAlpha,
       disabledAlpha,
   ) {
-    val primary =
-        if (isEditable) {
-          if (condition) highAlpha else mediumAlpha
-        } else disabledAlpha
-    val secondary =
-        if (isEditable) {
-          // High alpha when selected
-          if (condition) highAlpha else disabledAlpha
-        } else disabledAlpha
+    val primary = if (isEditable) highAlpha else disabledAlpha
+    val secondary = if (isEditable) mediumAlpha else disabledAlpha
 
     return@remember CheckableCardAlpha(primary, secondary)
   }

@@ -29,13 +29,14 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -52,15 +53,21 @@ internal constructor(
 ) : AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
-      var port: Boolean,
-      var wakelock: Boolean,
       var ssid: Boolean,
       var password: Boolean,
+      var port: Boolean,
       var band: Boolean,
+      var wakelock: Boolean,
+      var wifilock: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.port && config.wakelock && config.ssid && config.password && config.band) {
+    if (config.port &&
+        config.wifilock &&
+        config.wakelock &&
+        config.ssid &&
+        config.password &&
+        config.band) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
@@ -113,24 +120,38 @@ internal constructor(
     // Make this load config that we will update as things load in
     val config =
         LoadConfig(
-            port = false,
-            wakelock = false,
             ssid = false,
             password = false,
+            port = false,
             band = false,
+            wakelock = false,
+            wifilock = false,
         )
 
     // Start loading
     s.loadingState.value = StatusViewState.LoadingState.LOADING
 
     scope.launch(context = Dispatchers.Main) {
-      // Always populate the latest port value
+      // Always populate the latest lock value
       servicePreferences.listenForWakeLockChanges().collect { keep ->
         s.keepWakeLock.value = keep
 
         // Watch constantly but only update the initial load config if we haven't loaded yet
         if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
           config.wakelock = true
+          markPreferencesLoaded(config)
+        }
+      }
+    }
+
+    scope.launch(context = Dispatchers.Main) {
+      // Always populate the latest lock value
+      servicePreferences.listenForWiFiLockChanges().collect { keep ->
+        s.keepWifiLock.value = keep
+
+        // Watch constantly but only update the initial load config if we haven't loaded yet
+        if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+          config.wifilock = true
           markPreferencesLoaded(config)
         }
       }
@@ -260,11 +281,13 @@ internal constructor(
   }
 
   fun handleToggleProxyWakelock(scope: CoroutineScope) {
-    val s = state
-    s.keepWakeLock.update { !it }
-    scope.launch(context = Dispatchers.Main) {
-      servicePreferences.setWakeLock(s.keepWakeLock.value)
-    }
+    val newVal = state.keepWakeLock.updateAndGet { !it }
+    scope.launch(context = Dispatchers.Main) { servicePreferences.setWakeLock(newVal) }
+  }
+
+  fun handleToggleProxyWifilock(scope: CoroutineScope) {
+    val newVal = state.keepWifiLock.updateAndGet { !it }
+    scope.launch(context = Dispatchers.Main) { servicePreferences.setWiFiLock(newVal) }
   }
 
   fun handleChangeBand(scope: CoroutineScope, band: ServerNetworkBand) {

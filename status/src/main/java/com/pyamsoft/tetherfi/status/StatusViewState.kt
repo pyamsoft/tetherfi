@@ -22,9 +22,9 @@ import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @Stable
 interface StatusViewState : UiViewState {
@@ -36,6 +36,8 @@ interface StatusViewState : UiViewState {
   // For editing, at proxy runtime we pull from ServerViewState
   val ssid: StateFlow<String>
   val password: StateFlow<String>
+  val isPasswordVisible: StateFlow<Boolean>
+
   val port: StateFlow<Int>
   val band: StateFlow<ServerNetworkBand?>
 
@@ -45,8 +47,8 @@ interface StatusViewState : UiViewState {
   val hasNotificationPermission: StateFlow<Boolean>
 
   // Extras
-  val isPasswordVisible: StateFlow<Boolean>
   val keepWakeLock: StateFlow<Boolean>
+  val keepWifiLock: StateFlow<Boolean>
   val isBatteryOptimizationsIgnored: StateFlow<Boolean>
 
   @Stable
@@ -68,6 +70,8 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
 
   override val ssid = MutableStateFlow("")
   override val password = MutableStateFlow("")
+  override val isPasswordVisible = MutableStateFlow(false)
+
   override val port = MutableStateFlow(0)
   override val band = MutableStateFlow<ServerNetworkBand?>(null)
 
@@ -75,7 +79,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val explainPermissions = MutableStateFlow(false)
   override val hasNotificationPermission = MutableStateFlow(false)
 
-  override val isPasswordVisible = MutableStateFlow(false)
   override val keepWakeLock = MutableStateFlow(false)
+  override val keepWifiLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
 }
