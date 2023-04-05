@@ -47,6 +47,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.IconToggleButton
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
@@ -551,19 +552,10 @@ private fun LazyListScope.renderNetworkInformation(
             }
           },
           trailingIcon = {
-            if (isValid) {
-              Icon(
-                  imageVector = Icons.Filled.Check,
-                  tint = MaterialTheme.colors.success,
-                  contentDescription = "Name is Valid",
-              )
-            } else {
-              Icon(
-                  imageVector = Icons.Filled.Close,
-                  tint = MaterialTheme.colors.error,
-                  contentDescription = "Name is Invalid",
-              )
-            }
+            ValidIcon(
+                isValid = isValid,
+                what = "Name",
+            )
           },
       )
     }
@@ -608,8 +600,9 @@ private fun LazyListScope.renderNetworkInformation(
                 modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-              IconButton(
-                  onClick = onTogglePasswordVisibility,
+              IconToggleButton(
+                  checked = isPasswordVisible,
+                  onCheckedChange = { onTogglePasswordVisibility() },
               ) {
                 Icon(
                     imageVector =
@@ -620,19 +613,10 @@ private fun LazyListScope.renderNetworkInformation(
                 )
               }
 
-              if (isValid) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    tint = MaterialTheme.colors.success,
-                    contentDescription = "Password is Valid",
-                )
-              } else {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    tint = MaterialTheme.colors.error,
-                    contentDescription = "Password is Invalid",
-                )
-              }
+              ValidIcon(
+                  isValid = isValid,
+                  what = "Password",
+              )
             }
           },
       )
@@ -656,19 +640,10 @@ private fun LazyListScope.renderNetworkInformation(
                   keyboardType = KeyboardType.Number,
               ),
           trailingIcon = {
-            if (isValid) {
-              Icon(
-                  imageVector = Icons.Filled.Check,
-                  tint = MaterialTheme.colors.success,
-                  contentDescription = "Port is Valid",
-              )
-            } else {
-              Icon(
-                  imageVector = Icons.Filled.Close,
-                  tint = MaterialTheme.colors.error,
-                  contentDescription = "Port is Invalid",
-              )
-            }
+            ValidIcon(
+                isValid = isValid,
+                what = "Port",
+            )
           },
       )
     }
@@ -721,8 +696,9 @@ private fun LazyListScope.renderNetworkInformation(
         )
 
         if (group is WiDiNetworkStatus.GroupInfo.Connected) {
-          IconButton(
-              onClick = onTogglePasswordVisibility,
+          IconToggleButton(
+              checked = isPasswordVisible,
+              onCheckedChange = { onTogglePasswordVisibility() },
           ) {
             Icon(
                 imageVector =
@@ -804,6 +780,30 @@ private fun LazyListScope.renderNetworkInformation(
         onSelectBand = onSelectBand,
     )
   }
+}
+
+@Composable
+private fun ValidIcon(
+    modifier: Modifier = Modifier,
+    isValid: Boolean,
+    what: String,
+) {
+  val icon = remember(isValid) { if (isValid) Icons.Filled.Check else Icons.Filled.Close }
+  val description =
+      remember(
+          isValid,
+          what,
+      ) {
+        "$what is ${if (isValid) "Valid" else "Invalid"}"
+      }
+  val tint = if (isValid) MaterialTheme.colors.success else MaterialTheme.colors.error
+
+  Icon(
+      modifier = modifier,
+      imageVector = icon,
+      tint = tint,
+      contentDescription = description,
+  )
 }
 
 @Composable
