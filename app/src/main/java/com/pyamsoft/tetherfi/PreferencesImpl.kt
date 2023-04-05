@@ -57,6 +57,12 @@ internal constructor(
   override suspend fun setWakeLock(keep: Boolean) =
       withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WAKE_LOCK, keep) } }
 
+  override suspend fun listenForWiFiLockChanges(): Flow<Boolean> =
+      withContext(context = Dispatchers.IO) { preferences.booleanFlow(WIFI_LOCK, true) }
+
+  override suspend fun setWiFiLock(keep: Boolean) =
+      withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WIFI_LOCK, keep) } }
+
   override suspend fun listenForSsidChanges(): Flow<String> =
       withContext(context = Dispatchers.IO) { preferences.stringFlow(SSID, ServerDefaults.SSID) }
 
@@ -106,6 +112,7 @@ internal constructor(
     private const val NETWORK_BAND = "key_network_band_1"
 
     private const val WAKE_LOCK = "key_wake_lock_1"
+    private const val WIFI_LOCK = "key_wifi_lock_1"
 
     private const val ALL_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

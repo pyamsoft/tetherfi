@@ -16,21 +16,10 @@
 
 package com.pyamsoft.tetherfi.service.lock
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.os.PowerManager
-import androidx.annotation.CheckResult
-import androidx.core.content.getSystemService
-import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.tetherfi.service.ServicePreferences
+import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,66 +27,12 @@ import javax.inject.Singleton
 internal class LockerImpl
 @Inject
 internal constructor(
-    enforcer: ThreadEnforcer,
-    context: Context,
-    private val preferences: ServicePreferences,
+    // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
+    @ServiceInternalApi private val lockers: MutableSet<Locker>,
 ) : Locker {
-
-  private val wakeLockTag = getWakeLockTag(context.packageName)
-  private val mutex = Mutex()
-
-  private val wakeLock by lazy {
-    enforcer.assertOffMainThread()
-
-    val powerManager = context.getSystemService<PowerManager>().requireNotNull()
-    return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, wakeLockTag)
-  }
-
-  private var acquired = false
-
-  @SuppressLint("WakelockTimeout")
-  private suspend fun acquireWakelock() {
-    mutex.withLock {
-      if (!acquired) {
-        Timber.d("####################################")
-        Timber.d("Acquire CPU wakelock: $wakeLockTag")
-        Timber.d("####################################")
-        wakeLock.acquire()
-        acquired = true
-      }
-    }
-  }
-
-  private suspend fun releaseWakelock() {
-    mutex.withLock {
-      if (acquired) {
-        Timber.d("####################################")
-        Timber.d("Release CPU wakelock: $wakeLockTag")
-        Timber.d("####################################")
-        wakeLock.release()
-        acquired = false
-      }
-    }
-  }
-
   override suspend fun acquire() =
-      withContext(context = Dispatchers.IO + NonCancellable) {
-        releaseWakelock()
-
-        if (preferences.listenForWakeLockChanges().first()) {
-          acquireWakelock()
-        }
-      }
+      withContext(context = Dispatchers.IO + NonCancellable) { lockers.forEach { it.acquire() } }
 
   override suspend fun release() =
-      withContext(context = Dispatchers.IO + NonCancellable) { releaseWakelock() }
-
-  companion object {
-
-    @JvmStatic
-    @CheckResult
-    private fun getWakeLockTag(name: String): String {
-      return "${name}:PROXY_WAKE_LOCK"
-    }
-  }
+      withContext(context = Dispatchers.IO + NonCancellable) { lockers.forEach { it.release() } }
 }
