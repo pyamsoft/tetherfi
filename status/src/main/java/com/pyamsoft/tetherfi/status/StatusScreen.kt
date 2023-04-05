@@ -219,7 +219,7 @@ fun StatusScreen(
     )
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.padding(pv).fillMaxSize(),
     ) {
       renderPYDroidExtras()
 

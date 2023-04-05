@@ -33,6 +33,7 @@ import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
+import com.pyamsoft.pydroid.ui.util.fullScreenDialog
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -139,6 +140,7 @@ fun MainEntry(
   val isSettingsOpen by state.isSettingsOpen.collectAsState()
   if (isSettingsOpen) {
     SettingsDialog(
+        modifier = Modifier.fullScreenDialog(),
         appEnvironment = appEnvironment,
         onDismiss = { viewModel.handleCloseSettings() },
     )
