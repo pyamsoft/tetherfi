@@ -114,9 +114,12 @@ internal fun Wakelocks(
           modifier =
               Modifier.fillMaxWidth()
                   .padding(horizontal = MaterialTheme.keylines.content)
-                  .padding(bottom = MaterialTheme.keylines.content),
+                  .padding(bottom = MaterialTheme.keylines.content * 2),
           text =
-              "Wake Locks help keep your device performance up even when the screen is off and the system is in a low power mode. Your device may need one or both of these options enabled for good network performance. Some devices do not need these options.",
+              """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
+                  |
+                  |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
+                  .trimMargin(),
           style =
               MaterialTheme.typography.caption.copy(
                   color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
@@ -127,24 +130,24 @@ internal fun Wakelocks(
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
-          color = wakeLockColor,
-          checked = keepWakeLock,
-          title = "Keep CPU Awake",
+          color = wifiLockColor,
+          checked = keepWifiLock,
+          title = "Keep WiFi Awake",
           description =
-              "This may significantly improve $appName performance while the screen is off. You may notice increased Hotspot battery usage with this option enabled.",
-          onClick = onToggleKeepWakeLock,
+              "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
+          onClick = onToggleKeepWifiLock,
       )
 
       WakelockSwitch(
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
-          color = wifiLockColor,
-          checked = keepWifiLock,
-          title = "Keep WiFi Awake",
+          color = wakeLockColor,
+          checked = keepWakeLock,
+          title = "Keep CPU Awake",
           description =
-              "This may significantly improve $appName performance while the screen is off. You may notice increased Hotspot battery usage with this option enabled.",
-          onClick = onToggleKeepWifiLock,
+              "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
+          onClick = onToggleKeepWakeLock,
       )
     }
   }
