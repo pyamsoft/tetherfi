@@ -40,6 +40,8 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -69,11 +71,10 @@ private fun WatchTabSwipe(
       pagerState,
       allTabs,
   ) {
-    snapshotFlow { pagerState.currentPage }
-        .collect { index ->
-          val page = allTabs[index]
-          Timber.d("Page swiped: $page")
-        }
+    snapshotFlow { pagerState.targetPage }
+        .distinctUntilChanged()
+        .mapNotNull { allTabs.getOrNull(it) }
+        .collect { page -> Timber.d("Page swiped: $page") }
   }
 }
 
