@@ -25,46 +25,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
-import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
-import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
-import com.pyamsoft.tetherfi.status.PermissionRequests
-import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import javax.inject.Inject
-import javax.inject.Named
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 
-  @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
-  @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
-
-  @JvmField
-  @Inject
-  @Named("server")
-  internal var serverPermissionRequester: PermissionRequester? = null
-
-  @JvmField
-  @Inject
-  @Named("notification")
-  internal var notificationPermissionRequester: PermissionRequester? = null
-
-  private var serverRequester: PermissionRequester.Requester? = null
-  private var notificationRequester: PermissionRequester.Requester? = null
+  @JvmField @Inject internal var permissions: MainPermissions? = null
 
   init {
     doOnCreate {
@@ -75,65 +52,14 @@ class MainActivity : AppCompatActivity() {
                 override val applicationIcon = R.mipmap.ic_launcher
 
                 override val changelog = buildChangeLog {
-                  feature("View and block hotspot connections")
-                  change("Rework the UI for the Status page when the hotspot is running")
-                  change("Improve hotspot network performance")
+                  feature("Hold a CPU Lock and a WiFi Lock")
+                  feature("Proper monochrome icon support in newer versions of Android OS")
                 }
               },
       )
     }
 
-    doOnCreate { registerToSendPermissionResults() }
-
-    doOnCreate { registerToRespondToPermissionRequests() }
-  }
-
-  private fun registerToSendPermissionResults() {
-    serverRequester?.unregister()
-    notificationRequester?.unregister()
-
-    serverRequester =
-        serverPermissionRequester.requireNotNull().registerRequester(this) { granted ->
-          if (granted) {
-            Timber.d("Network permission granted, toggle proxy")
-
-            // Broadcast in the background
-            lifecycleScope.launch(context = Dispatchers.IO) {
-              permissionResponseBus.requireNotNull().send(PermissionResponse.ToggleProxy)
-            }
-          } else {
-            Timber.w("Network permission not granted")
-          }
-        }
-
-    notificationRequester =
-        notificationPermissionRequester.requireNotNull().registerRequester(this) { granted ->
-          if (granted) {
-            Timber.d("Notification permission granted")
-
-            // Broadcast in the background
-            lifecycleScope.launch(context = Dispatchers.IO) {
-              permissionResponseBus.requireNotNull().send(PermissionResponse.RefreshNotification)
-            }
-          } else {
-            Timber.w("Notification permission not granted")
-          }
-        }
-  }
-
-  private fun registerToRespondToPermissionRequests() {
-    lifecycleScope.launch(context = Dispatchers.IO) {
-      permissionRequestBus.requireNotNull().onEvent {
-        when (it) {
-          is PermissionRequests.Notification -> {
-            notificationRequester.requireNotNull().requestPermissions()
-          }
-          is PermissionRequests.Server -> {
-            serverRequester.requireNotNull().requestPermissions()
-          }
-        }
-      }
-    }
+    doOnCreate { permissions.requireNotNull().register(this) }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -183,15 +109,8 @@ class MainActivity : AppCompatActivity() {
   override fun onDestroy() {
     super.onDestroy()
 
-    notificationRequester?.unregister()
-    serverRequester?.unregister()
-
-    permissionRequestBus = null
-    permissionResponseBus = null
-    serverPermissionRequester = null
-    notificationPermissionRequester = null
-    serverRequester = null
-    notificationRequester = null
+    permissions?.unregister()
+    permissions = null
     viewModel = null
   }
 }
