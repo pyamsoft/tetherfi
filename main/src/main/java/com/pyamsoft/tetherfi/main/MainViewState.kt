@@ -19,9 +19,9 @@ package com.pyamsoft.tetherfi.main
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @Stable
 interface MainViewState : ServerViewState {

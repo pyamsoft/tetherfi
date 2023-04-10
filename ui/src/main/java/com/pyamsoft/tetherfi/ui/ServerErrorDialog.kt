@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import kotlinx.coroutines.delay
 
 typealias IconButtonContent =
@@ -52,43 +51,10 @@ typealias IconButtonContent =
     ) -> Unit
 
 @Composable
-fun GroupInfoErrorDialog(
-    modifier: Modifier = Modifier,
-    group: WiDiNetworkStatus.GroupInfo.Error,
+fun ServerErrorTile(
+    onShowError: () -> Unit,
     content: IconButtonContent,
 ) {
-  ServerErrorDialog(
-      modifier = modifier,
-      title = "Hotspot Initialization Error",
-      error = group.error,
-      content = content,
-  )
-}
-
-@Composable
-fun ConnectionInfoErrorDialog(
-    modifier: Modifier = Modifier,
-    connection: WiDiNetworkStatus.ConnectionInfo.Error,
-    content: IconButtonContent,
-) {
-  ServerErrorDialog(
-      modifier = modifier,
-      title = "Network Initialization Error",
-      error = connection.error,
-      content = content,
-  )
-}
-
-@Composable
-private fun ServerErrorDialog(
-    modifier: Modifier,
-    title: String,
-    error: Throwable,
-    content: IconButtonContent,
-) {
-  /** Show the Dialog */
-  val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
-
   /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
   val (showContent, setShowContent) = remember { mutableStateOf(false) }
   val handleShowContent by rememberUpdatedState { setShowContent(true) }
@@ -107,10 +73,10 @@ private fun ServerErrorDialog(
       visible = showContent,
   ) {
     content(
-        Modifier.clickable { setShowDialog(true) },
+        Modifier.clickable { onShowError() },
     ) {
       IconButton(
-          onClick = { setShowDialog(true) },
+          onClick = onShowError,
       ) {
         Icon(
             imageVector = Icons.Filled.Warning,
@@ -120,54 +86,58 @@ private fun ServerErrorDialog(
       }
     }
   }
+}
 
-  if (showDialog && showContent) {
-    val onDismiss by rememberUpdatedState { setShowDialog(false) }
-
-    Dialog(
-        properties = rememberDialogProperties(),
-        onDismissRequest = { onDismiss() },
+@Composable
+fun ServerErrorDialog(
+    modifier: Modifier = Modifier,
+    title: String,
+    error: Throwable,
+    onDismiss: () -> Unit,
+) {
+  Dialog(
+      properties = rememberDialogProperties(),
+      onDismissRequest = { onDismiss() },
+  ) {
+    Column(
+        modifier = modifier.padding(MaterialTheme.keylines.content),
     ) {
-      Column(
-          modifier = modifier.padding(MaterialTheme.keylines.content),
+      DialogToolbar(
+          modifier = Modifier.fillMaxWidth(),
+          onClose = { onDismiss() },
+          title = {
+            Text(
+                text = "Hotspot Error",
+            )
+          },
+      )
+      Surface(
+          modifier = Modifier.fillMaxWidth().weight(1F),
+          shape =
+              MaterialTheme.shapes.medium.copy(
+                  topStart = ZeroCornerSize,
+                  topEnd = ZeroCornerSize,
+              ),
       ) {
-        DialogToolbar(
-            modifier = Modifier.fillMaxWidth(),
-            onClose = { onDismiss() },
-            title = {
-              Text(
-                  text = "Hotspot Error",
-              )
-            },
-        )
-        Surface(
-            modifier = Modifier.fillMaxWidth().weight(1F),
-            shape =
-                MaterialTheme.shapes.medium.copy(
-                    topStart = ZeroCornerSize,
-                    topEnd = ZeroCornerSize,
-                ),
-        ) {
-          LazyColumn {
-            item {
-              Text(
-                  modifier = Modifier.padding(MaterialTheme.keylines.content),
-                  text = title,
-                  style = MaterialTheme.typography.h6,
-              )
-            }
+        LazyColumn {
+          item {
+            Text(
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = title,
+                style = MaterialTheme.typography.h6,
+            )
+          }
 
-            item {
-              val trace = remember(error) { error.stackTraceToString() }
-              Text(
-                  modifier = Modifier.padding(MaterialTheme.keylines.content),
-                  text = trace,
-                  style =
-                      MaterialTheme.typography.caption.copy(
-                          fontFamily = FontFamily.Monospace,
-                      ),
-              )
-            }
+          item {
+            val trace = remember(error) { error.stackTraceToString() }
+            Text(
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = trace,
+                style =
+                    MaterialTheme.typography.caption.copy(
+                        fontFamily = FontFamily.Monospace,
+                    ),
+            )
           }
         }
       }

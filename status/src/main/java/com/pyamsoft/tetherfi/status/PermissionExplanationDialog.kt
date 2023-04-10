@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,8 +30,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,12 +42,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 
 @Composable
 internal fun PermissionExplanationDialog(
     modifier: Modifier = Modifier,
-    state: StatusViewState,
     appName: String,
     onDismissPermissionExplanation: () -> Unit,
     onOpenPermissionSettings: () -> Unit,
@@ -65,95 +62,90 @@ internal fun PermissionExplanationDialog(
     }
   }
 
-  val explainPermissions by state.explainPermissions.collectAsState()
+  AlertDialog(
+      modifier = modifier.padding(MaterialTheme.keylines.content),
+      properties = rememberDialogProperties(),
+      onDismissRequest = onDismissPermissionExplanation,
+      title = {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              text = "Permission Request",
+              style = MaterialTheme.typography.h5,
+          )
+        }
+      },
+      text = {
+        Column {
+          Text(
+              text = "$appName needs $neededPermission permission to create a Wi-Fi Group",
+              style = MaterialTheme.typography.body1,
+          )
 
-  AnimatedVisibility(
-      visible = explainPermissions,
-  ) {
-    AlertDialog(
-        modifier = modifier.padding(MaterialTheme.keylines.content),
-        onDismissRequest = onDismissPermissionExplanation,
-        title = {
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
+          Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+              text =
+                  "$appName will not use these permissions for anything else but Wi-Fi Group creation.",
+              style = MaterialTheme.typography.body1,
+          )
+
+          ViewPrivacyPolicy(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          )
+        }
+      },
+      buttons = {
+        Row(
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.baseline),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          TextButton(
+              onClick = onOpenPermissionSettings,
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor =
+                          MaterialTheme.colors.onSurface.copy(
+                              alpha = ContentAlpha.medium,
+                          ),
+                  ),
           ) {
             Text(
-                text = "Permission Request",
-                style = MaterialTheme.typography.h5,
+                text = "Open Settings",
             )
           }
-        },
-        text = {
-          Column {
-            Text(
-                text = "$appName needs $neededPermission permission to create a Wi-Fi Group",
-                style = MaterialTheme.typography.body1,
-            )
 
-            Text(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                text =
-                    "$appName will not use these permissions for anything else but Wi-Fi Group creation.",
-                style = MaterialTheme.typography.body1,
-            )
+          Spacer(
+              modifier = Modifier.weight(1F),
+          )
 
-            ViewPrivacyPolicy(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-            )
-          }
-        },
-        buttons = {
-          Row(
-              modifier =
-                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
-                      .padding(bottom = MaterialTheme.keylines.baseline),
-              verticalAlignment = Alignment.CenterVertically,
+          TextButton(
+              onClick = onDismissPermissionExplanation,
+              colors =
+                  ButtonDefaults.textButtonColors(
+                      contentColor =
+                          MaterialTheme.colors.error.copy(
+                              alpha = ContentAlpha.medium,
+                          ),
+                  ),
           ) {
-            TextButton(
-                onClick = onOpenPermissionSettings,
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor =
-                            MaterialTheme.colors.onSurface.copy(
-                                alpha = ContentAlpha.medium,
-                            ),
-                    ),
-            ) {
-              Text(
-                  text = "Open Settings",
-              )
-            }
-
-            Spacer(
-                modifier = Modifier.weight(1F),
+            Text(
+                text = "Deny",
             )
-
-            TextButton(
-                onClick = onDismissPermissionExplanation,
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor =
-                            MaterialTheme.colors.error.copy(
-                                alpha = ContentAlpha.medium,
-                            ),
-                    ),
-            ) {
-              Text(
-                  text = "Deny",
-              )
-            }
-
-            TextButton(
-                onClick = onRequestPermissions,
-            ) {
-              Text(
-                  text = "Grant",
-              )
-            }
           }
-        },
-    )
-  }
+
+          TextButton(
+              onClick = onRequestPermissions,
+          ) {
+            Text(
+                text = "Grant",
+            )
+          }
+        }
+      },
+  )
 }
 
 private const val linkText = "Privacy Policy"

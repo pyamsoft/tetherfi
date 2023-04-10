@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status
 
+import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -70,6 +71,31 @@ internal constructor(
         config.band) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
+  }
+
+  override fun registerSaveState(
+      registry: SaveableStateRegistry
+  ): List<SaveableStateRegistry.Entry> =
+      mutableListOf<SaveableStateRegistry.Entry>().apply {
+        registry
+            .registerProvider(KEY_SHOW_HOTSPOT_ERROR) { state.isShowingHotspotError.value }
+            .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_NETWORK_ERROR) { state.isShowingNetworkError.value }
+            .also { add(it) }
+      }
+
+  override fun consumeRestoredState(registry: SaveableStateRegistry) {
+    registry
+        .consumeRestored(KEY_SHOW_NETWORK_ERROR)
+        ?.let { it as Boolean }
+        ?.also { state.isShowingNetworkError.value = it }
+
+    registry
+        .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)
+        ?.let { it as Boolean }
+        ?.also { state.isShowingHotspotError.value = it }
   }
 
   fun handleToggleProxy() {
@@ -297,5 +323,26 @@ internal constructor(
 
   fun handleTogglePasswordVisibility() {
     state.isPasswordVisible.update { !it }
+  }
+
+  fun handleOpenHotspotError() {
+    state.isShowingHotspotError.value = true
+  }
+
+  fun handleCloseHotspotError() {
+    state.isShowingHotspotError.value = false
+  }
+
+  fun handleOpenNetworkError() {
+    state.isShowingNetworkError.value = true
+  }
+
+  fun handleCloseNetworkError() {
+    state.isShowingNetworkError.value = false
+  }
+
+  companion object {
+    private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
+    private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
   }
 }

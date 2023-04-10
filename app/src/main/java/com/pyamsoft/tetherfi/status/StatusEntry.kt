@@ -250,6 +250,10 @@ fun StatusEntry(
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
+      onShowNetworkError = { viewModel.handleOpenNetworkError() },
+      onHideNetworkError = { viewModel.handleCloseNetworkError() },
+      onShowHotspotError = { viewModel.handleOpenHotspotError() },
+      onHideHotspotError = { viewModel.handleCloseHotspotError() },
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
   )

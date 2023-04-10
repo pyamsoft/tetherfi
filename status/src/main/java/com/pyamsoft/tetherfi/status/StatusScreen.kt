@@ -79,14 +79,15 @@ import androidx.core.text.trimmedLength
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.util.fullScreenDialog
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.ui.ConnectionInfoErrorDialog
-import com.pyamsoft.tetherfi.ui.GroupInfoErrorDialog
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.ServerErrorDialog
+import com.pyamsoft.tetherfi.ui.ServerErrorTile
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
@@ -137,6 +138,12 @@ fun StatusScreen(
     // Wake lock
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
+
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onHideNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
+    onHideHotspotError: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsState()
   val proxyStatus by state.proxyStatus.collectAsState()
@@ -210,15 +217,6 @@ fun StatusScreen(
   Scaffold(
       modifier = modifier,
   ) { pv ->
-    PermissionExplanationDialog(
-        modifier = Modifier.padding(pv),
-        state = state,
-        appName = appName,
-        onDismissPermissionExplanation = onDismissPermissionExplanation,
-        onOpenPermissionSettings = onOpenPermissionSettings,
-        onRequestPermissions = onRequestPermissions,
-    )
-
     LazyColumn(
         modifier = Modifier.padding(pv).fillMaxSize(),
     ) {
@@ -288,9 +286,84 @@ fun StatusScreen(
               onRefreshConnection = onRefreshConnection,
               onToggleKeepWakeLock = onToggleKeepWakeLock,
               onToggleKeepWifiLock = onToggleKeepWifiLock,
+              onShowHotspotError = onShowHotspotError,
+              onShowNetworkError = onShowNetworkError,
           )
         }
       }
+    }
+
+    Dialogs(
+        state = state,
+        serverViewState = serverViewState,
+        appName = appName,
+        onDismissPermissionExplanation = onDismissPermissionExplanation,
+        onOpenPermissionSettings = onOpenPermissionSettings,
+        onRequestPermissions = onRequestPermissions,
+        onHideNetworkError = onHideNetworkError,
+        onHideHotspotError = onHideHotspotError,
+    )
+  }
+}
+
+@Composable
+private fun Dialogs(
+    state: StatusViewState,
+    serverViewState: ServerViewState,
+    appName: String,
+
+    // Location Permission
+    onOpenPermissionSettings: () -> Unit,
+    onRequestPermissions: () -> Unit,
+    onDismissPermissionExplanation: () -> Unit,
+
+    // Errors
+    onHideNetworkError: () -> Unit,
+    onHideHotspotError: () -> Unit,
+) {
+  val explainPermissions by state.explainPermissions.collectAsState()
+
+  val isShowingHotspotError by state.isShowingHotspotError.collectAsState()
+  val group by serverViewState.group.collectAsState()
+
+  val isShowingNetworkError by state.isShowingNetworkError.collectAsState()
+  val connection by serverViewState.connection.collectAsState()
+
+  AnimatedVisibility(
+      visible = explainPermissions,
+  ) {
+    PermissionExplanationDialog(
+        modifier = Modifier.fullScreenDialog(),
+        appName = appName,
+        onDismissPermissionExplanation = onDismissPermissionExplanation,
+        onOpenPermissionSettings = onOpenPermissionSettings,
+        onRequestPermissions = onRequestPermissions,
+    )
+  }
+
+  (group as? WiDiNetworkStatus.GroupInfo.Error)?.also { err ->
+    AnimatedVisibility(
+        visible = isShowingHotspotError,
+    ) {
+      ServerErrorDialog(
+          modifier = Modifier.fullScreenDialog(),
+          title = "Hotspot Initialization Error",
+          error = err.error,
+          onDismiss = onHideHotspotError,
+      )
+    }
+  }
+
+  (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also { err ->
+    AnimatedVisibility(
+        visible = isShowingNetworkError,
+    ) {
+      ServerErrorDialog(
+          modifier = Modifier.fullScreenDialog(),
+          title = "Network Initialization Error",
+          error = err.error,
+          onDismiss = onHideNetworkError,
+      )
     }
   }
 }
@@ -371,6 +444,10 @@ private fun LazyListScope.renderLoadedContent(
     // Wakelocks
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
+
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
@@ -386,6 +463,8 @@ private fun LazyListScope.renderLoadedContent(
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
+      onShowNetworkError = onShowNetworkError,
+      onShowHotspotError = onShowHotspotError,
   )
 
   item {
@@ -444,16 +523,26 @@ private fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
     serverViewState: ServerViewState,
-    isEditable: Boolean,
     appName: String,
+
+    // Running
+    isEditable: Boolean,
     wiDiStatus: RunningStatus,
-    onTogglePasswordVisibility: () -> Unit,
+
+    // Network config
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
+
+    // Connections
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
 ) {
   item {
     val showErrorHintMessage = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
@@ -763,6 +852,8 @@ private fun LazyListScope.renderNetworkInformation(
           connection = connection,
           onShowQRCode = onShowQRCode,
           onRefreshConnection = onRefreshConnection,
+          onShowHotspotError = onShowHotspotError,
+          onShowNetworkError = onShowNetworkError,
       )
     }
   }
@@ -811,8 +902,14 @@ private fun TileSection(
     modifier: Modifier = Modifier,
     group: WiDiNetworkStatus.GroupInfo,
     connection: WiDiNetworkStatus.ConnectionInfo,
+
+    // Connections
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
 ) {
   val isQREnabled =
       remember(
@@ -905,13 +1002,13 @@ private fun TileSection(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also { c ->
+      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,
         ) {
-          ConnectionInfoErrorDialog(
-              connection = c,
+          ServerErrorTile(
+              onShowError = onShowNetworkError,
           ) { modifier, iconButton ->
             Row(
                 modifier = Modifier.fillMaxWidth().then(modifier),
@@ -943,13 +1040,13 @@ private fun TileSection(
         )
       }
 
-      (group as? WiDiNetworkStatus.GroupInfo.Error)?.also { g ->
+      (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,
         ) {
-          GroupInfoErrorDialog(
-              group = g,
+          ServerErrorTile(
+              onShowError = onShowHotspotError,
           ) { modifier, iconButton ->
             Row(
                 modifier = Modifier.fillMaxWidth().then(modifier),
@@ -1143,6 +1240,10 @@ private fun PreviewStatusScreen(
       onShowQRCode = {},
       onRefreshConnection = {},
       onToggleKeepWifiLock = {},
+      onHideHotspotError = {},
+      onShowHotspotError = {},
+      onShowNetworkError = {},
+      onHideNetworkError = {},
   )
 }
 

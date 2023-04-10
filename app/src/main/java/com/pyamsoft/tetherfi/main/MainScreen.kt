@@ -37,7 +37,11 @@ fun MainScreen(
     state: ServerViewState,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
+
+    // Settings
     onSettingsOpen: () -> Unit,
+
+    // Running status
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
 ) {
