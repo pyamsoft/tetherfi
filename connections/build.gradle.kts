@@ -14,41 +14,39 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.android.library")
-}
+plugins { id("com.android.library") }
 
 android {
-    namespace = "com.pyamsoft.tetherfi.connections"
+  namespace = "com.pyamsoft.tetherfi.connections"
 
-    compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = rootProject.extra["compileSdk"] as Int
 
-    defaultConfig {
-        minSdk = rootProject.extra["minSdk"] as Int
+  defaultConfig {
+    minSdk = rootProject.extra["minSdk"] as Int
 
-        resourceConfigurations += setOf("en")
-    }
+    resourceConfigurations += setOf("en")
+  }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+  }
 
-    kotlinOptions { jvmTarget = "17" }
+  kotlinOptions { jvmTarget = "17" }
 
-    buildFeatures {
-        buildConfig = false
-        compose = true
-    }
+  buildFeatures {
+    buildConfig = false
+    compose = true
+  }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "${rootProject.extra["compose_compiler_version"]}"
-    }
+  composeOptions {
+    kotlinCompilerExtensionVersion = "${rootProject.extra["compose_compiler_version"]}"
+  }
 }
 
 dependencies {
-    kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-    api(project(":server"))
-    api(project(":ui"))
+  api(project(":server"))
+  api(project(":ui"))
 }

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-plugins {
-  id("com.android.application")
-}
+plugins { id("com.android.application") }
 
 android {
   namespace = "com.pyamsoft.tetherfi"
@@ -30,7 +28,7 @@ android {
     versionName = "20230325-1"
 
     minSdk = rootProject.extra["minSdk"] as Int
-    targetSdk= rootProject.extra["targetSdk"] as Int
+    targetSdk = rootProject.extra["targetSdk"] as Int
 
     resourceConfigurations += setOf("en")
 
@@ -45,9 +43,7 @@ android {
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+  kotlinOptions { jvmTarget = "17" }
 
   signingConfigs {
     getByName("debug") {
@@ -69,13 +65,12 @@ android {
       signingConfig = signingConfigs.getByName("release")
       isMinifyEnabled = true
       isShrinkResources = true
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"),
-          "proguard-rules.pro")
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
     debug {
-      signingConfig =signingConfigs.getByName("debug")
-      applicationIdSuffix= ".dev"
+      signingConfig = signingConfigs.getByName("debug")
+      applicationIdSuffix = ".dev"
       versionNameSuffix = "-dev"
     }
   }
@@ -91,13 +86,14 @@ android {
 
   // Fixes this error message
   // More than one file was found with OS independent path "META-INF/core_release.kotlin_module"
-  packaging{
-    resources.pickFirsts += setOf(
-      "META-INF/core_release.kotlin_module",
+  packaging {
+    resources.pickFirsts +=
+        setOf(
+            "META-INF/core_release.kotlin_module",
             "META-INF/ui_release.kotlin_module",
             "META-INF/INDEX.LIST",
             "META-INF/io.netty.versions.properties",
-    )
+        )
   }
 }
 
@@ -109,7 +105,8 @@ dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Leak Canary
-  debugImplementation("com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}")
+  debugImplementation(
+      "com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}")
   implementation("com.squareup.leakcanary:plumber-android:${rootProject.extra["leakCanary"]}")
 
   // Autopsy

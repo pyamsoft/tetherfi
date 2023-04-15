@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-plugins {
-  id("com.android.library")
-}
+plugins { id("com.android.library") }
 
 android {
   namespace = "com.pyamsoft.tetherfi.info"

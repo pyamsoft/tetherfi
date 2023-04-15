@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-plugins {
-  id("com.android.library")
-}
+plugins { id("com.android.library") }
 
 android {
   namespace = "com.pyamsoft.tetherfi.tile"
@@ -34,9 +32,7 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+  kotlinOptions { jvmTarget = "17" }
 
   buildFeatures {
     buildConfig = false
