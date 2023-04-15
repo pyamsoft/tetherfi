@@ -7,14 +7,14 @@ pluginManagement {
 }
 
 rootProject.name = "TetherFi"
-include ':app'
-include ':server'
-include ':service'
-include ':core'
-include ':info'
-include ':main'
-include ':ui'
-include ':status'
-include ':settings'
-include ':tile'
-include ':connections'
+include(":app")
+include(":connections")
+include(":core")
+include(":info")
+include(":main")
+include(":server")
+include(":service")
+include(":settings")
+include(":status")
+include(":tile")
+include(":ui")
