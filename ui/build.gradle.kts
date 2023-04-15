@@ -18,13 +18,11 @@ plugins {
   id("com.android.library")
 }
 
-//noinspection GroovyMissingReturnStatement
 android {
   namespace = "com.pyamsoft.tetherfi.ui"
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
-  //noinspection GroovyMissingReturnStatement
   defaultConfig {
     minSdk = rootProject.extra["minSdk"] as Int
 
