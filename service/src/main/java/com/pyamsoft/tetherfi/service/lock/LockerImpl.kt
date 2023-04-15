@@ -17,11 +17,11 @@
 package com.pyamsoft.tetherfi.service.lock
 
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class LockerImpl

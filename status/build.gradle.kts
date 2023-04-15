@@ -18,7 +18,6 @@ plugins {
   id("com.android.library")
 }
 
-//noinspection GroovyMissingReturnStatement
 android {
   namespace = "com.pyamsoft.tetherfi.status"
 

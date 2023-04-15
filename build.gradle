@@ -60,34 +60,31 @@ buildscript {
 plugins {
   // Android AGP
   // https://developer.android.com/studio/build#top-level
-  id 'com.android.library' version '8.0.0' apply false
+  id("com.android.library") version "8.0.0" apply false
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id "org.gradle.android.cache-fix" version "2.7.0" apply false
+  id("org.gradle.android.cache-fix") version "2.7.0" apply false
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
-  id 'org.jetbrains.kotlin.android' version "1.8.20" apply false
+  id("org.jetbrains.kotlin.android") version "1.8.20" apply false
 
   // Gradle version checker
   // https://github.com/ben-manes/gradle-versions-plugin
-  id 'com.github.ben-manes.versions' version '0.46.0' apply false
+  id("com.github.ben-manes.versions") version "0.46.0" apply false
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id "com.diffplug.spotless" version "6.18.0" apply false
+  id("com.diffplug.spotless") version "6.18.0" apply false
 }
 
 subprojects {
   // If this project has an Android plugin applied
   plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
-    // Apply Cache Fix
     project.apply plugin: "org.gradle.android.cache-fix"
-
-    // Apply Kotlin and Kapt
-    project.apply plugin: 'kotlin-android'
-    project.apply plugin: 'kotlin-kapt'
+    project.apply plugin: "kotlin-android"
+    project.apply plugin: "kotlin-kapt"
 
     // Kapt flags
     kapt {
@@ -112,21 +109,12 @@ subprojects {
         languageVersion.set(JavaLanguageVersion.of(17))
       }
     }
-
-    dependencies {
-      // Apply core library desugaring at the most recent version
-      coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.3"
-
-      // Can't kapt dagger-compiler here, must do so in every module gradle
-      // or else Kotlin-Android through an error about the :app module. Odd I know.
-      // kapt "com.google.dagger:dagger-compiler:$dagger"
-    }
   }
 }
 
 allprojects {
   apply plugin: "com.diffplug.spotless"
-  apply plugin: 'com.github.ben-manes.versions'
+  apply plugin: "com.github.ben-manes.versions"
 
   repositories {
     mavenLocal()
@@ -136,7 +124,7 @@ allprojects {
 
     // Jitpack
     maven {
-      url 'https://jitpack.io'
+      url "https://jitpack.io"
       content {
         includeGroup("com.github.pyamsoft.pydroid")
         includeGroup("com.github.pyamsoft")
@@ -146,26 +134,17 @@ allprojects {
 
   // Java compile show
   tasks.withType(JavaCompile) {
-    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+    options.compilerArgs += [
+      "-Xlint:unchecked",
+      "-Xlint:deprecation"
+    ]
     options.deprecation = true
-  }
-
-  // Version Plugin ignore non-stable releases
-  def isNonStable = { version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-  }
-  tasks.named("dependencyUpdates").configure {
-    rejectVersionIf {
-      isNonStable(it.candidate.version)
-    }
   }
 
   // Spotless plugin
   spotless {
     java {
-      target "src/**/*.java"
+      target("src/**/*.java")
 
       removeUnusedImports()
       trimTrailingWhitespace()
@@ -173,7 +152,7 @@ allprojects {
       indentWithSpaces(2)
     }
     kotlin {
-      target "src/**/*.kt"
+      target("src/**/*.kt", "src/**/*.kts")
       ktfmt()
 
       trimTrailingWhitespace()
@@ -181,7 +160,7 @@ allprojects {
       indentWithSpaces(2)
     }
     groovyGradle {
-      target "*.gradle"
+      target("*.gradle")
       greclipse()
 
       trimTrailingWhitespace()

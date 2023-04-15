@@ -40,8 +40,8 @@ sealed class TetherClient(
 
 @CheckResult
 fun TetherClient.key(): String {
-    return when (this) {
-        is TetherClient.HostName -> this.hostname
-        is TetherClient.IpAddress -> this.ip
-    }
+  return when (this) {
+    is TetherClient.HostName -> this.hostname
+    is TetherClient.IpAddress -> this.ip
+  }
 }

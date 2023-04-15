@@ -17,11 +17,11 @@
 package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class ClientManagerImpl @Inject internal constructor() :

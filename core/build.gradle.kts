@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-plugins {
+plugins{
   id("com.android.library")
 }
 
 android {
-  namespace = "com.pyamsoft.tetherfi.settings"
+  namespace = "com.pyamsoft.tetherfi.core"
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
@@ -34,9 +34,7 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+  kotlinOptions { jvmTarget = "17" }
 
   buildFeatures {
     buildConfig = false
@@ -51,5 +49,18 @@ android {
 dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  api(project(":ui"))
+  api("com.jakewharton.timber:timber:${rootProject.extra["timber"]}")
+
+  // Compose runtime for annotations
+  api("androidx.compose.runtime:runtime:${rootProject.extra["compose_version"]}")
+
+  // PYDroid
+  api("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")
+  api("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
+
+  // Android support library.
+  api("androidx.core:core-ktx:${rootProject.extra["core"]}")
+
+  // Dagger
+  api("com.google.dagger:dagger:${rootProject.extra["dagger"]}")
 }

@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-  namespace = "com.pyamsoft.tetherfi.settings"
+  namespace = "com.pyamsoft.tetherfi.main"
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
@@ -34,9 +34,7 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+  kotlinOptions { jvmTarget = "17" }
 
   buildFeatures {
     buildConfig = false
@@ -51,5 +49,6 @@ android {
 dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
+  api(project(":server"))
   api(project(":ui"))
 }

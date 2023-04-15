@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 
-apply plugin: "com.android.library"
+plugins {
+  id("com.android.library")
+}
 
-//noinspection GroovyMissingReturnStatement
 android {
-  namespace "com.pyamsoft.tetherfi.info"
+  namespace = "com.pyamsoft.tetherfi.service"
 
-  compileSdkVersion rootProject.ext.compileSdk
+  compileSdk = rootProject.extra["compileSdk"] as Int
 
-  //noinspection GroovyMissingReturnStatement
   defaultConfig {
-    minSdkVersion rootProject.ext.minSdk
-    targetSdkVersion rootProject.ext.targetSdk
+    minSdk = rootProject.extra["minSdk"] as Int
 
-    resConfigs "en"
+    resourceConfigurations += setOf("en")
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
-
-    // Flag to enable support for the new language APIs
-    coreLibraryDesugaringEnabled true
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
@@ -43,19 +39,20 @@ android {
   }
 
   buildFeatures {
-    buildConfig false
-    compose true
+    buildConfig = false
+    compose = true
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion "$compose_compiler_version"
+    kotlinCompilerExtensionVersion = "${rootProject.extra["compose_compiler_version"]}"
   }
 }
 
 dependencies {
-  kapt "com.google.dagger:dagger-compiler:$dagger"
+  kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  api project(":server")
-  api project(":service")
-  api project(":ui")
+  api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
+
+  api(project(":core"))
+  api(project(":server"))
 }
