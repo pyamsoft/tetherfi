@@ -124,7 +124,7 @@ allprojects {
 
     // Jitpack
     maven {
-      url "https://jitpack.io"
+      url = "https://jitpack.io"
       content {
         includeGroup("com.github.pyamsoft.pydroid")
         includeGroup("com.github.pyamsoft")
