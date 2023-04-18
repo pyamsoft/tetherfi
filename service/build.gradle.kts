@@ -30,6 +30,9 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+
+    // Flag to enable support for the new language APIs
+    isCoreLibraryDesugaringEnabled = true
   }
 
   kotlinOptions { jvmTarget = "17" }
@@ -45,6 +48,8 @@ android {
 }
 
 dependencies {
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
