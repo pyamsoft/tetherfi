@@ -48,11 +48,11 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  api("com.jakewharton.timber:timber:${rootProject.extra["timber"]}")
+  api("com.jakewharton.timber:timber:5.0.1")
 
   // Compose runtime for annotations
   api("androidx.compose.runtime:runtime:${rootProject.extra["compose_version"]}")
@@ -62,7 +62,7 @@ dependencies {
   api("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 
   // Android support library.
-  api("androidx.core:core-ktx:${rootProject.extra["core"]}")
+  api("androidx.core:core-ktx:1.10.0")
 
   // Dagger
   api("com.google.dagger:dagger:${rootProject.extra["dagger"]}")

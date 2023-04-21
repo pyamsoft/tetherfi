@@ -100,7 +100,7 @@ android {
 // Leave at bottom
 // apply plugin: "com.google.gms.google-services"
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
@@ -113,8 +113,8 @@ dependencies {
   debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
 
   // AndroidX
-  api("androidx.fragment:fragment-ktx:${rootProject.extra["fragment"]}")
-  api("androidx.appcompat:appcompat:${rootProject.extra["appCompat"]}")
+  api("androidx.fragment:fragment-ktx:1.5.7")
+  api("androidx.appcompat:appcompat:1.6.1")
 
   api(project(":connections"))
   api(project(":info"))

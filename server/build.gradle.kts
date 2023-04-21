@@ -48,12 +48,12 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // API for Dagger
-  api("io.ktor:ktor-network:${rootProject.extra["ktor"]}")
+  api("io.ktor:ktor-network:2.3.0")
 
   api(project(":core"))
 }
