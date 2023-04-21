@@ -17,10 +17,8 @@
 package com.pyamsoft.tetherfi.server.urlfixer
 
 import javax.inject.Inject
-import javax.inject.Singleton
 import timber.log.Timber
 
-@Singleton
 class PSNUrlFixer @Inject internal constructor() : UrlFixer {
 
   /**

@@ -26,9 +26,7 @@ import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(

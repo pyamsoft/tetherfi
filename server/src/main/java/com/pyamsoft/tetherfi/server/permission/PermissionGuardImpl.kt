@@ -22,9 +22,7 @@ import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 internal class PermissionGuardImpl
 @Inject
 internal constructor(

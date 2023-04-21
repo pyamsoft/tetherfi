@@ -48,14 +48,12 @@ import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-@Singleton
 internal class TcpProxySession
 @Inject
 internal constructor(

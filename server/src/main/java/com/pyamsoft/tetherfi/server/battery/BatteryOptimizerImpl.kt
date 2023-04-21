@@ -21,9 +21,7 @@ import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 internal class BatteryOptimizerImpl
 @Inject
 internal constructor(
