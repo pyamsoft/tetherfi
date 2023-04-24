@@ -50,6 +50,12 @@ import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
 
+private enum class DeviceSetupContentTypes {
+  SETTINGS,
+  CONNECT,
+  TOGGLE,
+}
+
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
     appName: String,
@@ -58,7 +64,9 @@ internal fun LazyListScope.renderDeviceSetup(
     onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
-  item {
+  item(
+      contentType = DeviceSetupContentTypes.SETTINGS,
+  ) {
     OtherInstruction(
         modifier = itemModifier,
     ) {
@@ -69,7 +77,9 @@ internal fun LazyListScope.renderDeviceSetup(
     }
   }
 
-  item {
+  item(
+      contentType = DeviceSetupContentTypes.CONNECT,
+  ) {
     OtherInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
@@ -251,7 +261,9 @@ internal fun LazyListScope.renderDeviceSetup(
     }
   }
 
-  item {
+  item(
+      contentType = DeviceSetupContentTypes.TOGGLE,
+  ) {
     OtherInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {

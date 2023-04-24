@@ -27,11 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 
+private enum class ConnectionCompleteContentTypes {
+  SHARING,
+  DONE,
+}
+
 internal fun LazyListScope.renderConnectionComplete(
     itemModifier: Modifier = Modifier,
     appName: String,
 ) {
-  item {
+  item(
+      contentType = ConnectionCompleteContentTypes.SHARING,
+  ) {
     ThisInstruction(
         modifier = itemModifier,
     ) {
@@ -42,7 +49,9 @@ internal fun LazyListScope.renderConnectionComplete(
     }
   }
 
-  item {
+  item(
+      contentType = ConnectionCompleteContentTypes.DONE,
+  ) {
     OtherInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {

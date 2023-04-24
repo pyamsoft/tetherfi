@@ -42,6 +42,16 @@ import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.ui.DialogToolbar
 
+private enum class SettingsContentTypes {
+  DEBUG_GROUP_EMPTY,
+  DEBUG_GROUP_GOOD,
+  DEBUG_GROUP_ERROR,
+  DEBUG_CONN_EMPTY,
+  DEBUG_CONN_GOOD,
+  DEBUG_CONN_ERROR,
+  BOTTOM_SPACER,
+}
+
 @Composable
 fun SettingsDialog(
     modifier: Modifier = Modifier,
@@ -135,7 +145,9 @@ private fun LazyListScope.renderExtraDebugContent(
     itemModifier: Modifier = Modifier,
     appEnvironment: AppDevEnvironment,
 ) {
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_GROUP_EMPTY,
+  ) {
     val isGroupFakeEmpty by appEnvironment.group.isEmpty.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -146,7 +158,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_GROUP_GOOD,
+  ) {
     val isGroupFakeConnected by appEnvironment.group.isConnected.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -157,7 +171,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_GROUP_ERROR,
+  ) {
     val isGroupFakeError by appEnvironment.group.isError.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -168,7 +184,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_CONN_EMPTY,
+  ) {
     val isConnectionFakeEmpty by appEnvironment.connection.isEmpty.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -179,7 +197,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_CONN_GOOD,
+  ) {
     val isConnectionFakeConnected by appEnvironment.connection.isConnected.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -190,7 +210,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.DEBUG_CONN_ERROR,
+  ) {
     val isConnectionFakeError by appEnvironment.connection.isError.collectAsState()
     DebugItem(
         modifier = itemModifier,
@@ -201,7 +223,9 @@ private fun LazyListScope.renderExtraDebugContent(
     )
   }
 
-  item {
+  item(
+      contentType = SettingsContentTypes.BOTTOM_SPACER,
+  ) {
     Spacer(
         modifier = Modifier.padding(MaterialTheme.keylines.content),
     )

@@ -50,6 +50,16 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+private enum class ConnectionScreenContentTypes {
+  EMPTY,
+  HEADER,
+  CLIENT,
+  START,
+  SORRY,
+  SORRY_EXTRA,
+  BOTTOM_SPACER,
+}
+
 @Composable
 fun ConnectionScreen(
     modifier: Modifier = Modifier,
@@ -68,7 +78,9 @@ fun ConnectionScreen(
       group.also { gi ->
         if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
           if (clients.isEmpty()) {
-            item {
+            item(
+                contentType = ConnectionScreenContentTypes.EMPTY,
+            ) {
               Text(
                   modifier =
                       Modifier.fillMaxWidth()
@@ -80,7 +92,9 @@ fun ConnectionScreen(
               )
             }
           } else {
-            item {
+            item(
+                contentType = ConnectionScreenContentTypes.HEADER,
+            ) {
               Text(
                   modifier =
                       Modifier.fillMaxWidth()
@@ -93,7 +107,8 @@ fun ConnectionScreen(
                           color =
                               MaterialTheme.colors.onBackground.copy(
                                   alpha = ContentAlpha.medium,
-                              )),
+                              ),
+                      ),
                   textAlign = TextAlign.Center,
               )
             }
@@ -101,6 +116,7 @@ fun ConnectionScreen(
             items(
                 items = clients,
                 key = { it.key() },
+                contentType = { ConnectionScreenContentTypes.CLIENT },
             ) { client ->
               ConnectionItem(
                   modifier = Modifier.fillMaxWidth(),
@@ -111,7 +127,9 @@ fun ConnectionScreen(
             }
           }
         } else {
-          item {
+          item(
+              contentType = ConnectionScreenContentTypes.START,
+          ) {
             Text(
                 modifier =
                     Modifier.fillMaxWidth()
@@ -125,7 +143,9 @@ fun ConnectionScreen(
         }
       }
 
-      item {
+      item(
+          contentType = ConnectionScreenContentTypes.SORRY,
+      ) {
         Text(
             modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
             text =
@@ -141,7 +161,9 @@ fun ConnectionScreen(
         )
       }
 
-      item {
+      item(
+          contentType = ConnectionScreenContentTypes.SORRY_EXTRA,
+      ) {
         Text(
             modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
             text = "A more friendly solution is being actively investigated.",
@@ -156,7 +178,9 @@ fun ConnectionScreen(
         )
       }
 
-      item {
+      item(
+          contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
+      ) {
         Spacer(
             modifier = Modifier.navigationBarsPadding().padding(pv),
         )

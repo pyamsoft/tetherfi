@@ -26,12 +26,19 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
+private enum class OptionalNotificationContentTypes {
+  LABEL,
+  CHECK,
+}
+
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
     onRequest: () -> Unit,
 ) {
-  item {
+  item(
+      contentType = OptionalNotificationContentTypes.LABEL,
+  ) {
     Label(
         modifier =
             itemModifier
@@ -42,7 +49,9 @@ internal fun LazyListScope.renderNotificationSettings(
     )
   }
 
-  item {
+  item(
+      contentType = OptionalNotificationContentTypes.CHECK,
+  ) {
     val hasPermission by state.hasNotificationPermission.collectAsState()
 
     CheckableCard(

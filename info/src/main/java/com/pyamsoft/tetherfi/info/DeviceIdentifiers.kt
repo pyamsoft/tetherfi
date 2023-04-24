@@ -41,10 +41,17 @@ import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.tetherfi.ui.icons.Devices
 import com.pyamsoft.tetherfi.ui.icons.PhoneAndroid
 
+private enum class DeviceIdentifiersContentTypes {
+  THIS,
+  OTHER,
+}
+
 internal fun LazyListScope.renderDeviceIdentifiers(
     itemModifier: Modifier = Modifier,
 ) {
-  item {
+  item(
+      contentType = DeviceIdentifiersContentTypes.THIS,
+  ) {
     ThisInstruction(
         modifier = itemModifier,
         small = true,
@@ -62,7 +69,9 @@ internal fun LazyListScope.renderDeviceIdentifiers(
     }
   }
 
-  item {
+  item(
+      contentType = DeviceIdentifiersContentTypes.OTHER,
+  ) {
     OtherInstruction(
         modifier = itemModifier,
         small = true,

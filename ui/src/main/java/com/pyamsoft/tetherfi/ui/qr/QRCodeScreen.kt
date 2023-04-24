@@ -42,6 +42,11 @@ import coil.compose.AsyncImage
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
 
+private enum class QRCodeScreenContentTypes {
+  QR,
+  MSG,
+}
+
 @Composable
 fun QRCodeScreen(
     modifier: Modifier = Modifier,
@@ -55,7 +60,9 @@ fun QRCodeScreen(
   LazyColumn(
       modifier = modifier,
   ) {
-    item {
+    item(
+        contentType = QRCodeScreenContentTypes.QR,
+    ) {
       Crossfade(
           targetState = qrCode,
       ) { code ->
@@ -88,7 +95,9 @@ fun QRCodeScreen(
       }
     }
 
-    item {
+    item(
+        contentType = QRCodeScreenContentTypes.MSG,
+    ) {
       Text(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text = "Scan this QR code to connect",

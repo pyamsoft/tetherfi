@@ -30,6 +30,10 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
+private enum class InfoContentTypes {
+  BOTTOM_SPACER
+}
+
 @Composable
 fun InfoScreen(
     modifier: Modifier = Modifier,
@@ -55,7 +59,9 @@ fun InfoScreen(
         onShowQRCode = onShowQRCode,
     )
 
-    item {
+    item(
+        contentType = InfoContentTypes.BOTTOM_SPACER,
+    ) {
       Spacer(
           modifier = Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
       )

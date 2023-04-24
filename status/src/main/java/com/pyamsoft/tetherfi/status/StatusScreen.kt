@@ -102,6 +102,28 @@ import kotlinx.coroutines.delay
 private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
 private val HOTSPOT_ERROR_STATUS = RunningStatus.Error("Unable to start Hotspot")
 
+private enum class StatusScreenContentTypes {
+  BUTTON,
+  STATUS,
+  LOADING,
+  SPACER,
+  BOTTOM_SPACER,
+  NETWORK_ERROR,
+  PERMISSIONS,
+  EDIT_SSID,
+  EDIT_PASSWD,
+  EDIT_PORT,
+  VIEW_SSID,
+  VIEW_PASSWD,
+  VIEW_PORT,
+  VIEW_PROXY,
+  TILES,
+  BANDS,
+  BATTERY_LABEL,
+  BATTERY_OPTIMIZATION,
+  WAKELOCKS,
+}
+
 @Composable
 fun StatusScreen(
     modifier: Modifier = Modifier,
@@ -222,7 +244,9 @@ fun StatusScreen(
     ) {
       renderPYDroidExtras()
 
-      item {
+      item(
+          contentType = StatusScreenContentTypes.BUTTON,
+      ) {
         Button(
             modifier =
                 Modifier.fillMaxWidth()
@@ -241,7 +265,9 @@ fun StatusScreen(
         }
       }
 
-      item {
+      item(
+          contentType = StatusScreenContentTypes.STATUS,
+      ) {
         StatusCard(
             modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
             wiDiStatus = wiDiStatus,
@@ -253,7 +279,9 @@ fun StatusScreen(
       when (loadingState) {
         StatusViewState.LoadingState.NONE,
         StatusViewState.LoadingState.LOADING -> {
-          item {
+          item(
+              contentType = StatusScreenContentTypes.LOADING,
+          ) {
             Box(
                 modifier =
                     Modifier.fillMaxWidth()
@@ -467,7 +495,9 @@ private fun LazyListScope.renderLoadedContent(
       onShowHotspotError = onShowHotspotError,
   )
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.SPACER,
+  ) {
     Spacer(
         modifier =
             Modifier.fillMaxWidth()
@@ -486,7 +516,9 @@ private fun LazyListScope.renderLoadedContent(
       onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.SPACER,
+  ) {
     Spacer(
         modifier =
             Modifier.fillMaxWidth()
@@ -502,7 +534,9 @@ private fun LazyListScope.renderLoadedContent(
         onRequest = onRequestNotificationPermission,
     )
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.SPACER,
+    ) {
       Spacer(
           modifier =
               Modifier.fillMaxWidth()
@@ -512,7 +546,9 @@ private fun LazyListScope.renderLoadedContent(
     }
   }
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.BOTTOM_SPACER,
+  ) {
     Spacer(
         modifier = Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
     )
@@ -544,7 +580,9 @@ private fun LazyListScope.renderNetworkInformation(
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
 ) {
-  item {
+  item(
+      contentType = StatusScreenContentTypes.NETWORK_ERROR,
+  ) {
     val showErrorHintMessage = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
 
     AnimatedVisibility(
@@ -568,7 +606,9 @@ private fun LazyListScope.renderNetworkInformation(
     }
   }
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.PERMISSIONS,
+  ) {
     val requiresPermissions by state.requiresPermissions.collectAsState()
 
     AnimatedVisibility(
@@ -592,7 +632,9 @@ private fun LazyListScope.renderNetworkInformation(
   }
 
   if (isEditable) {
-    item {
+    item(
+        contentType = StatusScreenContentTypes.EDIT_SSID,
+    ) {
       val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
       val ssid by state.ssid.collectAsState()
       val hotspotSsid =
@@ -649,7 +691,9 @@ private fun LazyListScope.renderNetworkInformation(
       )
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.EDIT_PASSWD,
+    ) {
       val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
       val password by state.password.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
@@ -711,7 +755,9 @@ private fun LazyListScope.renderNetworkInformation(
       )
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.EDIT_PORT,
+    ) {
       val port by state.port.collectAsState()
       val portNumber = remember(port) { "$port" }
       val isValid = remember(port) { port in 1025..64000 }
@@ -737,7 +783,9 @@ private fun LazyListScope.renderNetworkInformation(
       )
     }
   } else {
-    item {
+    item(
+        contentType = StatusScreenContentTypes.VIEW_SSID,
+    ) {
       val group by serverViewState.group.collectAsState()
       val ssid = rememberServerSSID(group)
 
@@ -761,7 +809,9 @@ private fun LazyListScope.renderNetworkInformation(
       }
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.VIEW_PASSWD,
+    ) {
       val group by serverViewState.group.collectAsState()
       val isPasswordVisible by state.isPasswordVisible.collectAsState()
       val password = rememberServerPassword(group, isPasswordVisible)
@@ -801,7 +851,9 @@ private fun LazyListScope.renderNetworkInformation(
       }
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.VIEW_PROXY,
+    ) {
       val connection by serverViewState.connection.collectAsState()
       val ipAddress = rememberServerIp(connection)
 
@@ -824,7 +876,9 @@ private fun LazyListScope.renderNetworkInformation(
       }
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.VIEW_PORT,
+    ) {
       val port by serverViewState.port.collectAsState()
       val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
 
@@ -843,7 +897,9 @@ private fun LazyListScope.renderNetworkInformation(
       )
     }
 
-    item {
+    item(
+        contentType = StatusScreenContentTypes.TILES,
+    ) {
       val group by serverViewState.group.collectAsState()
       val connection by serverViewState.connection.collectAsState()
 
@@ -858,7 +914,9 @@ private fun LazyListScope.renderNetworkInformation(
     }
   }
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.BANDS,
+  ) {
     val band by state.band.collectAsState()
 
     NetworkBands(
@@ -1111,7 +1169,9 @@ private fun LazyListScope.renderBatteryAndPerformance(
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
 ) {
-  item {
+  item(
+      contentType = StatusScreenContentTypes.BATTERY_LABEL,
+  ) {
     Label(
         modifier =
             itemModifier
@@ -1122,7 +1182,9 @@ private fun LazyListScope.renderBatteryAndPerformance(
     )
   }
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.WAKELOCKS,
+  ) {
     Wakelocks(
         modifier =
             itemModifier
@@ -1136,7 +1198,9 @@ private fun LazyListScope.renderBatteryAndPerformance(
     )
   }
 
-  item {
+  item(
+      contentType = StatusScreenContentTypes.BATTERY_OPTIMIZATION,
+  ) {
     val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
 
     BatteryOptimization(

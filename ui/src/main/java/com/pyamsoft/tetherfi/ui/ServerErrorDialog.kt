@@ -43,6 +43,11 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import kotlinx.coroutines.delay
 
+private enum class ServerErrorDialogContentTypes {
+  TITLE,
+  TRACE,
+}
+
 typealias IconButtonContent =
     @Composable
     (
@@ -120,7 +125,9 @@ fun ServerErrorDialog(
               ),
       ) {
         LazyColumn {
-          item {
+          item(
+              contentType = ServerErrorDialogContentTypes.TITLE,
+          ) {
             Text(
                 modifier = Modifier.padding(MaterialTheme.keylines.content),
                 text = title,
@@ -128,7 +135,9 @@ fun ServerErrorDialog(
             )
           }
 
-          item {
+          item(
+              contentType = ServerErrorDialogContentTypes.TRACE,
+          ) {
             val trace = remember(error) { error.stackTraceToString() }
             Text(
                 modifier = Modifier.padding(MaterialTheme.keylines.content),

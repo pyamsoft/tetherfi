@@ -29,11 +29,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerDefaults
 
+private enum class AppSetupContentTypes {
+  WIFI,
+  INTERNET,
+  CONFIG,
+  WAKELOCK,
+  BATTERY,
+  START,
+}
+
 internal fun LazyListScope.renderAppSetup(
     itemModifier: Modifier = Modifier,
     appName: String,
 ) {
-  item {
+  item(
+      contentType = AppSetupContentTypes.WIFI,
+  ) {
     ThisInstruction(
         modifier = itemModifier,
     ) {
@@ -57,7 +68,9 @@ internal fun LazyListScope.renderAppSetup(
     }
   }
 
-  item {
+  item(
+      contentType = AppSetupContentTypes.INTERNET,
+  ) {
     ThisInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
@@ -80,7 +93,9 @@ internal fun LazyListScope.renderAppSetup(
     }
   }
 
-  item {
+  item(
+      contentType = AppSetupContentTypes.CONFIG,
+  ) {
     if (ServerDefaults.canUseCustomConfig()) {
       ThisInstruction(
           modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
@@ -101,14 +116,16 @@ internal fun LazyListScope.renderAppSetup(
     }
   }
 
-  item {
+  item(
+      contentType = AppSetupContentTypes.WAKELOCK,
+  ) {
     ThisInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
         small = true,
     ) {
       Text(
           text =
-              "You can optionally choose to keep the CPU awake while the Hotspot is running, which greatly improves performance while the screen is off. If the CPU is not kept awake, you may notice extreme network slowdown while the device screen is off.",
+              "You can optionally choose to keep the CPU and/or WiFi awake while the Hotspot is running, which greatly improves performance while the screen is off. If the CPU is not kept awake, you may notice extreme network slowdown while the device screen is off.",
           style =
               MaterialTheme.typography.body2.copy(
                   color =
@@ -120,7 +137,9 @@ internal fun LazyListScope.renderAppSetup(
     }
   }
 
-  item {
+  item(
+      contentType = AppSetupContentTypes.BATTERY,
+  ) {
     ThisInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
         small = true,
@@ -139,7 +158,9 @@ internal fun LazyListScope.renderAppSetup(
     }
   }
 
-  item {
+  item(
+      contentType = AppSetupContentTypes.START,
+  ) {
     ThisInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {

@@ -28,6 +28,10 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 
+private enum class ConnectionInstructionContentTypes {
+  SPACER,
+}
+
 internal fun LazyListScope.renderConnectionInstructions(
     itemModifier: Modifier = Modifier,
     appName: String,
@@ -36,7 +40,9 @@ internal fun LazyListScope.renderConnectionInstructions(
     onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
-  item {
+  item(
+      contentType = ConnectionInstructionContentTypes.SPACER,
+  ) {
     Spacer(
         modifier = Modifier.height(MaterialTheme.keylines.content),
     )
@@ -46,7 +52,9 @@ internal fun LazyListScope.renderConnectionInstructions(
       itemModifier = itemModifier,
   )
 
-  item {
+  item(
+      contentType = ConnectionInstructionContentTypes.SPACER,
+  ) {
     Spacer(
         modifier = Modifier.height(MaterialTheme.keylines.content),
     )
@@ -57,7 +65,9 @@ internal fun LazyListScope.renderConnectionInstructions(
       appName = appName,
   )
 
-  item {
+  item(
+      contentType = ConnectionInstructionContentTypes.SPACER,
+  ) {
     Spacer(
         modifier = Modifier.height(MaterialTheme.keylines.content),
     )
@@ -72,7 +82,9 @@ internal fun LazyListScope.renderConnectionInstructions(
       onShowQRCode = onShowQRCode,
   )
 
-  item {
+  item(
+      contentType = ConnectionInstructionContentTypes.SPACER,
+  ) {
     Spacer(
         modifier = Modifier.height(MaterialTheme.keylines.content),
     )
@@ -83,7 +95,9 @@ internal fun LazyListScope.renderConnectionInstructions(
       appName = appName,
   )
 
-  item {
+  item(
+      contentType = ConnectionInstructionContentTypes.SPACER,
+  ) {
     Spacer(
         modifier = Modifier.height(MaterialTheme.keylines.content),
     )
