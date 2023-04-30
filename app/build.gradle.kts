@@ -81,7 +81,7 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion = "${rootProject.extra["compose_compiler_version"]}"
+    kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}"
   }
 
   // Fixes this error message

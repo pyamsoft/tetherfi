@@ -43,7 +43,7 @@ android {
   }
 
   composeOptions {
-    kotlinCompilerExtensionVersion = "${rootProject.extra["compose_compiler_version"]}"
+    kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}"
   }
 }
 
@@ -53,11 +53,11 @@ dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Compose
-  api("androidx.compose.compiler:compiler:${rootProject.extra["compose_compiler_version"]}")
-  api("androidx.compose.ui:ui:${rootProject.extra["compose_version"]}")
-  api("androidx.compose.animation:animation:${rootProject.extra["compose_version"]}")
-  api("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose_version"]}")
-  debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose_version"]}")
+  api("androidx.compose.compiler:compiler:${rootProject.extra["composeCompiler"]}")
+  api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
+  api("androidx.compose.animation:animation:${rootProject.extra["compose"]}")
+  api("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
+  debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
   api("androidx.activity:activity-compose:1.7.1")
   api("androidx.compose.material:material:${rootProject.extra["composeMaterial"]}")
   //  api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
