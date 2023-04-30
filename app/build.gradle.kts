@@ -53,10 +53,10 @@ android {
       storePassword = "android"
     }
     create("release") {
-      storeFile = File(System.getenv("BUNDLE_STORE_FILE").orEmpty())
-      keyAlias = System.getenv("BUNDLE_KEY_ALIAS").orEmpty()
-      keyPassword = System.getenv("BUNDLE_KEY_PASSWD").orEmpty()
-      storePassword = System.getenv("BUNDLE_STORE_PASSWD").orEmpty()
+      storeFile = file(project.property("BUNDLE_STORE_FILE").toString())
+      keyAlias = project.property("BUNDLE_KEY_ALIAS").toString()
+      keyPassword = project.property("BUNDLE_KEY_PASSWD").toString()
+      storePassword = project.property("BUNDLE_STORE_PASSWD").toString()
     }
   }
 
