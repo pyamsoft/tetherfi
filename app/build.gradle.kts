@@ -80,9 +80,7 @@ android {
     compose = true
   }
 
-  composeOptions {
-    kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}"
-  }
+  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
 
   // Fixes this error message
   // More than one file was found with OS independent path "META-INF/core_release.kotlin_module"

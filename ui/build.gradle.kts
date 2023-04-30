@@ -42,9 +42,7 @@ android {
     compose = true
   }
 
-  composeOptions {
-    kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}"
-  }
+  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
 }
 
 dependencies {
@@ -60,7 +58,8 @@ dependencies {
   debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
   api("androidx.activity:activity-compose:1.7.1")
   api("androidx.compose.material:material:${rootProject.extra["composeMaterial"]}")
-  //  api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
+  //
+  // api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
 
   api("com.github.pyamsoft.pydroid:bootstrap:${rootProject.extra["pydroid"]}")
 
