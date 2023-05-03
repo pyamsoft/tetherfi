@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -64,6 +65,7 @@ internal constructor(
     private val seenClients: SeenClients,
     private val clock: Clock,
     private val enforcer: ThreadEnforcer,
+    private val inAppRatingPreferences: InAppRatingPreferences,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -467,6 +469,7 @@ internal constructor(
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
     seenClients.seen(client)
+    inAppRatingPreferences.markDeviceConnected()
 
     if (isBlockedClient(client)) {
       val msg = "Client is marked blocked: $client"

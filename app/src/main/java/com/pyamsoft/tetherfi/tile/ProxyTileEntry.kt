@@ -21,6 +21,8 @@ import android.os.Looper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
@@ -47,10 +49,10 @@ internal class ProxyTileInjector : ComposableInjector() {
 /** On mount hooks */
 @Composable
 private fun MountHooks(
-    component: ProxyTileInjector,
+    viewModel: ProxyTileViewModeler,
     onToggleProxy: () -> Unit,
 ) {
-  val viewModel = rememberNotNull(component.viewModel)
+  val handleToggleProxy by rememberUpdatedState(onToggleProxy)
 
   SaveStateDisposableEffect(viewModel)
 
@@ -60,7 +62,7 @@ private fun MountHooks(
     val handler = Handler(Looper.getMainLooper())
 
     // Wait a little bit before starting the proxy
-    handler.postDelayed(onToggleProxy, 500)
+    handler.postDelayed({ handleToggleProxy() }, 500)
 
     onDispose { handler.removeCallbacksAndMessages(null) }
   }
@@ -77,7 +79,7 @@ fun ProxyTileEntry(
 
   // Hooks that run on mount
   MountHooks(
-      component = component,
+      viewModel = viewModel,
       onToggleProxy = { viewModel.handleToggleProxy() },
   )
 

@@ -44,10 +44,8 @@ internal class ConnectionInjector : ComposableInjector() {
 /** On mount hooks */
 @Composable
 private fun MountHooks(
-    component: ConnectionInjector,
+    viewModel: ConnectionViewModel,
 ) {
-  val viewModel = rememberNotNull(component.viewModel)
-
   SaveStateDisposableEffect(viewModel)
 
   LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
@@ -63,7 +61,7 @@ fun ConnectionEntry(
 
   // Hooks that run on mount
   MountHooks(
-      component = component,
+      viewModel = viewModel,
   )
 
   ConnectionScreen(

@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
@@ -40,26 +41,31 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
-
-  @JvmField @Inject internal var permissions: MainPermissions? = null
+  @Inject @JvmField internal var permissions: MainPermissions? = null
+  private var pydroid: PYDroidActivityDelegate? = null
 
   init {
     doOnCreate {
-      installPYDroid(
-          provider =
-              object : ChangeLogProvider {
+      pydroid =
+          installPYDroid(
+              provider =
+                  object : ChangeLogProvider {
 
-                override val applicationIcon = R.mipmap.ic_launcher
+                    override val applicationIcon = R.mipmap.ic_launcher
 
-                override val changelog = buildChangeLog {
-                  feature("Hold a CPU Lock and a WiFi Lock")
-                  feature("Proper monochrome icon support in newer versions of Android OS")
-                }
-              },
-      )
+                    override val changelog = buildChangeLog {
+                      feature("Hold a CPU Lock and a WiFi Lock")
+                      feature("Proper monochrome icon support in newer versions of Android OS")
+                    }
+                  },
+          )
     }
 
     doOnCreate { permissions.requireNotNull().register(this) }
+  }
+
+  private fun handleShowInAppRating() {
+    pydroid?.loadInAppRating()
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            onShowInAppRating = { handleShowInAppRating() },
         )
       }
     }
@@ -110,6 +117,8 @@ class MainActivity : AppCompatActivity() {
     super.onDestroy()
 
     permissions?.unregister()
+
+    pydroid = null
     permissions = null
     viewModel = null
   }

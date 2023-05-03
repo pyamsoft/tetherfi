@@ -20,6 +20,7 @@ import android.content.Context
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
@@ -34,6 +35,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 internal class WiDiNetworkImpl
 @Inject
 internal constructor(
+    private val inAppRatingPreferences: InAppRatingPreferences,
     @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi dispatcher: CoroutineDispatcher,
     @ServerInternalApi config: WiDiConfig,
@@ -57,6 +59,8 @@ internal constructor(
 
   override suspend fun onNetworkStarted(context: CoroutineContext) {
     proxy.start()
+
+    inAppRatingPreferences.markHotspotUsed()
   }
 
   override suspend fun onNetworkStopped(context: CoroutineContext) {

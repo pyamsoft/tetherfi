@@ -122,13 +122,11 @@ private fun RegisterPermissionRequests(
 /** On mount hooks */
 @Composable
 private fun MountHooks(
-    component: StatusInjector,
+    viewModel: StatusViewModeler,
+    permissionResponseBus: EventBus<PermissionResponse>,
+    notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
 ) {
-  val viewModel = rememberNotNull(component.viewModel)
-  val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
-  val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
-
   // Wrap in lambda when calling or else bad
   val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
     viewModel.refreshSystemInfo(scope = scope)
@@ -171,16 +169,20 @@ fun StatusEntry(
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
   val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
+  val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
+  val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
   val activity = rememberActivity()
   val scope = rememberCoroutineScope()
 
-  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
   val dismissPermissionPopup by rememberUpdatedState { viewModel.handlePermissionsExplained() }
+  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
 
   // Hooks that run on mount
   MountHooks(
-      component = component,
+      viewModel = viewModel,
+      permissionResponseBus = permissionResponseBus,
+      notificationRefreshBus = notificationRefreshBus,
       onToggleProxy = { handleToggleProxy() },
   )
 

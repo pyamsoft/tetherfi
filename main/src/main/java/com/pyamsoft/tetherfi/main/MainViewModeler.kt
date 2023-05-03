@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -27,8 +28,11 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class MainViewModeler
@@ -38,10 +42,30 @@ internal constructor(
     private val network: WiDiNetworkStatus,
     private val serverPreferences: ServerPreferences,
     private val wiDiReceiver: WiDiReceiver,
+    private val inAppRatingPreferences: InAppRatingPreferences,
 ) : AbstractViewModeler<MainViewState>(state) {
 
   private val isNetworkCurrentlyRunning =
       MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
+
+  fun watchForInAppRatingPrompt(
+      scope: CoroutineScope,
+      onShowInAppRating: () -> Unit,
+  ) {
+    scope.launch(context = Dispatchers.Main) {
+      inAppRatingPreferences
+          .listenShowInAppRating()
+          .filter { it }
+          .distinctUntilChanged()
+          .collect { show ->
+            if (show) {
+              Timber.d("Show in-app rating")
+              inAppRatingPreferences.markInAppRatingShown()
+              withContext(context = Dispatchers.Main) { onShowInAppRating() }
+            }
+          }
+    }
+  }
 
   fun bind(scope: CoroutineScope) {
     val s = state
@@ -119,10 +143,6 @@ internal constructor(
     }
   }
 
-  fun handleRefreshConnectionInfo() {
-    network.updateNetworkInfo()
-  }
-
   override fun registerSaveState(
       registry: SaveableStateRegistry
   ): List<SaveableStateRegistry.Entry> =
@@ -148,6 +168,10 @@ internal constructor(
         ?.also { s.isShowingQRCodeDialog.value = it }
   }
 
+  fun handleRefreshConnectionInfo() {
+    network.updateNetworkInfo()
+  }
+
   fun handleOpenSettings() {
     state.isSettingsOpen.value = true
   }
@@ -164,6 +188,10 @@ internal constructor(
 
   fun handleCloseQRCodeDialog() {
     state.isShowingQRCodeDialog.value = false
+  }
+
+  fun handleAnalyticsMarkOpened(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Main) { inAppRatingPreferences.markAppOpened() }
   }
 
   companion object {

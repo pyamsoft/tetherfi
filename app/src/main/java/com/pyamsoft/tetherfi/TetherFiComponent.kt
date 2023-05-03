@@ -29,6 +29,7 @@ import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.util.PermissionRequester
+import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
 import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.main.MainActivity
@@ -90,6 +91,9 @@ internal interface TetherFiComponent {
     @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
 
     @Binds internal abstract fun bindServicePreferences(impl: PreferencesImpl): ServicePreferences
+
+    @Binds
+    internal abstract fun bindInAppRatingPreferences(impl: PreferencesImpl): InAppRatingPreferences
 
     @Module
     companion object {

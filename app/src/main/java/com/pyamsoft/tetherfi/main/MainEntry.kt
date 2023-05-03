@@ -23,12 +23,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -81,11 +83,12 @@ private fun WatchTabSwipe(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
-    component: MainInjector,
+    viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
+    onShowInAppRating: () -> Unit,
 ) {
-  val viewModel = rememberNotNull(component.viewModel)
+  val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
 
   SaveStateDisposableEffect(viewModel)
 
@@ -96,11 +99,24 @@ private fun MountHooks(
 
   LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
 
+  LaunchedEffect(viewModel) {
+    viewModel.watchForInAppRatingPrompt(
+        scope = this,
+        onShowInAppRating = { handleShowInAppRating() },
+    )
+  }
+
   LifecycleEffect {
     object : DefaultLifecycleObserver {
 
       override fun onResume(owner: LifecycleOwner) {
         viewModel.handleRefreshConnectionInfo()
+      }
+
+      override fun onStart(owner: LifecycleOwner) {
+        viewModel.handleAnalyticsMarkOpened(
+            scope = owner.lifecycleScope,
+        )
       }
     }
   }
@@ -111,7 +127,10 @@ private fun MountHooks(
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    onShowInAppRating: () -> Unit,
 ) {
+  val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
+
   val component = rememberComposableInjector { MainInjector() }
   val viewModel = rememberNotNull(component.viewModel)
   val appEnvironment = rememberNotNull(component.appEnvironment)
@@ -122,9 +141,10 @@ fun MainEntry(
   val state = viewModel.state
 
   MountHooks(
-      component = component,
+      viewModel = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
+      onShowInAppRating = { handleShowInAppRating() },
   )
 
   MainScreen(
