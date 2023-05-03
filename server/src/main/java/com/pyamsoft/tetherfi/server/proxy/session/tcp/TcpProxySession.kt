@@ -44,15 +44,15 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 internal class TcpProxySession
 @Inject

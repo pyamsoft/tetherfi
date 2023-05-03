@@ -18,14 +18,14 @@ package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class ClientManagerImpl

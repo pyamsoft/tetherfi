@@ -17,8 +17,8 @@
 package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
 
 internal interface ProxySession<T : ProxyData> {
 
