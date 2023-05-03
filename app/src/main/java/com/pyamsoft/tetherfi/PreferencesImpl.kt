@@ -31,7 +31,7 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -110,20 +110,20 @@ internal constructor(
 
   override suspend fun listenShowInAppRating(): Flow<Boolean> =
       withContext(context = Dispatchers.IO) {
-        combine(
+        combineTransform(
             preferences.intFlow(IN_APP_HOTSPOT_USED, 0),
             preferences.intFlow(IN_APP_DEVICES_CONNECTED, 0),
             preferences.intFlow(IN_APP_APP_OPENED, 0),
             preferences.intFlow(IN_APP_RATING_SHOWN_VERSION, 0),
         ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
           enforcer.assertOffMainThread()
-          if (lastVersionShown.isInAppRatingAlreadyShown()) {
-            // We have already shown the rating for this version
-            Timber.w("Already shown in-app rating for version: $lastVersionShown")
-            return@combine false
-          }
 
-          return@combine hotspotUsed >= 2 && devicesConnected >= 1 && appOpened >= 3
+          if (lastVersionShown.isInAppRatingAlreadyShown()) {
+            Timber.w("Already shown in-app rating for version: $lastVersionShown")
+            emit(false)
+          } else {
+            emit(hotspotUsed >= 2 && devicesConnected >= 1 && appOpened >= 3)
+          }
         }
       }
 
