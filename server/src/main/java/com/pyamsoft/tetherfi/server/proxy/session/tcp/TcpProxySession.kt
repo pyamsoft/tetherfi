@@ -20,7 +20,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -45,15 +44,15 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 internal class TcpProxySession
 @Inject
@@ -65,7 +64,6 @@ internal constructor(
     private val seenClients: SeenClients,
     private val clock: Clock,
     private val enforcer: ThreadEnforcer,
-    private val inAppRatingPreferences: InAppRatingPreferences,
 ) :
     BaseProxySession<TcpProxyData>(
         SharedProxy.Type.TCP,
@@ -436,28 +434,11 @@ internal constructor(
     return blockedClients.isBlocked(client)
   }
 
-  override suspend fun exchange(
+  private fun handleClientRequestSideEffects(
+      scope: CoroutineScope,
       context: CoroutineContext,
-      data: TcpProxyData,
+      client: TetherClient,
   ) {
-    enforcer.assertOffMainThread()
-
-    /** The Proxy is our device */
-    val connection = data.connection
-    val proxyInput = connection.openReadChannel()
-    val proxyOutput = connection.openWriteChannel(autoFlush = true)
-
-    // Reject the connection if it is a blocked client
-    val client = resolveClient(connection)
-    if (client == null) {
-      val msg = "Unable to resolve TetherClient for connection: $connection"
-      warnLog { msg }
-      writeError(proxyOutput)
-      proxyInput.cancel()
-      proxyOutput.close()
-      return
-    }
-
     // Mark all client connections as seen
     //
     // We need to do this because we have access to the MAC address via the GroupInfo.clientList
@@ -468,31 +449,20 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    seenClients.seen(client)
-    inAppRatingPreferences.markDeviceConnected()
-
-    if (isBlockedClient(client)) {
-      val msg = "Client is marked blocked: $client"
-      warnLog { msg }
-      writeError(proxyOutput)
-      proxyInput.cancel()
-      proxyOutput.close()
-      return
+    scope.launch(context = context) {
+      // We launch to have this side effect run in parallel with processing
+      seenClients.seen(this, client)
     }
+  }
 
-    /** We use a string parsing to figure out what this HTTP request wants to do */
-    val request = parseRequest(proxyInput)
+  private suspend fun proxyToInternet(
+      context: CoroutineContext,
+      request: ProxyRequest,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+  ) {
+    // Given the request, connect to the Web
     try {
-      if (request == null) {
-        val msg = "Could not parse proxy request"
-        warnLog { msg }
-        writeError(proxyOutput)
-        proxyInput.cancel()
-        proxyOutput.close()
-        return
-      }
-
-      // Given the request, connect to the Web
       connectToInternet(
               context = context,
               request = request,
@@ -518,6 +488,81 @@ internal constructor(
         writeError(proxyOutput)
       }
     }
+  }
+
+  private suspend fun handleClientRequest(
+      scope: CoroutineScope,
+      context: CoroutineContext,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      client: TetherClient
+  ) {
+    handleClientRequestSideEffects(
+        scope = scope,
+        context = context,
+        client = client,
+    )
+
+    // If the client is blocked we do not process any inpue
+    if (isBlockedClient(client)) {
+      val msg = "Client is marked blocked: $client"
+      warnLog { msg }
+      writeError(proxyOutput)
+      proxyInput.cancel()
+      proxyOutput.close()
+      return
+    }
+
+    // We use a string parsing to figure out what this HTTP request wants to do
+    val request = parseRequest(proxyInput)
+    if (request == null) {
+      val msg = "Could not parse proxy request"
+      warnLog { msg }
+      writeError(proxyOutput)
+      proxyInput.cancel()
+      proxyOutput.close()
+      return
+    }
+
+    // And then we go to the web!
+    proxyToInternet(
+        context = context,
+        request = request,
+        proxyInput = proxyInput,
+        proxyOutput = proxyOutput,
+    )
+  }
+
+  override suspend fun exchange(
+      scope: CoroutineScope,
+      context: CoroutineContext,
+      data: TcpProxyData,
+  ) {
+    enforcer.assertOffMainThread()
+
+    /** The Proxy is our device */
+    val connection = data.connection
+    val proxyInput = connection.openReadChannel()
+    val proxyOutput = connection.openWriteChannel(autoFlush = true)
+
+    // Resolve the client as an IP or hostname
+    val client = resolveClient(connection)
+    if (client == null) {
+      val msg = "Unable to resolve TetherClient for connection: $connection"
+      warnLog { msg }
+      writeError(proxyOutput)
+      proxyInput.cancel()
+      proxyOutput.close()
+      return
+    }
+
+    handleClientRequest(
+        scope = scope,
+        context = context,
+        client = client,
+        proxyInput = proxyInput,
+        proxyOutput = proxyOutput,
+    )
   }
 
   private data class MethodData(

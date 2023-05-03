@@ -17,11 +17,13 @@
 package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 internal interface ProxySession<T : ProxyData> {
 
   suspend fun exchange(
+      scope: CoroutineScope,
       context: CoroutineContext,
       data: T,
   )

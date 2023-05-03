@@ -55,6 +55,19 @@ internal constructor(
   // Keep this lazy so that the fallback password is always the same
   private val fallbackPassword by lazy(LazyThreadSafetyMode.NONE) { PasswordGenerator.generate() }
 
+  @CheckResult
+  private fun isInAppRatingAlreadyShown(): Boolean {
+    enforcer.assertOffMainThread()
+    val version = preferences.getInt(IN_APP_RATING_SHOWN_VERSION, 0)
+    return version.isInAppRatingAlreadyShown()
+  }
+
+  @CheckResult
+  private fun Int.isInAppRatingAlreadyShown(): Boolean {
+    enforcer.assertOffMainThread()
+    return this > 0 && this == BuildConfig.VERSION_CODE
+  }
+
   override suspend fun listenForWakeLockChanges(): Flow<Boolean> =
       withContext(context = Dispatchers.IO) { preferences.booleanFlow(WAKE_LOCK, true) }
 
@@ -131,19 +144,6 @@ internal constructor(
       withContext(context = Dispatchers.IO) {
         preferences.edit { putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE) }
       }
-
-  @CheckResult
-  private fun isInAppRatingAlreadyShown(): Boolean {
-    enforcer.assertOffMainThread()
-    val version = preferences.getInt(IN_APP_RATING_SHOWN_VERSION, 0)
-    return version.isInAppRatingAlreadyShown()
-  }
-
-  @CheckResult
-  private fun Int.isInAppRatingAlreadyShown(): Boolean {
-    enforcer.assertOffMainThread()
-    return this > 0 && this == BuildConfig.VERSION_CODE
-  }
 
   override suspend fun markHotspotUsed() =
       withContext(context = Dispatchers.IO) {
