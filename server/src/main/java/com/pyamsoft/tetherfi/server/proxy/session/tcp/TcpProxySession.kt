@@ -44,15 +44,15 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 internal class TcpProxySession
 @Inject
@@ -434,11 +434,12 @@ internal constructor(
     return blockedClients.isBlocked(client)
   }
 
-  private fun handleClientRequestSideEffects(
-      scope: CoroutineScope,
+  private fun CoroutineScope.handleClientRequestSideEffects(
       context: CoroutineContext,
       client: TetherClient,
   ) {
+    val scope = this
+
     // Mark all client connections as seen
     //
     // We need to do this because we have access to the MAC address via the GroupInfo.clientList
@@ -497,11 +498,16 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       client: TetherClient
   ) {
-    handleClientRequestSideEffects(
-        scope = scope,
-        context = context,
-        client = client,
-    )
+    // This is launched as its own scope so that the side effect does not slow
+    // down the internet traffic processing.
+    // Since this context is our own dispatcher which is cachedThreadPool backed,
+    // we just "spin up" another thread and forget about it performance wise.
+    scope.launch(context = context) {
+      handleClientRequestSideEffects(
+          context = context,
+          client = client,
+      )
+    }
 
     // If the client is blocked we do not process any inpue
     if (isBlockedClient(client)) {
