@@ -24,7 +24,6 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
 
 class MainViewModeler
 @Inject
@@ -60,7 +60,6 @@ internal constructor(
           .collect { show ->
             if (show) {
               Timber.d("Show in-app rating")
-              inAppRatingPreferences.markInAppRatingShown()
               withContext(context = Dispatchers.Main) { onShowInAppRating() }
             }
           }

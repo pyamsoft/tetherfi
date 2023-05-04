@@ -9,9 +9,6 @@ interface InAppRatingPreferences {
   /** Watch to show the rating */
   @CheckResult suspend fun listenShowInAppRating(): Flow<Boolean>
 
-  /** Rating is shown for current version */
-  suspend fun markInAppRatingShown()
-
   /** How many times has the user turned the hotspot on */
   suspend fun markHotspotUsed()
 

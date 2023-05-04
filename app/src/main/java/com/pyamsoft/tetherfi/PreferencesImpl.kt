@@ -29,15 +29,15 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -135,14 +135,15 @@ internal constructor(
             Timber.w("Already shown in-app rating for version: $lastVersionShown")
             emit(false)
           } else {
+
+            // Commit this edit so that it fires immediately before we process again
+            preferences.edit(commit = true) {
+              putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
+            }
+
             emit(hotspotUsed >= 2 && devicesConnected >= 1 && appOpened >= 3)
           }
         }
-      }
-
-  override suspend fun markInAppRatingShown() =
-      withContext(context = Dispatchers.IO) {
-        preferences.edit { putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE) }
       }
 
   override suspend fun markHotspotUsed() =
