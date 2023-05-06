@@ -69,7 +69,7 @@ dependencies {
   api("com.google.accompanist:accompanist-pager-indicators:${rootProject.extra["accompanist"]}")
 
   // Material Design
-  api("com.google.android.material:material:1.8.0")
+  api("com.google.android.material:material:1.9.0")
 
   implementation("io.github.g0dkar:qrcode-kotlin-android:3.3.0")
 
