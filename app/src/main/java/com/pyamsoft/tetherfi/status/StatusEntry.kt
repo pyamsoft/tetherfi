@@ -40,11 +40,11 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -145,6 +145,7 @@ private fun MountHooks(
   LaunchedEffect(viewModel) {
     viewModel.loadPreferences(scope = this)
     viewModel.watchStatusUpdates(scope = this)
+    viewModel.bind(scope = this)
     handleRefreshSystemInfo(this)
   }
 
@@ -256,6 +257,7 @@ fun StatusEntry(
       onHideNetworkError = { viewModel.handleCloseNetworkError() },
       onShowHotspotError = { viewModel.handleOpenHotspotError() },
       onHideHotspotError = { viewModel.handleCloseHotspotError() },
+      onHideSetupError = { viewModel.handleCloseSetupError() },
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
   )

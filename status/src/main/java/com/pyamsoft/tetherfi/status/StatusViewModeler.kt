@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -30,19 +31,23 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
 internal constructor(
     override val state: MutableStatusViewState,
+    private val enforcer: ThreadEnforcer,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
     private val network: WiDiNetworkStatus,
@@ -84,6 +89,10 @@ internal constructor(
         registry
             .registerProvider(KEY_SHOW_NETWORK_ERROR) { state.isShowingNetworkError.value }
             .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_SETUP_ERROR) { state.isShowingSetupError.value }
+            .also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
@@ -96,6 +105,11 @@ internal constructor(
         .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)
         ?.let { it as Boolean }
         ?.also { state.isShowingHotspotError.value = it }
+
+    registry
+        .consumeRestored(KEY_SHOW_SETUP_ERROR)
+        ?.let { it as Boolean }
+        ?.also { state.isShowingSetupError.value = it }
   }
 
   fun handleToggleProxy() {
@@ -288,6 +302,36 @@ internal constructor(
     }
   }
 
+  fun bind(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.IO) {
+      // If either of these sets an error state, we will mark the error dialog as shown
+      combineTransform(
+              state.wiDiStatus,
+              state.proxyStatus,
+          ) { wifi, proxy ->
+            enforcer.assertOffMainThread()
+
+            emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
+          }
+          // Need this or we run on the main thread
+          .flowOn(context = Dispatchers.IO)
+          // Don't re-show an error when an error is already sent
+          .distinctUntilChanged()
+          .collect { show ->
+            enforcer.assertOffMainThread()
+
+            // We only care when one or both is an error and we show this additional dialog
+            if (show) {
+              state.isShowingSetupError.value = true
+            }
+          }
+    }
+  }
+
+  fun handleCloseSetupError() {
+    state.isShowingSetupError.value = false
+  }
+
   fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
     state.ssid.value = ssid
     scope.launch(context = Dispatchers.Main) { serverPreferences.setSsid(ssid) }
@@ -342,6 +386,7 @@ internal constructor(
   }
 
   companion object {
+    private const val KEY_SHOW_SETUP_ERROR = "key_show_setup_error"
     private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
     private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
   }

@@ -76,6 +76,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.trimmedLength
+import com.pyamsoft.pydroid.theme.HairlineSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
@@ -115,7 +116,6 @@ private enum class StatusScreenContentTypes {
   EDIT_PORT,
   VIEW_SSID,
   VIEW_PASSWD,
-  VIEW_PORT,
   VIEW_PROXY,
   TILES,
   BANDS,
@@ -162,6 +162,7 @@ fun StatusScreen(
     onToggleKeepWifiLock: () -> Unit,
 
     // Errors
+    onHideSetupError: () -> Unit,
     onShowNetworkError: () -> Unit,
     onHideNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
@@ -302,6 +303,7 @@ fun StatusScreen(
               serverViewState = serverViewState,
               isEditable = isEditable,
               wiDiStatus = wiDiStatus,
+              proxyStatus = proxyStatus,
               showNotificationSettings = showNotificationSettings,
               onSsidChanged = onSsidChanged,
               onPasswordChanged = onPasswordChanged,
@@ -330,6 +332,7 @@ fun StatusScreen(
         onRequestPermissions = onRequestPermissions,
         onHideNetworkError = onHideNetworkError,
         onHideHotspotError = onHideHotspotError,
+        onHideSetupError = onHideSetupError,
     )
   }
 }
@@ -346,6 +349,7 @@ private fun Dialogs(
     onDismissPermissionExplanation: () -> Unit,
 
     // Errors
+    onHideSetupError: () -> Unit,
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
@@ -356,6 +360,24 @@ private fun Dialogs(
 
   val isShowingNetworkError by state.isShowingNetworkError.collectAsState()
   val connection by serverViewState.connection.collectAsState()
+
+  val wiDiStatus by state.wiDiStatus.collectAsState()
+  val proxyStatus by state.proxyStatus.collectAsState()
+  val isShowingSetupError by state.isShowingSetupError.collectAsState()
+  val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+  val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
+
+  AnimatedVisibility(
+      visible = isShowingSetupError,
+  ) {
+    TroubleshootDialog(
+        modifier = Modifier.fullScreenDialog(),
+        appName = appName,
+        isWifiDirectError = isWifiDirectError,
+        isProxyError = isProxyError,
+        onDismiss = onHideSetupError,
+    )
+  }
 
   AnimatedVisibility(
       visible = explainPermissions,
@@ -452,6 +474,7 @@ private fun LazyListScope.renderLoadedContent(
 
     // Network
     wiDiStatus: RunningStatus,
+    proxyStatus: RunningStatus,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
@@ -484,6 +507,7 @@ private fun LazyListScope.renderLoadedContent(
       state = state,
       serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,
+      proxyStatus = proxyStatus,
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
       onPortChanged = onPortChanged,
@@ -564,6 +588,7 @@ private fun LazyListScope.renderNetworkInformation(
     // Running
     isEditable: Boolean,
     wiDiStatus: RunningStatus,
+    proxyStatus: RunningStatus,
 
     // Network config
     onSsidChanged: (String) -> Unit,
@@ -583,7 +608,15 @@ private fun LazyListScope.renderNetworkInformation(
   item(
       contentType = StatusScreenContentTypes.NETWORK_ERROR,
   ) {
-    val showErrorHintMessage = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+    val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+    val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
+    val showErrorHintMessage =
+        remember(
+            isWifiDirectError,
+            isProxyError,
+        ) {
+          isWifiDirectError || isProxyError
+        }
 
     AnimatedVisibility(
         visible = showErrorHintMessage,
@@ -591,16 +624,21 @@ private fun LazyListScope.renderNetworkInformation(
       Box(
           modifier =
               itemModifier
+                  .fillMaxWidth()
                   .padding(horizontal = MaterialTheme.keylines.content)
-                  .padding(bottom = MaterialTheme.keylines.content),
+                  .padding(bottom = MaterialTheme.keylines.content * 2)
+                  .border(
+                      width = HairlineSize,
+                      color = MaterialTheme.colors.error,
+                      shape = MaterialTheme.shapes.medium,
+                  )
+                  .padding(vertical = MaterialTheme.keylines.content),
       ) {
-        Text(
-            text =
-                "Wi-Fi must be turned on for the hotspot to work. It also must not be connected to any other Wi-Fi networks. Try toggling this device's Wi-Fi off and on, then try again.",
-            style =
-                MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.error,
-                ),
+        TroubleshootUnableToStart(
+            modifier = Modifier.fillMaxWidth(),
+            appName = appName,
+            isWifiDirectError = isWifiDirectError,
+            isProxyError = isProxyError,
         )
       }
     }
@@ -857,6 +895,9 @@ private fun LazyListScope.renderNetworkInformation(
       val connection by serverViewState.connection.collectAsState()
       val ipAddress = rememberServerIp(connection)
 
+      val port by serverViewState.port.collectAsState()
+      val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
+
       Row(
           modifier =
               itemModifier
@@ -865,6 +906,7 @@ private fun LazyListScope.renderNetworkInformation(
           verticalAlignment = Alignment.CenterVertically,
       ) {
         StatusItem(
+            modifier = Modifier.weight(1F),
             title = "PROXY URL/HOSTNAME",
             value = ipAddress,
             valueStyle =
@@ -873,28 +915,22 @@ private fun LazyListScope.renderNetworkInformation(
                     fontFamily = FontFamily.Monospace,
                 ),
         )
+
+        Spacer(
+            modifier = Modifier.width(MaterialTheme.keylines.content),
+        )
+
+        StatusItem(
+            modifier = Modifier.weight(1F),
+            title = "PROXY PORT",
+            value = portNumber,
+            valueStyle =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
+                ),
+        )
       }
-    }
-
-    item(
-        contentType = StatusScreenContentTypes.VIEW_PORT,
-    ) {
-      val port by serverViewState.port.collectAsState()
-      val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
-
-      StatusItem(
-          modifier =
-              itemModifier
-                  .padding(bottom = MaterialTheme.keylines.baseline)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-          title = "PROXY PORT",
-          value = portNumber,
-          valueStyle =
-              MaterialTheme.typography.h6.copy(
-                  fontWeight = FontWeight.W400,
-                  fontFamily = FontFamily.Monospace,
-              ),
-      )
     }
 
     item(
@@ -1308,6 +1344,7 @@ private fun PreviewStatusScreen(
       onShowHotspotError = {},
       onShowNetworkError = {},
       onHideNetworkError = {},
+      onHideSetupError = {},
   )
 }
 

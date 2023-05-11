@@ -52,6 +52,7 @@ interface StatusViewState : UiViewState {
   val isBatteryOptimizationsIgnored: StateFlow<Boolean>
 
   // Dialogs
+  val isShowingSetupError: StateFlow<Boolean>
   val isShowingNetworkError: StateFlow<Boolean>
   val isShowingHotspotError: StateFlow<Boolean>
 
@@ -87,6 +88,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val keepWifiLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
 
+  override val isShowingSetupError = MutableStateFlow(false)
   override val isShowingNetworkError = MutableStateFlow(false)
   override val isShowingHotspotError = MutableStateFlow(false)
 }
