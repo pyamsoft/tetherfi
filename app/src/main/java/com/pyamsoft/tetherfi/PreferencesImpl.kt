@@ -32,6 +32,7 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -49,7 +50,7 @@ internal constructor(
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
-    PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+    PreferenceManager.getDefaultSharedPreferences(context.applicationContext).also {}
   }
 
   // Keep this lazy so that the fallback password is always the same
@@ -124,26 +125,39 @@ internal constructor(
   override suspend fun listenShowInAppRating(): Flow<Boolean> =
       withContext(context = Dispatchers.IO) {
         combineTransform(
-            preferences.intFlow(IN_APP_HOTSPOT_USED, 0),
-            preferences.intFlow(IN_APP_DEVICES_CONNECTED, 0),
-            preferences.intFlow(IN_APP_APP_OPENED, 0),
-            preferences.intFlow(IN_APP_RATING_SHOWN_VERSION, 0),
-        ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
-          enforcer.assertOffMainThread()
+                preferences.intFlow(IN_APP_HOTSPOT_USED, 0),
+                preferences.intFlow(IN_APP_DEVICES_CONNECTED, 0),
+                preferences.intFlow(IN_APP_APP_OPENED, 0),
+                preferences.intFlow(IN_APP_RATING_SHOWN_VERSION, 0),
+            ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
+              enforcer.assertOffMainThread()
 
-          if (lastVersionShown.isInAppRatingAlreadyShown()) {
-            Timber.w("Already shown in-app rating for version: $lastVersionShown")
-            emit(false)
-          } else {
+              Timber.d(
+                  "In app rating check: ${mapOf(
+                    "lastVersion" to lastVersionShown,
+                    "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
+                    "hotspotUsed" to hotspotUsed,
+                    "devicesConnected" to devicesConnected,
+                    "appOpened" to appOpened,
+                )}")
 
-            // Commit this edit so that it fires immediately before we process again
-            preferences.edit(commit = true) {
-              putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
+              if (lastVersionShown.isInAppRatingAlreadyShown()) {
+                Timber.w("Already shown in-app rating for version: $lastVersionShown")
+                emit(false)
+              } else {
+                val show = hotspotUsed >= 3 && devicesConnected >= 2 && appOpened >= 7
+                emit(show)
+
+                if (show) {
+                  // Commit this edit so that it fires immediately before we process again
+                  preferences.edit(commit = true) {
+                    putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
+                  }
+                }
+              }
             }
-
-            emit(hotspotUsed >= 2 && devicesConnected >= 1 && appOpened >= 3)
-          }
-        }
+            // Need this or we run on the main thread
+            .flowOn(context = Dispatchers.IO)
       }
 
   override suspend fun markHotspotUsed() =
