@@ -77,6 +77,7 @@ subprojects {
   plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
     project.apply plugin: "org.gradle.android.cache-fix"
     project.apply plugin: "kotlin-android"
+    project.apply plugin: "kotlin-kapt"
 
     // Configure matching toolchains
     // https://kotlinlang.org/docs/gradle-configure-project.html#2c42d1dc
