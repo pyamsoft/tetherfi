@@ -30,7 +30,7 @@ buildscript {
     leakCanary = "2.10"
 
     // Dagger
-    dagger = "2.46"
+    dagger = "2.46.1"
 
     // Compose
     compose = "1.4.3"
