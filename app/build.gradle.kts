@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-plugins { id("com.android.application") }
+plugins {
+  id("com.android.application")
+  id("com.google.devtools.ksp")
+}
 
 android {
   namespace = "com.pyamsoft.tetherfi"
@@ -100,7 +103,7 @@ android {
 dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
-  kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Leak Canary
   debugImplementation(

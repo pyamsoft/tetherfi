@@ -66,6 +66,10 @@ plugins {
   // Spotless
   // https://github.com/diffplug/spotless
   id("com.diffplug.spotless") version "6.18.0" apply false
+
+  // KSP
+  // https://github.com/google/ksp
+  id("com.google.devtools.ksp") version "1.8.21-1.0.11" apply false
 }
 
 subprojects {
@@ -73,20 +77,6 @@ subprojects {
   plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
     project.apply plugin: "org.gradle.android.cache-fix"
     project.apply plugin: "kotlin-android"
-    project.apply plugin: "kotlin-kapt"
-
-    // Kapt flags
-    kapt {
-      correctErrorTypes = true
-      useBuildCache = true
-      mapDiagnosticLocations = true
-
-      javacOptions {
-        option("-Xlint:unchecked")
-        option("-Xlint:deprecation")
-        option("-Xmaxerrs", 10000)
-      }
-    }
 
     // Configure matching toolchains
     // https://kotlinlang.org/docs/gradle-configure-project.html#2c42d1dc
