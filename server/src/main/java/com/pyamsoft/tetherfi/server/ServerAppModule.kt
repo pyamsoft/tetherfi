@@ -167,14 +167,16 @@ abstract class ServerAppModule {
     @Singleton
     @ServerInternalApi
     internal fun provideProxyDispatcher(): CoroutineDispatcher {
-      // This is a completely unbounded threadpool that is different from Dispatcher IO
-      // so we don't block that dispatcher with network related work
+      // We don't use Dispatchers.IO because it absolutely fucks system performance after ~16
+      // threads are allocated at the same time.
+      // We don't use Dispatchers.Default since UI operations use it and we don't want a UI suspend
+      // to slow our network performance down
       //
-      // We use an unbounded instead of a bounded pool because a bound queue with task waiting is
-      // just too slow for network related performance
-      //
-      // Since most networking is short lived, this pool is suited for quick threading tasks
-      return Executors.newCachedThreadPool().asCoroutineDispatcher()
+      // We use a fixed thread pool to avoid system performance getting fucked, and we expect at
+      // least 8 or the number of cores.
+      val coreCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(8)
+      val pool = Executors.newFixedThreadPool(coreCount)
+      return pool.asCoroutineDispatcher()
     }
   }
 }
