@@ -47,6 +47,7 @@ import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -75,6 +76,8 @@ fun ConnectionScreen(
       modifier = modifier,
   ) { pv ->
     LazyColumn {
+      renderPYDroidExtras()
+
       group.also { gi ->
         if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
           if (clients.isEmpty()) {
