@@ -36,11 +36,10 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +54,6 @@ protected constructor(
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val appContext: Context,
     private val permissionGuard: PermissionGuard,
-    private val dispatcher: CoroutineDispatcher,
     private val config: WiDiConfig,
     private val appEnvironment: AppDevEnvironment,
     private val enforcer: ThreadEnforcer,
@@ -66,8 +64,6 @@ protected constructor(
     appContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
 
-  private val scope by lazy { CoroutineScope(context = dispatcher) }
-
   private val groupInfoChannel =
       MutableStateFlow<WiDiNetworkStatus.GroupInfo>(WiDiNetworkStatus.GroupInfo.Empty)
   private val connectionInfoChannel =
@@ -76,8 +72,14 @@ protected constructor(
   private val mutex = Mutex()
   private var wifiChannel: Channel? = null
 
+  private val directScope by lazy {
+    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+  }
+
   @CheckResult
-  private fun createChannel(context: CoroutineContext): Channel? {
+  private fun createChannel(): Channel? {
+    enforcer.assertOffMainThread()
+
     Timber.d("Creating WifiP2PManager Channel")
 
     // This can return null if initialization fails
@@ -85,15 +87,20 @@ protected constructor(
         appContext,
         Looper.getMainLooper(),
     ) {
-      scope.launch(context = context) {
+      directScope.launch {
+        val scope = this
+        enforcer.assertOffMainThread()
+
         Timber.d("WifiP2PManager Channel died. Kill network")
-        stopNetwork(resetStatus = false)
+        stopNetwork(scope = scope, resetStatus = false)
       }
     }
   }
 
   @CheckResult
   private suspend fun getChannel(): Channel? {
+    enforcer.assertOffMainThread()
+
     return mutex.withLock { wifiChannel }
   }
 
@@ -172,59 +179,60 @@ protected constructor(
         }
       }
 
-  private suspend fun startNetwork(context: CoroutineContext) =
-      withContext(context = context) {
-        enforcer.assertOffMainThread()
+  private suspend fun startNetwork(scope: CoroutineScope) {
+    enforcer.assertOffMainThread()
 
-        if (!permissionGuard.canCreateWiDiNetwork()) {
-          Timber.w("Missing permissions for making WiDi network")
-          status.set(RunningStatus.NotRunning)
-          return@withContext
-        }
+    if (!permissionGuard.canCreateWiDiNetwork()) {
+      Timber.w("Missing permissions for making WiDi network")
+      status.set(RunningStatus.NotRunning)
+      return
+    }
 
-        Timber.d("Start new network")
-        status.set(RunningStatus.Starting)
+    Timber.d("Start new network")
+    status.set(RunningStatus.Starting)
 
-        val channel = createChannel(context = context)
-        if (channel == null) {
-          Timber.w("Failed to create channel, cannot initialize WiDi network")
+    val channel = createChannel()
+    if (channel == null) {
+      Timber.w("Failed to create channel, cannot initialize WiDi network")
 
-          completeStop { status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel")) }
-          return@withContext
-        }
+      completeStop(scope) {
+        status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+      }
+      return
+    }
 
-        val runningStatus = createGroup(channel)
-        if (runningStatus is RunningStatus.Running) {
-          Timber.d("Network started")
+    val runningStatus = createGroup(channel)
+    if (runningStatus is RunningStatus.Running) {
+      Timber.d("Network started")
 
-          // Only store the channel if it successfully "finished" creating.
-          mutex.withLock {
-            Timber.d("Store WiFi channel")
-            wifiChannel = channel
-          }
-
-          updateNetworkInfoChannels(context = context)
-          onNetworkStarted(context = context)
-        } else {
-          Timber.w("Group failed creation, stop proxy")
-
-          // Remove whatever was created (should be a no-op if everyone follows API correctly)
-          shutdownWifiNetwork(channel)
-
-          completeStop { Timber.w("Stopping proxy after Group failed to create") }
-        }
-
-        status.set(runningStatus)
+      // Only store the channel if it successfully "finished" creating.
+      mutex.withLock {
+        Timber.d("Store WiFi channel")
+        wifiChannel = channel
       }
 
-  private suspend fun completeStop(onStop: () -> Unit) =
-      withContext(context = Dispatchers.Main) {
-        val context = dispatcher
+      updateNetworkInfoChannels()
+      onNetworkStarted(scope)
+    } else {
+      Timber.w("Group failed creation, stop proxy")
 
-        updateNetworkInfoChannels(context = context)
-        onNetworkStopped(context = context)
-        onStop()
-      }
+      // Remove whatever was created (should be a no-op if everyone follows API correctly)
+      shutdownWifiNetwork(channel)
+
+      completeStop(scope) { Timber.w("Stopping proxy after Group failed to create") }
+    }
+
+    status.set(runningStatus)
+  }
+
+  private suspend fun completeStop(scope: CoroutineScope, onStop: () -> Unit) {
+    enforcer.assertOffMainThread()
+
+    updateNetworkInfoChannels()
+    onNetworkStopped(scope = scope)
+
+    onStop()
+  }
 
   // Lock the mutex to avoid anyone else from using the channel during closing
   private suspend fun shutdownWifiNetwork(channel: Channel) {
@@ -244,7 +252,7 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork(resetStatus: Boolean) {
+  private suspend fun stopNetwork(scope: CoroutineScope, resetStatus: Boolean) {
     enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -252,7 +260,7 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but this
     // is basically a no-op
     if (channel == null) {
-      completeStop {
+      completeStop(scope) {
         if (resetStatus) {
           Timber.d("Resetting status back to not running")
           status.set(RunningStatus.NotRunning)
@@ -267,7 +275,7 @@ protected constructor(
 
     shutdownWifiNetwork(channel)
 
-    completeStop {
+    completeStop(scope) {
       Timber.d("Proxy was stopped")
       status.set(RunningStatus.NotRunning)
     }
@@ -310,6 +318,8 @@ protected constructor(
 
   @CheckResult
   private fun handleGroupDebugEnvironment(): WiDiNetworkStatus.GroupInfo? {
+    enforcer.assertOffMainThread()
+
     val debugGroup = appEnvironment.group
     if (debugGroup.isEmpty.value) {
       Timber.w("DEBUG forcing Empty group response")
@@ -335,49 +345,50 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun getGroupInfo(context: CoroutineContext): WiDiNetworkStatus.GroupInfo =
-      withContext(context = context) {
-        enforcer.assertOffMainThread()
+  private suspend fun getGroupInfo(): WiDiNetworkStatus.GroupInfo {
+    enforcer.assertOffMainThread()
 
-        if (!permissionGuard.canCreateWiDiNetwork()) {
-          Timber.w("Missing permissions, cannot get Group Info")
-          return@withContext WiDiNetworkStatus.GroupInfo.Empty
-        }
+    if (!permissionGuard.canCreateWiDiNetwork()) {
+      Timber.w("Missing permissions, cannot get Group Info")
+      return WiDiNetworkStatus.GroupInfo.Empty
+    }
 
-        val channel = getChannel()
-        if (channel == null) {
-          Timber.w("Cannot get group info without Wifi channel")
-          return@withContext WiDiNetworkStatus.GroupInfo.Empty
-        }
+    val channel = getChannel()
+    if (channel == null) {
+      Timber.w("Cannot get group info without Wifi channel")
+      return WiDiNetworkStatus.GroupInfo.Empty
+    }
 
-        val result: WiDiNetworkStatus.GroupInfo
-        val group = resolveCurrentGroup(channel)
-        if (group == null) {
-          Timber.w("WiFi Direct did not return Group Info")
-          result =
-              WiDiNetworkStatus.GroupInfo.Error(
-                  error = IllegalStateException("WiFi Direct did not return Group Info"),
-              )
-        } else {
-          result =
-              WiDiNetworkStatus.GroupInfo.Connected(
-                  ssid = group.networkName,
-                  password = group.passphrase,
-              )
-          Timber.d("WiFi Direct Group Info: $result")
-        }
+    val result: WiDiNetworkStatus.GroupInfo
+    val group = resolveCurrentGroup(channel)
+    if (group == null) {
+      Timber.w("WiFi Direct did not return Group Info")
+      result =
+          WiDiNetworkStatus.GroupInfo.Error(
+              error = IllegalStateException("WiFi Direct did not return Group Info"),
+          )
+    } else {
+      result =
+          WiDiNetworkStatus.GroupInfo.Connected(
+              ssid = group.networkName,
+              password = group.passphrase,
+          )
+      Timber.d("WiFi Direct Group Info: $result")
+    }
 
-        val forcedDebugResult = handleGroupDebugEnvironment()
-        if (forcedDebugResult != null) {
-          Timber.w("Returning DEBUG result which overrides real: $result")
-          return@withContext forcedDebugResult
-        } else {
-          return@withContext result
-        }
-      }
+    val forcedDebugResult = handleGroupDebugEnvironment()
+    if (forcedDebugResult != null) {
+      Timber.w("Returning DEBUG result which overrides real: $result")
+      return forcedDebugResult
+    }
+
+    return result
+  }
 
   @CheckResult
   private fun handleConnectionDebugEnvironment(): WiDiNetworkStatus.ConnectionInfo? {
+    enforcer.assertOffMainThread()
+
     val debugConnection = appEnvironment.connection
     if (debugConnection.isEmpty.value) {
       Timber.w("DEBUG forcing Empty connection response")
@@ -401,78 +412,73 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun getConnectionInfo(
-      context: CoroutineContext
-  ): WiDiNetworkStatus.ConnectionInfo =
-      withContext(context = context) {
-        enforcer.assertOffMainThread()
+  private suspend fun getConnectionInfo(): WiDiNetworkStatus.ConnectionInfo {
+    enforcer.assertOffMainThread()
 
-        if (!permissionGuard.canCreateWiDiNetwork()) {
-          Timber.w("Missing permissions, cannot get Connection Info")
-          return@withContext WiDiNetworkStatus.ConnectionInfo.Empty
-        }
+    if (!permissionGuard.canCreateWiDiNetwork()) {
+      Timber.w("Missing permissions, cannot get Connection Info")
+      return WiDiNetworkStatus.ConnectionInfo.Empty
+    }
 
-        val channel = getChannel()
-        if (channel == null) {
-          Timber.w("Cannot get connection info without Wifi channel")
-          return@withContext WiDiNetworkStatus.ConnectionInfo.Empty
-        }
+    val channel = getChannel()
+    if (channel == null) {
+      Timber.w("Cannot get connection info without Wifi channel")
+      return WiDiNetworkStatus.ConnectionInfo.Empty
+    }
 
-        val result: WiDiNetworkStatus.ConnectionInfo
-        val info = resolveConnectionInfo(channel)
-        val host = info?.groupOwnerAddress
-        if (host == null) {
-          Timber.w("WiFi Direct did not return Connection Info")
-          result =
-              WiDiNetworkStatus.ConnectionInfo.Error(
-                  error = IllegalStateException("WiFi Direct did not return Connection Info"),
-              )
-        } else {
-          result =
-              WiDiNetworkStatus.ConnectionInfo.Connected(
-                  ip = host.hostAddress.orEmpty(),
-                  hostName = host.hostName.orEmpty(),
-              )
-          Timber.d("WiFi Direct Connection Info: $result")
-        }
+    val result: WiDiNetworkStatus.ConnectionInfo
+    val info = resolveConnectionInfo(channel)
+    val host = info?.groupOwnerAddress
+    if (host == null) {
+      Timber.w("WiFi Direct did not return Connection Info")
+      result =
+          WiDiNetworkStatus.ConnectionInfo.Error(
+              error = IllegalStateException("WiFi Direct did not return Connection Info"),
+          )
+    } else {
+      result =
+          WiDiNetworkStatus.ConnectionInfo.Connected(
+              ip = host.hostAddress.orEmpty(),
+              hostName = host.hostName.orEmpty(),
+          )
+      Timber.d("WiFi Direct Connection Info: $result")
+    }
 
-        val forcedDebugResult = handleConnectionDebugEnvironment()
-        if (forcedDebugResult != null) {
-          Timber.w("Returning DEBUG result which overrides real: $result")
-          return@withContext forcedDebugResult
-        } else {
-          return@withContext result
-        }
-      }
+    val forcedDebugResult = handleConnectionDebugEnvironment()
+    if (forcedDebugResult != null) {
+      Timber.w("Returning DEBUG result which overrides real: $result")
+      return forcedDebugResult
+    }
+    return result
+  }
 
-  private suspend fun updateNetworkInfoChannels(context: CoroutineContext) =
-      withContext(context = context) {
-        enforcer.assertOffMainThread()
+  private suspend fun updateNetworkInfoChannels() {
+    enforcer.assertOffMainThread()
 
-        groupInfoChannel.value = getGroupInfo(context = context)
-        connectionInfoChannel.value = getConnectionInfo(context = context)
-      }
+    groupInfoChannel.value = getGroupInfo()
+    connectionInfoChannel.value = getConnectionInfo()
+  }
 
   final override fun updateNetworkInfo() {
-    val context = dispatcher
-
-    scope.launch(context = context) {
+    directScope.launch {
       enforcer.assertOffMainThread()
 
-      updateNetworkInfoChannels(context = context)
+      updateNetworkInfoChannels()
     }
   }
 
   final override fun start() {
-    val context = dispatcher
-
-    scope.launch(context = context) {
+    directScope.launch {
+      val scope = this
       enforcer.assertOffMainThread()
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork(resetStatus = true)
-        startNetwork(context = context)
+        stopNetwork(
+            scope = scope,
+            resetStatus = true,
+        )
+        startNetwork(scope = scope)
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
@@ -481,12 +487,16 @@ protected constructor(
   }
 
   final override fun stop() {
-    scope.launch(context = dispatcher) {
+    directScope.launch {
+      val scope = this
       enforcer.assertOffMainThread()
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
-        stopNetwork(resetStatus = true)
+        stopNetwork(
+            scope = scope,
+            resetStatus = true,
+        )
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
@@ -503,20 +513,22 @@ protected constructor(
   override suspend fun onConnectionInfoChanged(
       onChange: (WiDiNetworkStatus.ConnectionInfo) -> Unit
   ) =
-      withContext(context = dispatcher) {
+      withContext(context = directScope.coroutineContext) {
         enforcer.assertOffMainThread()
+
         connectionInfoChannel.collect { onChange(it) }
       }
 
   override suspend fun onGroupInfoChanged(onChange: (WiDiNetworkStatus.GroupInfo) -> Unit) =
-      withContext(context = dispatcher) {
+      withContext(context = directScope.coroutineContext) {
         enforcer.assertOffMainThread()
+
         groupInfoChannel.collect { onChange(it) }
       }
 
-  protected abstract suspend fun onNetworkStarted(context: CoroutineContext)
+  protected abstract suspend fun onNetworkStarted(scope: CoroutineScope)
 
-  protected abstract suspend fun onNetworkStopped(context: CoroutineContext)
+  protected abstract suspend fun onNetworkStopped(scope: CoroutineScope)
 
   companion object {
 

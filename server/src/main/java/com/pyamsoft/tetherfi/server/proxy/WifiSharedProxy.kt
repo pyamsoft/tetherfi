@@ -17,31 +17,32 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
 @Inject
 internal constructor(
+    private val enforcer: ThreadEnforcer,
     private val preferences: ServerPreferences,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val factory: ProxyManager.Factory,
     private val eraser: ClientEraser,
     status: ProxyStatus,
@@ -50,25 +51,35 @@ internal constructor(
   private val mutex = Mutex()
   private val jobs = mutableListOf<ProxyJob>()
 
-  /** We own our own scope here because the proxy lifespan is separate */
-  private val scope = CoroutineScope(context = dispatcher)
+  private val proxyScope by lazy {
+    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+  }
 
   /** Get the port for the proxy */
   @CheckResult
-  private suspend fun getPort(): Int =
-      withContext(context = dispatcher) {
-        return@withContext preferences.listenForPortChanges().first()
-      }
+  private suspend fun getPort(): Int {
+    enforcer.assertOffMainThread()
+
+    return preferences.listenForPortChanges().first()
+  }
 
   @CheckResult
-  private fun CoroutineScope.proxyLoop(type: SharedProxy.Type, port: Int): ProxyJob {
+  private fun proxyLoop(
+      type: SharedProxy.Type,
+      port: Int,
+  ): ProxyJob {
+    enforcer.assertOffMainThread()
+
     val manager = factory.create(type = type)
 
     Timber.d("${type.name} Begin proxy server loop $port")
     val job =
-        launch(context = dispatcher) {
+        proxyScope.launch {
+          val scope = this
+          enforcer.assertOffMainThread()
+
           manager.loop(
-              context = dispatcher,
+              context = scope.coroutineContext,
               port = port,
           )
         }
@@ -76,12 +87,16 @@ internal constructor(
   }
 
   private suspend fun shutdown() {
+    enforcer.assertOffMainThread()
+
     clearJobs()
     eraser.clear()
   }
 
   private suspend fun clearJobs() {
     mutex.withLock {
+      enforcer.assertOffMainThread()
+
       jobs.removeEach { proxyJob ->
         Timber.d("Cancelling proxyJob: $proxyJob")
         proxyJob.job.cancel()
@@ -90,9 +105,10 @@ internal constructor(
   }
 
   override fun start() {
-    scope.launch(context = dispatcher) {
-      shutdown()
+    proxyScope.launch {
+      enforcer.assertOffMainThread()
 
+      shutdown()
       try {
         val port = getPort()
         if (port > 65000 || port <= 1024) {
@@ -105,6 +121,8 @@ internal constructor(
         status.set(RunningStatus.Starting)
 
         coroutineScope {
+          enforcer.assertOffMainThread()
+
           val tcp = proxyLoop(type = SharedProxy.Type.TCP, port = port)
 
           mutex.withLock { jobs.add(tcp) }
@@ -121,11 +139,11 @@ internal constructor(
   }
 
   override fun stop() {
-    scope.launch(context = dispatcher) {
+    proxyScope.launch {
+      enforcer.assertOffMainThread()
+
       status.set(RunningStatus.Stopping)
-
       shutdown()
-
       status.set(RunningStatus.NotRunning)
     }
   }
