@@ -9,13 +9,16 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WiFiLocker
@@ -40,28 +43,35 @@ internal constructor(
   private var wakeAcquired = AtomicBoolean(false)
 
   override suspend fun acquireLock() =
-      mutex.withLock {
-        if (!wakeAcquired.getAndSet(true)) {
-          Timber.d("####################################")
-          Timber.d("Acquire WiFi wakelock: $tag")
-          Timber.d("####################################")
-          lock.acquire()
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.IO) {
+          mutex.withLock {
+            if (!wakeAcquired.getAndSet(true)) {
+              Timber.d("####################################")
+              Timber.d("Acquire WiFi wakelock: $tag")
+              Timber.d("####################################")
+              lock.acquire()
+            }
+          }
         }
       }
 
   override suspend fun releaseLock() =
-      mutex.withLock {
-        if (wakeAcquired.getAndSet(false)) {
-          Timber.d("####################################")
-          Timber.d("Release WIFI wakelock: $tag")
-          Timber.d("####################################")
-          lock.release()
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.IO) {
+          mutex.withLock {
+            if (wakeAcquired.getAndSet(false)) {
+              Timber.d("####################################")
+              Timber.d("Release WIFI wakelock: $tag")
+              Timber.d("####################################")
+              lock.release()
+            }
+          }
         }
       }
 
-  override suspend fun isEnabled(): Boolean {
-    return preferences.listenForWiFiLockChanges().first()
-  }
+  override suspend fun isEnabled(): Boolean =
+      withContext(context = Dispatchers.IO) { preferences.listenForWiFiLockChanges().first() }
 
   companion object {
 

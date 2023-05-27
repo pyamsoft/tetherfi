@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface InAppRatingPreferences {
 
   /** Watch to show the rating */
-  @CheckResult suspend fun listenShowInAppRating(): Flow<Boolean>
+  @CheckResult fun listenShowInAppRating(): Flow<Boolean>
 
   /** How many times has the user turned the hotspot on */
   suspend fun markHotspotUsed()

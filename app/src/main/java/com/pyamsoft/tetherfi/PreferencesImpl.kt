@@ -21,14 +21,14 @@ import androidx.annotation.CheckResult
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.pydroid.util.booleanFlow
-import com.pyamsoft.pydroid.util.intFlow
-import com.pyamsoft.pydroid.util.stringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
@@ -36,9 +36,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -50,11 +47,11 @@ internal constructor(
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
-    PreferenceManager.getDefaultSharedPreferences(context.applicationContext).also {}
+    PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
   }
 
   // Keep this lazy so that the fallback password is always the same
-  private val fallbackPassword by lazy(LazyThreadSafetyMode.NONE) { PasswordGenerator.generate() }
+  private val fallbackPassword by lazy { PasswordGenerator.generate() }
 
   @CheckResult
   private fun isInAppRatingAlreadyShown(): Boolean {
@@ -69,53 +66,49 @@ internal constructor(
     return this > 0 && this == BuildConfig.VERSION_CODE
   }
 
-  override suspend fun listenForWakeLockChanges(): Flow<Boolean> =
-      withContext(context = Dispatchers.IO) { preferences.booleanFlow(WAKE_LOCK, true) }
+  override fun listenForWakeLockChanges(): Flow<Boolean> =
+      preferencesBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
   override suspend fun setWakeLock(keep: Boolean) =
       withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WAKE_LOCK, keep) } }
 
-  override suspend fun listenForWiFiLockChanges(): Flow<Boolean> =
-      withContext(context = Dispatchers.IO) { preferences.booleanFlow(WIFI_LOCK, true) }
+  override fun listenForWiFiLockChanges(): Flow<Boolean> =
+      preferencesBooleanFlow(WIFI_LOCK, true).flowOn(context = Dispatchers.IO)
 
   override suspend fun setWiFiLock(keep: Boolean) =
       withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WIFI_LOCK, keep) } }
 
-  override suspend fun listenForSsidChanges(): Flow<String> =
-      withContext(context = Dispatchers.IO) { preferences.stringFlow(SSID, ServerDefaults.SSID) }
+  override fun listenForSsidChanges(): Flow<String> =
+      preferencesStringFlow(SSID, ServerDefaults.SSID)
+          .flowOn(context = Dispatchers.IO)
+          .flowOn(context = Dispatchers.IO)
 
   override suspend fun setSsid(ssid: String) =
       withContext(context = Dispatchers.IO) { preferences.edit { putString(SSID, ssid) } }
 
-  override suspend fun listenForPasswordChanges(): Flow<String> =
+  override suspend fun initializePassword() =
       withContext(context = Dispatchers.IO) {
-        var pass = preferences.getString(PASSWORD, "")
-
-        // Ensure a random password is generated
-        if (pass.isNullOrBlank()) {
-          pass = fallbackPassword
-          setPassword(pass)
+        if (!preferences.contains(PASSWORD)) {
+          setPassword(fallbackPassword)
         }
-
-        return@withContext preferences.stringFlow(PASSWORD, pass)
       }
+
+  override fun listenForPasswordChanges(): Flow<String> =
+      preferencesStringFlow(PASSWORD, fallbackPassword).flowOn(context = Dispatchers.IO)
 
   override suspend fun setPassword(password: String) =
       withContext(context = Dispatchers.IO) { preferences.edit { putString(PASSWORD, password) } }
 
-  override suspend fun listenForPortChanges(): Flow<Int> =
-      withContext(context = Dispatchers.IO) { preferences.intFlow(PORT, ServerDefaults.PORT) }
+  override fun listenForPortChanges(): Flow<Int> =
+      preferencesIntFlow(PORT, ServerDefaults.PORT).flowOn(context = Dispatchers.IO)
 
   override suspend fun setPort(port: Int) =
       withContext(context = Dispatchers.IO) { preferences.edit { putInt(PORT, port) } }
 
-  override suspend fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
-      withContext(context = Dispatchers.IO) {
-        val fallback = ServerDefaults.NETWORK_BAND.name
-        return@withContext preferences.stringFlow(NETWORK_BAND, fallback).map {
-          ServerNetworkBand.valueOf(it)
-        }
-      }
+  override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
+      preferencesStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name)
+          .map { ServerNetworkBand.valueOf(it) }
+          .flowOn(context = Dispatchers.IO)
 
   override suspend fun setNetworkBand(band: ServerNetworkBand) =
       withContext(context = Dispatchers.IO) {
@@ -123,17 +116,16 @@ internal constructor(
       }
 
   override suspend fun listenShowInAppRating(): Flow<Boolean> =
-      withContext(context = Dispatchers.IO) {
-        combineTransform(
-                preferences.intFlow(IN_APP_HOTSPOT_USED, 0),
-                preferences.intFlow(IN_APP_DEVICES_CONNECTED, 0),
-                preferences.intFlow(IN_APP_APP_OPENED, 0),
-                preferences.intFlow(IN_APP_RATING_SHOWN_VERSION, 0),
-            ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
-              enforcer.assertOffMainThread()
+      combineTransform(
+              preferencesIntFlow(IN_APP_HOTSPOT_USED, 0),
+              preferencesIntFlow(IN_APP_DEVICES_CONNECTED, 0),
+              preferencesIntFlow(IN_APP_APP_OPENED, 0),
+              preferencesIntFlow(IN_APP_RATING_SHOWN_VERSION, 0),
+          ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
+            enforcer.assertOffMainThread()
 
-              Timber.d(
-                  "In app rating check: ${mapOf(
+            Timber.d(
+                "In app rating check: ${mapOf(
                     "lastVersion" to lastVersionShown,
                     "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
                     "hotspotUsed" to hotspotUsed,
@@ -141,24 +133,23 @@ internal constructor(
                     "appOpened" to appOpened,
                 )}")
 
-              if (lastVersionShown.isInAppRatingAlreadyShown()) {
-                Timber.w("Already shown in-app rating for version: $lastVersionShown")
-                emit(false)
-              } else {
-                val show = hotspotUsed >= 3 && devicesConnected >= 2 && appOpened >= 7
-                emit(show)
+            if (lastVersionShown.isInAppRatingAlreadyShown()) {
+              Timber.w("Already shown in-app rating for version: $lastVersionShown")
+              emit(false)
+            } else {
+              val show = hotspotUsed >= 3 && devicesConnected >= 2 && appOpened >= 7
+              emit(show)
 
-                if (show) {
-                  // Commit this edit so that it fires immediately before we process again
-                  preferences.edit(commit = true) {
-                    putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
-                  }
+              if (show) {
+                // Commit this edit so that it fires immediately before we process again
+                preferences.edit(commit = true) {
+                  putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
                 }
               }
             }
-            // Need this or we run on the main thread
-            .flowOn(context = Dispatchers.IO)
-      }
+          }
+          // Need this or we run on the main thread
+          .flowOn(context = Dispatchers.IO)
 
   override suspend fun markHotspotUsed() =
       withContext(context = Dispatchers.IO) {

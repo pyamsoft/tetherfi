@@ -20,6 +20,8 @@ import android.content.Context
 import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal class BatteryOptimizerImpl
@@ -30,7 +32,8 @@ internal constructor(
 
   private val powerManager by lazy { context.getSystemService<PowerManager>().requireNotNull() }
 
-  override suspend fun isOptimizationsIgnored(): Boolean {
-    return powerManager.isIgnoringBatteryOptimizations(context.packageName)
-  }
+  override suspend fun isOptimizationsIgnored(): Boolean =
+      withContext(context = Dispatchers.IO) {
+        powerManager.isIgnoringBatteryOptimizations(context.packageName)
+      }
 }

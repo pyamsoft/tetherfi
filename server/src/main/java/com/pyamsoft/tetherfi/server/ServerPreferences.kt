@@ -21,19 +21,21 @@ import kotlinx.coroutines.flow.Flow
 
 interface ServerPreferences {
 
-  @CheckResult suspend fun listenForSsidChanges(): Flow<String>
+  @CheckResult fun listenForSsidChanges(): Flow<String>
 
   suspend fun setSsid(ssid: String)
 
-  @CheckResult suspend fun listenForPasswordChanges(): Flow<String>
+  @CheckResult fun listenForPasswordChanges(): Flow<String>
+
+  suspend fun initializePassword()
 
   suspend fun setPassword(password: String)
 
-  @CheckResult suspend fun listenForPortChanges(): Flow<Int>
+  @CheckResult fun listenForPortChanges(): Flow<Int>
 
   suspend fun setPort(port: Int)
 
-  @CheckResult suspend fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
+  @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
 
   suspend fun setNetworkBand(band: ServerNetworkBand)
 }

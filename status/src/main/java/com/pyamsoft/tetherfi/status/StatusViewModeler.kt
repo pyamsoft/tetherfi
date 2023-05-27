@@ -31,6 +31,7 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
@@ -41,7 +42,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -171,65 +171,80 @@ internal constructor(
     // Start loading
     s.loadingState.value = StatusViewState.LoadingState.LOADING
 
-    scope.launch(context = Dispatchers.Main) {
-      // Always populate the latest lock value
-      servicePreferences.listenForWakeLockChanges().collect { keep ->
-        s.keepWakeLock.value = keep
-
-        // Watch constantly but only update the initial load config if we haven't loaded yet
-        if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-          config.wakelock = true
-          markPreferencesLoaded(config)
-        }
-      }
-    }
-
-    scope.launch(context = Dispatchers.Main) {
-      // Always populate the latest lock value
-      servicePreferences.listenForWiFiLockChanges().collect { keep ->
-        s.keepWifiLock.value = keep
-
-        // Watch constantly but only update the initial load config if we haven't loaded yet
-        if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-          config.wifilock = true
-          markPreferencesLoaded(config)
-        }
-      }
-    }
-
-    scope.launch(context = Dispatchers.Main) {
-      // Only pull once since after this point, the state will be driven by the input
-      s.port.value = serverPreferences.listenForPortChanges().first()
-
-      config.port = true
-      markPreferencesLoaded(config)
-    }
-
-    if (ServerDefaults.canUseCustomConfig()) {
-      scope.launch(context = Dispatchers.Main) {
-        // Only pull once since after this point, the state will be driven by the input
-        s.ssid.value = serverPreferences.listenForSsidChanges().first()
-
-        config.ssid = true
-        markPreferencesLoaded(config)
-      }
-
-      scope.launch(context = Dispatchers.Main) {
-        // Only pull once since after this point, the state will be driven by the input
-        s.password.value = serverPreferences.listenForPasswordChanges().first()
-
-        config.password = true
-        markPreferencesLoaded(config)
-      }
-
-      scope.launch(context = Dispatchers.Main) {
-        serverPreferences.listenForNetworkBandChanges().collect { band ->
-          s.band.value = band
+    // Always populate the latest lock value
+    servicePreferences.listenForWakeLockChanges().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { keep ->
+          s.keepWakeLock.value = keep
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.band = true
+            config.wakelock = true
             markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest lock value
+    servicePreferences.listenForWiFiLockChanges().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { keep ->
+          s.keepWifiLock.value = keep
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.wifilock = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Only pull once since after this point, the state will be driven by the input
+    serverPreferences.listenForPortChanges().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        s.port.value = f.first()
+
+        config.port = true
+        markPreferencesLoaded(config)
+      }
+    }
+
+    if (ServerDefaults.canUseCustomConfig()) {
+      // Only pull once since after this point, the state will be driven by the input
+      serverPreferences.listenForSsidChanges().also { f ->
+        scope.launch(context = Dispatchers.IO) {
+          s.ssid.value = f.first()
+
+          config.ssid = true
+          markPreferencesLoaded(config)
+        }
+      }
+
+      // Only pull once since after this point, the state will be driven by the input
+      serverPreferences.listenForPasswordChanges().also { f ->
+        scope.launch(context = Dispatchers.IO) {
+          // Always init password before pulling
+          serverPreferences.initializePassword()
+
+          s.password.value = f.first()
+
+          config.password = true
+          markPreferencesLoaded(config)
+        }
+      }
+
+      serverPreferences.listenForNetworkBandChanges().also { f ->
+        scope.launch(context = Dispatchers.IO) {
+          f.collect { band ->
+            s.band.value = band
+
+            // Watch constantly but only update the initial load config if we haven't loaded yet
+            if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+              config.band = true
+              markPreferencesLoaded(config)
+            }
           }
         }
       }

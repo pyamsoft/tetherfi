@@ -52,12 +52,12 @@ internal constructor(
       scope: CoroutineScope,
       onShowInAppRating: () -> Unit,
   ) {
-    scope.launch(context = Dispatchers.Main) {
-      inAppRatingPreferences
-          .listenShowInAppRating()
-          .filter { it }
-          .distinctUntilChanged()
-          .also { f ->
+    inAppRatingPreferences
+        .listenShowInAppRating()
+        .filter { it }
+        .distinctUntilChanged()
+        .also { f ->
+          scope.launch(context = Dispatchers.IO) {
             f.collect { show ->
               if (show) {
                 Timber.d("Show in-app rating")
@@ -65,7 +65,7 @@ internal constructor(
               }
             }
           }
-    }
+        }
   }
 
   fun bind(scope: CoroutineScope) {

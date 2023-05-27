@@ -23,10 +23,10 @@ import androidx.annotation.RequiresApi
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 internal class WiDiConfigImpl
 @Inject
@@ -43,6 +43,9 @@ internal constructor(
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredPassword(): String {
+    // Always init password before pulling
+    preferences.initializePassword()
+
     return preferences.listenForPasswordChanges().first()
   }
 

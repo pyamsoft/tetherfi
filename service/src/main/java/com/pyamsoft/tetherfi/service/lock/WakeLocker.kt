@@ -8,13 +8,16 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WakeLocker
@@ -40,28 +43,35 @@ internal constructor(
 
   @SuppressLint("WakelockTimeout")
   override suspend fun acquireLock() =
-      mutex.withLock {
-        if (!wakeAcquired.getAndSet(true)) {
-          Timber.d("####################################")
-          Timber.d("Acquire CPU wakelock: $tag")
-          Timber.d("####################################")
-          lock.acquire()
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.IO) {
+          mutex.withLock {
+            if (!wakeAcquired.getAndSet(true)) {
+              Timber.d("####################################")
+              Timber.d("Acquire CPU wakelock: $tag")
+              Timber.d("####################################")
+              lock.acquire()
+            }
+          }
         }
       }
 
   override suspend fun releaseLock() =
-      mutex.withLock {
-        if (wakeAcquired.getAndSet(false)) {
-          Timber.d("####################################")
-          Timber.d("Release CPU wakelock: $tag")
-          Timber.d("####################################")
-          lock.release()
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.IO) {
+          mutex.withLock {
+            if (wakeAcquired.getAndSet(false)) {
+              Timber.d("####################################")
+              Timber.d("Release CPU wakelock: $tag")
+              Timber.d("####################################")
+              lock.release()
+            }
+          }
         }
       }
 
-  override suspend fun isEnabled(): Boolean {
-    return preferences.listenForWakeLockChanges().first()
-  }
+  override suspend fun isEnabled(): Boolean =
+      withContext(context = Dispatchers.IO) { preferences.listenForWakeLockChanges().first() }
 
   companion object {
 

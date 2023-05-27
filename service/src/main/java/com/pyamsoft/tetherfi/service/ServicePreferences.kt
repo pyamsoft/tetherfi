@@ -21,11 +21,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface ServicePreferences {
 
-  @CheckResult suspend fun listenForWakeLockChanges(): Flow<Boolean>
+  @CheckResult fun listenForWakeLockChanges(): Flow<Boolean>
 
   suspend fun setWakeLock(keep: Boolean)
 
-  @CheckResult suspend fun listenForWiFiLockChanges(): Flow<Boolean>
+  @CheckResult fun listenForWiFiLockChanges(): Flow<Boolean>
 
   suspend fun setWiFiLock(keep: Boolean)
 }

@@ -17,11 +17,11 @@
 package com.pyamsoft.tetherfi.service.lock
 
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class LockerImpl
@@ -31,8 +31,12 @@ internal constructor(
     @ServiceInternalApi private val lockers: MutableSet<Locker>,
 ) : Locker {
   override suspend fun acquire() =
-      withContext(context = Dispatchers.IO + NonCancellable) { lockers.forEach { it.acquire() } }
+      withContext(context = Dispatchers.IO) {
+        withContext(context = NonCancellable) { lockers.forEach { it.acquire() } }
+      }
 
   override suspend fun release() =
-      withContext(context = Dispatchers.IO + NonCancellable) { lockers.forEach { it.release() } }
+      withContext(context = Dispatchers.IO) {
+        withContext(context = NonCancellable) { lockers.forEach { it.release() } }
+      }
 }
