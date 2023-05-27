@@ -39,6 +39,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,7 @@ import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
+    private val dispatcher: CoroutineDispatcher,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val appContext: Context,
     private val permissionGuard: PermissionGuard,
@@ -74,7 +76,7 @@ protected constructor(
   private var wifiChannel: Channel? = null
 
   private val directScope by lazy {
-    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+    CoroutineScope(context = dispatcher + CoroutineName(this::class.java.name))
   }
 
   @CheckResult

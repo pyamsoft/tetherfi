@@ -24,9 +24,9 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
@@ -44,6 +44,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val preferences: ServerPreferences,
     @ServerInternalApi private val factory: ProxyManager.Factory,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     private val eraser: ClientEraser,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
@@ -52,7 +53,7 @@ internal constructor(
   private val jobs = mutableListOf<ProxyJob>()
 
   private val proxyScope by lazy {
-    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+    CoroutineScope(context = dispatcher + CoroutineName(this::class.java.name))
   }
 
   /** Get the port for the proxy */

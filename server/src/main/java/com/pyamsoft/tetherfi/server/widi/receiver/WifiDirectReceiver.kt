@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -46,10 +47,11 @@ internal constructor(
     private val context: Context,
     private val network: WiDiNetwork,
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
 ) : BroadcastReceiver(), WiDiReceiver, WiDiReceiverRegister {
 
   private val registerScope by lazy { MainScope() }
-  private val workScope by lazy { CoroutineScope(context = Dispatchers.IO) }
+  private val workScope by lazy { CoroutineScope(context = dispatcher) }
 
   private var registered = false
 
@@ -125,7 +127,7 @@ internal constructor(
   override fun onReceive(context: Context, intent: Intent) {
     // Go async in case scope work takes a long time
     val pending = goAsync()
-    workScope.launch(context = Dispatchers.IO) {
+    workScope.launch(context = dispatcher) {
       try {
         when (val action = intent.action) {
           WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)

@@ -55,6 +55,10 @@ import dagger.Provides
 import dagger.multibindings.IntoSet
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import timber.log.Timber
 
 @Module
 abstract class ServerAppModule {
@@ -158,6 +162,23 @@ abstract class ServerAppModule {
     @ServerInternalApi
     internal fun provideProxyDebug(): ProxyDebug {
       return ProxyDebug.NONE
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    @ServerInternalApi
+    @OptIn(ExperimentalCoroutinesApi::class)
+    internal fun provideProxyDispatcher(): CoroutineDispatcher {
+      // We max paralellism at CORES * 4 to avoid CPU trashing at the system level from
+      // resource starving when a bunch of requests fly in at once
+      //
+      // We max out total parallelism at 32 at the absolute most
+      val coreCount = Runtime.getRuntime().availableProcessors()
+      val parallelism = coreCount.times(4).coerceAtMost(32)
+
+      Timber.d("Using Proxy limited dispatcher=$parallelism")
+      return Dispatchers.IO.limitedParallelism(parallelism)
     }
   }
 }

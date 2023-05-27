@@ -20,7 +20,8 @@ import android.content.Context
 import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
-import kotlinx.coroutines.Dispatchers
+import com.pyamsoft.tetherfi.server.ServerInternalApi
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -28,12 +29,13 @@ internal class BatteryOptimizerImpl
 @Inject
 internal constructor(
     private val context: Context,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
 ) : BatteryOptimizer {
 
   private val powerManager by lazy { context.getSystemService<PowerManager>().requireNotNull() }
 
   override suspend fun isOptimizationsIgnored(): Boolean =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = dispatcher) {
         powerManager.isIgnoringBatteryOptimizations(context.packageName)
       }
 }

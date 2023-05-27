@@ -26,16 +26,18 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 internal class WiDiNetworkImpl
 @Inject
 internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi config: WiDiConfig,
     enforcer: ThreadEnforcer,
@@ -46,6 +48,7 @@ internal constructor(
     appEnvironment: AppDevEnvironment,
 ) :
     WifiDirectNetwork(
+        dispatcher,
         shutdownBus,
         context,
         permissionGuard,
