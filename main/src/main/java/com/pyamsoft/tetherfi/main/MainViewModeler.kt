@@ -24,7 +24,6 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
 
 class MainViewModeler
 @Inject
@@ -57,10 +57,12 @@ internal constructor(
           .listenShowInAppRating()
           .filter { it }
           .distinctUntilChanged()
-          .collect { show ->
-            if (show) {
-              Timber.d("Show in-app rating")
-              withContext(context = Dispatchers.Main) { onShowInAppRating() }
+          .also { f ->
+            f.collect { show ->
+              if (show) {
+                Timber.d("Show in-app rating")
+                withContext(context = Dispatchers.Main) { onShowInAppRating() }
+              }
             }
           }
     }
@@ -70,34 +72,38 @@ internal constructor(
     val s = state
 
     // Watch group info
-    scope.launch(context = Dispatchers.Main) { network.onGroupInfoChanged { s.group.value = it } }
+    network.onGroupInfoChanged().also { f ->
+      scope.launch(context = Dispatchers.Main) { f.collect { s.group.value = it } }
+    }
 
     // Watch connection info
-    scope.launch(context = Dispatchers.Main) {
-      network.onConnectionInfoChanged { s.connection.value = it }
+    network.onConnectionInfoChanged().also { f ->
+      scope.launch(context = Dispatchers.Main) { f.collect { s.connection.value = it } }
     }
 
     // Watch the server status and update if it is running
-    scope.launch(context = Dispatchers.Main) {
-      network.onStatusChanged { s ->
-        val wasRunning = isNetworkCurrentlyRunning.value
-        val currentlyRunning = s == RunningStatus.Running
-        isNetworkCurrentlyRunning.value = currentlyRunning
+    network.onStatusChanged().also { f ->
+      scope.launch(context = Dispatchers.Main) {
+        f.collect { s ->
+          val wasRunning = isNetworkCurrentlyRunning.value
+          val currentlyRunning = s == RunningStatus.Running
+          isNetworkCurrentlyRunning.value = currentlyRunning
 
-        // If the network was switched off, clear everything
-        if (wasRunning && !currentlyRunning) {
-          Timber.d("Hotspot was turned OFF, refresh network settings to clear")
+          // If the network was switched off, clear everything
+          if (wasRunning && !currentlyRunning) {
+            Timber.d("Hotspot was turned OFF, refresh network settings to clear")
 
-          // Refresh connection info, should blank out
-          handleRefreshConnectionInfo()
+            // Refresh connection info, should blank out
+            handleRefreshConnectionInfo()
 
-          // Explicitly close the QR code
-          handleCloseQRCodeDialog()
-        } else if (!wasRunning && currentlyRunning) {
-          Timber.d("Hotspot was turned ON, refresh network settings to update")
+            // Explicitly close the QR code
+            handleCloseQRCodeDialog()
+          } else if (!wasRunning && currentlyRunning) {
+            Timber.d("Hotspot was turned ON, refresh network settings to update")
 
-          // Refresh connection info, should populate
-          handleRefreshConnectionInfo()
+            // Refresh connection info, should populate
+            handleRefreshConnectionInfo()
+          }
         }
       }
     }

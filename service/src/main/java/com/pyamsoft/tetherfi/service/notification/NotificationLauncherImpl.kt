@@ -25,13 +25,13 @@ import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -90,29 +90,35 @@ internal constructor(
     notificationJob?.cancel()
     notificationJob =
         // Supervisor job will cancel all children
-        scope.launch(context = Dispatchers.Default) {
+        scope.launch(context = Dispatchers.IO) {
 
           // Listen for notification updates
-          launch(context = Dispatchers.Default) {
-            networkStatus.onStatusChanged {
-              runningStatus = it
-              updateNotification()
+          networkStatus.onStatusChanged().also { f ->
+            launch(context = Dispatchers.IO) {
+              f.collect { s ->
+                runningStatus = s
+                updateNotification()
+              }
             }
           }
 
           // Listen for client updates
-          launch(context = Dispatchers.Default) {
-            seenClients.listenForClients().collect {
-              clientCount = it.size
-              updateNotification()
+          seenClients.listenForClients().also { f ->
+            launch(context = Dispatchers.IO) {
+              f.collect { s ->
+                clientCount = s.size
+                updateNotification()
+              }
             }
           }
 
           // Listen for block updates
-          launch(context = Dispatchers.Default) {
-            blockedClients.listenForBlocked().collect {
-              blockCount = it.size
-              updateNotification()
+          blockedClients.listenForBlocked().also { f ->
+            launch(context = Dispatchers.Default) {
+              f.collect { s ->
+                blockCount = s.size
+                updateNotification()
+              }
             }
           }
         }

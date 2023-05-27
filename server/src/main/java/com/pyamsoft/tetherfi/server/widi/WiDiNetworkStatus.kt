@@ -21,16 +21,17 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.Server
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import kotlinx.coroutines.flow.Flow
 
 interface WiDiNetworkStatus : Server {
 
   fun updateNetworkInfo()
 
-  suspend fun onGroupInfoChanged(onChange: (GroupInfo) -> Unit)
+  @CheckResult fun onGroupInfoChanged(): Flow<GroupInfo>
 
-  suspend fun onConnectionInfoChanged(onChange: (ConnectionInfo) -> Unit)
+  @CheckResult fun onConnectionInfoChanged(): Flow<ConnectionInfo>
 
-  suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit)
+  @CheckResult fun onProxyStatusChanged(): Flow<RunningStatus>
 
   @Stable
   @Immutable

@@ -17,10 +17,11 @@
 package com.pyamsoft.tetherfi.server.status
 
 import androidx.annotation.CheckResult
+import kotlinx.coroutines.flow.Flow
 
 interface StatusListener {
 
-  suspend fun onStatus(block: suspend (RunningStatus) -> Unit)
+  @CheckResult fun onStatus(): Flow<RunningStatus>
 
   @CheckResult fun get(): RunningStatus
 }

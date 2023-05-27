@@ -42,7 +42,17 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.subscribeOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -87,13 +97,12 @@ protected constructor(
         appContext,
         Looper.getMainLooper(),
     ) {
-      directScope.launch {
-        val scope = this
-        enforcer.assertOffMainThread()
-
-        Timber.d("WifiP2PManager Channel died. Kill network")
-        stopNetwork(scope = scope, resetStatus = false)
-      }
+      // Called on the Main thread when the WifiP2p loses connection.
+      // In this case the channel may already be dead.
+      //
+      // We may not be able to perform a full clean stop.
+      Timber.d("WifiP2PManager Channel died. Kill network")
+      stop()
     }
   }
 
@@ -190,8 +199,8 @@ protected constructor(
 
     Timber.d("Start new network")
     status.set(RunningStatus.Starting)
-
     val channel = createChannel()
+
     if (channel == null) {
       Timber.w("Failed to create channel, cannot initialize WiDi network")
 
@@ -252,7 +261,7 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork(scope: CoroutineScope, resetStatus: Boolean) {
+  private suspend fun stopNetwork(scope: CoroutineScope) {
     enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -261,10 +270,8 @@ protected constructor(
     // is basically a no-op
     if (channel == null) {
       completeStop(scope) {
-        if (resetStatus) {
-          Timber.d("Resetting status back to not running")
-          status.set(RunningStatus.NotRunning)
-        }
+        Timber.d("Resetting status back to not running")
+        status.set(RunningStatus.NotRunning)
       }
       return
     }
@@ -474,10 +481,7 @@ protected constructor(
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork(
-            scope = scope,
-            resetStatus = true,
-        )
+        stopNetwork(scope = scope)
         startNetwork(scope = scope)
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
@@ -493,10 +497,7 @@ protected constructor(
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
-        stopNetwork(
-            scope = scope,
-            resetStatus = true,
-        )
+        stopNetwork(scope = scope)
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
@@ -510,21 +511,13 @@ protected constructor(
     }
   }
 
-  override suspend fun onConnectionInfoChanged(
-      onChange: (WiDiNetworkStatus.ConnectionInfo) -> Unit
-  ) =
-      withContext(context = directScope.coroutineContext) {
-        enforcer.assertOffMainThread()
+  override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {
+    return connectionInfoChannel
+  }
 
-        connectionInfoChannel.collect { onChange(it) }
-      }
-
-  override suspend fun onGroupInfoChanged(onChange: (WiDiNetworkStatus.GroupInfo) -> Unit) =
-      withContext(context = directScope.coroutineContext) {
-        enforcer.assertOffMainThread()
-
-        groupInfoChannel.collect { onChange(it) }
-      }
+  override fun onGroupInfoChanged(): Flow<WiDiNetworkStatus.GroupInfo> {
+    return groupInfoChannel
+  }
 
   protected abstract suspend fun onNetworkStarted(scope: CoroutineScope)
 

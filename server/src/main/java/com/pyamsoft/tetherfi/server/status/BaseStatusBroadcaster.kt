@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.status
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class BaseStatusBroadcaster protected constructor() : StatusBroadcast {
@@ -29,8 +30,8 @@ abstract class BaseStatusBroadcaster protected constructor() : StatusBroadcast {
     }
   }
 
-  final override suspend fun onStatus(block: suspend (RunningStatus) -> Unit) {
-    state.collect { block(it) }
+  final override fun onStatus(): Flow<RunningStatus> {
+    return state
   }
 
   final override fun get(): RunningStatus {

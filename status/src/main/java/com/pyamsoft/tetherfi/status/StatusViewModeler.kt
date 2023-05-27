@@ -271,21 +271,25 @@ internal constructor(
   }
 
   fun watchStatusUpdates(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) {
-      network.onProxyStatusChanged { status ->
-        Timber.d("Proxy Status Changed: $status")
-        state.proxyStatus.value = status
+    network.onProxyStatusChanged().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { status ->
+          Timber.d("Proxy Status Changed: $status")
+          state.proxyStatus.value = status
+        }
       }
     }
 
-    scope.launch(context = Dispatchers.Main) {
-      network.onStatusChanged { status ->
-        Timber.d("WiDi Status Changed: $status")
-        state.wiDiStatus.value = status
+    network.onStatusChanged().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { status ->
+          Timber.d("WiDi Status Changed: $status")
+          state.wiDiStatus.value = status
+        }
       }
     }
 
-    scope.launch(context = Dispatchers.Main) {
+    scope.launch(context = Dispatchers.IO) {
       wiDiReceiver.onEvent { event ->
         when (event) {
           is WidiNetworkEvent.ConnectionChanged -> {}

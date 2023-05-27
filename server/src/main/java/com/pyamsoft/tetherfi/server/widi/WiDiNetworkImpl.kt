@@ -26,9 +26,10 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 internal class WiDiNetworkImpl
@@ -64,7 +65,7 @@ internal constructor(
     proxy.stop()
   }
 
-  override suspend fun onProxyStatusChanged(block: suspend (RunningStatus) -> Unit) {
-    return proxy.onStatusChanged(block)
+  override fun onProxyStatusChanged(): Flow<RunningStatus> {
+    return proxy.onStatusChanged()
   }
 }

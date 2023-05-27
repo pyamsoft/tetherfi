@@ -20,13 +20,13 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class TileHandler
 @Inject
@@ -60,30 +60,34 @@ internal constructor(
   ) {
     val scope = this
 
-    scope.launch(context = Dispatchers.Main) {
-      launch(context = Dispatchers.Main) {
-        network.onProxyStatusChanged { status ->
-          when (status) {
-            is RunningStatus.Error -> {
-              Timber.w("Error running Proxy: ${status.message}")
-              onNetworkError(status)
+    scope.launch(context = Dispatchers.IO) {
+      network.onProxyStatusChanged().also { f ->
+        launch(context = Dispatchers.IO) {
+          f.collect { status ->
+            when (status) {
+              is RunningStatus.Error -> {
+                Timber.w("Error running Proxy: ${status.message}")
+                onNetworkError(status)
+              }
+              else -> Timber.d("Unhandled Proxy status event $status")
             }
-            else -> Timber.d("Unhandled Proxy status event $status")
           }
         }
       }
 
-      launch(context = Dispatchers.Main) {
-        network.onStatusChanged { status ->
-          when (status) {
-            is RunningStatus.Error -> {
-              Timber.w("Error running WiDi network: ${status.message}")
-              onNetworkError(status)
+      network.onStatusChanged().also { f ->
+        launch(context = Dispatchers.Main) {
+          f.collect { status ->
+            when (status) {
+              is RunningStatus.Error -> {
+                Timber.w("Error running WiDi network: ${status.message}")
+                onNetworkError(status)
+              }
+              is RunningStatus.NotRunning -> onNetworkNotRunning()
+              is RunningStatus.Running -> onNetworkRunning()
+              is RunningStatus.Starting -> onNetworkStarting()
+              is RunningStatus.Stopping -> onNetworkStopping()
             }
-            is RunningStatus.NotRunning -> onNetworkNotRunning()
-            is RunningStatus.Running -> onNetworkRunning()
-            is RunningStatus.Starting -> onNetworkStarting()
-            is RunningStatus.Stopping -> onNetworkStopping()
           }
         }
       }

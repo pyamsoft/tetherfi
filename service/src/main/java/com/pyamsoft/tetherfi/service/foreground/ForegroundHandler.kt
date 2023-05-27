@@ -77,39 +77,42 @@ internal constructor(
     // Watch everything else as the parent
     parentJob =
         parentJob.cancelAndReLaunch {
-
           // Watch status of network
-          launch(context = Dispatchers.Main) {
-            status.requireNotNull().onStatusChanged { s ->
-              when (s) {
-                is RunningStatus.Error -> {
-                  Timber.w("Server Server Error: ${s.message}")
-                  locker.release()
+          status.requireNotNull().onStatusChanged().also { f ->
+            launch(context = Dispatchers.IO) {
+              f.collect { s ->
+                when (s) {
+                  is RunningStatus.Error -> {
+                    Timber.w("Server Server Error: ${s.message}")
+                    locker.release()
+                  }
+                  else -> Timber.d("Server status changed: $s")
                 }
-                else -> Timber.d("Server status changed: $s")
               }
             }
           }
 
           // Watch status of proxy
-          launch(context = Dispatchers.Main) {
-            status.requireNotNull().onProxyStatusChanged { s ->
-              when (s) {
-                is RunningStatus.Running -> {
-                  Timber.d("Proxy Server started!")
-                  locker.acquire()
+          status.requireNotNull().onProxyStatusChanged().also { f ->
+            launch(context = Dispatchers.IO) {
+              f.collect { s ->
+                when (s) {
+                  is RunningStatus.Running -> {
+                    Timber.d("Proxy Server started!")
+                    locker.acquire()
+                  }
+                  is RunningStatus.Error -> {
+                    Timber.w("Proxy Server Error: ${s.message}")
+                    locker.release()
+                  }
+                  else -> Timber.d("Proxy status changed: $s")
                 }
-                is RunningStatus.Error -> {
-                  Timber.w("Proxy Server Error: ${s.message}")
-                  locker.release()
-                }
-                else -> Timber.d("Proxy status changed: $s")
               }
             }
           }
 
           // Watch for notification refresh
-          launch(context = Dispatchers.Main) {
+          launch(context = Dispatchers.IO) {
             notificationRefreshListener.requireNotNull().onEvent {
               Timber.d("Refresh notification")
               onRefreshNotification()
