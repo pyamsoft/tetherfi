@@ -16,7 +16,10 @@
 
 package com.pyamsoft.tetherfi.server.widi.receiver
 
+import androidx.annotation.CheckResult
+import kotlinx.coroutines.flow.Flow
+
 interface WiDiReceiver {
 
-  suspend fun onEvent(onEvent: suspend (WidiNetworkEvent) -> Unit)
+  @CheckResult fun listenNetworkEvents(): Flow<WidiNetworkEvent>
 }

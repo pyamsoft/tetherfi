@@ -29,14 +29,15 @@ import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -56,11 +57,11 @@ internal constructor(
     when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
       WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
         Timber.d("WiFi Direct: Enabled")
-        eventBus.send(WidiNetworkEvent.WifiEnabled)
+        eventBus.emit(WidiNetworkEvent.WifiEnabled)
       }
       WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
         Timber.d("WiFi Direct: Disabled")
-        eventBus.send(WidiNetworkEvent.WifiDisabled)
+        eventBus.emit(WidiNetworkEvent.WifiDisabled)
 
         Timber.d("Stop network when Wi-Fi Direct is Disabled")
         network.stop()
@@ -72,7 +73,7 @@ internal constructor(
   private suspend fun handleConnectionChangedAction(intent: Intent) {
     val ip = resolveWifiGroupIp(intent)
     if (ip.isNotBlank()) {
-      eventBus.send(
+      eventBus.emit(
           WidiNetworkEvent.ConnectionChanged(
               ip = ip,
           ),
@@ -81,20 +82,18 @@ internal constructor(
   }
 
   private suspend fun handleDiscoveryChangedAction(intent: Intent) {
-    eventBus.send(WidiNetworkEvent.DiscoveryChanged)
+    eventBus.emit(WidiNetworkEvent.DiscoveryChanged)
   }
 
   private suspend fun handlePeersChangedAction(intent: Intent) {
-    eventBus.send(WidiNetworkEvent.PeersChanged)
+    eventBus.emit(WidiNetworkEvent.PeersChanged)
   }
 
   private suspend fun handleThisDeviceChangedAction(intent: Intent) {
-    eventBus.send(WidiNetworkEvent.ThisDeviceChanged)
+    eventBus.emit(WidiNetworkEvent.ThisDeviceChanged)
   }
 
-  override suspend fun onEvent(onEvent: suspend (WidiNetworkEvent) -> Unit) {
-    return eventBus.onEvent(onEvent)
-  }
+  override fun listenNetworkEvents(): Flow<WidiNetworkEvent> = eventBus
 
   override fun register() {
     val self = this

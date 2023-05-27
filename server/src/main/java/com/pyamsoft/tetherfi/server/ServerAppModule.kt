@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
+import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
@@ -52,11 +53,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import java.util.concurrent.Executors
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.asCoroutineDispatcher
 
 @Module
 abstract class ServerAppModule {
@@ -145,14 +143,14 @@ abstract class ServerAppModule {
     @Singleton
     @ServerInternalApi
     internal fun provideWidiReceiverEventBus(): EventBus<WidiNetworkEvent> {
-      return EventBus.create()
+      return DefaultEventBus()
     }
 
     @Provides
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
-      return EventBus.create()
+      return DefaultEventBus()
     }
 
     @Provides
@@ -160,23 +158,6 @@ abstract class ServerAppModule {
     @ServerInternalApi
     internal fun provideProxyDebug(): ProxyDebug {
       return ProxyDebug.NONE
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    internal fun provideProxyDispatcher(): CoroutineDispatcher {
-      // We don't use Dispatchers.IO because it absolutely fucks system performance after ~16
-      // threads are allocated at the same time.
-      // We don't use Dispatchers.Default since UI operations use it and we don't want a UI suspend
-      // to slow our network performance down
-      //
-      // We use a fixed thread pool to avoid system performance getting fucked, and we expect at
-      // least 8 or the number of cores.
-      val coreCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(8)
-      val pool = Executors.newFixedThreadPool(coreCount)
-      return pool.asCoroutineDispatcher()
     }
   }
 }

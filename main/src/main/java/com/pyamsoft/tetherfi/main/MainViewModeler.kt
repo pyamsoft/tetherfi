@@ -109,39 +109,41 @@ internal constructor(
     }
 
     // Port is its own thing, not part of group info
-    scope.launch(context = Dispatchers.Main) {
-      serverPreferences.listenForPortChanges().collect { s.port.value = it }
+    serverPreferences.listenForPortChanges().also { f ->
+      scope.launch(context = Dispatchers.IO) { f.collect { s.port.value = it } }
     }
 
-    // But then once we are done editing and we start getting events from the receiver, take them
-    // instead
-    scope.launch(context = Dispatchers.Main) {
-      wiDiReceiver.onEvent { event ->
-        when (event) {
-          is WidiNetworkEvent.ConnectionChanged -> {
-            s.connection.update { info ->
-              info.update {
-                it.copy(
-                    ip = event.ip,
-                )
+    // But then once we are done editing and we start getting events from the receiver,
+    // take them instead
+    wiDiReceiver.listenNetworkEvents().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { event ->
+          when (event) {
+            is WidiNetworkEvent.ConnectionChanged -> {
+              s.connection.update { info ->
+                info.update {
+                  it.copy(
+                      ip = event.ip,
+                  )
+                }
               }
+              handleRefreshConnectionInfo()
             }
-            handleRefreshConnectionInfo()
-          }
-          is WidiNetworkEvent.ThisDeviceChanged -> {
-            handleRefreshConnectionInfo()
-          }
-          is WidiNetworkEvent.PeersChanged -> {
-            handleRefreshConnectionInfo()
-          }
-          is WidiNetworkEvent.WifiDisabled -> {
-            handleRefreshConnectionInfo()
-          }
-          is WidiNetworkEvent.WifiEnabled -> {
-            handleRefreshConnectionInfo()
-          }
-          is WidiNetworkEvent.DiscoveryChanged -> {
-            handleRefreshConnectionInfo()
+            is WidiNetworkEvent.ThisDeviceChanged -> {
+              handleRefreshConnectionInfo()
+            }
+            is WidiNetworkEvent.PeersChanged -> {
+              handleRefreshConnectionInfo()
+            }
+            is WidiNetworkEvent.WifiDisabled -> {
+              handleRefreshConnectionInfo()
+            }
+            is WidiNetworkEvent.WifiEnabled -> {
+              handleRefreshConnectionInfo()
+            }
+            is WidiNetworkEvent.DiscoveryChanged -> {
+              handleRefreshConnectionInfo()
+            }
           }
         }
       }

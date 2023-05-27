@@ -21,14 +21,14 @@ import androidx.annotation.CheckResult
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.pydroid.util.preferenceBooleanFlow
+import com.pyamsoft.pydroid.util.preferenceIntFlow
+import com.pyamsoft.pydroid.util.preferenceStringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
@@ -36,6 +36,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -67,19 +70,19 @@ internal constructor(
   }
 
   override fun listenForWakeLockChanges(): Flow<Boolean> =
-      preferencesBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
+      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
   override suspend fun setWakeLock(keep: Boolean) =
       withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WAKE_LOCK, keep) } }
 
   override fun listenForWiFiLockChanges(): Flow<Boolean> =
-      preferencesBooleanFlow(WIFI_LOCK, true).flowOn(context = Dispatchers.IO)
+      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
   override suspend fun setWiFiLock(keep: Boolean) =
       withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WIFI_LOCK, keep) } }
 
   override fun listenForSsidChanges(): Flow<String> =
-      preferencesStringFlow(SSID, ServerDefaults.SSID)
+      preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
           .flowOn(context = Dispatchers.IO)
           .flowOn(context = Dispatchers.IO)
 
@@ -94,19 +97,20 @@ internal constructor(
       }
 
   override fun listenForPasswordChanges(): Flow<String> =
-      preferencesStringFlow(PASSWORD, fallbackPassword).flowOn(context = Dispatchers.IO)
+      preferenceStringFlow(PASSWORD, fallbackPassword) { preferences }
+          .flowOn(context = Dispatchers.IO)
 
   override suspend fun setPassword(password: String) =
       withContext(context = Dispatchers.IO) { preferences.edit { putString(PASSWORD, password) } }
 
   override fun listenForPortChanges(): Flow<Int> =
-      preferencesIntFlow(PORT, ServerDefaults.PORT).flowOn(context = Dispatchers.IO)
+      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }.flowOn(context = Dispatchers.IO)
 
   override suspend fun setPort(port: Int) =
       withContext(context = Dispatchers.IO) { preferences.edit { putInt(PORT, port) } }
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
-      preferencesStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name)
+      preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
@@ -115,12 +119,12 @@ internal constructor(
         preferences.edit { putString(NETWORK_BAND, band.name) }
       }
 
-  override suspend fun listenShowInAppRating(): Flow<Boolean> =
+  override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
-              preferencesIntFlow(IN_APP_HOTSPOT_USED, 0),
-              preferencesIntFlow(IN_APP_DEVICES_CONNECTED, 0),
-              preferencesIntFlow(IN_APP_APP_OPENED, 0),
-              preferencesIntFlow(IN_APP_RATING_SHOWN_VERSION, 0),
+              preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
+              preferenceIntFlow(IN_APP_DEVICES_CONNECTED, 0) { preferences },
+              preferenceIntFlow(IN_APP_APP_OPENED, 0) { preferences },
+              preferenceIntFlow(IN_APP_RATING_SHOWN_VERSION, 0) { preferences },
           ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
             enforcer.assertOffMainThread()
 

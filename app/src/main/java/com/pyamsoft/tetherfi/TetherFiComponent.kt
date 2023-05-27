@@ -24,6 +24,8 @@ import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
 import coil.ImageLoader
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
+import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.notify.NotifyPermission
@@ -95,6 +97,16 @@ internal interface TetherFiComponent {
     @Binds
     internal abstract fun bindInAppRatingPreferences(impl: PreferencesImpl): InAppRatingPreferences
 
+    @Binds
+    internal abstract fun bindPermissionRequestConsumer(
+        impl: EventBus<PermissionRequests>
+    ): EventConsumer<PermissionRequests>
+
+    @Binds
+    internal abstract fun bindPermissionResponseConsumer(
+        impl: EventBus<PermissionResponse>
+    ): EventConsumer<PermissionResponse>
+
     @Module
     companion object {
 
@@ -148,14 +160,14 @@ internal interface TetherFiComponent {
       @JvmStatic
       @Singleton
       internal fun providePermissionRequestBus(): EventBus<PermissionRequests> {
-        return EventBus.create()
+        return DefaultEventBus()
       }
 
       @Provides
       @JvmStatic
       @Singleton
       internal fun providePermissionResponseBus(): EventBus<PermissionResponse> {
-        return EventBus.create()
+        return DefaultEventBus()
       }
 
       @Provides

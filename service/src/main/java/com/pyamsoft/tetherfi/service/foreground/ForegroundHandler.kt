@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.service.foreground
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -25,14 +24,13 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
-import kotlinx.coroutines.CoroutineScope
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ForegroundHandler
@@ -55,65 +53,65 @@ internal constructor(
 
   private var parentJob: Job? = null
 
-  @CheckResult
-  private fun Job?.cancelAndReLaunch(block: suspend CoroutineScope.() -> Unit): Job {
-    this?.cancel()
-    return scope.launch(context = Dispatchers.Main, block = block)
-  }
-
   fun bind(
       onShutdownService: () -> Unit,
       onRefreshNotification: () -> Unit,
   ) {
     // When shutdown events are received, we kill the service
-    shutdownJob =
-        shutdownJob.cancelAndReLaunch {
-          shutdownListener.requireNotNull().onEvent {
-            Timber.d("Shutdown event received!")
-            onShutdownService()
+    shutdownJob?.cancel()
+    shutdownListener.requireNotNull().also { f ->
+      shutdownJob =
+          scope.launch(context = Dispatchers.IO) {
+            f.collect {
+              Timber.d("Shutdown event received!")
+              onShutdownService()
+            }
           }
-        }
+    }
 
     // Watch everything else as the parent
+    val stat = status.requireNotNull()
+    val s = stat.onStatusChanged()
+    val p = stat.onProxyStatusChanged()
+    val n = notificationRefreshListener.requireNotNull()
+
+    parentJob?.cancel()
     parentJob =
-        parentJob.cancelAndReLaunch {
+        scope.launch(context = Dispatchers.IO) {
+
           // Watch status of network
-          status.requireNotNull().onStatusChanged().also { f ->
-            launch(context = Dispatchers.IO) {
-              f.collect { s ->
-                when (s) {
-                  is RunningStatus.Error -> {
-                    Timber.w("Server Server Error: ${s.message}")
-                    locker.release()
-                  }
-                  else -> Timber.d("Server status changed: $s")
+          launch(context = Dispatchers.IO) {
+            s.collect { s ->
+              when (s) {
+                is RunningStatus.Error -> {
+                  Timber.w("Server Server Error: ${s.message}")
+                  locker.release()
                 }
+                else -> Timber.d("Server status changed: $s")
               }
             }
           }
 
           // Watch status of proxy
-          status.requireNotNull().onProxyStatusChanged().also { f ->
-            launch(context = Dispatchers.IO) {
-              f.collect { s ->
-                when (s) {
-                  is RunningStatus.Running -> {
-                    Timber.d("Proxy Server started!")
-                    locker.acquire()
-                  }
-                  is RunningStatus.Error -> {
-                    Timber.w("Proxy Server Error: ${s.message}")
-                    locker.release()
-                  }
-                  else -> Timber.d("Proxy status changed: $s")
+          launch(context = Dispatchers.IO) {
+            p.collect { s ->
+              when (s) {
+                is RunningStatus.Running -> {
+                  Timber.d("Proxy Server started!")
+                  locker.acquire()
                 }
+                is RunningStatus.Error -> {
+                  Timber.w("Proxy Server Error: ${s.message}")
+                  locker.release()
+                }
+                else -> Timber.d("Proxy status changed: $s")
               }
             }
           }
 
           // Watch for notification refresh
           launch(context = Dispatchers.IO) {
-            notificationRefreshListener.requireNotNull().onEvent {
+            n.collect {
               Timber.d("Refresh notification")
               onRefreshNotification()
             }
@@ -131,7 +129,7 @@ internal constructor(
     network.stop()
 
     // Launch a parent scope for all jobs
-    scope.launch(context = Dispatchers.Main) {
+    scope.launch(context = Dispatchers.IO) {
       Timber.d("Destroy CPU wakelock")
       locker.release()
     }

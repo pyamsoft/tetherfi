@@ -3,6 +3,7 @@ package com.pyamsoft.tetherfi.main
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnDestroy
 import com.pyamsoft.tetherfi.status.PermissionRequests
@@ -16,7 +17,7 @@ import timber.log.Timber
 class MainPermissions
 @Inject
 internal constructor(
-    private val permissionRequestBus: EventBus<PermissionRequests>,
+    private val permissionRequestBus: EventConsumer<PermissionRequests>,
     private val permissionResponseBus: EventBus<PermissionResponse>,
     @Named("server") private val serverPermissionRequester: PermissionRequester,
     @Named("notification") private val notificationPermissionRequester: PermissionRequester,
@@ -40,7 +41,7 @@ internal constructor(
 
                 // Broadcast in the background
                 activity.lifecycleScope.launch(context = Dispatchers.IO) {
-                  permissionResponseBus.send(PermissionResponse.ToggleProxy)
+                  permissionResponseBus.emit(PermissionResponse.ToggleProxy)
                 }
               } else {
                 Timber.w("Network permission not granted")
@@ -56,7 +57,7 @@ internal constructor(
 
                 // Broadcast in the background
                 activity.lifecycleScope.launch(context = Dispatchers.IO) {
-                  permissionResponseBus.send(PermissionResponse.RefreshNotification)
+                  permissionResponseBus.emit(PermissionResponse.RefreshNotification)
                 }
               } else {
                 Timber.w("Notification permission not granted")
@@ -64,14 +65,16 @@ internal constructor(
             }
             .also { notificationRequester = it }
 
-    activity.lifecycleScope.launch(context = Dispatchers.IO) {
-      permissionRequestBus.onEvent {
-        when (it) {
-          is PermissionRequests.Notification -> {
-            nr.requestPermissions()
-          }
-          is PermissionRequests.Server -> {
-            sr.requestPermissions()
+    permissionRequestBus.also { f ->
+      activity.lifecycleScope.launch(context = Dispatchers.IO) {
+        f.collect { req ->
+          when (req) {
+            is PermissionRequests.Notification -> {
+              nr.requestPermissions()
+            }
+            is PermissionRequests.Server -> {
+              sr.requestPermissions()
+            }
           }
         }
       }

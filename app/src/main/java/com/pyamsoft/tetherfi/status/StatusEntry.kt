@@ -31,6 +31,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
@@ -42,6 +43,8 @@ import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -49,9 +52,12 @@ import javax.inject.Inject
 internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
+
   @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
+
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
-  @JvmField @Inject internal var permissionResponseBus: EventBus<PermissionResponse>? = null
+
+  @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
 
   override fun onInject(activity: FragmentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).plusStatus().create().inject(this)
@@ -84,7 +90,7 @@ private fun safeOpenSettingsIntent(
 /** Sets up permission request interaction */
 @Composable
 private fun RegisterPermissionRequests(
-    permissionResponseBus: EventBus<PermissionResponse>,
+    permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
     onRefreshSystemInfo: CoroutineScope.() -> Unit,
@@ -97,21 +103,22 @@ private fun RegisterPermissionRequests(
       permissionResponseBus,
       notificationRefreshBus,
   ) {
-    val scope = this
-    scope.launch(context = Dispatchers.Default) {
 
-      // See MainActivity
-      permissionResponseBus.onEvent { resp ->
-        when (resp) {
-          is PermissionResponse.RefreshNotification -> {
-            // Tell the service to refresh
-            notificationRefreshBus.send(NotificationRefreshEvent)
+    // See MainActivity
+    permissionResponseBus.flowOn(context = Dispatchers.Default).also { f ->
+      launch(context = Dispatchers.IO) {
+        f.collect { resp ->
+          when (resp) {
+            is PermissionResponse.RefreshNotification -> {
+              // Tell the service to refresh
+              notificationRefreshBus.emit(NotificationRefreshEvent)
 
-            // Call to the VM to refresh info
-            handleRefreshSystemInfo()
-          }
-          is PermissionResponse.ToggleProxy -> {
-            handleToggleProxy()
+              // Call to the VM to refresh info
+              handleRefreshSystemInfo()
+            }
+            is PermissionResponse.ToggleProxy -> {
+              handleToggleProxy()
+            }
           }
         }
       }
@@ -123,7 +130,7 @@ private fun RegisterPermissionRequests(
 @Composable
 private fun MountHooks(
     viewModel: StatusViewModeler,
-    permissionResponseBus: EventBus<PermissionResponse>,
+    permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
 ) {
@@ -221,7 +228,7 @@ fun StatusEntry(
         // Request permissions
         scope.launch(context = Dispatchers.IO) {
           // See MainActivity
-          permissionRequestBus.send(PermissionRequests.Server)
+          permissionRequestBus.emit(PermissionRequests.Server)
         }
       },
       onOpenPermissionSettings = {
@@ -248,7 +255,7 @@ fun StatusEntry(
       onRequestNotificationPermission = {
         scope.launch(context = Dispatchers.IO) {
           // See MainActivity
-          permissionRequestBus.send(PermissionRequests.Notification)
+          permissionRequestBus.emit(PermissionRequests.Notification)
         }
       },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },

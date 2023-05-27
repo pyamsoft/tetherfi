@@ -31,7 +31,6 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -304,18 +304,20 @@ internal constructor(
       }
     }
 
-    scope.launch(context = Dispatchers.IO) {
-      wiDiReceiver.onEvent { event ->
-        when (event) {
-          is WidiNetworkEvent.ConnectionChanged -> {}
-          is WidiNetworkEvent.ThisDeviceChanged -> {}
-          is WidiNetworkEvent.PeersChanged -> {}
-          is WidiNetworkEvent.WifiDisabled -> {
-            Timber.d("Stop ForegroundService when WiFi Disabled")
-            serviceLauncher.stopForeground()
+    wiDiReceiver.listenNetworkEvents().also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { event ->
+          when (event) {
+            is WidiNetworkEvent.ConnectionChanged -> {}
+            is WidiNetworkEvent.ThisDeviceChanged -> {}
+            is WidiNetworkEvent.PeersChanged -> {}
+            is WidiNetworkEvent.WifiDisabled -> {
+              Timber.d("Stop ForegroundService when WiFi Disabled")
+              serviceLauncher.stopForeground()
+            }
+            is WidiNetworkEvent.WifiEnabled -> {}
+            is WidiNetworkEvent.DiscoveryChanged -> {}
           }
-          is WidiNetworkEvent.WifiEnabled -> {}
-          is WidiNetworkEvent.DiscoveryChanged -> {}
         }
       }
     }
