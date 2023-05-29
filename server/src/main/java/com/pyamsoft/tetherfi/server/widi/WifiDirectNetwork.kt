@@ -214,16 +214,18 @@ protected constructor(
 
       updateNetworkInfoChannels()
       onNetworkStarted()
+      status.set(runningStatus)
     } else {
       Timber.w("Group failed creation, stop proxy")
 
       // Remove whatever was created (should be a no-op if everyone follows API correctly)
       shutdownWifiNetwork(channel)
 
-      completeStop { Timber.w("Stopping proxy after Group failed to create") }
+      completeStop {
+        Timber.w("Stopping proxy after Group failed to create")
+        status.set(runningStatus)
+      }
     }
-
-    status.set(runningStatus)
   }
 
   private suspend fun completeStop(onStop: () -> Unit) {
