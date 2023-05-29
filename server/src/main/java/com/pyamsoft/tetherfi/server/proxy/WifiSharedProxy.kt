@@ -118,7 +118,7 @@ internal constructor(
         }
 
         Timber.d("Starting proxy server on port $port ...")
-        status.set(RunningStatus.Starting)
+        status.clearError(RunningStatus.Starting)
 
         coroutineScope {
           enforcer.assertOffMainThread()

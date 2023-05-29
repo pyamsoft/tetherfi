@@ -192,7 +192,7 @@ protected constructor(
     }
 
     Timber.d("Start new network")
-    status.set(RunningStatus.Starting)
+    status.clearError(RunningStatus.Starting)
     val channel = createChannel()
 
     if (channel == null) {
