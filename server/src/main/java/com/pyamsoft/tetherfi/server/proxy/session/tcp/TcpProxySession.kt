@@ -44,15 +44,14 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import java.net.URI
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.net.URI
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
 
 internal class TcpProxySession
 @Inject
@@ -330,13 +329,14 @@ internal constructor(
   }
 
   private suspend fun exchangeInternet(
-      context: CoroutineContext,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
   ) = coroutineScope {
+    enforcer.assertOffMainThread()
+
     try {
       if (isHttpsConnection(request)) {
         // Establish an HTTPS connection by faking the CONNECT response
@@ -353,14 +353,15 @@ internal constructor(
 
       // Exchange data until completed
       debugLog { "Exchange rest of data: $request" }
-      val job =
-          launch(context = context) {
-            // Send data from the internet back to the proxy in a different thread
-            talk(
-                input = internetInput,
-                output = proxyOutput,
-            )
-          }
+      val job = launch {
+        enforcer.assertOffMainThread()
+
+        // Send data from the internet back to the proxy in a different thread
+        talk(
+            input = internetInput,
+            output = proxyOutput,
+        )
+      }
 
       // Send input from the proxy (clients) to the internet on this thread
       talk(
@@ -389,7 +390,9 @@ internal constructor(
    * socket
    */
   @CheckResult
-  private suspend fun connectToInternet(context: CoroutineContext, request: ProxyRequest): Socket {
+  private suspend fun connectToInternet(scope: CoroutineScope, request: ProxyRequest): Socket {
+    enforcer.assertOffMainThread()
+
     // Tag sockets for Android O strict mode
     tagSocket()
 
@@ -402,7 +405,7 @@ internal constructor(
             port = request.port,
         )
 
-    val rawSocket = aSocket(ActorSelectorManager(context = context))
+    val rawSocket = aSocket(ActorSelectorManager(context = scope.coroutineContext))
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
@@ -434,11 +437,8 @@ internal constructor(
     return blockedClients.isBlocked(client)
   }
 
-  private fun CoroutineScope.handleClientRequestSideEffects(
-      context: CoroutineContext,
-      client: TetherClient,
-  ) {
-    val scope = this
+  private fun CoroutineScope.handleClientRequestSideEffects(client: TetherClient) {
+    enforcer.assertOffMainThread()
 
     // Mark all client connections as seen
     //
@@ -450,39 +450,37 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    scope.launch(context = context) {
+    launch {
+      enforcer.assertOffMainThread()
+
       // We launch to have this side effect run in parallel with processing
       seenClients.seen(this, client)
     }
   }
 
-  private suspend fun proxyToInternet(
-      context: CoroutineContext,
+  private suspend fun CoroutineScope.proxyToInternet(
       request: ProxyRequest,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
   ) {
+    enforcer.assertOffMainThread()
+
     // Given the request, connect to the Web
     try {
-      connectToInternet(
-              context = context,
-              request = request,
-          )
-          .use { internet ->
-            debugLog { "Proxy to: $request" }
-            val internetInput = internet.openReadChannel()
-            val internetOutput = internet.openWriteChannel(autoFlush = true)
+      connectToInternet(this, request).use { internet ->
+        debugLog { "Proxy to: $request" }
+        val internetInput = internet.openReadChannel()
+        val internetOutput = internet.openWriteChannel(autoFlush = true)
 
-            // Communicate between the web connection we've made and back to our client device
-            exchangeInternet(
-                context = context,
-                proxyInput = proxyInput,
-                proxyOutput = proxyOutput,
-                internetInput = internetInput,
-                internetOutput = internetOutput,
-                request = request,
-            )
-          }
+        // Communicate between the web connection we've made and back to our client device
+        exchangeInternet(
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            internetInput = internetInput,
+            internetOutput = internetOutput,
+            request = request,
+        )
+      }
     } catch (e: Throwable) {
       e.ifNotCancellation {
         errorLog(e) { "Error during connect to internet: $request" }
@@ -493,7 +491,6 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
-      context: CoroutineContext,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       client: TetherClient
@@ -502,11 +499,10 @@ internal constructor(
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
     // we just "spin up" another thread and forget about it performance wise.
-    scope.launch(context = context) {
-      handleClientRequestSideEffects(
-          context = context,
-          client = client,
-      )
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      handleClientRequestSideEffects(client)
     }
 
     // If the client is blocked we do not process any inpue
@@ -531,8 +527,7 @@ internal constructor(
     }
 
     // And then we go to the web!
-    proxyToInternet(
-        context = context,
+    scope.proxyToInternet(
         request = request,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -541,7 +536,6 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
-      context: CoroutineContext,
       data: TcpProxyData,
   ) {
     enforcer.assertOffMainThread()
@@ -564,7 +558,6 @@ internal constructor(
 
     handleClientRequest(
         scope = scope,
-        context = context,
         client = client,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,

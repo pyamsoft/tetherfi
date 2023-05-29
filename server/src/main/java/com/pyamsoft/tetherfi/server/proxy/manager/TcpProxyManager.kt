@@ -27,7 +27,6 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -44,16 +43,12 @@ internal constructor(
         enforcer,
     ) {
 
-  private suspend fun runSession(
-      context: CoroutineContext,
-      connection: Socket,
-  ) = coroutineScope {
-    val scope = this
+  private suspend fun runSession(connection: Socket) = coroutineScope {
+    enforcer.assertOffMainThread()
 
     try {
       session.exchange(
-          scope = scope,
-          context = context,
+          scope = this,
           data =
               TcpProxyData(
                   connection = connection,
@@ -68,6 +63,8 @@ internal constructor(
       builder: SocketBuilder,
       localAddress: SocketAddress
   ): ServerSocket {
+    enforcer.assertOffMainThread()
+
     return builder
         .tcp()
         .bind(
@@ -75,10 +72,7 @@ internal constructor(
         )
   }
 
-  override suspend fun runServer(
-      context: CoroutineContext,
-      server: ServerSocket,
-  ) = coroutineScope {
+  override suspend fun runServer(server: ServerSocket) = coroutineScope {
     enforcer.assertOffMainThread()
 
     // In a loop, we wait for new TCP connections and then offload them to their own routine.
@@ -87,12 +81,11 @@ internal constructor(
       val connection = server.accept()
 
       // Run this server loop off thread so we can handle multiple connections at once.
-      launch(context = context) {
+      launch {
+        enforcer.assertOffMainThread()
+
         try {
-          runSession(
-              context = context,
-              connection = connection,
-          )
+          runSession(connection)
         } finally {
           connection.dispose()
         }

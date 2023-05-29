@@ -28,7 +28,7 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 internal abstract class BaseProxyManager<S : ASocket>(
     proxyType: SharedProxy.Type,
@@ -46,10 +46,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
     return InetSocketAddress(hostname = "0.0.0.0", port = port)
   }
 
-  override suspend fun loop(
-      context: CoroutineContext,
-      port: Int,
-  ) {
+  override suspend fun loop(port: Int) {
     enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
@@ -57,21 +54,18 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
     val server =
         openServer(
-            builder = aSocket(ActorSelectorManager(context = context)),
+            builder = aSocket(ActorSelectorManager(context = coroutineContext)),
             localAddress = getServerAddress(port = port),
         )
     try {
-      runServer(context, server)
+      runServer(server)
     } finally {
       server.dispose()
       onServerClosed()
     }
   }
 
-  protected abstract suspend fun runServer(
-      context: CoroutineContext,
-      server: S,
-  )
+  protected abstract suspend fun runServer(server: S)
 
   @CheckResult
   protected abstract suspend fun openServer(

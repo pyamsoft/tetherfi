@@ -43,8 +43,10 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -181,13 +183,13 @@ protected constructor(
         }
       }
 
-  private suspend fun startNetwork(scope: CoroutineScope) {
+  private suspend fun startNetwork() = coroutineScope {
     enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
       Timber.w("Missing permissions for making WiDi network")
       status.set(RunningStatus.NotRunning)
-      return
+      return@coroutineScope
     }
 
     Timber.d("Start new network")
@@ -197,10 +199,8 @@ protected constructor(
     if (channel == null) {
       Timber.w("Failed to create channel, cannot initialize WiDi network")
 
-      completeStop(scope) {
-        status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
-      }
-      return
+      completeStop { status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel")) }
+      return@coroutineScope
     }
 
     val runningStatus = createGroup(channel)
@@ -214,24 +214,24 @@ protected constructor(
       }
 
       updateNetworkInfoChannels()
-      onNetworkStarted(scope)
+      onNetworkStarted(this)
     } else {
       Timber.w("Group failed creation, stop proxy")
 
       // Remove whatever was created (should be a no-op if everyone follows API correctly)
       shutdownWifiNetwork(channel)
 
-      completeStop(scope) { Timber.w("Stopping proxy after Group failed to create") }
+      completeStop { Timber.w("Stopping proxy after Group failed to create") }
     }
 
     status.set(runningStatus)
   }
 
-  private suspend fun completeStop(scope: CoroutineScope, onStop: () -> Unit) {
+  private suspend fun CoroutineScope.completeStop(onStop: () -> Unit) {
     enforcer.assertOffMainThread()
 
     updateNetworkInfoChannels()
-    onNetworkStopped(scope = scope)
+    onNetworkStopped(this)
 
     onStop()
   }
@@ -254,7 +254,7 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork(scope: CoroutineScope) {
+  private suspend fun stopNetwork() = coroutineScope {
     enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -262,11 +262,11 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but this
     // is basically a no-op
     if (channel == null) {
-      completeStop(scope) {
+      completeStop {
         Timber.d("Resetting status back to not running")
         status.set(RunningStatus.NotRunning)
       }
-      return
+      return@coroutineScope
     }
 
     // If we do have a channel, mark shutting down as we clean up
@@ -275,7 +275,7 @@ protected constructor(
 
     shutdownWifiNetwork(channel)
 
-    completeStop(scope) {
+    completeStop {
       Timber.d("Proxy was stopped")
       status.set(RunningStatus.NotRunning)
     }
@@ -460,6 +460,8 @@ protected constructor(
   }
 
   final override fun updateNetworkInfo() {
+    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+
     directScope.launch {
       enforcer.assertOffMainThread()
 
@@ -468,14 +470,15 @@ protected constructor(
   }
 
   final override fun start() {
+    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+
     directScope.launch {
-      val scope = this
       enforcer.assertOffMainThread()
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork(scope = scope)
-        startNetwork(scope = scope)
+        stopNetwork()
+        startNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
@@ -484,13 +487,14 @@ protected constructor(
   }
 
   final override fun stop() {
+    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+
     directScope.launch {
-      val scope = this
       enforcer.assertOffMainThread()
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
-        stopNetwork(scope = scope)
+        stopNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))

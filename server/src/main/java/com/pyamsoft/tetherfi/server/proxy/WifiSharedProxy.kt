@@ -30,6 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -65,7 +66,7 @@ internal constructor(
   }
 
   @CheckResult
-  private fun proxyLoop(
+  private fun CoroutineScope.proxyLoop(
       type: SharedProxy.Type,
       port: Int,
   ): ProxyJob {
@@ -73,17 +74,13 @@ internal constructor(
 
     val manager = factory.create(type = type)
 
-    Timber.d("${type.name} Begin proxy server loop $port")
-    val job =
-        proxyScope.launch {
-          val scope = this
-          enforcer.assertOffMainThread()
+    val job = launch {
+      enforcer.assertOffMainThread()
 
-          manager.loop(
-              context = scope.coroutineContext,
-              port = port,
-          )
-        }
+      Timber.d("${type.name} Begin proxy server loop $port")
+      manager.loop(port)
+    }
+
     return ProxyJob(type = type, job = job)
   }
 
@@ -106,6 +103,8 @@ internal constructor(
   }
 
   override fun start() {
+    require(proxyScope.isActive) { "CoroutineScope is not active! $proxyScope" }
+
     proxyScope.launch {
       enforcer.assertOffMainThread()
 
@@ -140,6 +139,8 @@ internal constructor(
   }
 
   override fun stop() {
+    require(proxyScope.isActive) { "CoroutineScope is not active! $proxyScope" }
+
     proxyScope.launch {
       enforcer.assertOffMainThread()
 

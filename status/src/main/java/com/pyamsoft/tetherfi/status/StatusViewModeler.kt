@@ -34,7 +34,6 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
@@ -324,29 +323,29 @@ internal constructor(
   }
 
   fun bind(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.IO) {
-      // If either of these sets an error state, we will mark the error dialog as shown
-      combineTransform(
-              state.wiDiStatus,
-              state.proxyStatus,
-          ) { wifi, proxy ->
-            enforcer.assertOffMainThread()
+    // If either of these sets an error state, we will mark the error dialog as shown
+    combineTransform(
+            state.wiDiStatus,
+            state.proxyStatus,
+        ) { wifi, proxy ->
+          enforcer.assertOffMainThread()
 
-            emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
-          }
-          // Need this or we run on the main thread
-          .flowOn(context = Dispatchers.IO)
-          // Don't re-show an error when an error is already sent
-          .distinctUntilChanged()
-          .collect { show ->
-            enforcer.assertOffMainThread()
+          emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
+        }
+        // Need this or we run on the main thread
+        .flowOn(context = Dispatchers.IO)
+        .also { f ->
+          scope.launch(context = Dispatchers.IO) {
+            f.collect { show ->
+              enforcer.assertOffMainThread()
 
-            // We only care when one or both is an error and we show this additional dialog
-            if (show) {
-              state.isShowingSetupError.value = true
+              // We only care when one or both is an error and we show this additional dialog
+              if (show) {
+                state.isShowingSetupError.value = true
+              }
             }
           }
-    }
+        }
   }
 
   fun handleCloseSetupError() {

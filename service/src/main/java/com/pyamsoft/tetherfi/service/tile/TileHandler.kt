@@ -58,9 +58,7 @@ internal constructor(
       onNetworkRunning: () -> Unit,
       onNetworkStopping: () -> Unit,
   ) {
-    val scope = this
-
-    scope.launch(context = Dispatchers.IO) {
+    launch(context = Dispatchers.IO) {
       network.onProxyStatusChanged().also { f ->
         launch(context = Dispatchers.IO) {
           f.collect { status ->
@@ -116,9 +114,7 @@ internal constructor(
       onNetworkRunning: () -> Unit,
       onNetworkStopping: () -> Unit,
   ) = withScope {
-    val scope = this
-
-    scope.watchStatusUpdates(
+    watchStatusUpdates(
         onNetworkError = onNetworkError,
         onNetworkNotRunning = onNetworkNotRunning,
         onNetworkStarting = onNetworkStarting,
