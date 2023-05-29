@@ -32,19 +32,18 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -82,7 +81,6 @@ internal constructor(
   }
 
   @CheckResult
-  @OptIn(FlowPreview::class)
   private fun resolveErrorFlow(): Flow<Boolean> =
       combineTransform(
               state.wiDiStatus,
@@ -92,8 +90,11 @@ internal constructor(
 
             emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
           }
-          // Debounce a bit to avoid issues during state transitions
-          .debounce(500L)
+          // Distinct so that
+          // Upon ON -> if any ERROR, fire dialog and in page
+          // Once dialog dismissed, if OFF and error, don't dialog again because still TRUE
+          // otherwise if OFF and no error, no dialog
+          .distinctUntilChanged()
 
   override fun registerSaveState(
       registry: SaveableStateRegistry
