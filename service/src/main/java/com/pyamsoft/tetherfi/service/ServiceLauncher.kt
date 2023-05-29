@@ -21,8 +21,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
-import javax.inject.Inject
 import timber.log.Timber
+import javax.inject.Inject
 
 class ServiceLauncher
 @Inject
@@ -45,16 +45,14 @@ internal constructor(
   }
 
   fun stopForeground() {
-    // Instead of stopping the service, stop the widi network
-    // as this will eventually fire a shutdown() event which will stop the service
-    // if it is still running
     Timber.d("Stop Foreground Service!")
     context.stopService(foregroundService)
 
-    // Also directly stop the network
+    // Also directly call to stop the network
     //
-    // If you get into a network error state where you never initially launched the service to begin
-    // with, stuff will be perma locked.
+    // This is needed if an error has prevented the proxy from starting the Service.
+    // The service itself would be stopped via the above call which will shutdown the Shutdown
+    // Event listener bus. This line just stops the proxy itself
     Timber.d("Directly calling stop on the network to avoid an Error-Lock state")
     foregroundHandler.stopProxy()
   }
