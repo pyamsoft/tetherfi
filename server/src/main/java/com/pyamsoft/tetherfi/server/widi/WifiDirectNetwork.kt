@@ -36,6 +36,9 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -47,9 +50,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -531,9 +531,9 @@ protected constructor(
     return groupInfoChannel
   }
 
-  protected abstract suspend fun onNetworkStarted()
+  protected abstract fun onNetworkStarted()
 
-  protected abstract suspend fun onNetworkStopped(clearErrorStatus: Boolean)
+  protected abstract fun onNetworkStopped(clearErrorStatus: Boolean)
 
   companion object {
 

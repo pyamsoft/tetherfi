@@ -24,8 +24,8 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 internal class ProxyForegroundService internal constructor() : Service() {
 

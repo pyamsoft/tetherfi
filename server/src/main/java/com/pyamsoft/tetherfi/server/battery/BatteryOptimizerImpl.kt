@@ -21,9 +21,9 @@ import android.os.PowerManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class BatteryOptimizerImpl
 @Inject

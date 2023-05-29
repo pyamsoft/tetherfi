@@ -18,14 +18,11 @@ package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class ClientManagerImpl
@@ -57,9 +54,9 @@ internal constructor(
     }
   }
 
-  private fun CoroutineScope.onNewClientSeen(oldSet: Set<TetherClient>, newSet: Set<TetherClient>) {
+  private fun onNewClientSeen(oldSet: Set<TetherClient>, newSet: Set<TetherClient>) {
     if (newSet.size > oldSet.size) {
-      launch(context = Dispatchers.Main) { inAppRatingPreferences.markDeviceConnected() }
+      inAppRatingPreferences.markDeviceConnected()
     }
   }
 
@@ -97,10 +94,8 @@ internal constructor(
     return blocked.firstOrNull { isMatchingClient(it, client) } != null
   }
 
-  override fun seen(scope: CoroutineScope, client: TetherClient) {
-    seenClients.update { set ->
-      addToSet(set, client).also { newSet -> scope.onNewClientSeen(set, newSet) }
-    }
+  override fun seen(client: TetherClient) {
+    seenClients.update { set -> addToSet(set, client).also { onNewClientSeen(set, it) } }
   }
 
   override fun clear() {

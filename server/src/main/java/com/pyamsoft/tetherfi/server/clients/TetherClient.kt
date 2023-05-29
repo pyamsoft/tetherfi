@@ -29,6 +29,7 @@ sealed class TetherClient(
       TetherClient(
           firstSeen = firstSeen,
       )
+
   data class HostName(
       val hostname: String,
       override val firstSeen: LocalDateTime,

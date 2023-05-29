@@ -23,9 +23,9 @@ interface ServicePreferences {
 
   @CheckResult fun listenForWakeLockChanges(): Flow<Boolean>
 
-  suspend fun setWakeLock(keep: Boolean)
+  fun setWakeLock(keep: Boolean)
 
   @CheckResult fun listenForWiFiLockChanges(): Flow<Boolean>
 
-  suspend fun setWiFiLock(keep: Boolean)
+  fun setWiFiLock(keep: Boolean)
 }

@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status
 
+import androidx.annotation.CheckResult
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.core.ThreadEnforcer
@@ -31,16 +32,19 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -76,6 +80,20 @@ internal constructor(
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
+
+  @CheckResult
+  @OptIn(FlowPreview::class)
+  private fun resolveErrorFlow(): Flow<Boolean> =
+      combineTransform(
+              state.wiDiStatus,
+              state.proxyStatus,
+          ) { wifi, proxy ->
+            enforcer.assertOffMainThread()
+
+            emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
+          }
+          // Debounce a bit to avoid issues during state transitions
+          .debounce(500L)
 
   override fun registerSaveState(
       registry: SaveableStateRegistry
@@ -224,9 +242,6 @@ internal constructor(
       // Only pull once since after this point, the state will be driven by the input
       serverPreferences.listenForPasswordChanges().also { f ->
         scope.launch(context = Dispatchers.IO) {
-          // Always init password before pulling
-          serverPreferences.initializePassword()
-
           s.password.value = f.first()
 
           config.password = true
@@ -324,62 +339,53 @@ internal constructor(
 
   fun bind(scope: CoroutineScope) {
     // If either of these sets an error state, we will mark the error dialog as shown
-    combineTransform(
-            state.wiDiStatus,
-            state.proxyStatus,
-        ) { wifi, proxy ->
+    // Need this or we run on the main thread
+    resolveErrorFlow().flowOn(context = Dispatchers.IO).also { f ->
+      scope.launch(context = Dispatchers.IO) {
+        f.collect { show ->
           enforcer.assertOffMainThread()
 
-          emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
+          state.isShowingSetupError.value = show
         }
-        // Need this or we run on the main thread
-        .flowOn(context = Dispatchers.IO)
-        .also { f ->
-          scope.launch(context = Dispatchers.IO) {
-            f.collect { show ->
-              enforcer.assertOffMainThread()
-
-              state.isShowingSetupError.value = show
-            }
-          }
-        }
+      }
+    }
   }
 
   fun handleCloseSetupError() {
     state.isShowingSetupError.value = false
   }
 
-  fun handleSsidChanged(scope: CoroutineScope, ssid: String) {
+  fun handleSsidChanged(ssid: String) {
     state.ssid.value = ssid
-    scope.launch(context = Dispatchers.Main) { serverPreferences.setSsid(ssid) }
+    serverPreferences.setSsid(ssid)
   }
 
-  fun handlePasswordChanged(scope: CoroutineScope, password: String) {
+  fun handlePasswordChanged(password: String) {
     state.password.value = password
-    scope.launch(context = Dispatchers.Main) { serverPreferences.setPassword(password) }
+    serverPreferences.setPassword(password)
   }
 
-  fun handlePortChanged(scope: CoroutineScope, port: String) {
+  fun handlePortChanged(port: String) {
     val portValue = port.toIntOrNull()
     if (portValue != null) {
       state.port.value = portValue
-      scope.launch(context = Dispatchers.Main) { serverPreferences.setPort(portValue) }
+      serverPreferences.setPort(portValue)
     }
   }
 
-  fun handleToggleProxyWakelock(scope: CoroutineScope) {
+  fun handleToggleProxyWakelock() {
     val newVal = state.keepWakeLock.updateAndGet { !it }
-    scope.launch(context = Dispatchers.Main) { servicePreferences.setWakeLock(newVal) }
+    servicePreferences.setWakeLock(newVal)
   }
 
-  fun handleToggleProxyWifilock(scope: CoroutineScope) {
+  fun handleToggleProxyWifilock() {
     val newVal = state.keepWifiLock.updateAndGet { !it }
-    scope.launch(context = Dispatchers.Main) { servicePreferences.setWiFiLock(newVal) }
+    servicePreferences.setWiFiLock(newVal)
   }
 
-  fun handleChangeBand(scope: CoroutineScope, band: ServerNetworkBand) {
+  fun handleChangeBand(band: ServerNetworkBand) {
     state.band.value = band
-    scope.launch(context = Dispatchers.Main) { serverPreferences.setNetworkBand(band) }
+    serverPreferences.setNetworkBand(band)
   }
 
   fun handleTogglePasswordVisibility() {

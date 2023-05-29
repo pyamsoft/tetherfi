@@ -20,15 +20,13 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.server.ProxyDebug
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.proxy.session.BaseProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
+import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.selector.ActorSelectorManager
@@ -44,30 +42,26 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 internal class TcpProxySession
 @Inject
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
-    @ServerInternalApi proxyDebug: ProxyDebug,
     private val blockedClients: BlockedClients,
     private val seenClients: SeenClients,
     private val clock: Clock,
     private val enforcer: ThreadEnforcer,
-) :
-    BaseProxySession<TcpProxyData>(
-        SharedProxy.Type.TCP,
-        proxyDebug,
-    ) {
+) : ProxySession<TcpProxyData> {
 
   /**
    * Parse the first line of content which may be a connect call
@@ -88,7 +82,7 @@ internal constructor(
 
     // No line, no go
     if (line.isNullOrBlank()) {
-      warnLog { "No input read from proxy" }
+      Timber.w("No input read from proxy")
       return null
     }
 
@@ -96,24 +90,21 @@ internal constructor(
       // Given the line, it needs to be in an expected format or we can't do it
       val methodData = getMethodAndUrlString(line)
       if (methodData == null) {
-        warnLog { "Unable to parse method and URL: $line" }
+        Timber.w("Unable to parse method and URL: $line")
         return null
       }
 
       val urlData = getUrlAndPort(methodData.url)
-      val request =
-          ProxyRequest(
-              url = methodData.url,
-              host = urlData.hostName,
-              method = methodData.method,
-              port = urlData.port,
-              version = methodData.version,
-              raw = line,
-          )
-      debugLog { "Request received: $line $request" }
-      return request
+      return ProxyRequest(
+          url = methodData.url,
+          host = urlData.hostName,
+          method = methodData.method,
+          port = urlData.port,
+          version = methodData.version,
+          raw = line,
+      )
     } catch (e: Throwable) {
-      errorLog(e) { "Unable to parse request: $line" }
+      Timber.e(e, "Unable to parse request: $line")
       return null
     }
   }
@@ -166,9 +157,8 @@ internal constructor(
         port =
             portString.toIntOrNull().let { maybePort ->
               if (maybePort == null) {
-                warnLog {
-                  "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString"
-                }
+                Timber.w(
+                    "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString")
                 // Default to port 80 for HTTP
                 80
               } else {
@@ -240,7 +230,7 @@ internal constructor(
     // We find the first space
     val firstSpace = line.indexOf(' ')
     if (firstSpace < 0) {
-      warnLog { "Invalid request line format. No space: '$line'" }
+      Timber.w("Invalid request line format. No space: '$line'")
       return null
     }
 
@@ -253,7 +243,7 @@ internal constructor(
     // Need to have the last space so we know the version too
     val nextSpace = restOfLine.indexOf(' ')
     if (nextSpace < 0) {
-      warnLog { "Invalid request line format. No nextSpace: '$line' => '$restOfLine'" }
+      Timber.w("Invalid request line format. No nextSpace: '$line' => '$restOfLine'")
       return null
     }
 
@@ -278,7 +268,6 @@ internal constructor(
   private suspend fun CoroutineScope.establishHttpsConnection(
       input: ByteReadChannel,
       output: ByteWriteChannel,
-      request: ProxyRequest,
   ) {
     // We exhaust the input here because the client is sending CONNECT data to what it thinks is a
     // server but its actually us, and we don't care how they connect
@@ -290,7 +279,6 @@ internal constructor(
       throwaway = input.readUTF8Line()
     } while (isActive && !throwaway.isNullOrBlank())
 
-    debugLog { "Establish HTTPS ACK connection: $request" }
     proxyResponse(output, "HTTP/1.1 200 Connection Established")
   }
 
@@ -308,7 +296,6 @@ internal constructor(
 
     val newRequest = "${request.method} $file ${request.version}"
 
-    debugLog { "Replay initial HTTP connection: $request => $newRequest" }
     output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
@@ -342,7 +329,7 @@ internal constructor(
         // Establish an HTTPS connection by faking the CONNECT response
         // Send a 200 to the connecting client so that they will then continue to
         // send the actual HTTP data to the real endpoint
-        establishHttpsConnection(proxyInput, proxyOutput, request)
+        establishHttpsConnection(proxyInput, proxyOutput)
       } else {
         // Send initial HTTP communication, since we consumed it above
         replayHttpCommunication(
@@ -352,7 +339,6 @@ internal constructor(
       }
 
       // Exchange data until completed
-      debugLog { "Exchange rest of data: $request" }
       val job = launch {
         enforcer.assertOffMainThread()
 
@@ -371,10 +357,9 @@ internal constructor(
 
       // Wait for internet communication to finish
       job.join()
-      debugLog { "Done with proxy request: $request" }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "Error during Internet exchange" }
+        Timber.e(e, "Error during Internet exchange")
         writeError(proxyOutput)
       }
     } finally {
@@ -413,7 +398,7 @@ internal constructor(
   private fun resolveClient(connection: Socket): TetherClient? {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
-      warnLog { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
+      Timber.w("Block non-internet socket addresses, we expect clients to be inet: $connection")
       return null
     }
 
@@ -433,7 +418,6 @@ internal constructor(
 
   @CheckResult
   private fun isBlockedClient(client: TetherClient): Boolean {
-    debugLog { "Check if client is blocked: $client" }
     return blockedClients.isBlocked(client)
   }
 
@@ -454,7 +438,7 @@ internal constructor(
       enforcer.assertOffMainThread()
 
       // We launch to have this side effect run in parallel with processing
-      seenClients.seen(this, client)
+      seenClients.seen(client)
     }
   }
 
@@ -468,7 +452,6 @@ internal constructor(
     // Given the request, connect to the Web
     try {
       connectToInternet(this, request).use { internet ->
-        debugLog { "Proxy to: $request" }
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
@@ -483,7 +466,7 @@ internal constructor(
       }
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        errorLog(e) { "Error during connect to internet: $request" }
+        Timber.e(e, "Error during connect to internet: $request")
         writeError(proxyOutput)
       }
     }
@@ -507,8 +490,7 @@ internal constructor(
 
     // If the client is blocked we do not process any inpue
     if (isBlockedClient(client)) {
-      val msg = "Client is marked blocked: $client"
-      warnLog { msg }
+      Timber.w("Client is marked blocked: $client")
       writeError(proxyOutput)
       proxyInput.cancel()
       proxyOutput.close()
@@ -518,8 +500,7 @@ internal constructor(
     // We use a string parsing to figure out what this HTTP request wants to do
     val request = parseRequest(proxyInput)
     if (request == null) {
-      val msg = "Could not parse proxy request"
-      warnLog { msg }
+      Timber.w("Could not parse proxy request")
       writeError(proxyOutput)
       proxyInput.cancel()
       proxyOutput.close()
@@ -548,8 +529,7 @@ internal constructor(
     // Resolve the client as an IP or hostname
     val client = resolveClient(connection)
     if (client == null) {
-      val msg = "Unable to resolve TetherClient for connection: $connection"
-      warnLog { msg }
+      Timber.w("Unable to resolve TetherClient for connection: $connection")
       writeError(proxyOutput)
       proxyInput.cancel()
       proxyOutput.close()
@@ -579,7 +559,8 @@ internal constructor(
      * Tests if a given string is an IP address
      */
     private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
+            .toRegex()
 
     private const val LINE_ENDING = "\r\n"
 

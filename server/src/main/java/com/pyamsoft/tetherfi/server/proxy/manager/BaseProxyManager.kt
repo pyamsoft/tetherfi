@@ -18,9 +18,6 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.tetherfi.server.ProxyDebug
-import com.pyamsoft.tetherfi.server.proxy.ProxyLogger
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ASocket
@@ -31,15 +28,8 @@ import io.ktor.network.sockets.aSocket
 import kotlin.coroutines.coroutineContext
 
 internal abstract class BaseProxyManager<S : ASocket>(
-    proxyType: SharedProxy.Type,
-    proxyDebug: ProxyDebug,
     private val enforcer: ThreadEnforcer,
-) :
-    ProxyManager,
-    ProxyLogger(
-        proxyType,
-        proxyDebug,
-    ) {
+) : ProxyManager {
 
   @CheckResult
   private fun getServerAddress(port: Int): SocketAddress {

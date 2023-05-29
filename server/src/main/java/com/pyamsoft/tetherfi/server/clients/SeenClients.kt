@@ -17,12 +17,11 @@
 package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
 interface SeenClients {
 
   @CheckResult fun listenForClients(): Flow<Set<TetherClient>>
 
-  fun seen(scope: CoroutineScope, client: TetherClient)
+  fun seen(client: TetherClient)
 }

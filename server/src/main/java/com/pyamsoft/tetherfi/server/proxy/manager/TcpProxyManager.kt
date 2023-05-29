@@ -18,8 +18,6 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.server.ProxyDebug
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import io.ktor.network.sockets.ServerSocket
@@ -30,18 +28,13 @@ import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 internal class TcpProxyManager
 internal constructor(
-    proxyDebug: ProxyDebug,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
-) :
-    BaseProxyManager<ServerSocket>(
-        SharedProxy.Type.TCP,
-        proxyDebug,
-        enforcer,
-    ) {
+) : BaseProxyManager<ServerSocket>(enforcer) {
 
   private suspend fun runSession(connection: Socket) = coroutineScope {
     enforcer.assertOffMainThread()
@@ -55,7 +48,7 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { errorLog(e) { "Error during runSession" } }
+      e.ifNotCancellation { Timber.e(e, "Error during runSession") }
     }
   }
 

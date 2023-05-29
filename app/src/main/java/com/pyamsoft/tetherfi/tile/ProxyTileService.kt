@@ -134,6 +134,7 @@ internal class ProxyTileService internal constructor() : TileService() {
   private fun handleNetworkStoppingState() {
     setTileStatus(RunningStatus.Stopping)
   }
+
   private fun withHandler(block: (TileHandler) -> Unit) {
     if (tileHandler == null) {
       // Need to constantly re-bind here because each time this is called, the tile service may have

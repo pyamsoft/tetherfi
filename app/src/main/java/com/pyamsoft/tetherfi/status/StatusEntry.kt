@@ -200,24 +200,9 @@ fun StatusEntry(
       serverViewState = serverViewState,
       appName = appName,
       onToggleProxy = { handleToggleProxy() },
-      onSsidChanged = {
-        viewModel.handleSsidChanged(
-            scope = scope,
-            ssid = it.trim(),
-        )
-      },
-      onPasswordChanged = {
-        viewModel.handlePasswordChanged(
-            scope = scope,
-            password = it,
-        )
-      },
-      onPortChanged = {
-        viewModel.handlePortChanged(
-            scope = scope,
-            port = it,
-        )
-      },
+      onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
+      onPasswordChanged = { viewModel.handlePasswordChanged(it) },
+      onPortChanged = { viewModel.handlePortChanged(it) },
       onOpenBatterySettings = {
         safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
@@ -236,22 +221,9 @@ fun StatusEntry(
 
         safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
       },
-      onToggleKeepWakeLock = {
-        viewModel.handleToggleProxyWakelock(
-            scope = scope,
-        )
-      },
-      onToggleKeepWifiLock = {
-        viewModel.handleToggleProxyWifilock(
-            scope = scope,
-        )
-      },
-      onSelectBand = {
-        viewModel.handleChangeBand(
-            scope = scope,
-            band = it,
-        )
-      },
+      onToggleKeepWakeLock = { viewModel.handleToggleProxyWakelock() },
+      onToggleKeepWifiLock = { viewModel.handleToggleProxyWifilock() },
+      onSelectBand = { viewModel.handleChangeBand(it) },
       onRequestNotificationPermission = {
         scope.launch(context = Dispatchers.IO) {
           // See MainActivity

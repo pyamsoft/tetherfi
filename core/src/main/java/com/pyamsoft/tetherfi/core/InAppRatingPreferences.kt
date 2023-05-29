@@ -10,11 +10,11 @@ interface InAppRatingPreferences {
   @CheckResult fun listenShowInAppRating(): Flow<Boolean>
 
   /** How many times has the user turned the hotspot on */
-  suspend fun markHotspotUsed()
+  fun markHotspotUsed()
 
   /** How many times is the app opened (onStart) */
-  suspend fun markAppOpened()
+  fun markAppOpened()
 
   /** How many times have devices connected to the hotspot */
-  suspend fun markDeviceConnected()
+  fun markDeviceConnected()
 }

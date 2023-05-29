@@ -57,13 +57,13 @@ internal constructor(
         status,
     ) {
 
-  override suspend fun onNetworkStarted() {
+  override fun onNetworkStarted() {
     proxy.start()
 
     inAppRatingPreferences.markHotspotUsed()
   }
 
-  override suspend fun onNetworkStopped(clearErrorStatus: Boolean) {
+  override fun onNetworkStopped(clearErrorStatus: Boolean) {
     proxy.stop(clearErrorStatus)
   }
 

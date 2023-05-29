@@ -23,19 +23,17 @@ interface ServerPreferences {
 
   @CheckResult fun listenForSsidChanges(): Flow<String>
 
-  suspend fun setSsid(ssid: String)
+  fun setSsid(ssid: String)
 
   @CheckResult fun listenForPasswordChanges(): Flow<String>
 
-  suspend fun initializePassword()
-
-  suspend fun setPassword(password: String)
+  fun setPassword(password: String)
 
   @CheckResult fun listenForPortChanges(): Flow<Int>
 
-  suspend fun setPort(port: Int)
+  fun setPort(port: Int)
 
   @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
 
-  suspend fun setNetworkBand(band: ServerNetworkBand)
+  fun setNetworkBand(band: ServerNetworkBand)
 }

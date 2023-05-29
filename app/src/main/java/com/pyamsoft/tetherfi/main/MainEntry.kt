@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -114,9 +113,7 @@ private fun MountHooks(
       }
 
       override fun onStart(owner: LifecycleOwner) {
-        viewModel.handleAnalyticsMarkOpened(
-            scope = owner.lifecycleScope,
-        )
+        viewModel.handleAnalyticsMarkOpened()
       }
     }
   }

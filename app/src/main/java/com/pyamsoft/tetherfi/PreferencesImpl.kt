@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.annotation.CheckResult
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
@@ -29,16 +30,18 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -56,6 +59,10 @@ internal constructor(
   // Keep this lazy so that the fallback password is always the same
   private val fallbackPassword by lazy { PasswordGenerator.generate() }
 
+  private val scope by lazy {
+    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+  }
+
   @CheckResult
   private fun isInAppRatingAlreadyShown(): Boolean {
     enforcer.assertOffMainThread()
@@ -69,55 +76,89 @@ internal constructor(
     return this > 0 && this == BuildConfig.VERSION_CODE
   }
 
+  private fun SharedPreferences.updatePassword(
+      password: String,
+      commit: Boolean = false,
+  ) {
+    this.edit(commit = commit) { putString(PASSWORD, password) }
+  }
+
   override fun listenForWakeLockChanges(): Flow<Boolean> =
       preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
-  override suspend fun setWakeLock(keep: Boolean) =
-      withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WAKE_LOCK, keep) } }
+  override fun setWakeLock(keep: Boolean) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putBoolean(WAKE_LOCK, keep) }
+    }
+  }
 
   override fun listenForWiFiLockChanges(): Flow<Boolean> =
       preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
-  override suspend fun setWiFiLock(keep: Boolean) =
-      withContext(context = Dispatchers.IO) { preferences.edit { putBoolean(WIFI_LOCK, keep) } }
+  override fun setWiFiLock(keep: Boolean) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putBoolean(WIFI_LOCK, keep) }
+    }
+  }
 
   override fun listenForSsidChanges(): Flow<String> =
       preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
           .flowOn(context = Dispatchers.IO)
-          .flowOn(context = Dispatchers.IO)
 
-  override suspend fun setSsid(ssid: String) =
-      withContext(context = Dispatchers.IO) { preferences.edit { putString(SSID, ssid) } }
+  override fun setSsid(ssid: String) {
+    scope.launch {
+      enforcer.assertOffMainThread()
 
-  override suspend fun initializePassword() =
-      withContext(context = Dispatchers.IO) {
-        if (!preferences.contains(PASSWORD)) {
-          setPassword(fallbackPassword)
-        }
-      }
+      preferences.edit { putString(SSID, ssid) }
+    }
+  }
 
   override fun listenForPasswordChanges(): Flow<String> =
-      preferenceStringFlow(PASSWORD, fallbackPassword) { preferences }
+      preferenceStringFlow(PASSWORD, fallbackPassword) {
+            preferences.also { p ->
+              if (!p.contains(PASSWORD)) {
+                // Commit this edit so that it fires immediately before we process again
+                p.updatePassword(fallbackPassword, commit = true)
+              }
+            }
+          }
           .flowOn(context = Dispatchers.IO)
 
-  override suspend fun setPassword(password: String) =
-      withContext(context = Dispatchers.IO) { preferences.edit { putString(PASSWORD, password) } }
+  override fun setPassword(password: String) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.updatePassword(password)
+    }
+  }
 
   override fun listenForPortChanges(): Flow<Int> =
       preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }.flowOn(context = Dispatchers.IO)
 
-  override suspend fun setPort(port: Int) =
-      withContext(context = Dispatchers.IO) { preferences.edit { putInt(PORT, port) } }
+  override fun setPort(port: Int) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putInt(PORT, port) }
+    }
+  }
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
-  override suspend fun setNetworkBand(band: ServerNetworkBand) =
-      withContext(context = Dispatchers.IO) {
-        preferences.edit { putString(NETWORK_BAND, band.name) }
-      }
+  override fun setNetworkBand(band: ServerNetworkBand) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putString(NETWORK_BAND, band.name) }
+    }
+  }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -155,32 +196,41 @@ internal constructor(
           // Need this or we run on the main thread
           .flowOn(context = Dispatchers.IO)
 
-  override suspend fun markHotspotUsed() =
-      withContext(context = Dispatchers.IO) {
-        if (!isInAppRatingAlreadyShown()) {
-          // Not atomic because shared prefs are lame
-          val old = preferences.getInt(IN_APP_HOTSPOT_USED, 0)
-          preferences.edit { putInt(IN_APP_HOTSPOT_USED, old + 1) }
-        }
-      }
+  override fun markHotspotUsed() {
+    scope.launch {
+      enforcer.assertOffMainThread()
 
-  override suspend fun markAppOpened() =
-      withContext(context = Dispatchers.IO) {
-        if (!isInAppRatingAlreadyShown()) {
-          // Not atomic because shared prefs are lame
-          val old = preferences.getInt(IN_APP_APP_OPENED, 0)
-          preferences.edit { putInt(IN_APP_APP_OPENED, old + 1) }
-        }
+      if (!isInAppRatingAlreadyShown()) {
+        // Not atomic because shared prefs are lame
+        val old = preferences.getInt(IN_APP_HOTSPOT_USED, 0)
+        preferences.edit { putInt(IN_APP_HOTSPOT_USED, old + 1) }
       }
+    }
+  }
 
-  override suspend fun markDeviceConnected() =
-      withContext(context = Dispatchers.IO) {
-        if (!isInAppRatingAlreadyShown()) {
-          // Not atomic because shared prefs are lame
-          val old = preferences.getInt(IN_APP_DEVICES_CONNECTED, 0)
-          preferences.edit { putInt(IN_APP_DEVICES_CONNECTED, old + 1) }
-        }
+  override fun markAppOpened() {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      if (!isInAppRatingAlreadyShown()) {
+        // Not atomic because shared prefs are lame
+        val old = preferences.getInt(IN_APP_APP_OPENED, 0)
+        preferences.edit { putInt(IN_APP_APP_OPENED, old + 1) }
       }
+    }
+  }
+
+  override fun markDeviceConnected() {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      if (!isInAppRatingAlreadyShown()) {
+        // Not atomic because shared prefs are lame
+        val old = preferences.getInt(IN_APP_DEVICES_CONNECTED, 0)
+        preferences.edit { putInt(IN_APP_DEVICES_CONNECTED, old + 1) }
+      }
+    }
+  }
 
   private object PasswordGenerator {
 

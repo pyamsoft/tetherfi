@@ -21,8 +21,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
-import timber.log.Timber
 import javax.inject.Inject
+import timber.log.Timber
 
 class ServiceLauncher
 @Inject
