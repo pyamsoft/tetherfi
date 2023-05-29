@@ -216,7 +216,7 @@ protected constructor(
       }
 
       updateNetworkInfoChannels()
-      onNetworkStarted(this)
+      onNetworkStarted()
     } else {
       Timber.w("Group failed creation, stop proxy")
 
@@ -229,11 +229,11 @@ protected constructor(
     status.set(runningStatus)
   }
 
-  private suspend fun CoroutineScope.completeStop(onStop: () -> Unit) {
+  private suspend fun completeStop(onStop: () -> Unit) {
     enforcer.assertOffMainThread()
 
     updateNetworkInfoChannels()
-    onNetworkStopped(this)
+    onNetworkStopped()
 
     onStop()
   }
@@ -276,14 +276,22 @@ protected constructor(
     }
 
     // If we do have a channel, mark shutting down as we clean up
-    Timber.d("Shutting down wifi network")
-    status.set(RunningStatus.Stopping)
+    if (keepErrorRunningStatus) {
+      Timber.d("We are stopping Wifi network because of an error, keep the error status.")
+    } else {
+      Timber.d("Shutting down wifi network")
+      status.set(RunningStatus.Stopping)
+    }
 
     shutdownWifiNetwork(channel)
 
     completeStop {
-      Timber.d("Proxy was stopped")
-      status.set(RunningStatus.NotRunning)
+      if (keepErrorRunningStatus) {
+        Timber.d("Proxy was stopped for an error, keep the error status.")
+      } else {
+        Timber.d("Proxy was stopped")
+        status.set(RunningStatus.NotRunning)
+      }
     }
   }
 
@@ -505,7 +513,7 @@ protected constructor(
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork(keepErrorRunningStatus = true)
+        stopNetwork(keepErrorRunningStatus = false)
         startNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
@@ -526,9 +534,9 @@ protected constructor(
     return groupInfoChannel
   }
 
-  protected abstract suspend fun onNetworkStarted(scope: CoroutineScope)
+  protected abstract suspend fun onNetworkStarted()
 
-  protected abstract suspend fun onNetworkStopped(scope: CoroutineScope)
+  protected abstract suspend fun onNetworkStopped()
 
   companion object {
 
@@ -546,10 +554,12 @@ protected constructor(
 
     @JvmStatic
     private fun closeSilent(s: Channel) {
-      try {
-        s.close()
-      } catch (e: Throwable) {
-        Timber.e(e, "Failed to close WifiP2P Channel")
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        try {
+          s.close()
+        } catch (e: Throwable) {
+          Timber.e(e, "Failed to close WifiP2P Channel")
+        }
       }
     }
   }

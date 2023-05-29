@@ -58,13 +58,13 @@ internal constructor(
         status,
     ) {
 
-  override suspend fun onNetworkStarted(scope: CoroutineScope) {
+  override suspend fun onNetworkStarted() {
     proxy.start()
 
     inAppRatingPreferences.markHotspotUsed()
   }
 
-  override suspend fun onNetworkStopped(scope: CoroutineScope) {
+  override suspend fun onNetworkStopped() {
     proxy.stop()
   }
 
