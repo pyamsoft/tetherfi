@@ -97,7 +97,9 @@ protected constructor(
       //
       // We may not be able to perform a full clean stop.
       Timber.d("WifiP2PManager Channel died. Kill network")
-      stop()
+
+      // Keep the error status flag here since we want to preserve why the network needed to stop.
+      stopWifiDirectNetwork(keepErrorRunningStatus = true)
     }
   }
 
@@ -254,7 +256,7 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork() = coroutineScope {
+  private suspend fun stopNetwork(keepErrorRunningStatus: Boolean) = coroutineScope {
     enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -263,8 +265,12 @@ protected constructor(
     // is basically a no-op
     if (channel == null) {
       completeStop {
-        Timber.d("Resetting status back to not running")
-        status.set(RunningStatus.NotRunning)
+        if (keepErrorRunningStatus) {
+          Timber.d("We are stopping Wifi network because of an error, keep the error status.")
+        } else {
+          Timber.d("Resetting status back to not running")
+          status.set(RunningStatus.NotRunning)
+        }
       }
       return@coroutineScope
     }
@@ -459,6 +465,28 @@ protected constructor(
     connectionInfoChannel.value = getConnectionInfo()
   }
 
+  private fun stopWifiDirectNetwork(keepErrorRunningStatus: Boolean) {
+    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+
+    directScope.launch {
+      enforcer.assertOffMainThread()
+
+      Timber.d("Stopping Wi-Fi Direct Network...")
+      try {
+        stopNetwork(keepErrorRunningStatus)
+      } catch (e: Throwable) {
+        Timber.e(e, "Error stopping Network")
+        status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+      } finally {
+        // Fire the shutdown event to the service
+        Timber.d("Fire final shutdown event.")
+        shutdownBus.emit(ServerShutdownEvent)
+
+        Timber.d("Wi-Fi Direct network is shutdown")
+      }
+    }
+  }
+
   final override fun updateNetworkInfo() {
     require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
 
@@ -477,7 +505,7 @@ protected constructor(
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork()
+        stopNetwork(keepErrorRunningStatus = true)
         startNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
@@ -487,25 +515,7 @@ protected constructor(
   }
 
   final override fun stop() {
-    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
-
-    directScope.launch {
-      enforcer.assertOffMainThread()
-
-      Timber.d("Stopping Wi-Fi Direct Network...")
-      try {
-        stopNetwork()
-      } catch (e: Throwable) {
-        Timber.e(e, "Error stopping Network")
-        status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
-      } finally {
-        // Fire the shutdown event to the service
-        Timber.d("Fire final shutdown event.")
-        shutdownBus.emit(ServerShutdownEvent)
-
-        Timber.d("Wi-Fi Direct network is shutdown")
-      }
-    }
+    stopWifiDirectNetwork(keepErrorRunningStatus = false)
   }
 
   override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {

@@ -16,10 +16,7 @@
 
 package com.pyamsoft.tetherfi.tile
 
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -31,6 +28,7 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 internal class ProxyTileInjector : ComposableInjector() {
@@ -56,15 +54,9 @@ private fun MountHooks(
 
   SaveStateDisposableEffect(viewModel)
 
-  DisposableEffect(
-      viewModel,
-  ) {
-    val handler = Handler(Looper.getMainLooper())
-
-    // Wait a little bit before starting the proxy
-    handler.postDelayed({ handleToggleProxy() }, 500)
-
-    onDispose { handler.removeCallbacksAndMessages(null) }
+  LaunchedEffect(viewModel) {
+    delay(500)
+    handleToggleProxy()
   }
 
   LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
