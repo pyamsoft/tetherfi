@@ -170,12 +170,10 @@ abstract class ServerAppModule {
     @ServerInternalApi
     @OptIn(ExperimentalCoroutinesApi::class)
     internal fun provideProxyDispatcher(): CoroutineDispatcher {
-      // We max paralellism at CORES * 4 to avoid CPU trashing at the system level from
-      // resource starving when a bunch of requests fly in at once
-      //
-      // We max out total parallelism at 32 at the absolute most
+      // We max parallelism at CORES * 2 to avoid overallocating and system level
+      // CPU trashing
       val coreCount = Runtime.getRuntime().availableProcessors()
-      val parallelism = coreCount.times(4).coerceAtMost(32)
+      val parallelism = coreCount * 2
 
       Timber.d("Using Proxy limited dispatcher=$parallelism")
       return Dispatchers.IO.limitedParallelism(parallelism)
