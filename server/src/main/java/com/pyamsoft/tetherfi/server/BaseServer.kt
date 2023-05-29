@@ -33,7 +33,7 @@ protected constructor(
     return status.onStatus()
   }
 
-  final override fun getCurrentStatus(): RunningStatus {
+  override fun getCurrentStatus(): RunningStatus {
     return status.get()
   }
 }

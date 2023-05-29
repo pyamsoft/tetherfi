@@ -80,6 +80,18 @@ internal fun TroubleshootUnableToStart(
           text = "• Wi-Fi should be restarted by turning it OFF and then back ON again",
           style = MaterialTheme.typography.body1,
       )
+
+      Text(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          text = "• The Hotspot password must be at least 8 characters long",
+          style = MaterialTheme.typography.body1,
+      )
+
+      Text(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          text = "• The Hotspot name must be unique",
+          style = MaterialTheme.typography.body1,
+      )
     }
 
     if (isProxyError) {
@@ -91,13 +103,7 @@ internal fun TroubleshootUnableToStart(
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot password must be at least 8 characters long",
-          style = MaterialTheme.typography.body1,
-      )
-
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot name must be unique",
+          text = "• The Hotspot port number must be between 1028 and 60000",
           style = MaterialTheme.typography.body1,
       )
     }
