@@ -102,6 +102,12 @@ internal constructor(
     }
   }
 
+  private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {
+    while (this.isNotEmpty()) {
+      block(this.removeFirst())
+    }
+  }
+
   override fun start() {
     require(proxyScope.isActive) { "CoroutineScope is not active! $proxyScope" }
 
@@ -118,7 +124,7 @@ internal constructor(
         }
 
         Timber.d("Starting proxy server on port $port ...")
-        status.clearError(RunningStatus.Starting)
+        status.set(RunningStatus.Starting, clearError = true)
 
         coroutineScope {
           enforcer.assertOffMainThread()
@@ -138,21 +144,19 @@ internal constructor(
     }
   }
 
-  override fun stop() {
+  override fun stop(clearErrorStatus: Boolean) {
     require(proxyScope.isActive) { "CoroutineScope is not active! $proxyScope" }
 
     proxyScope.launch {
       enforcer.assertOffMainThread()
 
-      status.set(RunningStatus.Stopping)
+      status.set(
+          RunningStatus.Stopping,
+          clearError = clearErrorStatus,
+      )
+
       shutdown()
       status.set(RunningStatus.NotRunning)
-    }
-  }
-
-  private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {
-    while (this.isNotEmpty()) {
-      block(this.removeFirst())
     }
   }
 

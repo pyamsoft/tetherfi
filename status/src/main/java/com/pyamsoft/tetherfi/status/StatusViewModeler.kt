@@ -125,7 +125,7 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
-      serviceLauncher.stopForeground()
+      serviceLauncher.stopForeground(clearErrorStatus = false)
       return
     }
 
@@ -136,11 +136,11 @@ internal constructor(
       }
       is RunningStatus.Running -> {
         Timber.d("Stopping Proxy")
-        serviceLauncher.stopForeground()
+        serviceLauncher.stopForeground(clearErrorStatus = false)
       }
       is RunningStatus.Error -> {
         Timber.w("Resetting Proxy from Error state")
-        serviceLauncher.stopForeground()
+        serviceLauncher.stopForeground(clearErrorStatus = true)
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
@@ -312,7 +312,7 @@ internal constructor(
             is WidiNetworkEvent.PeersChanged -> {}
             is WidiNetworkEvent.WifiDisabled -> {
               Timber.d("Stop ForegroundService when WiFi Disabled")
-              serviceLauncher.stopForeground()
+              serviceLauncher.stopForeground(clearErrorStatus = false)
             }
             is WidiNetworkEvent.WifiEnabled -> {}
             is WidiNetworkEvent.DiscoveryChanged -> {}

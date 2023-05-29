@@ -24,13 +24,13 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ForegroundHandler
@@ -124,9 +124,10 @@ internal constructor(
     network.start()
   }
 
-  fun stopProxy() {
+  /** If [clearErrorStatus] is set, any errors from running status are cleared */
+  fun stopProxy(clearErrorStatus: Boolean) {
     Timber.d("Stop WiDi network")
-    network.stop()
+    network.stop(clearErrorStatus)
 
     // Launch a parent scope for all jobs
     scope.launch(context = Dispatchers.IO) {
@@ -139,7 +140,7 @@ internal constructor(
   }
 
   fun destroy() {
-    stopProxy()
+    stopProxy(clearErrorStatus = false)
 
     shutdownJob?.cancel()
     shutdownJob = null

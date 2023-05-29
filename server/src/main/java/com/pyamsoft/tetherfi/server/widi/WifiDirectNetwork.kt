@@ -95,7 +95,7 @@ protected constructor(
       //
       // We may not be able to perform a full clean stop.
       Timber.d("WifiP2PManager Channel died. Kill network")
-      stop()
+      stop(clearErrorStatus = false)
     }
   }
 
@@ -192,13 +192,15 @@ protected constructor(
     }
 
     Timber.d("Start new network")
-    status.clearError(RunningStatus.Starting)
+    status.set(RunningStatus.Starting, clearError = true)
     val channel = createChannel()
 
     if (channel == null) {
       Timber.w("Failed to create channel, cannot initialize WiDi network")
 
-      completeStop { status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel")) }
+      completeStop(clearErrorStatus = false) {
+        status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+      }
       return@coroutineScope
     }
 
@@ -221,18 +223,21 @@ protected constructor(
       // Remove whatever was created (should be a no-op if everyone follows API correctly)
       shutdownWifiNetwork(channel)
 
-      completeStop {
+      completeStop(clearErrorStatus = false) {
         Timber.w("Stopping proxy after Group failed to create")
         status.set(runningStatus)
       }
     }
   }
 
-  private suspend fun completeStop(onStop: () -> Unit) {
+  private suspend fun completeStop(
+      clearErrorStatus: Boolean,
+      onStop: () -> Unit,
+  ) {
     enforcer.assertOffMainThread()
 
     updateNetworkInfoChannels()
-    onNetworkStopped()
+    onNetworkStopped(clearErrorStatus)
 
     onStop()
   }
@@ -255,7 +260,7 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork() = coroutineScope {
+  private suspend fun stopNetwork(clearErrorStatus: Boolean) = coroutineScope {
     enforcer.assertOffMainThread()
 
     val channel = getChannel()
@@ -263,22 +268,31 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but this
     // is basically a no-op
     if (channel == null) {
-      completeStop {
+      completeStop(clearErrorStatus) {
         Timber.d("Resetting status back to not running")
-        status.set(RunningStatus.NotRunning)
+        status.set(
+            RunningStatus.NotRunning,
+            clearError = clearErrorStatus,
+        )
       }
       return@coroutineScope
     }
 
     // If we do have a channel, mark shutting down as we clean up
     Timber.d("Shutting down wifi network")
-    status.set(RunningStatus.Stopping)
+    status.set(
+        RunningStatus.Stopping,
+        clearError = clearErrorStatus,
+    )
 
     shutdownWifiNetwork(channel)
 
-    completeStop {
+    completeStop(clearErrorStatus) {
       Timber.d("Proxy was stopped")
-      status.set(RunningStatus.NotRunning)
+      status.set(
+          RunningStatus.NotRunning,
+          clearError = clearErrorStatus,
+      )
     }
   }
 
@@ -478,7 +492,7 @@ protected constructor(
 
       Timber.d("Starting Wi-Fi Direct Network...")
       try {
-        stopNetwork()
+        stopNetwork(clearErrorStatus = true)
         startNetwork()
       } catch (e: Throwable) {
         Timber.e(e, "Error starting Network")
@@ -487,7 +501,7 @@ protected constructor(
     }
   }
 
-  final override fun stop() {
+  final override fun stop(clearErrorStatus: Boolean) {
     require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
 
     directScope.launch {
@@ -495,7 +509,7 @@ protected constructor(
 
       Timber.d("Stopping Wi-Fi Direct Network...")
       try {
-        stopNetwork()
+        stopNetwork(clearErrorStatus)
       } catch (e: Throwable) {
         Timber.e(e, "Error stopping Network")
         status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
@@ -509,17 +523,17 @@ protected constructor(
     }
   }
 
-  override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {
+  final override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {
     return connectionInfoChannel
   }
 
-  override fun onGroupInfoChanged(): Flow<WiDiNetworkStatus.GroupInfo> {
+  final override fun onGroupInfoChanged(): Flow<WiDiNetworkStatus.GroupInfo> {
     return groupInfoChannel
   }
 
   protected abstract suspend fun onNetworkStarted()
 
-  protected abstract suspend fun onNetworkStopped()
+  protected abstract suspend fun onNetworkStopped(clearErrorStatus: Boolean)
 
   companion object {
 

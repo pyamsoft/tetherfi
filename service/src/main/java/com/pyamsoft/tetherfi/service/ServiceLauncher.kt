@@ -44,7 +44,7 @@ internal constructor(
     }
   }
 
-  fun stopForeground() {
+  fun stopForeground(clearErrorStatus: Boolean) {
     Timber.d("Stop Foreground Service!")
     context.stopService(foregroundService)
 
@@ -54,6 +54,6 @@ internal constructor(
     // The service itself would be stopped via the above call which will shutdown the Shutdown
     // Event listener bus. This line just stops the proxy itself
     Timber.d("Directly calling stop on the network to avoid an Error-Lock state")
-    foregroundHandler.stopProxy()
+    foregroundHandler.stopProxy(clearErrorStatus)
   }
 }

@@ -66,7 +66,7 @@ internal constructor(
         eventBus.emit(WidiNetworkEvent.WifiDisabled)
 
         Timber.d("Stop network when Wi-Fi Direct is Disabled")
-        network.stop()
+        network.stop(clearErrorStatus = false)
       }
       else -> Timber.w("Unknown Wifi p2p state: $p2pState")
     }

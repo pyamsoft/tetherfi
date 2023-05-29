@@ -18,14 +18,9 @@ package com.pyamsoft.tetherfi.server.status
 
 interface StatusBroadcast : StatusListener {
 
-  /**
-   * Set the status, if the existing status is an error status
-   * then this operation is ignored
-   */
-  fun set(status: RunningStatus)
-
-  /**
-   * Clear error state
-   */
-  fun clearError(status: RunningStatus)
+  /** Set the status, if [clearError] is set, this will also overwrite error statuses */
+  fun set(
+      status: RunningStatus,
+      clearError: Boolean = false,
+  )
 }

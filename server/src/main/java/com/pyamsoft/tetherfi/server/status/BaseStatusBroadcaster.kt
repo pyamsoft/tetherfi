@@ -24,22 +24,16 @@ abstract class BaseStatusBroadcaster protected constructor() : StatusBroadcast {
 
   private val state = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
 
-  final override fun set(status: RunningStatus) {
+  final override fun set(status: RunningStatus, clearError: Boolean) {
     state.update { old ->
       if (old != status) {
-        if (status is RunningStatus.Error || old !is RunningStatus.Error) {
+        if (clearError) {
           return@update status
+        } else {
+          if (status is RunningStatus.Error || old !is RunningStatus.Error) {
+            return@update status
+          }
         }
-      }
-
-      return@update old
-    }
-  }
-
-  override fun clearError(status: RunningStatus) {
-    state.update { old ->
-      if (old != status) {
-        return@update status
       }
 
       return@update old
