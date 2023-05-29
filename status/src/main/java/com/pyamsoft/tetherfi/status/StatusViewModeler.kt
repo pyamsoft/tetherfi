@@ -339,10 +339,7 @@ internal constructor(
             f.collect { show ->
               enforcer.assertOffMainThread()
 
-              // We only care when one or both is an error and we show this additional dialog
-              if (show) {
-                state.isShowingSetupError.value = true
-              }
+              state.isShowingSetupError.value = show
             }
           }
         }
