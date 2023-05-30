@@ -93,6 +93,9 @@ protected constructor(
       CoroutineScope(context = Dispatchers.Default).launch {
         Timber.d("WifiP2PManager Channel died. Kill network")
         // Fire the shutdown event to the service
+        //
+        // The service shutdown will properly clean up things like this WDN, as well as wakelocks
+        // and notifications
         shutdownBus.emit(ServerShutdownEvent)
       }
     }

@@ -163,7 +163,7 @@ abstract class ServerAppModule {
     @OptIn(ExperimentalCoroutinesApi::class)
     internal fun provideProxyDispatcher(): CoroutineDispatcher {
       val coreCount = Runtime.getRuntime().availableProcessors()
-      return Dispatchers.IO
+      return Dispatchers.IO.limitedParallelism(coreCount * 3)
     }
   }
 }
