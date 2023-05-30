@@ -27,12 +27,22 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
   @Inject @JvmField internal var tileHandler: TileHandler? = null
+
+  private val scope by lazy {
+    CoroutineScope(
+        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+    )
+  }
 
   private val tileActivityIntent by
       lazy(LazyThreadSafetyMode.NONE) {
@@ -175,6 +185,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
     withHandler { handler ->
       handler.bind(
+          scope = scope,
           onNetworkError = { err -> handleNetworkErrorState(err) },
           onNetworkNotRunning = { handleNetworkNotRunningState() },
           onNetworkRunning = { handleNetworkRunningState() },
@@ -186,8 +197,6 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onDestroy() {
     super.onDestroy()
-    tileHandler?.destroy()
-
     tileHandler = null
   }
 

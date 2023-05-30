@@ -36,12 +36,8 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,6 +46,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -91,16 +90,11 @@ protected constructor(
       // We may not be able to perform a full clean stop.
       // Use Dispatchers.Default here instead of ProxyDispatcher since this can run outside of
       // Server cycle
-      val scope = CoroutineScope(context = Dispatchers.Default)
-      scope
-          .launch {
-            Timber.d("WifiP2PManager Channel died. Kill network")
-            stop(clearErrorStatus = false)
-          }
-          .invokeOnCompletion {
-            Timber.d("Cancel scope after channel died hook is completed")
-            scope.cancel()
-          }
+      CoroutineScope(context = Dispatchers.Default).launch {
+        Timber.d("WifiP2PManager Channel died. Kill network")
+        // Fire the shutdown event to the service
+        shutdownBus.emit(ServerShutdownEvent)
+      }
     }
   }
 
@@ -519,10 +513,6 @@ protected constructor(
           status.set(
               RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
         } finally {
-          // Fire the shutdown event to the service
-          Timber.d("Fire final shutdown event.")
-          shutdownBus.emit(ServerShutdownEvent)
-
           Timber.d("Wi-Fi Direct network is shutdown")
         }
       }
