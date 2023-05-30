@@ -24,7 +24,6 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -42,7 +41,6 @@ internal class WifiSharedProxy
 @Inject
 internal constructor(
     @ServerInternalApi private val factory: ProxyManager.Factory,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     private val enforcer: ThreadEnforcer,
     private val preferences: ServerPreferences,
     private val eraser: ClientEraser,
@@ -70,7 +68,7 @@ internal constructor(
     val manager = factory.create(type = type)
 
     val job =
-        launch(context = dispatcher) {
+        launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
           Timber.d("${type.name} Begin proxy server loop $port")
@@ -120,12 +118,15 @@ internal constructor(
           Timber.d("Starting proxy server on port $port ...")
           status.set(RunningStatus.Starting, clearError = true)
 
-          launch(context = dispatcher) {
+          launch(context = Dispatchers.Default) {
             enforcer.assertOffMainThread()
 
             val tcp = proxyLoop(type = SharedProxy.Type.TCP, port = port)
 
-            mutex.withLock { jobs.add(tcp) }
+            mutex.withLock {
+              Timber.d("Track TCP Proxy Manager")
+              jobs.add(tcp)
+            }
 
             Timber.d("Started Proxy Server on port: $port")
             status.set(RunningStatus.Running)

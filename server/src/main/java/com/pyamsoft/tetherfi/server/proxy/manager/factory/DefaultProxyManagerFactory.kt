@@ -24,11 +24,13 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     private val enforcer: ThreadEnforcer,
 ) : ProxyManager.Factory {
@@ -37,6 +39,7 @@ internal constructor(
   private fun createTcp(): ProxyManager {
     return TcpProxyManager(
         enforcer = enforcer,
+        dispatcher = dispatcher,
         session = tcpSession,
     )
   }
