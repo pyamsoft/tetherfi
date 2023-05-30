@@ -31,10 +31,10 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,11 +47,13 @@ internal constructor(
     private val context: Context,
     private val network: WiDiNetwork,
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
 ) : BroadcastReceiver(), WiDiReceiver, WiDiReceiverRegister {
 
-  private val registerScope by lazy { MainScope() }
-  private val workScope by lazy { CoroutineScope(context = dispatcher) }
+  private val receiverScope by lazy {
+    CoroutineScope(
+        context = SupervisorJob() + CoroutineName(this::class.java.name),
+    )
+  }
 
   private var registered = false
 
@@ -100,7 +102,7 @@ internal constructor(
   override fun register() {
     val self = this
 
-    registerScope.launch(context = Dispatchers.Main) {
+    receiverScope.launch(context = Dispatchers.Main) {
       if (!registered) {
         registered = true
         ContextCompat.registerReceiver(
@@ -116,7 +118,7 @@ internal constructor(
   override fun unregister() {
     val self = this
 
-    registerScope.launch(context = Dispatchers.Main) {
+    receiverScope.launch(context = Dispatchers.Main) {
       if (registered) {
         registered = false
         context.unregisterReceiver(self)
@@ -127,7 +129,9 @@ internal constructor(
   override fun onReceive(context: Context, intent: Intent) {
     // Go async in case scope work takes a long time
     val pending = goAsync()
-    workScope.launch(context = dispatcher) {
+
+    // Use Default here instead of ProxyDispatcher
+    receiverScope.launch(context = Dispatchers.Default) {
       try {
         when (val action = intent.action) {
           WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> handleStateChangedAction(intent)

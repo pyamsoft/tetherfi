@@ -18,8 +18,8 @@ package com.pyamsoft.tetherfi.server.widi
 
 interface WiDiNetwork {
 
-  fun start()
+  suspend fun start()
 
   /** If [clearErrorStatus] is set, any errors from running status are cleared */
-  fun stop(clearErrorStatus: Boolean)
+  suspend fun stop(clearErrorStatus: Boolean)
 }

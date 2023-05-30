@@ -40,7 +40,7 @@ internal constructor(
                 Timber.d("Network permission granted, toggle proxy")
 
                 // Broadcast in the background
-                activity.lifecycleScope.launch(context = Dispatchers.IO) {
+                activity.lifecycleScope.launch(context = Dispatchers.Default) {
                   permissionResponseBus.emit(PermissionResponse.ToggleProxy)
                 }
               } else {
@@ -56,7 +56,7 @@ internal constructor(
                 Timber.d("Notification permission granted")
 
                 // Broadcast in the background
-                activity.lifecycleScope.launch(context = Dispatchers.IO) {
+                activity.lifecycleScope.launch(context = Dispatchers.Default) {
                   permissionResponseBus.emit(PermissionResponse.RefreshNotification)
                 }
               } else {
@@ -66,7 +66,7 @@ internal constructor(
             .also { notificationRequester = it }
 
     permissionRequestBus.also { f ->
-      activity.lifecycleScope.launch(context = Dispatchers.IO) {
+      activity.lifecycleScope.launch(context = Dispatchers.Default) {
         f.collect { req ->
           when (req) {
             is PermissionRequests.Notification -> {

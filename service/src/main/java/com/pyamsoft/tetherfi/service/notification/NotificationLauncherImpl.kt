@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
@@ -27,9 +28,11 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -38,12 +41,17 @@ internal class NotificationLauncherImpl
 @Inject
 internal constructor(
     @ServiceInternalApi private val notifier: Notifier,
+    private val enforcer: ThreadEnforcer,
     private val networkStatus: WiDiNetworkStatus,
     private val seenClients: SeenClients,
     private val blockedClients: BlockedClients,
 ) : NotificationLauncher {
 
-  private val scope = MainScope()
+  private val scope by lazy {
+    CoroutineScope(
+        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+    )
+  }
 
   private var notificationJob: Job? = null
 
@@ -90,11 +98,14 @@ internal constructor(
     notificationJob?.cancel()
     notificationJob =
         // Supervisor job will cancel all children
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch {
+          enforcer.assertOffMainThread()
 
           // Listen for notification updates
           networkStatus.onStatusChanged().also { f ->
-            launch(context = Dispatchers.IO) {
+            launch {
+              enforcer.assertOffMainThread()
+
               f.collect { s ->
                 runningStatus = s
                 updateNotification()
@@ -104,7 +115,9 @@ internal constructor(
 
           // Listen for client updates
           seenClients.listenForClients().also { f ->
-            launch(context = Dispatchers.IO) {
+            launch {
+              enforcer.assertOffMainThread()
+
               f.collect { s ->
                 clientCount = s.size
                 updateNotification()
@@ -114,7 +127,9 @@ internal constructor(
 
           // Listen for block updates
           blockedClients.listenForBlocked().also { f ->
-            launch(context = Dispatchers.Default) {
+            launch {
+              enforcer.assertOffMainThread()
+
               f.collect { s ->
                 blockCount = s.size
                 updateNotification()

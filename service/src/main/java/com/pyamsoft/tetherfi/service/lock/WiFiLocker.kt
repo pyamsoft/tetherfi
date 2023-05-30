@@ -44,13 +44,13 @@ internal constructor(
 
   override suspend fun acquireLock() =
       withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.IO) {
+        withContext(context = Dispatchers.Default) {
           mutex.withLock {
             if (!wakeAcquired.getAndSet(true)) {
+              lock.acquire()
               Timber.d("####################################")
               Timber.d("Acquire WiFi wakelock: $tag")
               Timber.d("####################################")
-              lock.acquire()
             }
           }
         }
@@ -58,20 +58,20 @@ internal constructor(
 
   override suspend fun releaseLock() =
       withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.IO) {
+        withContext(context = Dispatchers.Default) {
           mutex.withLock {
             if (wakeAcquired.getAndSet(false)) {
+              lock.release()
               Timber.d("####################################")
               Timber.d("Release WIFI wakelock: $tag")
               Timber.d("####################################")
-              lock.release()
             }
           }
         }
       }
 
   override suspend fun isEnabled(): Boolean =
-      withContext(context = Dispatchers.IO) { preferences.listenForWiFiLockChanges().first() }
+      withContext(context = Dispatchers.Default) { preferences.listenForWiFiLockChanges().first() }
 
   companion object {
 

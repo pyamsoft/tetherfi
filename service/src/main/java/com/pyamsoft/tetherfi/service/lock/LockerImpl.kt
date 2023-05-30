@@ -31,12 +31,12 @@ internal constructor(
     @ServiceInternalApi private val lockers: MutableSet<Locker>,
 ) : Locker {
   override suspend fun acquire() =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = Dispatchers.Default) {
         withContext(context = NonCancellable) { lockers.forEach { it.acquire() } }
       }
 
   override suspend fun release() =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = Dispatchers.Default) {
         withContext(context = NonCancellable) { lockers.forEach { it.release() } }
       }
 }

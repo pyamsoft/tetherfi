@@ -14,14 +14,18 @@ internal abstract class AbstractLocker protected constructor() : Locker {
   @CheckResult protected abstract suspend fun isEnabled(): Boolean
 
   final override suspend fun acquire() =
-      withContext(context = Dispatchers.IO + NonCancellable) {
-        releaseLock()
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.Default) {
+          releaseLock()
 
-        if (isEnabled()) {
-          acquireLock()
+          if (isEnabled()) {
+            acquireLock()
+          }
         }
       }
 
   final override suspend fun release() =
-      withContext(context = Dispatchers.IO + NonCancellable) { releaseLock() }
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.Default) { releaseLock() }
+      }
 }

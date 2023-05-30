@@ -17,13 +17,16 @@
 package com.pyamsoft.tetherfi.service.tile
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -31,24 +34,32 @@ import timber.log.Timber
 class TileHandler
 @Inject
 internal constructor(
+    private val enforcer: ThreadEnforcer,
     private val network: WiDiNetworkStatus,
     private val permissionGuard: PermissionGuard,
 ) {
 
   private var scope: CoroutineScope? = null
 
-  @CheckResult
-  private fun createOrReUseScope(): CoroutineScope {
-    return scope ?: MainScope()
-  }
-
   private fun withScope(block: suspend CoroutineScope.() -> Unit) {
-    val s = createOrReUseScope()
-    scope = s
-    s.launch(
-        context = Dispatchers.Main,
-        block = block,
-    )
+    scope =
+        scope.let { s ->
+          if (s == null) {
+            return@let CoroutineScope(
+                context =
+                    SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+            )
+          } else {
+            return@let s
+          }
+        }
+
+    scope
+        .requireNotNull()
+        .launch(
+            context = Dispatchers.Default,
+            block = block,
+        )
   }
 
   private fun CoroutineScope.watchStatusUpdates(
@@ -58,9 +69,13 @@ internal constructor(
       onNetworkRunning: () -> Unit,
       onNetworkStopping: () -> Unit,
   ) {
-    launch(context = Dispatchers.IO) {
+    launch {
+      enforcer.assertOffMainThread()
+
       network.onProxyStatusChanged().also { f ->
-        launch(context = Dispatchers.IO) {
+        launch {
+          enforcer.assertOffMainThread()
+
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {
@@ -74,7 +89,9 @@ internal constructor(
       }
 
       network.onStatusChanged().also { f ->
-        launch(context = Dispatchers.Main) {
+        launch(context = Dispatchers.Default) {
+          enforcer.assertOffMainThread()
+
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {

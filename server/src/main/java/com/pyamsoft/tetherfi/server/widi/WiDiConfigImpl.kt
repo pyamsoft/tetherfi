@@ -21,11 +21,10 @@ import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.annotation.RequiresApi
 import com.pyamsoft.tetherfi.server.ServerDefaults
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
@@ -33,7 +32,6 @@ internal class WiDiConfigImpl
 @Inject
 internal constructor(
     private val preferences: ServerPreferences,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
 ) : WiDiConfig {
 
   @CheckResult
@@ -58,7 +56,7 @@ internal constructor(
   }
 
   override suspend fun getConfiguration(): WifiP2pConfig? =
-      withContext(context = dispatcher) {
+      withContext(context = Dispatchers.Default) {
         if (!ServerDefaults.canUseCustomConfig()) {
           return@withContext null
         }

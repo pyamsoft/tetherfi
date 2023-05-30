@@ -28,6 +28,8 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.SeenClients
+import com.pyamsoft.tetherfi.server.dispatcher.DefaultProxyDispatcher
+import com.pyamsoft.tetherfi.server.dispatcher.ProxyDispatcher
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
@@ -55,10 +57,6 @@ import dagger.Provides
 import dagger.multibindings.IntoSet
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.newFixedThreadPoolContext
-import timber.log.Timber
 
 @Module
 abstract class ServerAppModule {
@@ -131,6 +129,10 @@ abstract class ServerAppModule {
   @ServerInternalApi
   internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
 
+  @Binds
+  @CheckResult
+  internal abstract fun bindProxyDispatcher(impl: DefaultProxyDispatcher): ProxyDispatcher
+
   @Module
   companion object {
 
@@ -155,21 +157,6 @@ abstract class ServerAppModule {
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
       return DefaultEventBus()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    @OptIn(DelicateCoroutinesApi::class)
-    internal fun provideProxyDispatcher(): CoroutineDispatcher {
-      // We max parallelism at CORES * 2 to avoid overallocating and system level
-      // CPU trashing
-      val coreCount = Runtime.getRuntime().availableProcessors()
-      val parallelism = coreCount * 2
-
-      Timber.d("Using Proxy limited dispatcher=$parallelism")
-      return newFixedThreadPoolContext(parallelism, this::class.java.name)
     }
   }
 }

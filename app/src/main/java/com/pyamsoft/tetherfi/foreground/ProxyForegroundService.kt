@@ -19,12 +19,20 @@ package com.pyamsoft.tetherfi.foreground
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.server.dispatcher.ProxyDispatcher
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 internal class ProxyForegroundService internal constructor() : Service() {
@@ -32,6 +40,24 @@ internal class ProxyForegroundService internal constructor() : Service() {
   @Inject @JvmField internal var notificationLauncher: NotificationLauncher? = null
   @Inject @JvmField internal var foregroundHandler: ForegroundHandler? = null
   @Inject @JvmField internal var wiDiReceiverRegister: WiDiReceiverRegister? = null
+  @Inject @JvmField internal var proxyDispatcher: ProxyDispatcher? = null
+
+  private var scope: CoroutineScope? = null
+
+  @CheckResult
+  private fun ensureScope(): CoroutineScope {
+    scope =
+        scope.let { s ->
+          if (s == null) {
+            return@let CoroutineScope(
+                context =
+                    SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name))
+          } else {
+            return@let s
+          }
+        }
+    return scope.requireNotNull()
+  }
 
   override fun onBind(intent: Intent?): IBinder? {
     return null
@@ -53,6 +79,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     foregroundHandler
         .requireNotNull()
         .bind(
+            scope = ensureScope(),
             onRefreshNotification = {
               Timber.d("Refresh event received, start notification again")
               notificationLauncher.requireNotNull().start(this)
@@ -69,8 +96,10 @@ internal class ProxyForegroundService internal constructor() : Service() {
     //
     // If we spam ON/OFF, the service is created but the proxy is only started again within this
     // block.
-    Timber.d("Starting Proxy!")
-    foregroundHandler.requireNotNull().startProxy()
+    ensureScope().launch {
+      Timber.d("Starting Proxy!")
+      foregroundHandler.requireNotNull().startProxy()
+    }
     return START_STICKY
   }
 
@@ -80,11 +109,20 @@ internal class ProxyForegroundService internal constructor() : Service() {
     Timber.d("Destroying service")
 
     notificationLauncher?.stop(this)
-    foregroundHandler?.destroy()
     wiDiReceiverRegister?.unregister()
 
-    foregroundHandler = null
-    notificationLauncher = null
-    wiDiReceiverRegister = null
+    ensureScope()
+        .launch { foregroundHandler?.destroy() }
+        .invokeOnCompletion {
+          Timber.d("Proxy shutdown complete, killing Service")
+          scope?.cancel()
+          proxyDispatcher?.shutdown()
+
+          scope = null
+          foregroundHandler = null
+          notificationLauncher = null
+          wiDiReceiverRegister = null
+          proxyDispatcher = null
+        }
   }
 }

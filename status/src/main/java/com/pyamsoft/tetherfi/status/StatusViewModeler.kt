@@ -32,6 +32,7 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -130,7 +130,7 @@ internal constructor(
         ?.also { state.isShowingSetupError.value = it }
   }
 
-  fun handleToggleProxy() {
+  fun handleToggleProxy(scope: CoroutineScope) {
     val s = state
 
     // Refresh these state bits
@@ -144,7 +144,7 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
-      serviceLauncher.stopForeground(clearErrorStatus = false)
+      serviceLauncher.stopForeground(scope, clearErrorStatus = false)
       return
     }
 
@@ -155,11 +155,11 @@ internal constructor(
       }
       is RunningStatus.Running -> {
         Timber.d("Stopping Proxy")
-        serviceLauncher.stopForeground(clearErrorStatus = false)
+        serviceLauncher.stopForeground(scope, clearErrorStatus = false)
       }
       is RunningStatus.Error -> {
         Timber.w("Resetting Proxy from Error state")
-        serviceLauncher.stopForeground(clearErrorStatus = true)
+        serviceLauncher.stopForeground(scope, clearErrorStatus = true)
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")
@@ -191,7 +191,7 @@ internal constructor(
 
     // Always populate the latest lock value
     servicePreferences.listenForWakeLockChanges().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { keep ->
           s.keepWakeLock.value = keep
 
@@ -206,7 +206,7 @@ internal constructor(
 
     // Always populate the latest lock value
     servicePreferences.listenForWiFiLockChanges().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { keep ->
           s.keepWifiLock.value = keep
 
@@ -221,7 +221,7 @@ internal constructor(
 
     // Only pull once since after this point, the state will be driven by the input
     serverPreferences.listenForPortChanges().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         s.port.value = f.first()
 
         config.port = true
@@ -232,7 +232,7 @@ internal constructor(
     if (ServerDefaults.canUseCustomConfig()) {
       // Only pull once since after this point, the state will be driven by the input
       serverPreferences.listenForSsidChanges().also { f ->
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch(context = Dispatchers.Default) {
           s.ssid.value = f.first()
 
           config.ssid = true
@@ -242,7 +242,7 @@ internal constructor(
 
       // Only pull once since after this point, the state will be driven by the input
       serverPreferences.listenForPasswordChanges().also { f ->
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch(context = Dispatchers.Default) {
           s.password.value = f.first()
 
           config.password = true
@@ -251,7 +251,7 @@ internal constructor(
       }
 
       serverPreferences.listenForNetworkBandChanges().also { f ->
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch(context = Dispatchers.Default) {
           f.collect { band ->
             s.band.value = band
 
@@ -278,7 +278,7 @@ internal constructor(
   }
 
   fun refreshSystemInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Main) {
+    scope.launch(context = Dispatchers.Default) {
       val s = state
 
       // Battery optimization
@@ -302,7 +302,7 @@ internal constructor(
 
   fun watchStatusUpdates(scope: CoroutineScope) {
     network.onProxyStatusChanged().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d("Proxy Status Changed: $status")
           state.proxyStatus.value = status
@@ -311,7 +311,7 @@ internal constructor(
     }
 
     network.onStatusChanged().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d("WiDi Status Changed: $status")
           state.wiDiStatus.value = status
@@ -320,7 +320,7 @@ internal constructor(
     }
 
     wiDiReceiver.listenNetworkEvents().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { event ->
           when (event) {
             is WidiNetworkEvent.ConnectionChanged -> {}
@@ -328,7 +328,7 @@ internal constructor(
             is WidiNetworkEvent.PeersChanged -> {}
             is WidiNetworkEvent.WifiDisabled -> {
               Timber.d("Stop ForegroundService when WiFi Disabled")
-              serviceLauncher.stopForeground(clearErrorStatus = false)
+              serviceLauncher.stopForeground(this, clearErrorStatus = false)
             }
             is WidiNetworkEvent.WifiEnabled -> {}
             is WidiNetworkEvent.DiscoveryChanged -> {}
@@ -341,8 +341,8 @@ internal constructor(
   fun bind(scope: CoroutineScope) {
     // If either of these sets an error state, we will mark the error dialog as shown
     // Need this or we run on the main thread
-    resolveErrorFlow().flowOn(context = Dispatchers.IO).also { f ->
-      scope.launch(context = Dispatchers.IO) {
+    resolveErrorFlow().flowOn(context = Dispatchers.Default).also { f ->
+      scope.launch(context = Dispatchers.Default) {
         f.collect { show ->
           enforcer.assertOffMainThread()
 

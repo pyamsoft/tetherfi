@@ -28,15 +28,16 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 @Singleton
 internal class WiDiNetworkImpl
 @Inject
 internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi config: WiDiConfig,
     enforcer: ThreadEnforcer,
@@ -47,7 +48,6 @@ internal constructor(
     appEnvironment: AppDevEnvironment,
 ) :
     WifiDirectNetwork(
-        dispatcher,
         shutdownBus,
         context,
         permissionGuard,
@@ -57,14 +57,14 @@ internal constructor(
         status,
     ) {
 
-  override fun onNetworkStarted() {
-    proxy.start()
+  override fun CoroutineScope.onNetworkStarted() {
+    launch(context = Dispatchers.Default) { proxy.start() }
 
-    inAppRatingPreferences.markHotspotUsed()
+    launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
   }
 
-  override fun onNetworkStopped(clearErrorStatus: Boolean) {
-    proxy.stop(clearErrorStatus)
+  override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {
+    launch(context = Dispatchers.Default) { proxy.stop(clearErrorStatus) }
   }
 
   override fun onProxyStatusChanged(): Flow<RunningStatus> {

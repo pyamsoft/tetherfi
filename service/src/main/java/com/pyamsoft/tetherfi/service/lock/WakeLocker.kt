@@ -44,7 +44,7 @@ internal constructor(
   @SuppressLint("WakelockTimeout")
   override suspend fun acquireLock() =
       withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.IO) {
+        withContext(context = Dispatchers.Default) {
           mutex.withLock {
             if (!wakeAcquired.getAndSet(true)) {
               Timber.d("####################################")
@@ -58,7 +58,7 @@ internal constructor(
 
   override suspend fun releaseLock() =
       withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.IO) {
+        withContext(context = Dispatchers.Default) {
           mutex.withLock {
             if (wakeAcquired.getAndSet(false)) {
               Timber.d("####################################")
@@ -71,7 +71,7 @@ internal constructor(
       }
 
   override suspend fun isEnabled(): Boolean =
-      withContext(context = Dispatchers.IO) { preferences.listenForWakeLockChanges().first() }
+      withContext(context = Dispatchers.Default) { preferences.listenForWakeLockChanges().first() }
 
   companion object {
 

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -109,7 +111,7 @@ private fun MountHooks(
     object : DefaultLifecycleObserver {
 
       override fun onResume(owner: LifecycleOwner) {
-        viewModel.handleRefreshConnectionInfo()
+        viewModel.handleRefreshConnectionInfo(owner.lifecycleScope)
       }
 
       override fun onStart(owner: LifecycleOwner) {
@@ -128,6 +130,7 @@ fun MainEntry(
 ) {
   val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
 
+  val scope = rememberCoroutineScope()
   val component = rememberComposableInjector { MainInjector() }
   val viewModel = rememberNotNull(component.viewModel)
   val appEnvironment = rememberNotNull(component.appEnvironment)
@@ -152,7 +155,7 @@ fun MainEntry(
       allTabs = allTabs,
       onSettingsOpen = { viewModel.handleOpenSettings() },
       onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
-      onRefreshConnection = { viewModel.handleRefreshConnectionInfo() },
+      onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
   )
 
   val isSettingsOpen by state.isSettingsOpen.collectAsState()

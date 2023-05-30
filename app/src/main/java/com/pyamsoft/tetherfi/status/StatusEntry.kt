@@ -92,8 +92,8 @@ private fun safeOpenSettingsIntent(
 private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: () -> Unit,
-    onRefreshSystemInfo: CoroutineScope.() -> Unit,
+    onToggleProxy: (CoroutineScope) -> Unit,
+    onRefreshSystemInfo: (CoroutineScope) -> Unit,
 ) {
   // Create requesters
   val handleToggleProxy by rememberUpdatedState(onToggleProxy)
@@ -106,7 +106,7 @@ private fun RegisterPermissionRequests(
 
     // See MainActivity
     permissionResponseBus.flowOn(context = Dispatchers.Default).also { f ->
-      launch(context = Dispatchers.IO) {
+      launch(context = Dispatchers.Default) {
         f.collect { resp ->
           when (resp) {
             is PermissionResponse.RefreshNotification -> {
@@ -114,10 +114,10 @@ private fun RegisterPermissionRequests(
               notificationRefreshBus.emit(NotificationRefreshEvent)
 
               // Call to the VM to refresh info
-              handleRefreshSystemInfo()
+              handleRefreshSystemInfo(this)
             }
             is PermissionResponse.ToggleProxy -> {
-              handleToggleProxy()
+              handleToggleProxy(this)
             }
           }
         }
@@ -132,7 +132,7 @@ private fun MountHooks(
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: () -> Unit,
+    onToggleProxy: (CoroutineScope) -> Unit,
 ) {
   // Wrap in lambda when calling or else bad
   val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
@@ -146,7 +146,7 @@ private fun MountHooks(
       notificationRefreshBus = notificationRefreshBus,
       permissionResponseBus = permissionResponseBus,
       onToggleProxy = onToggleProxy,
-      onRefreshSystemInfo = { handleRefreshSystemInfo(this) },
+      onRefreshSystemInfo = { handleRefreshSystemInfo(it) },
   )
 
   LaunchedEffect(viewModel) {
@@ -181,17 +181,20 @@ fun StatusEntry(
   val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
   val activity = rememberActivity()
-  val scope = rememberCoroutineScope()
 
   val dismissPermissionPopup by rememberUpdatedState { viewModel.handlePermissionsExplained() }
-  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
+  val scope = rememberCoroutineScope()
+
+  val handleToggleProxy by rememberUpdatedState { s: CoroutineScope ->
+    viewModel.handleToggleProxy(s)
+  }
 
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
-      onToggleProxy = { handleToggleProxy() },
+      onToggleProxy = { handleToggleProxy(it) },
   )
 
   StatusScreen(
@@ -199,7 +202,7 @@ fun StatusEntry(
       state = viewModel.state,
       serverViewState = serverViewState,
       appName = appName,
-      onToggleProxy = { handleToggleProxy() },
+      onToggleProxy = { handleToggleProxy(scope) },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
@@ -211,7 +214,7 @@ fun StatusEntry(
         dismissPermissionPopup()
 
         // Request permissions
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch(context = Dispatchers.Default) {
           // See MainActivity
           permissionRequestBus.emit(PermissionRequests.Server)
         }
@@ -225,7 +228,7 @@ fun StatusEntry(
       onToggleKeepWifiLock = { viewModel.handleToggleProxyWifilock() },
       onSelectBand = { viewModel.handleChangeBand(it) },
       onRequestNotificationPermission = {
-        scope.launch(context = Dispatchers.IO) {
+        scope.launch(context = Dispatchers.Default) {
           // See MainActivity
           permissionRequestBus.emit(PermissionRequests.Notification)
         }

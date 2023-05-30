@@ -57,7 +57,7 @@ internal constructor(
         .filter { it }
         .distinctUntilChanged()
         .also { f ->
-          scope.launch(context = Dispatchers.IO) {
+          scope.launch(context = Dispatchers.Default) {
             f.collect { show ->
               if (show) {
                 Timber.d("Show in-app rating")
@@ -73,17 +73,17 @@ internal constructor(
 
     // Watch group info
     network.onGroupInfoChanged().also { f ->
-      scope.launch(context = Dispatchers.Main) { f.collect { s.group.value = it } }
+      scope.launch(context = Dispatchers.Default) { f.collect { s.group.value = it } }
     }
 
     // Watch connection info
     network.onConnectionInfoChanged().also { f ->
-      scope.launch(context = Dispatchers.Main) { f.collect { s.connection.value = it } }
+      scope.launch(context = Dispatchers.Default) { f.collect { s.connection.value = it } }
     }
 
     // Watch the server status and update if it is running
     network.onStatusChanged().also { f ->
-      scope.launch(context = Dispatchers.Main) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { s ->
           val wasRunning = isNetworkCurrentlyRunning.value
           val currentlyRunning = s == RunningStatus.Running
@@ -94,7 +94,7 @@ internal constructor(
             Timber.d("Hotspot was turned OFF, refresh network settings to clear")
 
             // Refresh connection info, should blank out
-            handleRefreshConnectionInfo()
+            handleRefreshConnectionInfo(this)
 
             // Explicitly close the QR code
             handleCloseQRCodeDialog()
@@ -102,7 +102,7 @@ internal constructor(
             Timber.d("Hotspot was turned ON, refresh network settings to update")
 
             // Refresh connection info, should populate
-            handleRefreshConnectionInfo()
+            handleRefreshConnectionInfo(this)
           }
         }
       }
@@ -110,13 +110,13 @@ internal constructor(
 
     // Port is its own thing, not part of group info
     serverPreferences.listenForPortChanges().also { f ->
-      scope.launch(context = Dispatchers.IO) { f.collect { s.port.value = it } }
+      scope.launch(context = Dispatchers.Default) { f.collect { s.port.value = it } }
     }
 
     // But then once we are done editing and we start getting events from the receiver,
     // take them instead
     wiDiReceiver.listenNetworkEvents().also { f ->
-      scope.launch(context = Dispatchers.IO) {
+      scope.launch(context = Dispatchers.Default) {
         f.collect { event ->
           when (event) {
             is WidiNetworkEvent.ConnectionChanged -> {
@@ -127,22 +127,22 @@ internal constructor(
                   )
                 }
               }
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
             is WidiNetworkEvent.ThisDeviceChanged -> {
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
             is WidiNetworkEvent.PeersChanged -> {
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
             is WidiNetworkEvent.WifiDisabled -> {
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
             is WidiNetworkEvent.WifiEnabled -> {
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
             is WidiNetworkEvent.DiscoveryChanged -> {
-              handleRefreshConnectionInfo()
+              handleRefreshConnectionInfo(this)
             }
           }
         }
@@ -175,8 +175,8 @@ internal constructor(
         ?.also { s.isShowingQRCodeDialog.value = it }
   }
 
-  fun handleRefreshConnectionInfo() {
-    network.updateNetworkInfo()
+  fun handleRefreshConnectionInfo(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Default) { network.updateNetworkInfo() }
   }
 
   fun handleOpenSettings() {

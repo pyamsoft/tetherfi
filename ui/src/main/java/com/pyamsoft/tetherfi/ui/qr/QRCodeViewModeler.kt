@@ -41,7 +41,7 @@ internal constructor(
       )
 
   fun load(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.IO) {
+    scope.launch(context = Dispatchers.Default) {
       val data = QRCode(data = data).render().nativeImage() as Bitmap
       state.qrCode.value = data
     }

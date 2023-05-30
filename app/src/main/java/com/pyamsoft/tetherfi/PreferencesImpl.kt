@@ -36,6 +36,7 @@ import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
@@ -60,7 +61,9 @@ internal constructor(
   private val fallbackPassword by lazy { PasswordGenerator.generate() }
 
   private val scope by lazy {
-    CoroutineScope(context = Dispatchers.IO + CoroutineName(this::class.java.name))
+    CoroutineScope(
+        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+    )
   }
 
   @CheckResult
@@ -84,7 +87,7 @@ internal constructor(
   }
 
   override fun listenForWakeLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
+      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
 
   override fun setWakeLock(keep: Boolean) {
     scope.launch {
@@ -95,7 +98,7 @@ internal constructor(
   }
 
   override fun listenForWiFiLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
+      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
 
   override fun setWiFiLock(keep: Boolean) {
     scope.launch {
@@ -107,7 +110,7 @@ internal constructor(
 
   override fun listenForSsidChanges(): Flow<String> =
       preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
-          .flowOn(context = Dispatchers.IO)
+          .flowOn(context = Dispatchers.Default)
 
   override fun setSsid(ssid: String) {
     scope.launch {
@@ -126,7 +129,7 @@ internal constructor(
               }
             }
           }
-          .flowOn(context = Dispatchers.IO)
+          .flowOn(context = Dispatchers.Default)
 
   override fun setPassword(password: String) {
     scope.launch {
@@ -137,7 +140,8 @@ internal constructor(
   }
 
   override fun listenForPortChanges(): Flow<Int> =
-      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }.flowOn(context = Dispatchers.IO)
+      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }
+          .flowOn(context = Dispatchers.Default)
 
   override fun setPort(port: Int) {
     scope.launch {
@@ -150,7 +154,7 @@ internal constructor(
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
-          .flowOn(context = Dispatchers.IO)
+          .flowOn(context = Dispatchers.Default)
 
   override fun setNetworkBand(band: ServerNetworkBand) {
     scope.launch {
@@ -194,7 +198,7 @@ internal constructor(
             }
           }
           // Need this or we run on the main thread
-          .flowOn(context = Dispatchers.IO)
+          .flowOn(context = Dispatchers.Default)
 
   override fun markHotspotUsed() {
     scope.launch {

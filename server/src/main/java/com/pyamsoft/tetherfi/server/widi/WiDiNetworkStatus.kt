@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface WiDiNetworkStatus : Server {
 
-  fun updateNetworkInfo()
+  suspend fun updateNetworkInfo()
 
   @CheckResult fun onGroupInfoChanged(): Flow<GroupInfo>
 

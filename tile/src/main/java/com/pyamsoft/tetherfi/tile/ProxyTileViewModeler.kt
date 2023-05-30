@@ -48,7 +48,7 @@ internal constructor(
   fun bind(scope: CoroutineScope) {
     val s = state
 
-    scope.launch(context = Dispatchers.Main) {
+    scope.launch(context = Dispatchers.Default) {
       handler.bind(
           onNetworkError = { err -> s.status.value = err },
           onNetworkStarting = { s.status.value = RunningStatus.Starting },
@@ -59,7 +59,7 @@ internal constructor(
     }
   }
 
-  fun handleToggleProxy() {
+  fun handleToggleProxy(scope: CoroutineScope) {
     val s = state
 
     // Refresh these state bits
@@ -71,7 +71,7 @@ internal constructor(
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
       s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
-      serviceLauncher.stopForeground(clearErrorStatus = false)
+      serviceLauncher.stopForeground(scope, clearErrorStatus = false)
       return
     }
 
@@ -82,7 +82,7 @@ internal constructor(
       }
       is RunningStatus.Running -> {
         Timber.d("Stopping Proxy")
-        serviceLauncher.stopForeground(clearErrorStatus = false)
+        serviceLauncher.stopForeground(scope, clearErrorStatus = false)
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")

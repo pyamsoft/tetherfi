@@ -39,21 +39,20 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-    private val dispatcher: CoroutineDispatcher,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val appContext: Context,
     private val permissionGuard: PermissionGuard,
@@ -75,10 +74,6 @@ protected constructor(
   private val mutex = Mutex()
   private var wifiChannel: Channel? = null
 
-  private val directScope by lazy {
-    CoroutineScope(context = dispatcher + CoroutineName(this::class.java.name))
-  }
-
   @CheckResult
   private fun createChannel(): Channel? {
     enforcer.assertOffMainThread()
@@ -94,8 +89,18 @@ protected constructor(
       // In this case the channel may already be dead.
       //
       // We may not be able to perform a full clean stop.
-      Timber.d("WifiP2PManager Channel died. Kill network")
-      stop(clearErrorStatus = false)
+      // Use Dispatchers.Default here instead of ProxyDispatcher since this can run outside of
+      // Server cycle
+      val scope = CoroutineScope(context = Dispatchers.Default)
+      scope
+          .launch {
+            Timber.d("WifiP2PManager Channel died. Kill network")
+            stop(clearErrorStatus = false)
+          }
+          .invokeOnCompletion {
+            Timber.d("Cancel scope after channel died hook is completed")
+            scope.cancel()
+          }
     }
   }
 
@@ -198,7 +203,7 @@ protected constructor(
     if (channel == null) {
       Timber.w("Failed to create channel, cannot initialize WiDi network")
 
-      completeStop(clearErrorStatus = false) {
+      completeStop(this, clearErrorStatus = false) {
         status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
       }
       return@coroutineScope
@@ -215,7 +220,10 @@ protected constructor(
       }
 
       updateNetworkInfoChannels()
-      onNetworkStarted()
+
+      launch(context = Dispatchers.Default) { onNetworkStarted() }
+
+      Timber.d("WiDi network has started: $runningStatus")
       status.set(runningStatus)
     } else {
       Timber.w("Group failed creation, stop proxy")
@@ -223,7 +231,7 @@ protected constructor(
       // Remove whatever was created (should be a no-op if everyone follows API correctly)
       shutdownWifiNetwork(channel)
 
-      completeStop(clearErrorStatus = false) {
+      completeStop(this, clearErrorStatus = false) {
         Timber.w("Stopping proxy after Group failed to create")
         status.set(runningStatus)
       }
@@ -231,13 +239,15 @@ protected constructor(
   }
 
   private suspend fun completeStop(
+      scope: CoroutineScope,
       clearErrorStatus: Boolean,
       onStop: () -> Unit,
   ) {
     enforcer.assertOffMainThread()
 
     updateNetworkInfoChannels()
-    onNetworkStopped(clearErrorStatus)
+
+    scope.launch(context = Dispatchers.Default) { onNetworkStopped(clearErrorStatus) }
 
     onStop()
   }
@@ -268,7 +278,7 @@ protected constructor(
     // If we have no channel, we haven't started yet. Make sure we are clean, but this
     // is basically a no-op
     if (channel == null) {
-      completeStop(clearErrorStatus) {
+      completeStop(this, clearErrorStatus) {
         Timber.d("Resetting status back to not running")
         status.set(
             RunningStatus.NotRunning,
@@ -287,7 +297,7 @@ protected constructor(
 
     shutdownWifiNetwork(channel)
 
-    completeStop(clearErrorStatus) {
+    completeStop(this, clearErrorStatus) {
       Timber.d("Proxy was stopped")
       status.set(
           RunningStatus.NotRunning,
@@ -474,54 +484,48 @@ protected constructor(
     connectionInfoChannel.value = getConnectionInfo()
   }
 
-  final override fun updateNetworkInfo() {
-    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+  final override suspend fun updateNetworkInfo() =
+      // Use Dispatcher.Default here instead since this can run outside of cycle
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
 
-    directScope.launch {
-      enforcer.assertOffMainThread()
-
-      updateNetworkInfoChannels()
-    }
-  }
-
-  final override fun start() {
-    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
-
-    directScope.launch {
-      enforcer.assertOffMainThread()
-
-      Timber.d("Starting Wi-Fi Direct Network...")
-      try {
-        stopNetwork(clearErrorStatus = true)
-        startNetwork()
-      } catch (e: Throwable) {
-        Timber.e(e, "Error starting Network")
-        status.set(RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+        updateNetworkInfoChannels()
       }
-    }
-  }
 
-  final override fun stop(clearErrorStatus: Boolean) {
-    require(directScope.isActive) { "CoroutineScope is not active! $directScope" }
+  final override suspend fun start() =
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
 
-    directScope.launch {
-      enforcer.assertOffMainThread()
-
-      Timber.d("Stopping Wi-Fi Direct Network...")
-      try {
-        stopNetwork(clearErrorStatus)
-      } catch (e: Throwable) {
-        Timber.e(e, "Error stopping Network")
-        status.set(RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
-      } finally {
-        // Fire the shutdown event to the service
-        Timber.d("Fire final shutdown event.")
-        shutdownBus.emit(ServerShutdownEvent)
-
-        Timber.d("Wi-Fi Direct network is shutdown")
+        Timber.d("Starting Wi-Fi Direct Network...")
+        try {
+          stopNetwork(clearErrorStatus = true)
+          startNetwork()
+        } catch (e: Throwable) {
+          Timber.e(e, "Error starting Network")
+          status.set(
+              RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+        }
       }
-    }
-  }
+
+  final override suspend fun stop(clearErrorStatus: Boolean) =
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
+
+        Timber.d("Stopping Wi-Fi Direct Network...")
+        try {
+          stopNetwork(clearErrorStatus)
+        } catch (e: Throwable) {
+          Timber.e(e, "Error stopping Network")
+          status.set(
+              RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+        } finally {
+          // Fire the shutdown event to the service
+          Timber.d("Fire final shutdown event.")
+          shutdownBus.emit(ServerShutdownEvent)
+
+          Timber.d("Wi-Fi Direct network is shutdown")
+        }
+      }
 
   final override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {
     return connectionInfoChannel
@@ -531,9 +535,11 @@ protected constructor(
     return groupInfoChannel
   }
 
-  protected abstract fun onNetworkStarted()
+  /** Side effects ran from this function should have their own launch {} */
+  protected abstract fun CoroutineScope.onNetworkStarted()
 
-  protected abstract fun onNetworkStopped(clearErrorStatus: Boolean)
+  /** Side effects ran from this function should have their own launch {} */
+  protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
   companion object {
 

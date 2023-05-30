@@ -20,10 +20,10 @@ import com.pyamsoft.tetherfi.server.Server
 
 interface SharedProxy : Server {
 
-  fun start()
+  suspend fun start()
 
   /** If [clearErrorStatus] is set, any errors from running status are cleared */
-  fun stop(clearErrorStatus: Boolean)
+  suspend fun stop(clearErrorStatus: Boolean)
 
   enum class Type {
     TCP,
