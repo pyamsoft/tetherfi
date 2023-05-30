@@ -28,11 +28,8 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
-import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -44,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -56,7 +54,6 @@ internal constructor(
     private val notifyGuard: NotifyGuard,
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
-    private val wiDiReceiver: WiDiReceiver,
     private val serviceLauncher: ServiceLauncher,
 ) : AbstractViewModeler<StatusViewState>(state) {
 
@@ -315,24 +312,6 @@ internal constructor(
         f.collect { status ->
           Timber.d("WiDi Status Changed: $status")
           state.wiDiStatus.value = status
-        }
-      }
-    }
-
-    wiDiReceiver.listenNetworkEvents().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { event ->
-          when (event) {
-            is WidiNetworkEvent.ConnectionChanged -> {}
-            is WidiNetworkEvent.ThisDeviceChanged -> {}
-            is WidiNetworkEvent.PeersChanged -> {}
-            is WidiNetworkEvent.WifiDisabled -> {
-              Timber.d("Stop ForegroundService when WiFi Disabled")
-              serviceLauncher.stopForeground(this, clearErrorStatus = false)
-            }
-            is WidiNetworkEvent.WifiEnabled -> {}
-            is WidiNetworkEvent.DiscoveryChanged -> {}
-          }
         }
       }
     }
