@@ -45,6 +45,8 @@ internal class ProxyForegroundService internal constructor() : Service() {
     )
   }
 
+  private var isServiceAlive = false
+
   override fun onBind(intent: Intent?): IBinder? {
     return null
   }
@@ -54,6 +56,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     ObjectGraph.ApplicationScope.retrieve(this).plusForeground().create().inject(this)
 
     Timber.d("Creating service")
+    isServiceAlive = true
 
     // Start notification first for Android O immediately
     notificationLauncher.requireNotNull().start(this)
@@ -75,17 +78,24 @@ internal class ProxyForegroundService internal constructor() : Service() {
               stopSelf()
             },
         )
-  }
 
-  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    // Constantly attempt to start proxy here instead of in onCreate
+    // We leave the launch call in here so that the service lifecycle is 1-1 tied to the hotspot
+    // network
     //
-    // If we spam ON/OFF, the service is created but the proxy is only started again within this
-    // block.
+    // Since this is not immediate, we check that the service is infact still alive
     scope.launch {
+      if (!isServiceAlive) {
+        Timber.w("Proxy start() called but service is not alive!")
+        return@launch
+      }
+
       Timber.d("Starting Proxy!")
       foregroundHandler.requireNotNull().startProxy()
     }
+  }
+
+  override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    // Just start sticky here
     return START_STICKY
   }
 
@@ -93,6 +103,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     super.onDestroy()
 
     Timber.d("Destroying service")
+    isServiceAlive = false
 
     notificationLauncher?.stop(this)
     wiDiReceiverRegister?.unregister()
