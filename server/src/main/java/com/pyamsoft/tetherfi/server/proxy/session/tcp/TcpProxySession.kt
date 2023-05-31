@@ -42,15 +42,14 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.net.URI
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class TcpProxySession
 @Inject
@@ -299,29 +298,28 @@ internal constructor(
     output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
-  private suspend fun CoroutineScope.talk(input: ByteReadChannel, output: ByteWriteChannel) {
-    while (isActive) {
-      try {
-        input.joinTo(output, closeOnEnd = false)
-      } catch (_: Throwable) {
-        /**
-         * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected
-         * that this will happen as the natural end of client/host communication.
-         *
-         * Furthermore, even if this were an error, there is no recovery operation we can do, thus
-         * it is useless to care about it.
-         */
-      }
+  private suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel) {
+    try {
+      input.joinTo(output, closeOnEnd = false)
+    } catch (_: Throwable) {
+      /**
+       * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected that
+       * this will happen as the natural end of client/host communication.
+       *
+       * Furthermore, even if this were an error, there is no recovery operation we can do, thus it
+       * is useless to care about it.
+       */
     }
   }
 
   private suspend fun exchangeInternet(
+      scope: CoroutineScope,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
-  ) = coroutineScope {
+  ) {
     enforcer.assertOffMainThread()
 
     try {
@@ -329,7 +327,7 @@ internal constructor(
         // Establish an HTTPS connection by faking the CONNECT response
         // Send a 200 to the connecting client so that they will then continue to
         // send the actual HTTP data to the real endpoint
-        establishHttpsConnection(proxyInput, proxyOutput)
+        scope.establishHttpsConnection(proxyInput, proxyOutput)
       } else {
         // Send initial HTTP communication, since we consumed it above
         replayHttpCommunication(
@@ -339,15 +337,16 @@ internal constructor(
       }
 
       // Exchange data until completed
-      val job = launch {
-        enforcer.assertOffMainThread()
+      val job =
+          scope.launch {
+            enforcer.assertOffMainThread()
 
-        // Send data from the internet back to the proxy in a different thread
-        talk(
-            input = internetInput,
-            output = proxyOutput,
-        )
-      }
+            // Send data from the internet back to the proxy in a different thread
+            talk(
+                input = internetInput,
+                output = proxyOutput,
+            )
+          }
 
       // Send input from the proxy (clients) to the internet on this thread
       talk(
@@ -362,11 +361,6 @@ internal constructor(
         Timber.e(e, "Error during Internet exchange")
         writeError(proxyOutput)
       }
-    } finally {
-      proxyInput.cancel()
-      proxyOutput.close()
-      internetInput.cancel()
-      internetOutput.close()
     }
   }
 
@@ -455,14 +449,20 @@ internal constructor(
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
-        // Communicate between the web connection we've made and back to our client device
-        exchangeInternet(
-            proxyInput = proxyInput,
-            proxyOutput = proxyOutput,
-            internetInput = internetInput,
-            internetOutput = internetOutput,
-            request = request,
-        )
+        try {
+          // Communicate between the web connection we've made and back to our client device
+          exchangeInternet(
+              scope = this,
+              proxyInput = proxyInput,
+              proxyOutput = proxyOutput,
+              internetInput = internetInput,
+              internetOutput = internetOutput,
+              request = request,
+          )
+        } finally {
+          internetInput.cancel()
+          internetOutput.close()
+        }
       }
     } catch (e: Throwable) {
       e.ifNotCancellation {
@@ -508,11 +508,16 @@ internal constructor(
     }
 
     // And then we go to the web!
-    scope.proxyToInternet(
-        request = request,
-        proxyInput = proxyInput,
-        proxyOutput = proxyOutput,
-    )
+    try {
+      scope.proxyToInternet(
+          request = request,
+          proxyInput = proxyInput,
+          proxyOutput = proxyOutput,
+      )
+    } finally {
+      proxyInput.cancel()
+      proxyOutput.close()
+    }
   }
 
   override suspend fun exchange(
@@ -559,8 +564,7 @@ internal constructor(
      * Tests if a given string is an IP address
      */
     private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
-            .toRegex()
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
 
     private const val LINE_ENDING = "\r\n"
 

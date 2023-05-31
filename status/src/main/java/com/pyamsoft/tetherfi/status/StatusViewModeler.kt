@@ -127,7 +127,7 @@ internal constructor(
         ?.also { state.isShowingSetupError.value = it }
   }
 
-  fun handleToggleProxy(scope: CoroutineScope) {
+  fun handleToggleProxy() {
     val s = state
 
     // Refresh these state bits
@@ -141,7 +141,7 @@ internal constructor(
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
-      serviceLauncher.stopForeground(scope, clearErrorStatus = false)
+      serviceLauncher.stopForeground()
       return
     }
 
@@ -152,11 +152,11 @@ internal constructor(
       }
       is RunningStatus.Running -> {
         Timber.d("Stopping Proxy")
-        serviceLauncher.stopForeground(scope, clearErrorStatus = false)
+        serviceLauncher.stopForeground()
       }
       is RunningStatus.Error -> {
         Timber.w("Resetting Proxy from Error state")
-        serviceLauncher.stopForeground(scope, clearErrorStatus = true)
+        serviceLauncher.startForeground()
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")

@@ -56,6 +56,15 @@ internal constructor(
 
   private var parentJob: Job? = null
 
+  private suspend fun shutdown() =
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.Default) {
+          // Launch a parent scope for all jobs
+          Timber.d("Destroy CPU wakelock")
+          locker.release()
+        }
+      }
+
   fun bind(
       scope: CoroutineScope,
       onShutdownService: () -> Unit,
@@ -136,22 +145,11 @@ internal constructor(
       withContext(context = Dispatchers.Default) {
         Timber.d("Start WiDi Network")
         try {
+          // Launch a new scope so this function won't proceed to finally block until the scope is
+          // completed/cancelled
           coroutineScope { network.start() }
         } finally {
-          stopProxy(clearErrorStatus = false)
-        }
-      }
-
-  /** If [clearErrorStatus] is set, any errors from running status are cleared */
-  suspend fun stopProxy(clearErrorStatus: Boolean) =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) {
-          Timber.d("Stop WiDi network")
-          network.stop(clearErrorStatus = clearErrorStatus)
-
-          // Launch a parent scope for all jobs
-          Timber.d("Destroy CPU wakelock")
-          locker.release()
+          shutdown()
         }
       }
 }

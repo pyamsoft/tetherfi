@@ -20,19 +20,14 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class ServiceLauncher
 @Inject
 internal constructor(
     private val context: Context,
     private val foregroundServiceClass: Class<out Service>,
-    private val foregroundHandler: ForegroundHandler,
 ) {
 
   private val foregroundService by
@@ -47,18 +42,8 @@ internal constructor(
     }
   }
 
-  fun stopForeground(scope: CoroutineScope, clearErrorStatus: Boolean) {
+  fun stopForeground() {
     Timber.d("Stop Foreground Service!")
     context.stopService(foregroundService)
-
-    // Also directly call to stop the network
-    //
-    // This is needed if an error has prevented the proxy from starting the Service.
-    // The service itself would be stopped via the above call which will shutdown the Shutdown
-    // Event listener bus. This line just stops the proxy itself
-    scope.launch(context = Dispatchers.Default) {
-      Timber.d("Directly calling stop on the network to avoid an Error-Lock state")
-      foregroundHandler.stopProxy(clearErrorStatus)
-    }
   }
 }

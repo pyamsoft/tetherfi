@@ -41,13 +41,13 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -92,7 +92,7 @@ private fun safeOpenSettingsIntent(
 private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: (CoroutineScope) -> Unit,
+    onToggleProxy: () -> Unit,
     onRefreshSystemInfo: (CoroutineScope) -> Unit,
 ) {
   // Create requesters
@@ -117,7 +117,7 @@ private fun RegisterPermissionRequests(
               handleRefreshSystemInfo(this)
             }
             is PermissionResponse.ToggleProxy -> {
-              handleToggleProxy(this)
+              handleToggleProxy()
             }
           }
         }
@@ -132,7 +132,7 @@ private fun MountHooks(
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: (CoroutineScope) -> Unit,
+    onToggleProxy: () -> Unit,
 ) {
   // Wrap in lambda when calling or else bad
   val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
@@ -185,16 +185,14 @@ fun StatusEntry(
   val dismissPermissionPopup by rememberUpdatedState { viewModel.handlePermissionsExplained() }
   val scope = rememberCoroutineScope()
 
-  val handleToggleProxy by rememberUpdatedState { s: CoroutineScope ->
-    viewModel.handleToggleProxy(s)
-  }
+  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
 
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
-      onToggleProxy = { handleToggleProxy(it) },
+      onToggleProxy = { handleToggleProxy() },
   )
 
   StatusScreen(
@@ -202,7 +200,7 @@ fun StatusEntry(
       state = viewModel.state,
       serverViewState = serverViewState,
       appName = appName,
-      onToggleProxy = { handleToggleProxy(scope) },
+      onToggleProxy = { handleToggleProxy() },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },

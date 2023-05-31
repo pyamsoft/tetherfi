@@ -28,9 +28,8 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 
 internal class ProxyTileInjector : ComposableInjector() {
 
@@ -49,7 +48,7 @@ internal class ProxyTileInjector : ComposableInjector() {
 @Composable
 private fun MountHooks(
     viewModel: ProxyTileViewModeler,
-    onToggleProxy: (CoroutineScope) -> Unit,
+    onToggleProxy: () -> Unit,
 ) {
   val handleToggleProxy by rememberUpdatedState(onToggleProxy)
 
@@ -57,7 +56,7 @@ private fun MountHooks(
 
   LaunchedEffect(viewModel) {
     delay(500)
-    handleToggleProxy(this)
+    handleToggleProxy()
   }
 
   LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
@@ -73,7 +72,7 @@ fun ProxyTileEntry(
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
-      onToggleProxy = { viewModel.handleToggleProxy(it) },
+      onToggleProxy = { viewModel.handleToggleProxy() },
   )
 
   val activity = rememberActivity()

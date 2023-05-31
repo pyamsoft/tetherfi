@@ -519,6 +519,8 @@ protected constructor(
         try {
           stopNetwork(clearErrorStatus = true)
 
+          // Launch a new scope so this function won't proceed to finally block until the scope is
+          // completed/cancelled
           coroutineScope { startNetwork() }
         } catch (e: Throwable) {
           e.ifNotCancellation {
@@ -529,12 +531,6 @@ protected constructor(
         } finally {
           shutdown()
         }
-      }
-
-  final override suspend fun stop(clearErrorStatus: Boolean) =
-      withContext(context = Dispatchers.Default) {
-        enforcer.assertOffMainThread()
-        status.set(RunningStatus.NotRunning, clearErrorStatus)
       }
 
   final override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {
