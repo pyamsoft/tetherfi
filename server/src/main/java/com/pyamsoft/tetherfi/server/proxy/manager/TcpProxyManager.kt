@@ -43,7 +43,10 @@ internal constructor(
         enforcer = enforcer,
     ) {
 
-  private suspend fun runSession(scope: CoroutineScope, connection: Socket) {
+  private suspend fun runSession(
+      scope: CoroutineScope,
+      connection: Socket,
+  ) {
     enforcer.assertOffMainThread()
 
     try {
@@ -56,6 +59,8 @@ internal constructor(
       )
     } catch (e: Throwable) {
       e.ifNotCancellation { Timber.e(e, "Error during runSession") }
+    } finally {
+      Timber.d("TCP Session complete $connection")
     }
   }
 
@@ -82,20 +87,26 @@ internal constructor(
           // We must close the connection in the launch{} after exchange is over
           val connection = server.accept()
 
-          // Run this server loop off thread so we can handle multiple connections at once.
-          launch {
-            enforcer.assertOffMainThread()
+          Timber.d("Open new TCP connection: $connection")
 
-            try {
-              runSession(this, connection)
-            } finally {
-              connection.dispose()
+          if (isActive || server.isClosed) {
+            // Run this server loop off thread so we can handle multiple connections at once.
+            launch(context = dispatcher) {
+              try {
+                runSession(this, connection)
+              } finally {
+                connection.dispose()
+                Timber.d("Done with TCP connection $connection")
+              }
             }
+          } else {
+            connection.dispose()
+            Timber.d("Done with TCP connection $connection")
           }
         }
       }
 
   override suspend fun onServerClosed() {
-    // Don't dispose of the KTorDefaultPool here as others may use it
+    Timber.d("TCP connection server closed")
   }
 }

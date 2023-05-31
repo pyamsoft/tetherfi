@@ -42,9 +42,11 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.URI
 import java.time.Clock
@@ -56,6 +58,7 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     private val blockedClients: BlockedClients,
     private val seenClients: SeenClients,
     private val clock: Clock,
@@ -103,8 +106,10 @@ internal constructor(
           raw = line,
       )
     } catch (e: Throwable) {
-      Timber.e(e, "Unable to parse request: $line")
-      return null
+      e.ifNotCancellation {
+        Timber.e(e, "Unable to parse request: $line")
+        return null
+      }
     }
   }
 
@@ -300,15 +305,17 @@ internal constructor(
 
   private suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel) {
     try {
-      input.joinTo(output, closeOnEnd = false)
-    } catch (_: Throwable) {
-      /**
-       * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected that
-       * this will happen as the natural end of client/host communication.
-       *
-       * Furthermore, even if this were an error, there is no recovery operation we can do, thus it
-       * is useless to care about it.
-       */
+      input.joinTo(output, closeOnEnd = true)
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        /**
+         * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected
+         * that this will happen as the natural end of client/host communication.
+         *
+         * Furthermore, even if this were an error, there is no recovery operation we can do, thus
+         * it is useless to care about it.
+         */
+      }
     }
   }
 
@@ -338,7 +345,7 @@ internal constructor(
 
       // Exchange data until completed
       val job =
-          scope.launch {
+          scope.launch(context = dispatcher) {
             enforcer.assertOffMainThread()
 
             // Send data from the internet back to the proxy in a different thread
@@ -361,6 +368,8 @@ internal constructor(
         Timber.e(e, "Error during Internet exchange")
         writeError(proxyOutput)
       }
+    } finally {
+      Timber.d("TCP Session exchange complete")
     }
   }
 
@@ -428,7 +437,7 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch {
+    launch(context = dispatcher) {
       enforcer.assertOffMainThread()
 
       // We launch to have this side effect run in parallel with processing
@@ -460,6 +469,7 @@ internal constructor(
               request = request,
           )
         } finally {
+          Timber.d("Done with Internet, close TCP connection $internet")
           internetInput.cancel()
           internetOutput.close()
         }
@@ -482,7 +492,7 @@ internal constructor(
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
     // we just "spin up" another thread and forget about it performance wise.
-    scope.launch {
+    scope.launch(context = dispatcher) {
       enforcer.assertOffMainThread()
 
       handleClientRequestSideEffects(client)
@@ -492,8 +502,6 @@ internal constructor(
     if (isBlockedClient(client)) {
       Timber.w("Client is marked blocked: $client")
       writeError(proxyOutput)
-      proxyInput.cancel()
-      proxyOutput.close()
       return
     }
 
@@ -502,52 +510,51 @@ internal constructor(
     if (request == null) {
       Timber.w("Could not parse proxy request")
       writeError(proxyOutput)
-      proxyInput.cancel()
-      proxyOutput.close()
       return
     }
 
     // And then we go to the web!
-    try {
-      scope.proxyToInternet(
-          request = request,
-          proxyInput = proxyInput,
-          proxyOutput = proxyOutput,
-      )
-    } finally {
-      proxyInput.cancel()
-      proxyOutput.close()
-    }
+    scope.proxyToInternet(
+        request = request,
+        proxyInput = proxyInput,
+        proxyOutput = proxyOutput,
+    )
   }
 
   override suspend fun exchange(
       scope: CoroutineScope,
       data: TcpProxyData,
-  ) {
-    enforcer.assertOffMainThread()
+  ) =
+      withContext(context = dispatcher) {
+        enforcer.assertOffMainThread()
 
-    /** The Proxy is our device */
-    val connection = data.connection
-    val proxyInput = connection.openReadChannel()
-    val proxyOutput = connection.openWriteChannel(autoFlush = true)
+        /** The Proxy is our device */
+        /** The Proxy is our device */
+        val connection = data.connection
+        val proxyInput = connection.openReadChannel()
+        val proxyOutput = connection.openWriteChannel(autoFlush = true)
 
-    // Resolve the client as an IP or hostname
-    val client = resolveClient(connection)
-    if (client == null) {
-      Timber.w("Unable to resolve TetherClient for connection: $connection")
-      writeError(proxyOutput)
-      proxyInput.cancel()
-      proxyOutput.close()
-      return
-    }
+        try {
+          // Resolve the client as an IP or hostname
+          val client = resolveClient(connection)
+          if (client == null) {
+            Timber.w("Unable to resolve TetherClient for connection: $connection")
+            writeError(proxyOutput)
+            return@withContext
+          }
 
-    handleClientRequest(
-        scope = scope,
-        client = client,
-        proxyInput = proxyInput,
-        proxyOutput = proxyOutput,
-    )
-  }
+          handleClientRequest(
+              scope = this,
+              client = client,
+              proxyInput = proxyInput,
+              proxyOutput = proxyOutput,
+          )
+        } finally {
+          Timber.d("Done with Client Request, close TCP connection $connection")
+          proxyInput.cancel()
+          proxyOutput.close()
+        }
+      }
 
   private data class MethodData(
       val url: String,
