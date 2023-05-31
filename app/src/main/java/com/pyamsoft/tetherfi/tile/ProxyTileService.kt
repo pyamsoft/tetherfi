@@ -25,16 +25,15 @@ import android.service.quicksettings.TileService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
+import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
-import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -201,7 +200,7 @@ internal class ProxyTileService internal constructor() : TileService() {
     super.onDestroy()
 
     // Cancel all children but not this scope
-    scope.coroutineContext[Job]?.cancelChildren()
+    scope.cancelChildren()
 
     tileHandler = null
   }

@@ -21,18 +21,17 @@ import android.content.Intent
 import android.os.IBinder
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 internal class ProxyForegroundService internal constructor() : Service() {
 
@@ -99,7 +98,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     wiDiReceiverRegister?.unregister()
 
     // Cancel all children but not this scope
-    scope.coroutineContext[Job]?.cancelChildren()
+    scope.cancelChildren()
 
     foregroundHandler = null
     notificationLauncher = null
