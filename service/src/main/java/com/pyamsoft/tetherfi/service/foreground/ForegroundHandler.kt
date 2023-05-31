@@ -102,8 +102,8 @@ internal constructor(
             s.collect { s ->
               when (s) {
                 is RunningStatus.Error -> {
-                  Timber.w("Server Server Error: ${s.message}")
-                  locker.release()
+                  Timber.w("Server Error: ${s.message}")
+                  shutdown()
                 }
                 else -> Timber.d("Server status changed: $s")
               }
@@ -122,7 +122,7 @@ internal constructor(
                 }
                 is RunningStatus.Error -> {
                   Timber.w("Proxy Server Error: ${s.message}")
-                  locker.release()
+                  shutdown()
                 }
                 else -> Timber.d("Proxy status changed: $s")
               }
@@ -148,7 +148,8 @@ internal constructor(
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           //
-          // This will suspend until network.start() completes, which is suspended until the proxy server
+          // This will suspend until network.start() completes, which is suspended until the proxy
+          // server
           // loop dies
           coroutineScope { network.start() }
         } finally {
