@@ -37,9 +37,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -51,6 +48,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -516,7 +516,7 @@ protected constructor(
         } finally {
           withContext(context = NonCancellable) {
             Timber.d("Stopping Wi-Fi Direct Network...")
-            stopNetwork(clearErrorStatus = true)
+            stopNetwork(clearErrorStatus = false)
           }
         }
       }

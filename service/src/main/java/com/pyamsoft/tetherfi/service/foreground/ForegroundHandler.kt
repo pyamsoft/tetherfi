@@ -48,13 +48,7 @@ internal constructor(
     private val status: WiDiNetworkStatus,
 ) {
 
-  /**
-   * Don't cancel this job on destroy. It must listen for the final shutdown event fired from the
-   * server
-   */
-  private var shutdownJob: Job? = null
-
-  private var parentJob: Job? = null
+  private var job: Job? = null
 
   private suspend fun shutdown() =
       withContext(context = NonCancellable) {
@@ -66,75 +60,69 @@ internal constructor(
       onShutdownService: () -> Unit,
       onRefreshNotification: () -> Unit,
   ) {
-    // When shutdown events are received, we kill the service
-    shutdownJob?.cancel()
-    shutdownListener.requireNotNull().also { f ->
-      shutdownJob =
-          scope.launch {
-            enforcer.assertOffMainThread()
-
-            f.collect {
-              Timber.d("Shutdown event received!")
-              shutdown()
-              onShutdownService()
-            }
-          }
-    }
-
     // Watch everything else as the parent
     val stat = status.requireNotNull()
-    val s = stat.onStatusChanged()
-    val p = stat.onProxyStatusChanged()
-    val n = notificationRefreshListener.requireNotNull()
 
-    parentJob?.cancel()
-    parentJob =
+    job?.cancel()
+    job =
         scope.launch {
           enforcer.assertOffMainThread()
 
-          // Watch status of network
-          launch {
-            enforcer.assertOffMainThread()
+          // When shutdown events are received, we kill the service
+          shutdownListener.requireNotNull().also { f ->
+            f.collect {
+              Timber.d("Shutdown event received!")
+              onShutdownService()
+            }
+          }
 
-            s.collect { s ->
-              when (s) {
-                is RunningStatus.Error -> {
-                  Timber.w("Server Error: ${s.message}")
-                  shutdown()
-                  onShutdownService()
+          // Watch status of network
+          stat.onStatusChanged().also { f ->
+            launch {
+              enforcer.assertOffMainThread()
+
+              f.collect { s ->
+                when (s) {
+                  is RunningStatus.Error -> {
+                    Timber.w("Server Error: ${s.message}")
+                    onShutdownService()
+                  }
+                  else -> Timber.d("Server status changed: $s")
                 }
-                else -> Timber.d("Server status changed: $s")
               }
             }
           }
 
           // Watch status of proxy
-          launch {
-            enforcer.assertOffMainThread()
+          stat.onProxyStatusChanged().also { f ->
+            launch {
+              enforcer.assertOffMainThread()
 
-            p.collect { s ->
-              when (s) {
-                is RunningStatus.Running -> {
-                  Timber.d("Proxy Server started!")
-                  locker.acquire()
+              f.collect { s ->
+                when (s) {
+                  is RunningStatus.Running -> {
+                    Timber.d("Proxy Server started!")
+                    locker.acquire()
+                  }
+                  is RunningStatus.Error -> {
+                    Timber.w("Proxy Server Error: ${s.message}")
+                    onShutdownService()
+                  }
+                  else -> Timber.d("Proxy status changed: $s")
                 }
-                is RunningStatus.Error -> {
-                  Timber.w("Proxy Server Error: ${s.message}")
-                  shutdown()
-                  onShutdownService()
-                }
-                else -> Timber.d("Proxy status changed: $s")
               }
             }
           }
 
           // Watch for notification refresh
-          launch {
-            enforcer.assertOffMainThread()
+          notificationRefreshListener.requireNotNull().also { f ->
+            launch {
+              enforcer.assertOffMainThread()
 
-            n.collect {
-              Timber.d("Refresh notification")
-              onRefreshNotification()
+              f.collect {
+                Timber.d("Refresh notification")
+                onRefreshNotification()
+              }
             }
           }
         }
