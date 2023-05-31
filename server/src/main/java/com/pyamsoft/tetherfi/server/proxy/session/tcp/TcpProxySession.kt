@@ -378,7 +378,7 @@ internal constructor(
    * socket
    */
   @CheckResult
-  private suspend fun connectToInternet(scope: CoroutineScope, request: ProxyRequest): Socket {
+  private suspend fun connectToInternet(request: ProxyRequest): Socket {
     enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
@@ -393,7 +393,7 @@ internal constructor(
             port = request.port,
         )
 
-    val rawSocket = aSocket(ActorSelectorManager(context = scope.coroutineContext))
+    val rawSocket = aSocket(ActorSelectorManager(context = dispatcher))
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
@@ -454,7 +454,7 @@ internal constructor(
 
     // Given the request, connect to the Web
     try {
-      connectToInternet(this, request).use { internet ->
+      connectToInternet(request).use { internet ->
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
