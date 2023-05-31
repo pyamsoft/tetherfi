@@ -102,6 +102,8 @@ internal constructor(
           try {
             // Launch a new scope so this function won't proceed to finally block until the scope is
             // completed/cancelled
+            //
+            // This will suspend until the proxy server loop dies
             coroutineScope {
               Timber.d("Starting proxy server on port $port ...")
               status.set(RunningStatus.Starting, clearError = true)
