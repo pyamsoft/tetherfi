@@ -29,8 +29,6 @@ import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +37,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -105,27 +105,23 @@ internal constructor(
   override fun register() {
     val self = this
 
-    receiverScope.launch(context = Dispatchers.Main) {
-      if (!registered) {
-        registered = true
-        ContextCompat.registerReceiver(
-            context,
-            self,
-            INTENT_FILTER,
-            ContextCompat.RECEIVER_EXPORTED,
-        )
-      }
+    if (!registered) {
+      registered = true
+      ContextCompat.registerReceiver(
+          context,
+          self,
+          INTENT_FILTER,
+          ContextCompat.RECEIVER_EXPORTED,
+      )
     }
   }
 
   override fun unregister() {
     val self = this
 
-    receiverScope.launch(context = Dispatchers.Main) {
-      if (registered) {
-        registered = false
-        context.unregisterReceiver(self)
-      }
+    if (registered) {
+      registered = false
+      context.unregisterReceiver(self)
     }
   }
 
