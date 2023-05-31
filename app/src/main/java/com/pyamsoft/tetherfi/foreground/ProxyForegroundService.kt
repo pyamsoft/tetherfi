@@ -25,13 +25,13 @@ import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class ProxyForegroundService internal constructor() : Service() {
 

@@ -58,11 +58,7 @@ internal constructor(
 
   private suspend fun shutdown() =
       withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) {
-          // Launch a parent scope for all jobs
-          Timber.d("Destroy CPU wakelock")
-          locker.release()
-        }
+        withContext(context = Dispatchers.Default) { locker.release() }
       }
 
   fun bind(
