@@ -70,6 +70,11 @@ internal class ProxyForegroundService internal constructor() : Service() {
         .bind(
             scope = scope,
             onRefreshNotification = {
+              if (!isServiceAlive) {
+                Timber.w("Refresh notification received but service was dead")
+                return@bind
+              }
+
               Timber.d("Refresh event received, start notification again")
               notificationLauncher.requireNotNull().start(this)
             },
