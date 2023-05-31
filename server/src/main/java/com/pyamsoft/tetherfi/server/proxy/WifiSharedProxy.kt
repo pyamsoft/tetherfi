@@ -18,23 +18,22 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -47,9 +46,6 @@ internal constructor(
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
-  private val mutex = Mutex()
-  private val jobs = mutableListOf<ProxyJob>()
-
   /** Get the port for the proxy */
   @CheckResult
   private suspend fun getPort(): Int {
@@ -58,104 +54,73 @@ internal constructor(
     return preferences.listenForPortChanges().first()
   }
 
-  @CheckResult
   private fun CoroutineScope.proxyLoop(
       type: SharedProxy.Type,
       port: Int,
-  ): ProxyJob {
-    enforcer.assertOffMainThread()
-
-    val manager = factory.create(type = type)
-
-    val job =
-        launch(context = Dispatchers.Default) {
-          enforcer.assertOffMainThread()
-
-          Timber.d("${type.name} Begin proxy server loop $port")
-          manager.loop(port)
-        }
-
-    return ProxyJob(
-        type = type,
-        job = job,
-    )
+  ) {
+    launch(context = Dispatchers.Default) {
+      val manager = factory.create(type = type)
+      Timber.d("${type.name} Begin proxy server loop $port")
+      manager.loop(port)
+    }
   }
 
-  private suspend fun shutdown() {
+  private fun reset() {
     enforcer.assertOffMainThread()
 
-    clearJobs()
     eraser.clear()
   }
 
-  private suspend fun clearJobs() {
-    mutex.withLock {
-      enforcer.assertOffMainThread()
+  private fun shutdown(clearErrorStatus: Boolean) {
+    enforcer.assertOffMainThread()
 
-      jobs.removeEach { proxyJob ->
-        Timber.d("Cancelling proxyJob: $proxyJob")
-        proxyJob.job.cancel()
-      }
-    }
-  }
+    status.set(
+        RunningStatus.Stopping,
+        clearError = clearErrorStatus,
+    )
 
-  private inline fun <T> MutableList<T>.removeEach(block: (T) -> Unit) {
-    while (this.isNotEmpty()) {
-      block(this.removeFirst())
-    }
+    reset()
+
+    status.set(RunningStatus.NotRunning)
   }
 
   override suspend fun start() =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
-        shutdown()
+        reset()
         try {
           val port = getPort()
           if (port > 65000 || port <= 1024) {
             Timber.w("Port is invalid: $port")
+            reset()
             status.set(RunningStatus.Error(message = "Port is invalid: $port"))
             return@withContext
           }
 
-          Timber.d("Starting proxy server on port $port ...")
-          status.set(RunningStatus.Starting, clearError = true)
+          try {
+            coroutineScope {
+              Timber.d("Starting proxy server on port $port ...")
+              status.set(RunningStatus.Starting, clearError = true)
 
-          launch(context = Dispatchers.Default) {
-            enforcer.assertOffMainThread()
+              proxyLoop(type = SharedProxy.Type.TCP, port = port)
 
-            val tcp = proxyLoop(type = SharedProxy.Type.TCP, port = port)
-
-            mutex.withLock {
-              Timber.d("Track TCP Proxy Manager")
-              jobs.add(tcp)
+              Timber.d("Started Proxy Server on port: $port")
+              status.set(RunningStatus.Running)
             }
-
-            Timber.d("Started Proxy Server on port: $port")
-            status.set(RunningStatus.Running)
+          } finally {
+            Timber.d("Proxy Server is Complete")
+            shutdown(clearErrorStatus = false)
           }
         } catch (e: Throwable) {
-          Timber.e(e, "Error when running the proxy, shut it all down")
-          shutdown()
-          status.set(RunningStatus.Error(message = e.message ?: "A proxy error occurred"))
+          e.ifNotCancellation {
+            Timber.e(e, "Error when running the proxy, shut it all down")
+            reset()
+            status.set(RunningStatus.Error(message = e.message ?: "A proxy error occurred"))
+          }
         }
       }
 
   override suspend fun stop(clearErrorStatus: Boolean) =
-      withContext(context = Dispatchers.Default) {
-        enforcer.assertOffMainThread()
-
-        status.set(
-            RunningStatus.Stopping,
-            clearError = clearErrorStatus,
-        )
-
-        shutdown()
-        status.set(RunningStatus.NotRunning)
-      }
-
-  private data class ProxyJob(
-      val type: SharedProxy.Type,
-      val job: Job,
-  )
+      withContext(context = Dispatchers.Default) { enforcer.assertOffMainThread() }
 }

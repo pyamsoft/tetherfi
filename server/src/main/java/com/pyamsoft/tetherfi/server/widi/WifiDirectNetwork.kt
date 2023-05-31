@@ -30,6 +30,7 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -38,7 +39,6 @@ import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -184,56 +184,57 @@ protected constructor(
     }
   }
 
-  private suspend fun startNetwork() = coroutineScope {
-    enforcer.assertOffMainThread()
+  private suspend fun startNetwork() =
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateWiDiNetwork()) {
-      Timber.w("Missing permissions for making WiDi network")
-      status.set(RunningStatus.NotRunning)
-      return@coroutineScope
-    }
+        if (!permissionGuard.canCreateWiDiNetwork()) {
+          Timber.w("Missing permissions for making WiDi network")
+          status.set(RunningStatus.NotRunning)
+          return@withContext
+        }
 
-    Timber.d("Start new network")
-    status.set(RunningStatus.Starting, clearError = true)
-    val channel = createChannel()
+        Timber.d("Start new network")
+        status.set(RunningStatus.Starting, clearError = true)
+        val channel = createChannel()
 
-    if (channel == null) {
-      Timber.w("Failed to create channel, cannot initialize WiDi network")
+        if (channel == null) {
+          Timber.w("Failed to create channel, cannot initialize WiDi network")
 
-      completeStop(this, clearErrorStatus = false) {
-        status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+          completeStop(this, clearErrorStatus = false) {
+            status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+          }
+          return@withContext
+        }
+
+        val runningStatus = createGroup(channel)
+        if (runningStatus is RunningStatus.Running) {
+          Timber.d("Network started")
+
+          // Only store the channel if it successfully "finished" creating.
+          mutex.withLock {
+            Timber.d("Store WiFi channel")
+            wifiChannel = channel
+          }
+
+          updateNetworkInfoChannels()
+
+          launch(context = Dispatchers.Default) { onNetworkStarted() }
+
+          Timber.d("WiDi network has started: $runningStatus")
+          status.set(runningStatus)
+        } else {
+          Timber.w("Group failed creation, stop proxy")
+
+          // Remove whatever was created (should be a no-op if everyone follows API correctly)
+          shutdownWifiNetwork(channel)
+
+          completeStop(this, clearErrorStatus = false) {
+            Timber.w("Stopping proxy after Group failed to create")
+            status.set(runningStatus)
+          }
+        }
       }
-      return@coroutineScope
-    }
-
-    val runningStatus = createGroup(channel)
-    if (runningStatus is RunningStatus.Running) {
-      Timber.d("Network started")
-
-      // Only store the channel if it successfully "finished" creating.
-      mutex.withLock {
-        Timber.d("Store WiFi channel")
-        wifiChannel = channel
-      }
-
-      updateNetworkInfoChannels()
-
-      launch(context = Dispatchers.Default) { onNetworkStarted() }
-
-      Timber.d("WiDi network has started: $runningStatus")
-      status.set(runningStatus)
-    } else {
-      Timber.w("Group failed creation, stop proxy")
-
-      // Remove whatever was created (should be a no-op if everyone follows API correctly)
-      shutdownWifiNetwork(channel)
-
-      completeStop(this, clearErrorStatus = false) {
-        Timber.w("Stopping proxy after Group failed to create")
-        status.set(runningStatus)
-      }
-    }
-  }
 
   private suspend fun completeStop(
       scope: CoroutineScope,
@@ -267,41 +268,42 @@ protected constructor(
     }
   }
 
-  private suspend fun stopNetwork(clearErrorStatus: Boolean) = coroutineScope {
-    enforcer.assertOffMainThread()
+  private suspend fun stopNetwork(clearErrorStatus: Boolean) =
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
 
-    val channel = getChannel()
+        val channel = getChannel()
 
-    // If we have no channel, we haven't started yet. Make sure we are clean, but this
-    // is basically a no-op
-    if (channel == null) {
-      completeStop(this, clearErrorStatus) {
-        Timber.d("Resetting status back to not running")
+        // If we have no channel, we haven't started yet. Make sure we are clean, but this
+        // is basically a no-op
+        if (channel == null) {
+          completeStop(this, clearErrorStatus) {
+            Timber.d("Resetting status back to not running")
+            status.set(
+                RunningStatus.NotRunning,
+                clearError = clearErrorStatus,
+            )
+          }
+          return@withContext
+        }
+
+        // If we do have a channel, mark shutting down as we clean up
+        Timber.d("Shutting down wifi network")
         status.set(
-            RunningStatus.NotRunning,
+            RunningStatus.Stopping,
             clearError = clearErrorStatus,
         )
+
+        shutdownWifiNetwork(channel)
+
+        completeStop(this, clearErrorStatus) {
+          Timber.d("Proxy was stopped")
+          status.set(
+              RunningStatus.NotRunning,
+              clearError = clearErrorStatus,
+          )
+        }
       }
-      return@coroutineScope
-    }
-
-    // If we do have a channel, mark shutting down as we clean up
-    Timber.d("Shutting down wifi network")
-    status.set(
-        RunningStatus.Stopping,
-        clearError = clearErrorStatus,
-    )
-
-    shutdownWifiNetwork(channel)
-
-    completeStop(this, clearErrorStatus) {
-      Timber.d("Proxy was stopped")
-      status.set(
-          RunningStatus.NotRunning,
-          clearError = clearErrorStatus,
-      )
-    }
-  }
 
   @CheckResult
   @SuppressLint("MissingPermission")
@@ -498,9 +500,11 @@ protected constructor(
           stopNetwork(clearErrorStatus = true)
           startNetwork()
         } catch (e: Throwable) {
-          Timber.e(e, "Error starting Network")
-          status.set(
-              RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+          e.ifNotCancellation {
+            Timber.e(e, "Error starting Network")
+            status.set(
+                RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+          }
         }
       }
 
@@ -512,9 +516,11 @@ protected constructor(
         try {
           stopNetwork(clearErrorStatus)
         } catch (e: Throwable) {
-          Timber.e(e, "Error stopping Network")
-          status.set(
-              RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+          e.ifNotCancellation {
+            Timber.e(e, "Error stopping Network")
+            status.set(
+                RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+          }
         } finally {
           Timber.d("Wi-Fi Direct network is shutdown")
         }

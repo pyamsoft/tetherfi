@@ -27,7 +27,9 @@ import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -100,6 +102,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
         .launch { foregroundHandler?.destroy() }
         .invokeOnCompletion {
           Timber.d("Proxy shutdown complete, killing Service")
+          scope.coroutineContext[Job]?.cancelChildren()
 
           foregroundHandler = null
           notificationLauncher = null
