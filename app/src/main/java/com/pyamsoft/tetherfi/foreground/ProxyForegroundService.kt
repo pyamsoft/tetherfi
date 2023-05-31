@@ -97,16 +97,10 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
     notificationLauncher?.stop(this)
     wiDiReceiverRegister?.unregister()
+    scope.coroutineContext[Job]?.cancelChildren()
 
-    scope
-        .launch { foregroundHandler?.destroy() }
-        .invokeOnCompletion {
-          Timber.d("Proxy shutdown complete, killing Service")
-          scope.coroutineContext[Job]?.cancelChildren()
-
-          foregroundHandler = null
-          notificationLauncher = null
-          wiDiReceiverRegister = null
-        }
+    foregroundHandler = null
+    notificationLauncher = null
+    wiDiReceiverRegister = null
   }
 }

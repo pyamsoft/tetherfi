@@ -26,12 +26,12 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WiDiNetworkImpl
@@ -63,9 +63,7 @@ internal constructor(
     launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
   }
 
-  override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {
-    launch(context = Dispatchers.Default) { proxy.stop(clearErrorStatus) }
-  }
+  override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {}
 
   override fun onProxyStatusChanged(): Flow<RunningStatus> {
     return proxy.onStatusChanged()

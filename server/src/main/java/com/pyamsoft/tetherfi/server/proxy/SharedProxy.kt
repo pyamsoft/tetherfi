@@ -22,9 +22,6 @@ interface SharedProxy : Server {
 
   suspend fun start()
 
-  /** If [clearErrorStatus] is set, any errors from running status are cleared */
-  suspend fun stop(clearErrorStatus: Boolean)
-
   enum class Type {
     TCP,
     UDP

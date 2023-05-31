@@ -25,14 +25,16 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ForegroundHandler
@@ -133,28 +135,23 @@ internal constructor(
   suspend fun startProxy() =
       withContext(context = Dispatchers.Default) {
         Timber.d("Start WiDi Network")
-        network.start()
+        try {
+          coroutineScope { network.start() }
+        } finally {
+          stopProxy(clearErrorStatus = false)
+        }
       }
 
   /** If [clearErrorStatus] is set, any errors from running status are cleared */
   suspend fun stopProxy(clearErrorStatus: Boolean) =
-      withContext(context = Dispatchers.Default) {
-        Timber.d("Stop WiDi network")
-        network.stop(clearErrorStatus)
+      withContext(context = NonCancellable) {
+        withContext(context = Dispatchers.Default) {
+          Timber.d("Stop WiDi network")
+          network.stop(clearErrorStatus = clearErrorStatus)
 
-        // Launch a parent scope for all jobs
-        Timber.d("Destroy CPU wakelock")
-        locker.release()
-
-        parentJob?.cancel()
-        parentJob = null
-      }
-
-  suspend fun destroy() =
-      withContext(context = Dispatchers.Default) {
-        stopProxy(clearErrorStatus = false)
-
-        shutdownJob?.cancel()
-        shutdownJob = null
+          // Launch a parent scope for all jobs
+          Timber.d("Destroy CPU wakelock")
+          locker.release()
+        }
       }
 }

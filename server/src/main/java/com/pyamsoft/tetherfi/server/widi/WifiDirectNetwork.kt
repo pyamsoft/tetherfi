@@ -39,6 +39,8 @@ import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -483,6 +485,24 @@ protected constructor(
     connectionInfoChannel.value = getConnectionInfo()
   }
 
+  private suspend fun shutdown() =
+      withContext(context = NonCancellable) {
+        enforcer.assertOffMainThread()
+
+        Timber.d("Stopping Wi-Fi Direct Network...")
+        try {
+          stopNetwork(clearErrorStatus = false)
+        } catch (e: Throwable) {
+          e.ifNotCancellation {
+            Timber.e(e, "Error stopping Network")
+            status.set(
+                RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
+          }
+        } finally {
+          Timber.d("Wi-Fi Direct network is shutdown")
+        }
+      }
+
   final override suspend fun updateNetworkInfo() =
       // Use Dispatcher.Default here instead since this can run outside of cycle
       withContext(context = Dispatchers.Default) {
@@ -498,32 +518,23 @@ protected constructor(
         Timber.d("Starting Wi-Fi Direct Network...")
         try {
           stopNetwork(clearErrorStatus = true)
-          startNetwork()
+
+          coroutineScope { startNetwork() }
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e, "Error starting Network")
             status.set(
                 RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
           }
+        } finally {
+          shutdown()
         }
       }
 
   final override suspend fun stop(clearErrorStatus: Boolean) =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
-
-        Timber.d("Stopping Wi-Fi Direct Network...")
-        try {
-          stopNetwork(clearErrorStatus)
-        } catch (e: Throwable) {
-          e.ifNotCancellation {
-            Timber.e(e, "Error stopping Network")
-            status.set(
-                RunningStatus.Error(e.message ?: "An error occurred while stopping the Network"))
-          }
-        } finally {
-          Timber.d("Wi-Fi Direct network is shutdown")
-        }
+        status.set(RunningStatus.NotRunning, clearErrorStatus)
       }
 
   final override fun onConnectionInfoChanged(): Flow<WiDiNetworkStatus.ConnectionInfo> {

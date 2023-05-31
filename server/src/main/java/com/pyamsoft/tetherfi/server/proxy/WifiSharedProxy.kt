@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -71,18 +72,18 @@ internal constructor(
     eraser.clear()
   }
 
-  private fun shutdown(clearErrorStatus: Boolean) {
-    enforcer.assertOffMainThread()
+  private suspend fun shutdown(clearErrorStatus: Boolean) =
+      withContext(context = NonCancellable) {
+        enforcer.assertOffMainThread()
 
-    status.set(
-        RunningStatus.Stopping,
-        clearError = clearErrorStatus,
-    )
-
-    reset()
-
-    status.set(RunningStatus.NotRunning)
-  }
+        Timber.d("Proxy Server is Complete")
+        status.set(
+            RunningStatus.Stopping,
+            clearError = clearErrorStatus,
+        )
+        reset()
+        status.set(RunningStatus.NotRunning)
+      }
 
   override suspend fun start() =
       withContext(context = Dispatchers.Default) {
@@ -109,7 +110,6 @@ internal constructor(
               status.set(RunningStatus.Running)
             }
           } finally {
-            Timber.d("Proxy Server is Complete")
             shutdown(clearErrorStatus = false)
           }
         } catch (e: Throwable) {
@@ -120,7 +120,4 @@ internal constructor(
           }
         }
       }
-
-  override suspend fun stop(clearErrorStatus: Boolean) =
-      withContext(context = Dispatchers.Default) { enforcer.assertOffMainThread() }
 }
