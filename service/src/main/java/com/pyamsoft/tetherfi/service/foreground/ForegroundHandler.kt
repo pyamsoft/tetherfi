@@ -79,6 +79,7 @@ internal constructor(
 
             f.collect {
               Timber.d("Shutdown event received!")
+              shutdown()
               onShutdownService()
             }
           }
@@ -104,6 +105,7 @@ internal constructor(
                 is RunningStatus.Error -> {
                   Timber.w("Server Error: ${s.message}")
                   shutdown()
+                  onShutdownService()
                 }
                 else -> Timber.d("Server status changed: $s")
               }
@@ -123,6 +125,7 @@ internal constructor(
                 is RunningStatus.Error -> {
                   Timber.w("Proxy Server Error: ${s.message}")
                   shutdown()
+                  onShutdownService()
                 }
                 else -> Timber.d("Proxy status changed: $s")
               }

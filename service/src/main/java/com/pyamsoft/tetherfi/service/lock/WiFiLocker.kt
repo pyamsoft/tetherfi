@@ -9,9 +9,6 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
@@ -19,6 +16,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WiFiLocker
@@ -61,10 +61,10 @@ internal constructor(
         withContext(context = Dispatchers.Default) {
           mutex.withLock {
             if (wakeAcquired.getAndSet(false)) {
-              lock.release()
               Timber.d("####################################")
               Timber.d("Release WIFI wakelock: $tag")
               Timber.d("####################################")
+              lock.release()
             }
           }
         }
