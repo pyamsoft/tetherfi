@@ -97,6 +97,8 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
     notificationLauncher?.stop(this)
     wiDiReceiverRegister?.unregister()
+
+    // Cancel all children but not this scope
     scope.coroutineContext[Job]?.cancelChildren()
 
     foregroundHandler = null

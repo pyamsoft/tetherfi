@@ -30,7 +30,9 @@ import com.pyamsoft.tetherfi.service.tile.TileHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -197,6 +199,10 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onDestroy() {
     super.onDestroy()
+
+    // Cancel all children but not this scope
+    scope.coroutineContext[Job]?.cancelChildren()
+
     tileHandler = null
   }
 
