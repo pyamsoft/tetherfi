@@ -27,6 +27,7 @@ import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,9 +59,7 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e, "Error during runSession") }
-    } finally {
-      Timber.d("TCP Session complete $connection")
+      e.ifNotCancellation { Timber.e(e, "Error during session $connection") }
     }
   }
 
@@ -87,21 +86,21 @@ internal constructor(
           // We must close the connection in the launch{} after exchange is over
           val connection = server.accept()
 
-          Timber.d("Open new TCP connection: $connection")
-
           if (isActive || server.isClosed) {
             // Run this server loop off thread so we can handle multiple connections at once.
             launch(context = dispatcher) {
               try {
                 runSession(this, connection)
               } finally {
-                connection.dispose()
-                Timber.d("Done with TCP connection $connection")
+                withContext(context = NonCancellable) { connection.dispose() }
               }
             }
           } else {
-            connection.dispose()
-            Timber.d("Done with TCP connection $connection")
+            // Immediately drop the connection
+            withContext(context = NonCancellable) {
+              Timber.w("Server is closed, immediately drop connection")
+              connection.dispose()
+            }
           }
         }
       }

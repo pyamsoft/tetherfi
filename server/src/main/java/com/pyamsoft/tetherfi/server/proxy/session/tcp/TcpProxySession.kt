@@ -44,6 +44,7 @@ import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -304,19 +305,20 @@ internal constructor(
   }
 
   private suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel) {
-    try {
-      input.joinTo(output, closeOnEnd = true)
-    } catch (e: Throwable) {
-      e.ifNotCancellation {
-        /**
-         * Exceptions when relaying traffic (like a closed socket) are not errors, it is expected
-         * that this will happen as the natural end of client/host communication.
-         *
-         * Furthermore, even if this were an error, there is no recovery operation we can do, thus
-         * it is useless to care about it.
-         */
-      }
-    }
+    //    KtorDefaultPool.useInstance { buffer ->
+    //      while (isActive) {
+    //        val array = buffer.array()
+    //        val size = input.readAvailable(array)
+    //        if (size < 0) {
+    //          break
+    //        }
+    //
+    //        output.writeFully(array, 0, size)
+    //      }
+    //    }
+
+    // Should be faster than parsing byte buffers raw
+    input.joinTo(output, closeOnEnd = true)
   }
 
   private suspend fun exchangeInternet(
@@ -368,8 +370,6 @@ internal constructor(
         Timber.e(e, "Error during Internet exchange")
         writeError(proxyOutput)
       }
-    } finally {
-      Timber.d("TCP Session exchange complete")
     }
   }
 
@@ -469,9 +469,10 @@ internal constructor(
               request = request,
           )
         } finally {
-          Timber.d("Done with Internet, close TCP connection $internet")
-          internetInput.cancel()
-          internetOutput.close()
+          withContext(context = NonCancellable) {
+            internetInput.cancel()
+            internetOutput.close()
+          }
         }
       }
     } catch (e: Throwable) {
@@ -549,10 +550,13 @@ internal constructor(
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
           )
+        } catch (e: Throwable) {
+          e.ifNotCancellation { Timber.e(e, "Error during TCP exchange: $connection") }
         } finally {
-          Timber.d("Done with Client Request, close TCP connection $connection")
-          proxyInput.cancel()
-          proxyOutput.close()
+          withContext(context = NonCancellable) {
+            proxyInput.cancel()
+            proxyOutput.close()
+          }
         }
       }
 
