@@ -42,11 +42,11 @@ internal constructor(
       onNetworkRunning: () -> Unit,
       onNetworkStopping: () -> Unit,
   ) {
-    launch {
+    launch(context = Dispatchers.Default) {
       enforcer.assertOffMainThread()
 
       network.onProxyStatusChanged().also { f ->
-        launch {
+        launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
           f.collect { status ->
