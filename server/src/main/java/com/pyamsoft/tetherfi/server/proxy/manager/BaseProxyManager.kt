@@ -47,7 +47,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
         val server =
             openServer(
-                builder = aSocket(ActorSelectorManager(context = coroutineContext)),
+                builder = aSocket(ActorSelectorManager(context = dispatcher)),
                 localAddress = getServerAddress(port = port),
             )
         try {
