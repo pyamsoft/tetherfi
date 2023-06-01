@@ -241,10 +241,10 @@ protected constructor(
         }
       }
 
-  private suspend fun completeStop(
+  private suspend inline fun completeStop(
       scope: CoroutineScope,
       clearErrorStatus: Boolean,
-      onStop: suspend () -> Unit,
+      onStop: () -> Unit,
   ) {
     enforcer.assertOffMainThread()
 
