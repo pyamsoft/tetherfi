@@ -54,8 +54,9 @@ class MainActivity : AppCompatActivity() {
                     override val applicationIcon = R.mipmap.ic_launcher
 
                     override val changelog = buildChangeLog {
-                      feature("Hold a CPU Lock and a WiFi Lock")
-                      feature("Proper monochrome icon support in newer versions of Android OS")
+                      bugfix("Fix a major bug causing extreme system slowdown after Hotspot was on for a long time")
+                      bugfix("Device does not get as hot when running Hotspot for a long time")
+                      change("Greatly improved Hotspot performance")
                     }
                   },
           )

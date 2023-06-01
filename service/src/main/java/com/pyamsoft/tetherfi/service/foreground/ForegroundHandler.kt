@@ -20,9 +20,7 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +43,6 @@ internal constructor(
     private val shutdownListener: EventConsumer<ServerShutdownEvent>,
     private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
     private val network: WiDiNetwork,
-    private val status: WiDiNetworkStatus,
 ) {
 
   private var job: Job? = null
@@ -55,14 +52,14 @@ internal constructor(
         withContext(context = Dispatchers.Default) { locker.release() }
       }
 
+  private suspend fun lock() = withContext(context = Dispatchers.Default) { locker.acquire() }
+
   fun bind(
       scope: CoroutineScope,
       onShutdownService: () -> Unit,
       onRefreshNotification: () -> Unit,
   ) {
     // Watch everything else as the parent
-    val stat = status.requireNotNull()
-
     job?.cancel()
     job =
         scope.launch {
@@ -73,44 +70,6 @@ internal constructor(
             f.collect {
               Timber.d("Shutdown event received!")
               onShutdownService()
-            }
-          }
-
-          // Watch status of network
-          stat.onStatusChanged().also { f ->
-            launch {
-              enforcer.assertOffMainThread()
-
-              f.collect { s ->
-                when (s) {
-                  is RunningStatus.Error -> {
-                    Timber.w("Server Error: ${s.message}")
-                    onShutdownService()
-                  }
-                  else -> Timber.d("Server status changed: $s")
-                }
-              }
-            }
-          }
-
-          // Watch status of proxy
-          stat.onProxyStatusChanged().also { f ->
-            launch {
-              enforcer.assertOffMainThread()
-
-              f.collect { s ->
-                when (s) {
-                  is RunningStatus.Running -> {
-                    Timber.d("Proxy Server started!")
-                    locker.acquire()
-                  }
-                  is RunningStatus.Error -> {
-                    Timber.w("Proxy Server Error: ${s.message}")
-                    onShutdownService()
-                  }
-                  else -> Timber.d("Proxy status changed: $s")
-                }
-              }
             }
           }
 
@@ -132,6 +91,9 @@ internal constructor(
       withContext(context = Dispatchers.Default) {
         Timber.d("Start WiDi Network")
         try {
+          // Claim the wakelock
+          lock()
+
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           //
