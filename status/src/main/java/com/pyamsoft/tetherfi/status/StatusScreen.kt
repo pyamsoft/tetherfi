@@ -206,9 +206,9 @@ fun StatusScreen(
 
   val isButtonEnabled =
       remember(hotspotStatus) {
-        wiDiStatus is RunningStatus.Running ||
-            wiDiStatus is RunningStatus.NotRunning ||
-            wiDiStatus is RunningStatus.Error
+        hotspotStatus is RunningStatus.Running ||
+            hotspotStatus is RunningStatus.NotRunning ||
+            hotspotStatus is RunningStatus.Error
       }
 
   val buttonText =
