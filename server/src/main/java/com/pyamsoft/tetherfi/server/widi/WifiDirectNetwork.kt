@@ -193,6 +193,7 @@ protected constructor(
         if (!permissionGuard.canCreateWiDiNetwork()) {
           Timber.w("Missing permissions for making WiDi network")
           status.set(RunningStatus.NotRunning)
+          shutdownBus.emit(ServerShutdownEvent)
           return@withContext
         }
 
@@ -205,6 +206,7 @@ protected constructor(
 
           completeStop(this, clearErrorStatus = false) {
             status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+            shutdownBus.emit(ServerShutdownEvent)
           }
           return@withContext
         }
@@ -234,6 +236,7 @@ protected constructor(
           completeStop(this, clearErrorStatus = false) {
             Timber.w("Stopping proxy after Group failed to create")
             status.set(runningStatus)
+            shutdownBus.emit(ServerShutdownEvent)
           }
         }
       }
@@ -241,7 +244,7 @@ protected constructor(
   private suspend fun completeStop(
       scope: CoroutineScope,
       clearErrorStatus: Boolean,
-      onStop: () -> Unit,
+      onStop: suspend () -> Unit,
   ) {
     enforcer.assertOffMainThread()
 
@@ -510,8 +513,9 @@ protected constructor(
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e, "Error starting Network")
-            status.set(
-                RunningStatus.Error(e.message ?: "An error occurred while starting the Network"))
+            val msg = e.message ?: "An error occurred while starting the Network"
+            status.set(RunningStatus.Error(msg))
+            shutdownBus.emit(ServerShutdownEvent)
           }
         } finally {
           withContext(context = NonCancellable) {

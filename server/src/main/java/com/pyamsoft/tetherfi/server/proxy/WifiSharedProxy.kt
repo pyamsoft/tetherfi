@@ -17,12 +17,14 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
+import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +46,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val preferences: ServerPreferences,
     private val eraser: ClientEraser,
+    private val shutdownBus: EventBus<ServerShutdownEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -96,6 +99,7 @@ internal constructor(
             Timber.w("Port is invalid: $port")
             reset()
             status.set(RunningStatus.Error(message = "Port is invalid: $port"))
+            shutdownBus.emit(ServerShutdownEvent)
             return@withContext
           }
 
@@ -120,7 +124,9 @@ internal constructor(
           e.ifNotCancellation {
             Timber.e(e, "Error when running the proxy, shut it all down")
             reset()
+
             status.set(RunningStatus.Error(message = e.message ?: "A proxy error occurred"))
+            shutdownBus.emit(ServerShutdownEvent)
           }
         }
       }
