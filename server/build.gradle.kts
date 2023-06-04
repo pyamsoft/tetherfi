@@ -53,8 +53,7 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  // API for Dagger
-  api("io.ktor:ktor-network:2.3.0")
+  implementation("io.ktor:ktor-network:2.3.1")
 
-  api(project(":core"))
+  implementation(project(":core"))
 }

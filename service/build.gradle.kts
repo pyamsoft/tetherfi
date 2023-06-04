@@ -53,8 +53,9 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
+  // API for Dagger
   api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
 
-  api(project(":core"))
-  api(project(":server"))
+  implementation(project(":core"))
+  implementation(project(":server"))
 }

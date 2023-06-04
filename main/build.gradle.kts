@@ -53,6 +53,12 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  api(project(":server"))
-  api(project(":ui"))
+  implementation(
+      "com.google.accompanist:accompanist-pager-indicators:${rootProject.extra["accompanist"]}")
+  implementation(
+      "com.google.accompanist:accompanist-systemuicontroller:${rootProject.extra["accompanist"]}")
+
+  implementation(project(":core"))
+  implementation(project(":server"))
+  implementation(project(":ui"))
 }

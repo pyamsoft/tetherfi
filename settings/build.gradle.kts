@@ -53,5 +53,6 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  api(project(":ui"))
+  implementation(project(":core"))
+  implementation(project(":ui"))
 }

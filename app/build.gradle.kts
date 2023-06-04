@@ -114,15 +114,21 @@ dependencies {
   debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
 
   // AndroidX
-  api("androidx.fragment:fragment-ktx:1.5.7")
-  api("androidx.appcompat:appcompat:1.6.1")
+  implementation("androidx.fragment:fragment-ktx:1.5.7")
+  implementation("androidx.appcompat:appcompat:1.6.1")
+  implementation("androidx.activity:activity-compose:1.7.2")
 
-  api(project(":connections"))
-  api(project(":info"))
-  api(project(":main"))
-  api(project(":server"))
-  api(project(":service"))
-  api(project(":settings"))
-  api(project(":status"))
-  api(project(":tile"))
+  // Material Design
+  implementation("com.google.android.material:material:1.9.0")
+
+  implementation(project(":connections"))
+  implementation(project(":core"))
+  implementation(project(":info"))
+  implementation(project(":main"))
+  implementation(project(":server"))
+  implementation(project(":service"))
+  implementation(project(":settings"))
+  implementation(project(":status"))
+  implementation(project(":tile"))
+  implementation(project(":ui"))
 }

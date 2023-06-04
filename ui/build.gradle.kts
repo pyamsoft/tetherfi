@@ -54,28 +54,19 @@ dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Compose
-  api("androidx.compose.compiler:compiler:${rootProject.extra["composeCompiler"]}")
   api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
   api("androidx.compose.animation:animation:${rootProject.extra["compose"]}")
-  api("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
-  debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
-  api("androidx.activity:activity-compose:1.7.1")
   api("androidx.compose.material:material:${rootProject.extra["composeMaterial"]}")
-  //
   // api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
 
-  api("com.github.pyamsoft.pydroid:bootstrap:${rootProject.extra["pydroid"]}")
+  // Compose Preview
+  compileOnly("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
+  debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
 
-  api("io.coil-kt:coil-compose-base:2.3.0")
-
-  api("com.google.accompanist:accompanist-systemuicontroller:${rootProject.extra["accompanist"]}")
-  api("com.google.accompanist:accompanist-pager-indicators:${rootProject.extra["accompanist"]}")
-
-  // Material Design
-  api("com.google.android.material:material:1.9.0")
-
+  // WiFi QR Code
+  api("io.coil-kt:coil-compose-base:2.4.0")
   implementation("io.github.g0dkar:qrcode-kotlin-android:3.3.0")
 
-  api(project(":core"))
-  api(project(":server"))
+  implementation(project(":core"))
+  implementation(project(":server"))
 }
