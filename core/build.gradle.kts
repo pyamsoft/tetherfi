@@ -42,10 +42,7 @@ android {
 
   buildFeatures {
     buildConfig = false
-    compose = true
   }
-
-  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
 }
 
 dependencies {
@@ -56,7 +53,7 @@ dependencies {
   api("com.jakewharton.timber:timber:5.0.1")
 
   // Compose runtime for annotations
-  api("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
+  implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
   // PYDroid
   api("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")

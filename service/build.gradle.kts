@@ -42,10 +42,7 @@ android {
 
   buildFeatures {
     buildConfig = false
-    compose = true
   }
-
-  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
 }
 
 dependencies {

@@ -42,16 +42,16 @@ android {
 
   buildFeatures {
     buildConfig = false
-    compose = true
   }
-
-  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
 }
 
 dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+
+  // Compose runtime for annotations
+  implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
   implementation("io.ktor:ktor-network:2.3.1")
 
