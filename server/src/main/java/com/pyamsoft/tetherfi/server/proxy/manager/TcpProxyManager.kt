@@ -27,8 +27,8 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -37,15 +37,10 @@ import timber.log.Timber
 
 internal class TcpProxyManager
 internal constructor(
-    private val dispatcher: CoroutineDispatcher,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
     private val port: Int,
-) :
-    BaseProxyManager<ServerSocket>(
-        dispatcher = dispatcher,
-        enforcer = enforcer,
-    ) {
+) : BaseProxyManager<ServerSocket>() {
 
   @CheckResult
   private fun getServerAddress(port: Int): SocketAddress {
@@ -75,9 +70,7 @@ internal constructor(
   }
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
-      withContext(context = dispatcher) {
-        enforcer.assertOffMainThread()
-
+      withContext(context = Dispatchers.IO) {
         // Port must be in the valid range
         if (port > 65000 || port <= 1024) {
           val err = "Port is invalid: $port"
@@ -92,9 +85,7 @@ internal constructor(
       }
 
   override suspend fun runServer(server: ServerSocket) =
-      withContext(context = dispatcher) {
-        enforcer.assertOffMainThread()
-
+      withContext(context = Dispatchers.IO) {
         Timber.d("Awaiting TCP connections on ${server.localAddress}")
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
@@ -102,20 +93,12 @@ internal constructor(
           // We must close the connection in the launch{} after exchange is over
           val connection = server.accept()
 
-          if (isActive || server.isClosed) {
-            // Run this server loop off thread so we can handle multiple connections at once.
-            launch(context = dispatcher) {
-              try {
-                runSession(this, connection)
-              } finally {
-                withContext(context = NonCancellable) { connection.dispose() }
-              }
-            }
-          } else {
-            // Immediately drop the connection
-            withContext(context = NonCancellable) {
-              Timber.w("Server is closed, immediately drop connection")
-              connection.dispose()
+          // Run this server loop off thread so we can handle multiple connections at once.
+          launch(context = Dispatchers.IO) {
+            try {
+              runSession(this, connection)
+            } finally {
+              withContext(context = NonCancellable) { connection.dispose() }
             }
           }
         }

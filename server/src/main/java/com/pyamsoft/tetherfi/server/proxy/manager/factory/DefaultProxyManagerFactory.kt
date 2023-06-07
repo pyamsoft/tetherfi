@@ -27,16 +27,14 @@ import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import kotlinx.coroutines.CoroutineDispatcher
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
@@ -51,7 +49,6 @@ internal constructor(
 
     return TcpProxyManager(
         enforcer = enforcer,
-        dispatcher = dispatcher,
         session = tcpSession,
         port = port,
     )
@@ -63,7 +60,6 @@ internal constructor(
 
     return UdpProxyManager(
         enforcer = enforcer,
-        dispatcher = dispatcher,
         session = udpSession,
     )
   }

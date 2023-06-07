@@ -57,9 +57,6 @@ import dagger.Provides
 import dagger.multibindings.IntoSet
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @Module
 abstract class ServerAppModule {
@@ -161,16 +158,6 @@ abstract class ServerAppModule {
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
       return DefaultEventBus()
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    @OptIn(ExperimentalCoroutinesApi::class)
-    internal fun provideProxyDispatcher(): CoroutineDispatcher {
-      val coreCount = Runtime.getRuntime().availableProcessors()
-      return Dispatchers.IO.limitedParallelism(coreCount * 3)
     }
   }
 }

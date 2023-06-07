@@ -28,11 +28,10 @@ import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
+import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
-import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.aSocket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
 import io.ktor.utils.io.ByteReadChannel
@@ -42,7 +41,10 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import kotlinx.coroutines.CoroutineDispatcher
+import java.net.URI
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -50,17 +52,12 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.net.URI
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
 
 internal class TcpProxySession
 @Inject
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
-    @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     private val blockedClients: BlockedClients,
     private val seenClients: SeenClients,
     private val clock: Clock,
@@ -348,9 +345,7 @@ internal constructor(
 
       // Exchange data until completed
       val job =
-          scope.launch(context = dispatcher) {
-            enforcer.assertOffMainThread()
-
+          scope.launch(context = Dispatchers.IO) {
             // Send data from the internet back to the proxy in a different thread
             talk(
                 input = internetInput,
@@ -378,24 +373,35 @@ internal constructor(
    * Given the initial proxy request, connect to the Internet from our device via the connected
    * socket
    */
-  @CheckResult
-  private suspend fun connectToInternet(manager: SelectorManager, request: ProxyRequest): Socket {
+  private suspend inline fun <T> connectToInternet(request: ProxyRequest, block: (Socket) -> T): T {
     enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
     tagSocket()
 
-    // We dont actually use the socket tls() method here since we are not a TLS server
-    // We do the CONNECT based workaround to handle HTTPS connections
+    return usingSocket { rawSocket ->
+      // We dont actually use the socket tls() method here since we are not a TLS server
+      // We do the CONNECT based workaround to handle HTTPS connections
+      val remote =
+          InetSocketAddress(
+              hostname = request.host,
+              port = request.port,
+          )
 
-    val remote =
-        InetSocketAddress(
-            hostname = request.host,
-            port = request.port,
-        )
-
-    val rawSocket = aSocket(manager)
-    return rawSocket.tcp().connect(remoteAddress = remote)
+      val socket = rawSocket.tcp().connect(remoteAddress = remote)
+      try {
+        block(socket)
+      } finally {
+        withContext(context = NonCancellable) {
+          // We use Dispatchers.IO because manager.close() could potentially block
+          // which, if we used Dispatchers.Default could starve the thread.
+          //
+          // By using Dispatchers.IO we ensure this block runs on its own pooled thread
+          // instead, so even if this blocks it will not resource starve others.
+          withContext(context = Dispatchers.IO) { socket.dispose() }
+        }
+      }
+    }
   }
 
   @CheckResult
@@ -438,12 +444,7 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch(context = dispatcher) {
-      enforcer.assertOffMainThread()
-
-      // We launch to have this side effect run in parallel with processing
-      seenClients.seen(client)
-    }
+    launch(context = Dispatchers.IO) { seenClients.seen(client) }
   }
 
   private suspend fun CoroutineScope.proxyToInternet(
@@ -454,9 +455,8 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     // Given the request, connect to the Web
-    val manager = SelectorManager(dispatcher = dispatcher)
     try {
-      connectToInternet(manager, request).use { internet ->
+      connectToInternet(request) { internet ->
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
@@ -482,14 +482,6 @@ internal constructor(
         Timber.e(e, "Error during connect to internet: $request")
         writeError(proxyOutput)
       }
-    } finally {
-      withContext(context = NonCancellable) {
-        // We use Dispatchers.IO because manager.close() could potentially block
-        // which, if we used Dispatchers.Default could starve the thread.
-        // By using Dispatchers.IO we ensure this block runs on its own pooled thread
-        // instead, so even if this blocks it will not resource starve others.
-        withContext(context = Dispatchers.IO) { manager.close() }
-      }
     }
   }
 
@@ -503,11 +495,7 @@ internal constructor(
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
     // we just "spin up" another thread and forget about it performance wise.
-    scope.launch(context = dispatcher) {
-      enforcer.assertOffMainThread()
-
-      handleClientRequestSideEffects(client)
-    }
+    scope.launch(context = Dispatchers.IO) { handleClientRequestSideEffects(client) }
 
     // If the client is blocked we do not process any inpue
     if (isBlockedClient(client)) {
@@ -536,9 +524,7 @@ internal constructor(
       scope: CoroutineScope,
       data: TcpProxyData,
   ) =
-      withContext(context = dispatcher) {
-        enforcer.assertOffMainThread()
-
+      withContext(context = Dispatchers.IO) {
         /** The Proxy is our device */
         /** The Proxy is our device */
         val connection = data.connection
@@ -585,7 +571,8 @@ internal constructor(
      * Tests if a given string is an IP address
      */
     private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
+            .toRegex()
 
     private const val LINE_ENDING = "\r\n"
 
