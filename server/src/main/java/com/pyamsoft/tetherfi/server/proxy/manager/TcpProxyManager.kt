@@ -120,8 +120,4 @@ internal constructor(
           }
         }
       }
-
-  override suspend fun onServerClosed() {
-    Timber.d("TCP connection server closed")
-  }
 }

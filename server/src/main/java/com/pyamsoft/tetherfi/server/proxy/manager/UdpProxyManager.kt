@@ -102,8 +102,4 @@ internal constructor(
           }
         }
       }
-
-  override suspend fun onServerClosed() {
-    Timber.d("UDP connection server closed")
-  }
 }
