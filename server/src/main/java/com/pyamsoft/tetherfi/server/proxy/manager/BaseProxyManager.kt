@@ -21,8 +21,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.ActorSelectorManager
 import io.ktor.network.sockets.ASocket
-import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
 import kotlinx.coroutines.CoroutineDispatcher
@@ -33,23 +31,15 @@ internal abstract class BaseProxyManager<S : ASocket>(
     private val enforcer: ThreadEnforcer,
 ) : ProxyManager {
 
-  @CheckResult
-  private fun getServerAddress(port: Int): SocketAddress {
-    return InetSocketAddress(hostname = "0.0.0.0", port = port)
-  }
-
-  override suspend fun loop(port: Int) =
+  override suspend fun loop() =
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
 
         // Tag sockets for Android O strict mode
         tagSocket()
 
-        val server =
-            openServer(
-                builder = aSocket(ActorSelectorManager(context = dispatcher)),
-                localAddress = getServerAddress(port = port),
-            )
+        val socket = aSocket(ActorSelectorManager(context = dispatcher))
+        val server = openServer(builder = socket)
         try {
           runServer(server)
         } finally {
@@ -60,11 +50,7 @@ internal abstract class BaseProxyManager<S : ASocket>(
 
   protected abstract suspend fun runServer(server: S)
 
-  @CheckResult
-  protected abstract suspend fun openServer(
-      builder: SocketBuilder,
-      localAddress: SocketAddress,
-  ): S
+  @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
 
   @CheckResult protected abstract suspend fun onServerClosed()
 }

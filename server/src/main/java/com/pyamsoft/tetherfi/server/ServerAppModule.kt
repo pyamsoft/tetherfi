@@ -38,6 +38,8 @@ import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFac
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import com.pyamsoft.tetherfi.server.widi.WiDiConfig
@@ -129,6 +131,11 @@ abstract class ServerAppModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
+
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindUdpProxySession(impl: UdpProxySession): ProxySession<UdpProxyData>
 
   @Module
   companion object {

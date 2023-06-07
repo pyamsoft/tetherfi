@@ -27,8 +27,6 @@ import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -37,6 +35,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -58,15 +58,26 @@ internal constructor(
     return preferences.listenForPortChanges().first()
   }
 
-  private fun CoroutineScope.proxyLoop(
-      port: Int,
-  ) {
-    launch(context = Dispatchers.Default) {
-      val type = SharedProxy.Type.TCP
-      val manager = factory.create(type = type)
-      Timber.d("${type.name} Begin proxy server loop $port")
-      manager.loop(port)
+  private suspend fun handleServerLoopError(e: Throwable, type: SharedProxy.Type) {
+    Timber.e(e, "Error running server loop: ${type.name}")
+
+    reset()
+    status.set(RunningStatus.Error(e.message ?: "An unexpected error occurred."))
+    shutdownBus.emit(ServerShutdownEvent)
+  }
+
+  private suspend fun beginProxyLoop(type: SharedProxy.Type) {
+    try {
+      Timber.d("${type.name} Begin proxy server loop")
+      factory.create(type = type).loop()
+    } catch (e: Throwable) {
+      handleServerLoopError(e, type)
     }
+  }
+
+  private fun CoroutineScope.proxyLoop() {
+    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.TCP) }
+    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.UDP) }
   }
 
   private fun reset() {
@@ -112,7 +123,7 @@ internal constructor(
               Timber.d("Starting proxy server on port $port ...")
               status.set(RunningStatus.Starting, clearError = true)
 
-              proxyLoop(port)
+              proxyLoop()
 
               Timber.d("Started Proxy Server on port: $port")
               status.set(RunningStatus.Running)

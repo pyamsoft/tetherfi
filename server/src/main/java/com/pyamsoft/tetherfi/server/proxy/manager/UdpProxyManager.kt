@@ -20,44 +20,42 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
+import io.ktor.network.sockets.BoundDatagramSocket
+import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.ServerSocket
-import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-internal class TcpProxyManager
+internal class UdpProxyManager
 internal constructor(
     private val dispatcher: CoroutineDispatcher,
     private val enforcer: ThreadEnforcer,
-    private val session: ProxySession<TcpProxyData>,
-    private val port: Int,
+    private val session: ProxySession<UdpProxyData>,
 ) :
-    BaseProxyManager<ServerSocket>(
+    BaseProxyManager<BoundDatagramSocket>(
         dispatcher = dispatcher,
         enforcer = enforcer,
     ) {
 
   @CheckResult
-  private fun getServerAddress(port: Int): SocketAddress {
+  private fun getServerAddress(): SocketAddress {
     return InetSocketAddress(
         hostname = "0.0.0.0",
-        port = port,
+        port = 0,
     )
   }
 
   private suspend fun runSession(
       scope: CoroutineScope,
-      connection: Socket,
+      datagram: Datagram,
   ) {
     enforcer.assertOffMainThread()
 
@@ -65,61 +63,45 @@ internal constructor(
       session.exchange(
           scope = scope,
           data =
-              TcpProxyData(
-                  connection = connection,
+              UdpProxyData(
+                  datagram = datagram,
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e, "Error during session $connection") }
+      e.ifNotCancellation { Timber.e(e, "Error during session $datagram") }
     }
   }
 
-  override suspend fun openServer(builder: SocketBuilder): ServerSocket =
+  override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
 
-        // Port must be in the valid range
-        if (port > 65000 || port <= 1024) {
-          val err = "Port is invalid: $port"
-          Timber.w(err)
-          throw IllegalArgumentException(err)
-        }
+        val localAddress = getServerAddress()
+        Timber.d("Bind UDP server to local address: $localAddress")
 
-        val localAddress = getServerAddress(port)
-        Timber.d("Bind TCP server to local address: $localAddress")
-
-        return@withContext builder.tcp().bind(localAddress = localAddress)
+        return@withContext builder.udp().bind(localAddress = localAddress)
       }
 
-  override suspend fun runServer(server: ServerSocket) =
+  override suspend fun runServer(server: BoundDatagramSocket) =
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (isActive && !server.isClosed) {
           // We must close the connection in the launch{} after exchange is over
-          val connection = server.accept()
+          val datagram = server.receive()
 
           if (isActive || server.isClosed) {
             // Run this server loop off thread so we can handle multiple connections at once.
-            launch(context = dispatcher) {
-              try {
-                runSession(this, connection)
-              } finally {
-                withContext(context = NonCancellable) { connection.dispose() }
-              }
-            }
+            launch(context = dispatcher) { runSession(this, datagram) }
           } else {
             // Immediately drop the connection
-            withContext(context = NonCancellable) {
-              Timber.w("Server is closed, immediately drop connection")
-              connection.dispose()
-            }
+            Timber.w("Server is closed, immediately drop connection")
           }
         }
       }
 
   override suspend fun onServerClosed() {
-    Timber.d("TCP connection server closed")
+    Timber.d("UDP connection server closed")
   }
 }

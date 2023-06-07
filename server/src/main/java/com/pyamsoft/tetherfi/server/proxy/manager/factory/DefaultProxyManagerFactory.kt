@@ -19,35 +19,60 @@ package com.pyamsoft.tetherfi.server.proxy.manager.factory
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
+import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import javax.inject.Inject
+import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
     @ServerInternalApi private val dispatcher: CoroutineDispatcher,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
+    @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
+    private val preferences: ServerPreferences,
 ) : ProxyManager.Factory {
 
   @CheckResult
-  private fun createTcp(): ProxyManager {
+  private suspend fun createTcp(): ProxyManager {
+    enforcer.assertOffMainThread()
+
+    val port = preferences.listenForPortChanges().first()
+
     return TcpProxyManager(
         enforcer = enforcer,
         dispatcher = dispatcher,
         session = tcpSession,
+        port = port,
     )
   }
 
-  override fun create(type: SharedProxy.Type): ProxyManager {
-    return when (type) {
-      SharedProxy.Type.TCP -> createTcp()
-      SharedProxy.Type.UDP -> throw IllegalArgumentException("Unable to create UDP ProxyManager")
-    }
+  @CheckResult
+  private suspend fun createUdp(): ProxyManager {
+    enforcer.assertOffMainThread()
+
+    return UdpProxyManager(
+        enforcer = enforcer,
+        dispatcher = dispatcher,
+        session = udpSession,
+    )
   }
+
+  override suspend fun create(type: SharedProxy.Type): ProxyManager =
+      withContext(context = Dispatchers.Default) {
+        return@withContext when (type) {
+          SharedProxy.Type.TCP -> createTcp()
+          SharedProxy.Type.UDP -> createUdp()
+        }
+      }
 }

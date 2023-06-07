@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.manager
+package com.pyamsoft.tetherfi.server.proxy.session.udp
 
-import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
+import io.ktor.network.sockets.Datagram
 
-internal interface ProxyManager {
-
-  suspend fun loop()
-
-  interface Factory {
-
-    @CheckResult suspend fun create(type: SharedProxy.Type): ProxyManager
-  }
-}
+internal data class UdpProxyData
+internal constructor(
+    internal val datagram: Datagram,
+) : ProxyData
