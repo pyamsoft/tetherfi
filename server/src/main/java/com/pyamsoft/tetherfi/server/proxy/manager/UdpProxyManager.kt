@@ -86,6 +86,8 @@ internal constructor(
       withContext(context = dispatcher) {
         enforcer.assertOffMainThread()
 
+        Timber.d("Awaiting UDP connections on ${server.localAddress}")
+
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (isActive && !server.isClosed) {
           // We must close the connection in the launch{} after exchange is over
