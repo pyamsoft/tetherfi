@@ -29,7 +29,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
-import io.ktor.network.selector.ActorSelectorManager
+import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.aSocket
@@ -42,17 +42,18 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.joinTo
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import java.net.URI
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.net.URI
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
 
 internal class TcpProxySession
 @Inject
@@ -378,7 +379,7 @@ internal constructor(
    * socket
    */
   @CheckResult
-  private suspend fun connectToInternet(request: ProxyRequest): Socket {
+  private suspend fun connectToInternet(manager: SelectorManager, request: ProxyRequest): Socket {
     enforcer.assertOffMainThread()
 
     // Tag sockets for Android O strict mode
@@ -393,7 +394,7 @@ internal constructor(
             port = request.port,
         )
 
-    val rawSocket = aSocket(ActorSelectorManager(context = dispatcher))
+    val rawSocket = aSocket(manager)
     return rawSocket.tcp().connect(remoteAddress = remote)
   }
 
@@ -453,8 +454,9 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     // Given the request, connect to the Web
+    val manager = SelectorManager(dispatcher = dispatcher)
     try {
-      connectToInternet(request).use { internet ->
+      connectToInternet(manager, request).use { internet ->
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
@@ -479,6 +481,14 @@ internal constructor(
       e.ifNotCancellation {
         Timber.e(e, "Error during connect to internet: $request")
         writeError(proxyOutput)
+      }
+    } finally {
+      withContext(context = NonCancellable) {
+        // We use Dispatchers.IO because manager.close() could potentially block
+        // which, if we used Dispatchers.Default could starve the thread.
+        // By using Dispatchers.IO we ensure this block runs on its own pooled thread
+        // instead, so even if this blocks it will not resource starve others.
+        withContext(context = Dispatchers.IO) { manager.close() }
       }
     }
   }
@@ -575,8 +585,7 @@ internal constructor(
      * Tests if a given string is an IP address
      */
     private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
-            .toRegex()
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
 
     private const val LINE_ENDING = "\r\n"
 

@@ -19,11 +19,13 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
-import io.ktor.network.selector.ActorSelectorManager
+import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket>(
@@ -38,19 +40,26 @@ internal abstract class BaseProxyManager<S : ASocket>(
         // Tag sockets for Android O strict mode
         tagSocket()
 
-        val socket = aSocket(ActorSelectorManager(context = dispatcher))
+        val manager = SelectorManager(dispatcher = dispatcher)
+        val socket = aSocket(manager)
         val server = openServer(builder = socket)
         try {
           runServer(server)
         } finally {
-          server.dispose()
-          onServerClosed()
+          withContext(context = NonCancellable) {
+            // We use Dispatchers.IO because manager.close() could potentially block
+            // which, if we used Dispatchers.Default could starve the thread.
+            // By using Dispatchers.IO we ensure this block runs on its own pooled thread
+            // instead, so even if this blocks it will not resource starve others.
+            withContext(context = Dispatchers.IO) {
+              server.dispose()
+              manager.close()
+            }
+          }
         }
       }
 
   protected abstract suspend fun runServer(server: S)
 
   @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
-
-  @CheckResult protected abstract suspend fun onServerClosed()
 }
