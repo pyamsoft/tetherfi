@@ -91,29 +91,36 @@ internal constructor(
         status.set(RunningStatus.NotRunning)
       }
 
+  private suspend fun startServer() {
+    try {
+      // Launch a new scope so this function won't proceed to finally block until the scope is
+      // completed/cancelled
+      //
+      // This will suspend until the proxy server loop dies
+      coroutineScope {
+        Timber.d("Starting proxy server ...")
+        status.set(
+            RunningStatus.Starting,
+            clearError = true,
+        )
+
+        proxyLoop()
+
+        Timber.d("Started Proxy Server")
+        status.set(RunningStatus.Running)
+      }
+    } finally {
+      shutdown(clearErrorStatus = false)
+    }
+  }
+
   override suspend fun start() =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
         reset()
         try {
-          try {
-            // Launch a new scope so this function won't proceed to finally block until the scope is
-            // completed/cancelled
-            //
-            // This will suspend until the proxy server loop dies
-            coroutineScope {
-              Timber.d("Starting proxy server ...")
-              status.set(RunningStatus.Starting, clearError = true)
-
-              proxyLoop()
-
-              Timber.d("Started Proxy Server")
-              status.set(RunningStatus.Running)
-            }
-          } finally {
-            shutdown(clearErrorStatus = false)
-          }
+          startServer()
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e, "Error when running the proxy, shut it all down")
