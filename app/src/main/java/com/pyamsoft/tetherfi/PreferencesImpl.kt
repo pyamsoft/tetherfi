@@ -30,9 +30,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +40,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -192,6 +192,12 @@ internal constructor(
               if (show) {
                 // Commit this edit so that it fires immediately before we process again
                 preferences.edit(commit = true) {
+                  // Reset the previous flags
+                  putInt(IN_APP_APP_OPENED, 0)
+                  putInt(IN_APP_HOTSPOT_USED, 0)
+                  putInt(IN_APP_DEVICES_CONNECTED, 0)
+
+                  // And mark the latest version
                   putInt(IN_APP_RATING_SHOWN_VERSION, BuildConfig.VERSION_CODE)
                 }
               }
