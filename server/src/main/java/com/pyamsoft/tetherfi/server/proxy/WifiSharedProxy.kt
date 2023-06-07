@@ -16,13 +16,11 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
@@ -31,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -44,29 +41,24 @@ internal class WifiSharedProxy
 internal constructor(
     @ServerInternalApi private val factory: ProxyManager.Factory,
     private val enforcer: ThreadEnforcer,
-    private val preferences: ServerPreferences,
     private val eraser: ClientEraser,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
-  /** Get the port for the proxy */
-  @CheckResult
-  private suspend fun getPort(): Int {
-    enforcer.assertOffMainThread()
-
-    return preferences.listenForPortChanges().first()
-  }
-
   private suspend fun handleServerLoopError(e: Throwable, type: SharedProxy.Type) {
-    Timber.e(e, "Error running server loop: ${type.name}")
+    e.ifNotCancellation {
+      Timber.e(e, "Error running server loop: ${type.name}")
 
-    reset()
-    status.set(RunningStatus.Error(e.message ?: "An unexpected error occurred."))
-    shutdownBus.emit(ServerShutdownEvent)
+      reset()
+      status.set(RunningStatus.Error(e.message ?: "An unexpected error occurred."))
+      shutdownBus.emit(ServerShutdownEvent)
+    }
   }
 
   private suspend fun beginProxyLoop(type: SharedProxy.Type) {
+    enforcer.assertOffMainThread()
+
     try {
       Timber.d("${type.name} Begin proxy server loop")
       factory.create(type = type).loop()
@@ -105,27 +97,18 @@ internal constructor(
 
         reset()
         try {
-          val port = getPort()
-          if (port > 65000 || port <= 1024) {
-            Timber.w("Port is invalid: $port")
-            reset()
-            status.set(RunningStatus.Error(message = "Port is invalid: $port"))
-            shutdownBus.emit(ServerShutdownEvent)
-            return@withContext
-          }
-
           try {
             // Launch a new scope so this function won't proceed to finally block until the scope is
             // completed/cancelled
             //
             // This will suspend until the proxy server loop dies
             coroutineScope {
-              Timber.d("Starting proxy server on port $port ...")
+              Timber.d("Starting proxy server ...")
               status.set(RunningStatus.Starting, clearError = true)
 
               proxyLoop()
 
-              Timber.d("Started Proxy Server on port: $port")
+              Timber.d("Started Proxy Server")
               status.set(RunningStatus.Running)
             }
           } finally {
