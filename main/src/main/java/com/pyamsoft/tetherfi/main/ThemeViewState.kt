@@ -17,13 +17,12 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.pydroid.ui.theme.Theming
-import javax.inject.Inject
+import com.pyamsoft.tetherfi.core.ActivityScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @Stable
 interface ThemeViewState : UiViewState {
@@ -31,6 +30,7 @@ interface ThemeViewState : UiViewState {
 }
 
 @Stable
+@ActivityScope
 class MutableThemeViewState @Inject internal constructor() : ThemeViewState {
   override val theme = MutableStateFlow(Theming.Mode.SYSTEM)
 }
