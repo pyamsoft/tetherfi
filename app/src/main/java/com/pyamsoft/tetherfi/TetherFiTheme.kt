@@ -30,11 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import com.google.android.material.R
 import com.pyamsoft.pydroid.theme.PYDroidTheme
-import com.pyamsoft.pydroid.theme.attributeFromCurrentTheme
 import com.pyamsoft.pydroid.theme.attributesFromCurrentTheme
 import com.pyamsoft.pydroid.ui.theme.Theming
 
@@ -99,27 +97,12 @@ private fun themeShapes(): Shapes {
   }
 }
 
-@CheckResult
-@Composable
-private fun getDarkMode(theme: Theming.Mode): Boolean {
-  val isDarkMode =
-      remember(theme) {
-        when (theme) {
-          Theming.Mode.LIGHT -> false
-          Theming.Mode.DARK -> true
-          Theming.Mode.SYSTEM -> null
-        }
-      }
-
-  return isDarkMode ?: isSystemInDarkTheme()
-}
-
 @Composable
 fun Activity.TetherFiTheme(
     theme: Theming.Mode,
     content: @Composable () -> Unit,
 ) {
-  val isDarkMode = getDarkMode(theme)
+  val isDarkMode = theme.getSystemDarkMode()
 
   PYDroidTheme(
       colors = themeColors(this, isDarkMode),
@@ -132,4 +115,20 @@ fun Activity.TetherFiTheme(
         content = content,
     )
   }
+}
+
+@Composable
+@CheckResult
+fun Theming.Mode.getSystemDarkMode(): Boolean {
+  val self = this
+  val isDarkMode =
+      remember(self) {
+        when (self) {
+          Theming.Mode.LIGHT -> false
+          Theming.Mode.DARK -> true
+          Theming.Mode.SYSTEM -> null
+        }
+      }
+
+  return isDarkMode ?: isSystemInDarkTheme()
 }
