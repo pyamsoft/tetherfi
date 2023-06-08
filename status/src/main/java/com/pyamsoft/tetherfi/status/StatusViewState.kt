@@ -19,12 +19,11 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
-import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @Stable
 interface StatusViewState : UiViewState {
@@ -66,7 +65,6 @@ interface StatusViewState : UiViewState {
 }
 
 @Stable
-@ActivityScope
 class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val loadingState = MutableStateFlow(StatusViewState.LoadingState.NONE)
 

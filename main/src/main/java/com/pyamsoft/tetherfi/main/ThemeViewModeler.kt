@@ -21,10 +21,8 @@ import android.content.res.Configuration
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.ui.theme.Theming
-import com.pyamsoft.tetherfi.core.ActivityScope
 import javax.inject.Inject
 
-@ActivityScope
 class ThemeViewModeler
 @Inject
 internal constructor(
