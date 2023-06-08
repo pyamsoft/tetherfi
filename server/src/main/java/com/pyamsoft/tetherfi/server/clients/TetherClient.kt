@@ -20,22 +20,22 @@ import androidx.annotation.CheckResult
 import java.time.LocalDateTime
 
 sealed class TetherClient(
-    open val firstSeen: LocalDateTime,
+    open val mostRecentlySeen: LocalDateTime,
 ) {
   data class IpAddress(
       val ip: String,
-      override val firstSeen: LocalDateTime,
+      override val mostRecentlySeen: LocalDateTime,
   ) :
       TetherClient(
-          firstSeen = firstSeen,
+          mostRecentlySeen = mostRecentlySeen,
       )
 
   data class HostName(
       val hostname: String,
-      override val firstSeen: LocalDateTime,
+      override val mostRecentlySeen: LocalDateTime,
   ) :
       TetherClient(
-          firstSeen = firstSeen,
+          mostRecentlySeen = mostRecentlySeen,
       )
 }
 

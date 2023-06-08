@@ -209,7 +209,7 @@ private fun ConnectionItem(
 ) {
   val name = remember(client) { client.key() }
   val seenTime =
-      remember(client) { FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.firstSeen) }
+      remember(client) { FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen) }
 
   val isNotBlocked =
       remember(
@@ -250,7 +250,7 @@ private fun ConnectionItem(
         }
 
         Text(
-            text = "First seen: $seenTime",
+            text = "Last seen: $seenTime",
             style =
                 MaterialTheme.typography.body2.copy(
                     color =

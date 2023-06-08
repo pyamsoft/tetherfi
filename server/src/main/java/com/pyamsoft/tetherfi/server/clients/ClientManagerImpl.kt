@@ -18,21 +18,45 @@ package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.pyamsoft.tetherfi.core.cancelChildren
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import timber.log.Timber
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class ClientManagerImpl
 @Inject
 internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
+    private val clock: Clock,
 ) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser {
 
   private val blockedClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
   private val seenClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
+
+  private var watchJob: Job? = null
+
+  private val scope by lazy {
+    CoroutineScope(
+        context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name),
+    )
+  }
 
   @CheckResult
   private fun isMatchingClient(c1: TetherClient, c2: TetherClient): Boolean {
@@ -54,31 +78,80 @@ internal constructor(
     }
   }
 
-  private fun onNewClientSeen(oldSet: Set<TetherClient>, newSet: Set<TetherClient>) {
-    if (newSet.size > oldSet.size) {
-      inAppRatingPreferences.markDeviceConnected()
+  @CheckResult
+  private fun markLastSeenNow(client: TetherClient): TetherClient {
+    return when (client) {
+      is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+      is TetherClient.HostName -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
     }
   }
 
-  @CheckResult
-  private fun addToSet(set: Set<TetherClient>, client: TetherClient): Set<TetherClient> {
-    val existing = set.firstOrNull { isMatchingClient(it, client) }
-    return set.run {
-      if (existing == null) {
-        this + client
-      } else {
-        this
-      }
-    }
+  private fun onNewClientSeen(client: TetherClient) {
+    Timber.d("First time seeing client: $client")
+    inAppRatingPreferences.markDeviceConnected()
+
+    startWatchingForOldClients()
+  }
+
+  private fun startWatchingForOldClients() {
+    watchJob =
+        watchJob
+            ?: scope.launch(context = Dispatchers.IO) {
+              while (isActive) {
+                val beforeWait = LocalDateTime.now(clock)
+
+                // We are not as important
+                yield()
+
+                // Wait for 5 minutes
+                delay(5.minutes)
+
+                // We are not as important
+                yield()
+
+                // "Live" client must have activity within 5 minutes
+                val newClients =
+                    seenClients.updateAndGet { set ->
+                      set.filter {
+                            val old = it.mostRecentlySeen >= beforeWait
+                            if (old) {
+                              Timber.d("Client is too old: $it")
+                            }
+                            return@filter old
+                          }
+                          .toSet()
+                    }
+                blockedClients.update { set ->
+                  set.filter { bc ->
+                        // If this blocked client is still found in the "new client" list, keep it,
+                        // otherwise filter it out
+                        val stillAlive = newClients.firstOrNull { nc -> isMatchingClient(bc, nc) }
+                        return@filter stillAlive != null
+                      }
+                      .toSet()
+                }
+              }
+            }
   }
 
   override fun block(client: TetherClient) {
-    blockedClients.update { addToSet(it, client) }
+    blockedClients.update { set ->
+      val existing = set.firstOrNull { isMatchingClient(it, client) }
+
+      return@update set.run {
+        if (existing == null) {
+          this + client
+        } else {
+          this
+        }
+      }
+    }
   }
 
   override fun unblock(client: TetherClient) {
     blockedClients.update { clients ->
       val existing = clients.firstOrNull { isMatchingClient(it, client) }
+
       return@update clients.run {
         if (existing == null) {
           this
@@ -95,12 +168,30 @@ internal constructor(
   }
 
   override fun seen(client: TetherClient) {
-    seenClients.update { set -> addToSet(set, client).also { onNewClientSeen(set, it) } }
+    seenClients.update { set ->
+      val existing = set.firstOrNull { isMatchingClient(it, client) }
+
+      if (existing == null) {
+        return@update (set + client).also { onNewClientSeen(client) }
+      } else {
+        return@update set.map { c ->
+              if (c == existing) {
+                return@map markLastSeenNow(c)
+              } else {
+                return@map c
+              }
+            }
+            .toSet()
+      }
+    }
   }
 
   override fun clear() {
     seenClients.value = emptySet()
     blockedClients.value = emptySet()
+
+    watchJob?.cancel()
+    scope.cancelChildren()
   }
 
   override fun listenForClients(): Flow<Set<TetherClient>> {
