@@ -28,12 +28,12 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -78,7 +78,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   private fun setTileStatus(status: RunningStatus) {
     val state: Int
-    var title: String
+    val title: String
     val description: String
     when (status) {
       is RunningStatus.Error -> {
@@ -107,9 +107,6 @@ internal class ProxyTileService internal constructor() : TileService() {
         description = "Stopping..."
       }
     }
-
-    // TODO beta still
-    title = "TetherFi [BETA]"
 
     withTile { tile ->
       tile.state = state
