@@ -41,7 +41,6 @@ class TetherFi : Application() {
             termsConditionsUrl = TERMS_CONDITIONS_URL,
             version = BuildConfig.VERSION_CODE,
             logger = createLogger(),
-            theme = TetherFiThemeProvider,
         ),
     )
   }

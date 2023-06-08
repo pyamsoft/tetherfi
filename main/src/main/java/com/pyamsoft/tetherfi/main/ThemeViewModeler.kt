@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.main
 
 import android.app.Activity
+import android.content.res.Configuration
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -48,7 +49,11 @@ internal constructor(
   }
 
   fun handleSyncDarkTheme(activity: Activity) {
-    val isDark = theming.isDarkTheme(activity)
+    handleSyncDarkTheme(activity.resources.configuration)
+  }
+
+  fun handleSyncDarkTheme(configuration: Configuration) {
+    val isDark = theming.isDarkTheme(configuration)
     state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
   }
 

@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
-    viewModel?.handleSyncDarkTheme(this)
+    viewModel?.handleSyncDarkTheme(newConfig)
   }
 
   override fun onDestroy() {
