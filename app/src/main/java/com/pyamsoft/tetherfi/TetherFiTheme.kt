@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi
 
 import android.app.Activity
 import androidx.annotation.CheckResult
+import androidx.appcompat.R
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Colors
@@ -31,7 +32,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.google.android.material.R
 import com.pyamsoft.pydroid.theme.PYDroidTheme
 import com.pyamsoft.pydroid.theme.attributesFromCurrentTheme
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -46,29 +46,27 @@ private fun themeColors(
       remember(isDarkMode) {
         activity.attributesFromCurrentTheme(
             R.attr.colorPrimary,
-            R.attr.colorOnPrimary,
-            R.attr.colorSecondary,
-            R.attr.colorOnSecondary,
+            R.attr.colorAccent,
         )
       }
   val primary = colorResource(colors[0])
-  val onPrimary = colorResource(colors[1])
-  val secondary = colorResource(colors[2])
-  val onSecondary = colorResource(colors[3])
+  val secondary = colorResource(colors[1])
+  val black = colorResource(android.R.color.black)
+  val white = colorResource(android.R.color.white)
 
   return remember(
       isDarkMode,
       primary,
-      onPrimary,
       secondary,
-      onSecondary,
+      black,
+      white,
   ) {
     if (isDarkMode)
         darkColors(
             primary = primary,
-            onPrimary = onPrimary,
+            onPrimary = black,
             secondary = secondary,
-            onSecondary = onSecondary,
+            onSecondary = white,
             // Must be specified for things like Switch color
             primaryVariant = primary,
             secondaryVariant = secondary,
@@ -76,9 +74,9 @@ private fun themeColors(
     else
         lightColors(
             primary = primary,
-            onPrimary = onPrimary,
+            onPrimary = black,
             secondary = secondary,
-            onSecondary = onSecondary,
+            onSecondary = white,
             // Must be specified for things like Switch color
             primaryVariant = primary,
             secondaryVariant = secondary,

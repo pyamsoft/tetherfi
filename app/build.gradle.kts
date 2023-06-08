@@ -118,9 +118,6 @@ dependencies {
   implementation("androidx.appcompat:appcompat:1.6.1")
   implementation("androidx.activity:activity-compose:1.7.2")
 
-  // Material Design
-  implementation("com.google.android.material:material:1.9.0")
-
   implementation(project(":connections"))
   implementation(project(":core"))
   implementation(project(":info"))
