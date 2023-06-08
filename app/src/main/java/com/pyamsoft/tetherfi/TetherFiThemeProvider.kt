@@ -20,6 +20,7 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import com.pyamsoft.pydroid.ui.app.ComposeThemeProvider
 import com.pyamsoft.pydroid.ui.theme.ThemeProvider
+import com.pyamsoft.pydroid.ui.theme.Theming
 
 internal object TetherFiThemeProvider : ComposeThemeProvider {
 
@@ -29,6 +30,7 @@ internal object TetherFiThemeProvider : ComposeThemeProvider {
       themeProvider: ThemeProvider,
       content: @Composable () -> Unit
   ) {
-    activity.TetherFiTheme(themeProvider, content)
+    val theme = if (themeProvider.isDarkTheme()) Theming.Mode.DARK else Theming.Mode.LIGHT
+    activity.TetherFiTheme(theme, content)
   }
 }

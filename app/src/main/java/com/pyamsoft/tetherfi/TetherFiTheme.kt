@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import com.google.android.material.R
 import com.pyamsoft.pydroid.theme.PYDroidTheme
 import com.pyamsoft.pydroid.theme.attributesFromCurrentTheme
-import com.pyamsoft.pydroid.ui.theme.ThemeProvider
 import com.pyamsoft.pydroid.ui.theme.Theming
 
 @Composable
@@ -57,46 +56,45 @@ private fun themeColors(
   val secondary = colorResource(colors[2])
   val onSecondary = colorResource(colors[3])
 
-  return if (isDarkMode)
-      darkColors(
-          primary = primary,
-          onPrimary = onPrimary,
-          secondary = secondary,
-          onSecondary = onSecondary,
-          // Must be specified for things like Switch color
-          primaryVariant = primary,
-          secondaryVariant = secondary,
-      )
-  else
-      lightColors(
-          primary = primary,
-          onPrimary = onPrimary,
-          secondary = secondary,
-          onSecondary = onSecondary,
-          // Must be specified for things like Switch color
-          primaryVariant = primary,
-          secondaryVariant = secondary,
-      )
+  return remember(
+      isDarkMode,
+      primary,
+      onPrimary,
+      secondary,
+      onSecondary,
+  ) {
+    if (isDarkMode)
+        darkColors(
+            primary = primary,
+            onPrimary = onPrimary,
+            secondary = secondary,
+            onSecondary = onSecondary,
+            // Must be specified for things like Switch color
+            primaryVariant = primary,
+            secondaryVariant = secondary,
+        )
+    else
+        lightColors(
+            primary = primary,
+            onPrimary = onPrimary,
+            secondary = secondary,
+            onSecondary = onSecondary,
+            // Must be specified for things like Switch color
+            primaryVariant = primary,
+            secondaryVariant = secondary,
+        )
+  }
 }
 
 @Composable
 @CheckResult
 private fun themeShapes(): Shapes {
-  return Shapes(
-      // Don't use MaterialTheme here since we are defining the theme
-      medium = RoundedCornerShape(16.dp),
-  )
-}
-
-@Composable
-fun Activity.TetherFiTheme(
-    themeProvider: ThemeProvider,
-    content: @Composable () -> Unit,
-) {
-  this.TetherFiTheme(
-      theme = if (themeProvider.isDarkTheme()) Theming.Mode.DARK else Theming.Mode.LIGHT,
-      content = content,
-  )
+  return remember {
+    Shapes(
+        // Don't use MaterialTheme here since we are defining the theme
+        medium = RoundedCornerShape(16.dp),
+    )
+  }
 }
 
 @Composable
