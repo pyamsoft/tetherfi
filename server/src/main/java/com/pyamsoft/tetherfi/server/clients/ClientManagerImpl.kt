@@ -17,32 +17,37 @@
 package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.cancelChildren
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import timber.log.Timber
 
 @Singleton
 internal class ClientManagerImpl
 @Inject
 internal constructor(
+    private val enforcer: ThreadEnforcer,
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val clock: Clock,
 ) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser {
@@ -50,13 +55,13 @@ internal constructor(
   private val blockedClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
   private val seenClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
 
-  private var watchJob: Job? = null
-
   private val scope by lazy {
     CoroutineScope(
         context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name),
     )
   }
+
+  private var timerJob: Job? = null
 
   @CheckResult
   private fun isMatchingClient(c1: TetherClient, c2: TetherClient): Boolean {
@@ -93,42 +98,60 @@ internal constructor(
     startWatchingForOldClients()
   }
 
+  private fun purgeOldClients(cutoffTime: LocalDateTime) {
+    Timber.d("Attempt to purge old clients before $cutoffTime")
+
+    // "Live" client must have activity within 5 minutes
+    val newClients =
+        seenClients.updateAndGet { set ->
+          set.filter {
+                val newEnough = it.mostRecentlySeen >= cutoffTime
+                if (!newEnough) {
+                  Timber.d("Client is too old: $it. Last seen ${it.mostRecentlySeen}")
+                }
+                return@filter newEnough
+              }
+              .toSet()
+        }
+    blockedClients.update { set ->
+      set.filter { bc ->
+            // If this blocked client is still found in the "new client" list, keep it,
+            // otherwise filter it out
+            val stillAlive = newClients.firstOrNull { nc -> isMatchingClient(bc, nc) }
+            return@filter stillAlive != null
+          }
+          .toSet()
+    }
+  }
+
+  @CheckResult
+  private fun timerFlow(
+      periodInMillis: Duration,
+      initialDelay: Duration = Duration.ZERO,
+  ): Flow<Unit> =
+      flow {
+            enforcer.assertOffMainThread()
+            val ctx = currentCoroutineContext()
+
+            delay(initialDelay)
+
+            while (ctx.isActive) {
+              emit(Unit)
+              delay(periodInMillis)
+            }
+          }
+          .flowOn(context = Dispatchers.IO)
+
   private fun startWatchingForOldClients() {
-    watchJob =
-        watchJob
-            ?: scope.launch(context = Dispatchers.IO) {
-              while (isActive) {
-                val beforeWait = LocalDateTime.now(clock)
-
-                // We are not as important
-                yield()
-
-                // Wait for 3 minutes
-                delay(3.minutes)
-
-                // We are not as important
-                yield()
-
-                // "Live" client must have activity within 5 minutes
-                val newClients =
-                    seenClients.updateAndGet { set ->
-                      set.filter {
-                            val newEnough = it.mostRecentlySeen >= beforeWait
-                            if (!newEnough) {
-                              Timber.d("Client is too old: $it. Last seen ${it.mostRecentlySeen}")
-                            }
-                            return@filter newEnough
-                          }
-                          .toSet()
-                    }
-                blockedClients.update { set ->
-                  set.filter { bc ->
-                        // If this blocked client is still found in the "new client" list, keep it,
-                        // otherwise filter it out
-                        val stillAlive = newClients.firstOrNull { nc -> isMatchingClient(bc, nc) }
-                        return@filter stillAlive != null
-                      }
-                      .toSet()
+    timerJob =
+        timerJob
+            ?: timerFlow(PERIOD_IN_MINUTES.minutes).let { f ->
+              Timber.d("Start a timer flow to check old clients every $PERIOD_IN_MINUTES minutes")
+              scope.launch(context = Dispatchers.IO) {
+                f.collect {
+                  // Cutoff time is X minutes ago
+                  val cutoffTime = LocalDateTime.now(clock).minusMinutes(PERIOD_IN_MINUTES)
+                  purgeOldClients(cutoffTime)
                 }
               }
             }
@@ -187,11 +210,13 @@ internal constructor(
   }
 
   override fun clear() {
+    timerJob?.cancel()
+    scope.cancelChildren()
+
     seenClients.value = emptySet()
     blockedClients.value = emptySet()
 
-    watchJob?.cancel()
-    scope.cancelChildren()
+    timerJob = null
   }
 
   override fun listenForClients(): Flow<Set<TetherClient>> {
@@ -200,5 +225,10 @@ internal constructor(
 
   override fun listenForBlocked(): Flow<Set<TetherClient>> {
     return blockedClients
+  }
+
+  companion object {
+
+    private const val PERIOD_IN_MINUTES = 5L
   }
 }
