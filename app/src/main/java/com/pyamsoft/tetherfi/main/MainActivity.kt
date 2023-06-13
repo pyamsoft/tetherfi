@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity() {
                       bugfix("Reduce memory usage and make sure we close all sockets after use")
                       change("Correct attribution for open source libraries")
                       change("Remove unused code to shrink install size")
+                      change(
+                          "Clear old clients out of Connections if they haven't had activity for 3 minutes.")
                     }
                   },
           )
