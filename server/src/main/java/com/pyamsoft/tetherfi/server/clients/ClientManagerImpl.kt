@@ -103,8 +103,8 @@ internal constructor(
                 // We are not as important
                 yield()
 
-                // Wait for 5 minutes
-                delay(5.minutes)
+                // Wait for 3 minutes
+                delay(3.minutes)
 
                 // We are not as important
                 yield()
@@ -113,11 +113,11 @@ internal constructor(
                 val newClients =
                     seenClients.updateAndGet { set ->
                       set.filter {
-                            val old = it.mostRecentlySeen >= beforeWait
-                            if (old) {
-                              Timber.d("Client is too old: $it")
+                            val newEnough = it.mostRecentlySeen >= beforeWait
+                            if (!newEnough) {
+                              Timber.d("Client is too old: $it. Last seen ${it.mostRecentlySeen}")
                             }
-                            return@filter old
+                            return@filter newEnough
                           }
                           .toSet()
                     }
