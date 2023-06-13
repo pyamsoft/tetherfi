@@ -60,7 +60,7 @@ dependencies {
   // api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
 
   // Compose Preview
-  compileOnly("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
+  api("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
   debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
 
   // WiFi QR Code
