@@ -1,6 +1,6 @@
 package com.pyamsoft.tetherfi.main
 
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
@@ -26,7 +26,7 @@ internal constructor(
   private var serverRequester: PermissionRequester.Requester? = null
   private var notificationRequester: PermissionRequester.Requester? = null
 
-  fun register(activity: FragmentActivity) {
+  fun register(activity: ComponentActivity) {
     // Watch lifecycle
     activity.doOnDestroy { unregister() }
 

@@ -28,12 +28,12 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
-import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 

@@ -72,16 +72,35 @@ class TetherFi : Application() {
 
     @JvmStatic
     private fun addLibraries() {
-      // We are using pydroid-notify
-      OssLibraries.usingNotify = true
-
-      // We are using pydroid-autopsy
-      OssLibraries.usingAutopsy = true
+      OssLibraries.apply {
+        usingNotify = true
+        usingAutopsy = true
+        usingArch = true
+        usingUi = true
+      }
 
       OssLibraries.add(
           "Dagger",
           "https://github.com/google/dagger",
           "A fast dependency injector for Android and Java.",
+      )
+
+      OssLibraries.add(
+          "LeakCanary",
+          "https://github.com/square/leakcanary",
+          "A memory leak detection library for Android.",
+      )
+
+      OssLibraries.add(
+          "Timber",
+          "https://github.com/JakeWharton/timber",
+          "A logger with a small, extensible API which provides utility on top of Android's normal Log class.",
+      )
+
+      OssLibraries.add(
+          "KSP",
+          "https://github.com/google/ksp",
+          "Kotlin Symbol Processing API",
       )
 
       OssLibraries.add(
@@ -91,15 +110,21 @@ class TetherFi : Application() {
       )
 
       OssLibraries.add(
-          "Accompanist System UI Controller",
-          "https://google.github.io/accompanist/systemuicontroller/",
-          "System UI Controller provides easy-to-use utilities for updating the System UI bar colors within Jetpack Compose.",
-      )
-
-      OssLibraries.add(
           "Accompanist Pager Indicators",
           "https://google.github.io/accompanist/pager/",
           "A library which provides paging layouts for Jetpack Compose.",
+      )
+
+      OssLibraries.add(
+          "AndroidX Appcompat",
+          "https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/appcompat/",
+          "AndroidX compatibility library for older versions of Android",
+      )
+
+      OssLibraries.add(
+          "AndroidX Activity Compose",
+          "https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev/activity/activity-compose",
+          "Jetpack Compose bridge for AndroidX Activity",
       )
 
       OssLibraries.add(

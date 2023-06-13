@@ -25,6 +25,8 @@ import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -32,8 +34,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -69,7 +69,9 @@ internal constructor(
 
   private fun CoroutineScope.proxyLoop() {
     launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.TCP) }
-    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.UDP) }
+
+    // TODO: UDP support
+    //    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.UDP) }
   }
 
   private fun reset() {

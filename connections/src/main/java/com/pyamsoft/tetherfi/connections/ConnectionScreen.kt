@@ -209,7 +209,9 @@ private fun ConnectionItem(
 ) {
   val name = remember(client) { client.key() }
   val seenTime =
-      remember(client) { FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen) }
+      remember(client) {
+        FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen)
+      }
 
   val isNotBlocked =
       remember(

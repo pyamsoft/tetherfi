@@ -19,6 +19,11 @@ package com.pyamsoft.tetherfi.server.clients
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.cancelChildren
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,11 +38,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import timber.log.Timber
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class ClientManagerImpl

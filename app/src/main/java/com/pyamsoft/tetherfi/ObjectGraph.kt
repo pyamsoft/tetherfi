@@ -19,8 +19,8 @@ package com.pyamsoft.tetherfi
 import android.app.Activity
 import android.app.Application
 import android.app.Service
+import androidx.activity.ComponentActivity
 import androidx.annotation.CheckResult
-import androidx.fragment.app.FragmentActivity
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.doOnDestroy
 import com.pyamsoft.tetherfi.main.MainComponent
@@ -60,10 +60,10 @@ internal object ObjectGraph {
 
   internal object ActivityScope {
 
-    private val trackingMap = mutableMapOf<FragmentActivity, MainComponent>()
+    private val trackingMap = mutableMapOf<ComponentActivity, MainComponent>()
 
     fun install(
-        activity: FragmentActivity,
+        activity: ComponentActivity,
         component: MainComponent,
     ) {
       trackingMap[activity] = component
@@ -76,7 +76,7 @@ internal object ObjectGraph {
     }
 
     @CheckResult
-    fun retrieve(activity: FragmentActivity): MainComponent {
+    fun retrieve(activity: ComponentActivity): MainComponent {
       return trackingMap[activity].requireNotNull {
         "Could not find ActivityScoped internals for Activity: $activity"
       }

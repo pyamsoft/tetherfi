@@ -16,12 +16,12 @@
 
 package com.pyamsoft.tetherfi.tile
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.FragmentActivity
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -35,7 +35,7 @@ internal class ProxyTileInjector : ComposableInjector() {
 
   @Inject @JvmField internal var viewModel: ProxyTileViewModeler? = null
 
-  override fun onInject(activity: FragmentActivity) {
+  override fun onInject(activity: ComponentActivity) {
     ObjectGraph.ApplicationScope.retrieve(activity).plusTile().create().inject(this)
   }
 

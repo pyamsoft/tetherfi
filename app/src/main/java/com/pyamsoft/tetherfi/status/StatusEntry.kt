@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.status
 
 import android.content.Intent
 import android.provider.Settings
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -59,7 +59,7 @@ internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
 
-  override fun onInject(activity: FragmentActivity) {
+  override fun onInject(activity: ComponentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).plusStatus().create().inject(this)
   }
 
@@ -72,7 +72,7 @@ internal class StatusInjector : ComposableInjector() {
 }
 
 private fun safeOpenSettingsIntent(
-    activity: FragmentActivity,
+    activity: ComponentActivity,
     action: String,
 ) {
 

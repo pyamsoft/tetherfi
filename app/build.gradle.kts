@@ -27,8 +27,8 @@ android {
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
 
-    versionCode = 24
-    versionName = "20230602-1"
+    versionCode = 25
+    versionName = "20230612-1"
 
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
@@ -114,7 +114,6 @@ dependencies {
   debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
 
   // AndroidX
-  implementation("androidx.fragment:fragment-ktx:1.5.7")
   implementation("androidx.appcompat:appcompat:1.6.1")
   implementation("androidx.activity:activity-compose:1.7.2")
 

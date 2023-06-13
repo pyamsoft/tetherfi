@@ -17,8 +17,10 @@
 package com.pyamsoft.tetherfi.tile
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.core.ActivityScope
 import dagger.Subcomponent
 
+@ActivityScope
 @Subcomponent
 internal interface ProxyTileComponent {
 
