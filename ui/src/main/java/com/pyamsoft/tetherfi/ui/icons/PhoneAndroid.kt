@@ -21,7 +21,7 @@ import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.vector.ImageVector
 
-@Suppress("unused")
+@Suppress("UnusedReceiverParameter")
 val Icons.Filled.PhoneAndroid: ImageVector
   get() {
     if (_phoneAndroid != null) {

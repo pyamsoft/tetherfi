@@ -55,7 +55,7 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun createUdp(): ProxyManager {
+  private fun createUdp(): ProxyManager {
     enforcer.assertOffMainThread()
 
     return UdpProxyManager(

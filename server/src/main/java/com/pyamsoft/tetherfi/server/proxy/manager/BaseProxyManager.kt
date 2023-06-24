@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
-internal abstract class BaseProxyManager<S : ASocket>() : ProxyManager {
+internal abstract class BaseProxyManager<S : ASocket> protected constructor() : ProxyManager {
 
   override suspend fun loop() =
       withContext(context = Dispatchers.IO) {
