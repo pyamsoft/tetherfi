@@ -42,8 +42,10 @@ import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
+import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
+import com.pyamsoft.tetherfi.tile.ProxyTileServiceComponent
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
@@ -73,6 +75,8 @@ internal interface TetherFiComponent {
   @CheckResult fun plusForeground(): ForegroundServiceComponent.Factory
 
   @CheckResult fun plusTile(): ProxyTileComponent.Factory
+
+  @CheckResult fun plusTileService(): ProxyTileServiceComponent.Factory
 
   @Component.Factory
   interface Factory {
@@ -118,6 +122,20 @@ internal interface TetherFiComponent {
 
       @Provides
       @JvmStatic
+      @Named("tile_activity")
+      internal fun provideProxyTileActivityClass(): Class<out Activity> {
+        return ProxyTileActivity::class.java
+      }
+
+      @Provides
+      @JvmStatic
+      @Named("main_activity")
+      internal fun provideMainActivityClass(): Class<out Activity> {
+        return MainActivity::class.java
+      }
+
+      @Provides
+      @JvmStatic
       @Named("app_name")
       internal fun provideAppNameRes(): Int {
         return R.string.app_name
@@ -136,12 +154,6 @@ internal interface TetherFiComponent {
       @Singleton
       internal fun provideNotifyGuard(context: Context): NotifyGuard {
         return NotifyGuard.createDefault(context)
-      }
-
-      @Provides
-      @JvmStatic
-      internal fun provideActivityClass(): Class<out Activity> {
-        return MainActivity::class.java
       }
 
       @Provides

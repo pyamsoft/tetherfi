@@ -20,8 +20,8 @@ buildscript {
   ext {
     // SDK
     minSdk = 24
-    targetSdk = 33
-    compileSdk = 33
+    targetSdk = 34
+    compileSdk = 34
 
     // Us
     pydroid = "26.6.0"

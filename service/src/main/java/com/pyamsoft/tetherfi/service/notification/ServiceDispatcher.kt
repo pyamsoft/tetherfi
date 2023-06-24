@@ -46,7 +46,7 @@ internal class ServiceDispatcher
 @Inject
 internal constructor(
     private val context: Context,
-    private val activityClass: Class<out Activity>,
+    @Named("main_activity") private val activityClass: Class<out Activity>,
     @StringRes @Named("app_name") private val appNameRes: Int,
 ) : NotifyDispatcher<ServerNotificationData> {
 

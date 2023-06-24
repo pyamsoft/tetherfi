@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.tile
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -38,29 +37,12 @@ import timber.log.Timber
 internal class ProxyTileService internal constructor() : TileService() {
 
   @Inject @JvmField internal var tileHandler: TileHandler? = null
+  @Inject @JvmField internal var tileActivityLauncher: ProxyTileActivityLauncher? = null
 
   private val scope by lazy {
     CoroutineScope(
         context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
     )
-  }
-
-  private val tileActivityIntent by
-      lazy(LazyThreadSafetyMode.NONE) {
-        Intent(application, ProxyTileActivity::class.java).apply {
-          flags =
-              Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                  Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                  Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-      }
-
-  private inline fun ensureUnlocked(crossinline block: () -> Unit) {
-    if (isLocked) {
-      unlockAndRun { block() }
-    } else {
-      block()
-    }
   }
 
   private inline fun withTile(crossinline block: (Tile) -> Unit) {
@@ -152,7 +134,12 @@ internal class ProxyTileService internal constructor() : TileService() {
       // re-injects each time. If we inject directly from the AppComponent, Dagger internally tracks
       // the injection and does not inject again even though the service lifecycle requires it.
       Timber.d("Injecting handler!")
-      ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
+      ObjectGraph.ApplicationScope.retrieve(this)
+          .plusTileService()
+          .create(
+              service = this,
+          )
+          .inject(this)
     }
 
     block(tileHandler.requireNotNull())
@@ -160,10 +147,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onClick() {
     Timber.d("Tile Clicked!")
-    ensureUnlocked {
-      Timber.d("Start TileActivity!")
-      startActivityAndCollapse(tileActivityIntent)
-    }
+    tileActivityLauncher.requireNotNull().launchTileActivity()
   }
 
   override fun onStartListening() {

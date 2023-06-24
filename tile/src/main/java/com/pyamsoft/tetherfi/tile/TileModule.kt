@@ -16,21 +16,14 @@
 
 package com.pyamsoft.tetherfi.tile
 
-import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.core.ActivityScope
-import dagger.Subcomponent
+import dagger.Binds
+import dagger.Module
 
-@ActivityScope
-@Subcomponent
-internal interface ProxyTileComponent {
+@Module
+abstract class TileModule {
 
-  fun inject(activity: ProxyTileActivity)
-
-  fun inject(injector: ProxyTileInjector)
-
-  @Subcomponent.Factory
-  interface Factory {
-
-    @CheckResult fun create(): ProxyTileComponent
-  }
+  @Binds
+  internal abstract fun bindLauncher(
+      impl: DefaultProxyTileActivityLauncher
+  ): ProxyTileActivityLauncher
 }
