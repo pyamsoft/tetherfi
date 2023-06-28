@@ -26,9 +26,11 @@ import javax.inject.Inject
 class ThemeViewModeler
 @Inject
 internal constructor(
-    override val state: MutableThemeViewState,
+    state: MutableThemeViewState,
     private val theming: Theming,
 ) : AbstractViewModeler<ThemeViewState>(state) {
+
+  private val vmState = state
 
   override fun registerSaveState(
       registry: SaveableStateRegistry
@@ -40,7 +42,7 @@ internal constructor(
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    val s = state
+    val s = vmState
     registry
         .consumeRestored(KEY_THEME)
         ?.let { it as String }
@@ -54,7 +56,7 @@ internal constructor(
 
   fun handleSyncDarkTheme(configuration: Configuration) {
     val isDark = theming.isDarkTheme(configuration)
-    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+    vmState.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
   }
 
   companion object {

@@ -28,11 +28,13 @@ import timber.log.Timber
 class ProxyTileViewModeler
 @Inject
 internal constructor(
-    override val state: MutableProxyTileViewState,
+    state: MutableProxyTileViewState,
     private val permissions: PermissionGuard,
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,
 ) : AbstractViewModeler<ProxyTileViewState>(state) {
+
+  private val vmState = state
 
   init {
     // Sync up the network state on init so that we can immediately capture it in the View
@@ -40,11 +42,11 @@ internal constructor(
   }
 
   fun handleDismissed() {
-    state.isShowing.value = false
+    vmState.isShowing.value = false
   }
 
   fun bind(scope: CoroutineScope) {
-    val s = state
+    val s = vmState
 
     handler.bind(
         scope = scope,
@@ -57,7 +59,7 @@ internal constructor(
   }
 
   fun handleToggleProxy() {
-    val s = state
+    val s = vmState
 
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()

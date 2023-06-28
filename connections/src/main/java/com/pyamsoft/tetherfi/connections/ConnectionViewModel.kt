@@ -31,25 +31,27 @@ import timber.log.Timber
 class ConnectionViewModel
 @Inject
 internal constructor(
-    override val state: MutableConnectionViewState,
+    state: MutableConnectionViewState,
     private val connections: SeenClients,
     private val blocked: BlockedClients,
     private val blockTracker: BlockedClientTracker,
 ) : AbstractViewModeler<ConnectionViewState>(state) {
+
+  private val vmState = state
 
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
       connections.listenForClients().collect { clients ->
         val list = clients.toList().sortedBy { it.key() }
         Timber.d("New client list: $list")
-        state.connections.value = list
+        vmState.connections.value = list
       }
     }
 
     scope.launch(context = Dispatchers.Default) {
       blocked.listenForBlocked().collect { clients ->
         Timber.d("New block list: $clients")
-        state.blocked.value = clients
+        vmState.blocked.value = clients
       }
     }
   }

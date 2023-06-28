@@ -29,10 +29,12 @@ import kotlinx.coroutines.launch
 class QRCodeViewModeler
 @Inject
 internal constructor(
-    override val state: MutableQRCodeViewState,
+    state: MutableQRCodeViewState,
     @Named("ssid") ssid: String,
     @Named("password") password: String,
 ) : AbstractViewModeler<QRCodeViewState>(state) {
+
+  private val vmState = state
 
   private val data =
       formatQRCode(
@@ -43,7 +45,7 @@ internal constructor(
   fun load(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
       val data = QRCode(data = data).render().nativeImage() as Bitmap
-      state.qrCode.value = data
+      vmState.qrCode.value = data
     }
   }
 
