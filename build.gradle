@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 34
 
     // Us
-    pydroid = "26.6.0"
+    pydroid = "26.7.0"
 
     // Leak Canary
     leakCanary = "2.11"
@@ -49,7 +49,7 @@ plugins {
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id("org.gradle.android.cache-fix") version "2.7.1" apply false
+  id("org.gradle.android.cache-fix") version "2.7.2" apply false
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
