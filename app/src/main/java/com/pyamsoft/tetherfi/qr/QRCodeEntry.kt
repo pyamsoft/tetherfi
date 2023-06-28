@@ -139,7 +139,7 @@ fun QRCodeEntry(
       ) {
         QRCodeScreen(
             modifier = Modifier.fillMaxWidth(),
-            state = viewModel.state,
+            state = viewModel,
             imageLoader = imageLoader,
         )
       }

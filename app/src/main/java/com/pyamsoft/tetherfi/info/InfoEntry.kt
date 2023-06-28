@@ -51,7 +51,7 @@ fun InfoEntry(
 
   InfoScreen(
       modifier = modifier,
-      state = viewModel.state,
+      state = viewModel,
       appName = appName,
       serverViewState = serverViewState,
       onShowQRCode = onShowQRCode,

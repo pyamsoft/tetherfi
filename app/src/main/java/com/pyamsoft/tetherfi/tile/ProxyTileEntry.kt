@@ -79,7 +79,7 @@ fun ProxyTileEntry(
 
   ProxyTileScreen(
       modifier = modifier,
-      state = viewModel.state,
+      state = viewModel,
       onDismissed = { viewModel.handleDismissed() },
       onComplete = { activity.finishAndRemoveTask() },
       onStatusUpdated = { ProxyTileService.updateTile(activity) },

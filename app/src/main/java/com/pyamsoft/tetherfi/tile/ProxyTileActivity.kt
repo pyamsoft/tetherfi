@@ -47,8 +47,7 @@ class ProxyTileActivity : AppCompatActivity() {
     val vm = viewModel.requireNotNull()
 
     setContent {
-      val state = vm.state
-      val theme by state.theme.collectAsState()
+      val theme by vm.theme.collectAsState()
 
       SystemBars()
 

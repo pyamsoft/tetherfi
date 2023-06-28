@@ -31,33 +31,31 @@ import timber.log.Timber
 class ConnectionViewModel
 @Inject
 internal constructor(
-    state: MutableConnectionViewState,
-    private val connections: SeenClients,
-    private val blocked: BlockedClients,
+    override val state: MutableConnectionViewState,
+    private val seenClients: SeenClients,
+    private val blockedClients: BlockedClients,
     private val blockTracker: BlockedClientTracker,
-) : AbstractViewModeler<ConnectionViewState>(state) {
-
-  private val vmState = state
+) : ConnectionViewState by state, AbstractViewModeler<ConnectionViewState>(state) {
 
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
-      connections.listenForClients().collect { clients ->
+      seenClients.listenForClients().collect { clients ->
         val list = clients.toList().sortedBy { it.key() }
         Timber.d("New client list: $list")
-        vmState.connections.value = list
+        state.connections.value = list
       }
     }
 
     scope.launch(context = Dispatchers.Default) {
-      blocked.listenForBlocked().collect { clients ->
+      blockedClients.listenForBlocked().collect { clients ->
         Timber.d("New block list: $clients")
-        vmState.blocked.value = clients
+        state.blocked.value = clients
       }
     }
   }
 
   fun handleToggleBlock(client: TetherClient) {
-    if (blocked.isBlocked(client)) {
+    if (blockedClients.isBlocked(client)) {
       blockTracker.unblock(client)
     } else {
       blockTracker.block(client)

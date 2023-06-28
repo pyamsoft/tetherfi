@@ -23,12 +23,10 @@ import kotlinx.coroutines.flow.update
 class InfoViewModeler
 @Inject
 internal constructor(
-    state: MutableInfoViewState,
-) : AbstractViewModeler<InfoViewState>(state) {
-
-  private val vmState = state
+    override val state: MutableInfoViewState,
+) : InfoViewState by state, AbstractViewModeler<InfoViewState>(state) {
 
   fun handleTogglePasswordVisibility() {
-    vmState.isPasswordVisible.update { !it }
+    state.isPasswordVisible.update { !it }
   }
 }

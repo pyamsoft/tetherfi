@@ -76,10 +76,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.trimmedLength
-import com.pyamsoft.pydroid.theme.HairlineSize
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.pydroid.ui.util.fullScreenDialog
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand

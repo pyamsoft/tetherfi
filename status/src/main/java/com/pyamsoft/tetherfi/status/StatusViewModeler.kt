@@ -46,7 +46,7 @@ import timber.log.Timber
 class StatusViewModeler
 @Inject
 internal constructor(
-    state: MutableStatusViewState,
+    override val state: MutableStatusViewState,
     private val enforcer: ThreadEnforcer,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
@@ -55,9 +55,7 @@ internal constructor(
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
-) : AbstractViewModeler<StatusViewState>(state) {
-
-  private val vmState = state
+) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
       var ssid: Boolean,
@@ -75,7 +73,7 @@ internal constructor(
         config.ssid &&
         config.password &&
         config.band) {
-      vmState.loadingState.value = StatusViewState.LoadingState.DONE
+      state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
 
@@ -116,21 +114,21 @@ internal constructor(
     registry
         .consumeRestored(KEY_SHOW_NETWORK_ERROR)
         ?.let { it as Boolean }
-        ?.also { vmState.isShowingNetworkError.value = it }
+        ?.also { state.isShowingNetworkError.value = it }
 
     registry
         .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)
         ?.let { it as Boolean }
-        ?.also { vmState.isShowingHotspotError.value = it }
+        ?.also { state.isShowingHotspotError.value = it }
 
     registry
         .consumeRestored(KEY_SHOW_SETUP_ERROR)
         ?.let { it as Boolean }
-        ?.also { vmState.isShowingSetupError.value = it }
+        ?.also { state.isShowingSetupError.value = it }
   }
 
   fun handleToggleProxy() {
-    val s = vmState
+    val s = state
 
     // Refresh these state bits
     val requiresPermissions = !permissions.canCreateWiDiNetwork()
@@ -167,7 +165,7 @@ internal constructor(
   }
 
   fun loadPreferences(scope: CoroutineScope) {
-    val s = vmState
+    val s = state
 
     // If we are already loading, ignore this call
     if (s.loadingState.value != StatusViewState.LoadingState.NONE) {
@@ -278,7 +276,7 @@ internal constructor(
 
   fun refreshSystemInfo(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
-      val s = vmState
+      val s = state
 
       // Battery optimization
       s.isBatteryOptimizationsIgnored.value = batteryOptimizer.isOptimizationsIgnored()
@@ -296,7 +294,7 @@ internal constructor(
   }
 
   fun handlePermissionsExplained() {
-    vmState.explainPermissions.value = false
+    state.explainPermissions.value = false
   }
 
   fun watchStatusUpdates(scope: CoroutineScope) {
@@ -304,7 +302,7 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d("Proxy Status Changed: $status")
-          vmState.proxyStatus.value = status
+          state.proxyStatus.value = status
         }
       }
     }
@@ -313,7 +311,7 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d("WiDi Status Changed: $status")
-          vmState.wiDiStatus.value = status
+          state.wiDiStatus.value = status
         }
       }
     }
@@ -327,67 +325,67 @@ internal constructor(
         f.collect { show ->
           enforcer.assertOffMainThread()
 
-          vmState.isShowingSetupError.value = show
+          state.isShowingSetupError.value = show
         }
       }
     }
   }
 
   fun handleCloseSetupError() {
-    vmState.isShowingSetupError.value = false
+    state.isShowingSetupError.value = false
   }
 
   fun handleSsidChanged(ssid: String) {
-    vmState.ssid.value = ssid
+    state.ssid.value = ssid
     serverPreferences.setSsid(ssid)
   }
 
   fun handlePasswordChanged(password: String) {
-    vmState.password.value = password
+    state.password.value = password
     serverPreferences.setPassword(password)
   }
 
   fun handlePortChanged(port: String) {
     val portValue = port.toIntOrNull()
     if (portValue != null) {
-      vmState.port.value = portValue
+      state.port.value = portValue
       serverPreferences.setPort(portValue)
     }
   }
 
   fun handleToggleProxyWakelock() {
-    val newVal = vmState.keepWakeLock.updateAndGet { !it }
+    val newVal = state.keepWakeLock.updateAndGet { !it }
     servicePreferences.setWakeLock(newVal)
   }
 
   fun handleToggleProxyWifilock() {
-    val newVal = vmState.keepWifiLock.updateAndGet { !it }
+    val newVal = state.keepWifiLock.updateAndGet { !it }
     servicePreferences.setWiFiLock(newVal)
   }
 
   fun handleChangeBand(band: ServerNetworkBand) {
-    vmState.band.value = band
+    state.band.value = band
     serverPreferences.setNetworkBand(band)
   }
 
   fun handleTogglePasswordVisibility() {
-    vmState.isPasswordVisible.update { !it }
+    state.isPasswordVisible.update { !it }
   }
 
   fun handleOpenHotspotError() {
-    vmState.isShowingHotspotError.value = true
+    state.isShowingHotspotError.value = true
   }
 
   fun handleCloseHotspotError() {
-    vmState.isShowingHotspotError.value = false
+    state.isShowingHotspotError.value = false
   }
 
   fun handleOpenNetworkError() {
-    vmState.isShowingNetworkError.value = true
+    state.isShowingNetworkError.value = true
   }
 
   fun handleCloseNetworkError() {
-    vmState.isShowingNetworkError.value = false
+    state.isShowingNetworkError.value = false
   }
 
   companion object {

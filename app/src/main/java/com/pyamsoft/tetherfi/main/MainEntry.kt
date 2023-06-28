@@ -138,8 +138,6 @@ fun MainEntry(
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
 
-  val state = viewModel.state
-
   MountHooks(
       viewModel = viewModel,
       pagerState = pagerState,
@@ -150,7 +148,7 @@ fun MainEntry(
   MainScreen(
       modifier = modifier,
       appName = appName,
-      state = state,
+      state = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
       onSettingsOpen = { viewModel.handleOpenSettings() },
@@ -158,7 +156,7 @@ fun MainEntry(
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
   )
 
-  val isSettingsOpen by state.isSettingsOpen.collectAsState()
+  val isSettingsOpen by viewModel.isSettingsOpen.collectAsState()
   if (isSettingsOpen) {
     SettingsDialog(
         modifier = Modifier.fullScreenDialog(),
@@ -167,9 +165,9 @@ fun MainEntry(
     )
   }
 
-  val isShowingQRCodeDialog by state.isShowingQRCodeDialog.collectAsState()
+  val isShowingQRCodeDialog by viewModel.isShowingQRCodeDialog.collectAsState()
   if (isShowingQRCodeDialog) {
-    val group by state.group.collectAsState()
+    val group by viewModel.group.collectAsState()
 
     (group as? WiDiNetworkStatus.GroupInfo.Connected)?.also { grp ->
       QRCodeEntry(

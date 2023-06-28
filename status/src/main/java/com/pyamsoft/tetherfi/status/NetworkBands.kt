@@ -27,8 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.pyamsoft.pydroid.theme.ZeroSize
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.ui.Label

@@ -83,8 +83,7 @@ class MainActivity : AppCompatActivity() {
     val appName = getString(R.string.app_name)
 
     setContent {
-      val state = vm.state
-      val theme by state.theme.collectAsState()
+      val theme by vm.theme.collectAsState()
 
       TetherFiTheme(
           theme = theme,

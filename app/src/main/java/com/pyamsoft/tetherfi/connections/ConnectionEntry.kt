@@ -66,7 +66,7 @@ fun ConnectionEntry(
 
   ConnectionScreen(
       modifier = modifier,
-      state = viewModel.state,
+      state = viewModel,
       serverViewState = serverViewState,
       onToggleBlock = { viewModel.handleToggleBlock(it) },
   )

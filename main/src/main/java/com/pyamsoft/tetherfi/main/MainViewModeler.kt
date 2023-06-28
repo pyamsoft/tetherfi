@@ -38,14 +38,12 @@ import timber.log.Timber
 class MainViewModeler
 @Inject
 internal constructor(
-    state: MutableMainViewState,
+    override val state: MutableMainViewState,
     private val network: WiDiNetworkStatus,
     private val serverPreferences: ServerPreferences,
     private val wiDiReceiver: WiDiReceiver,
     private val inAppRatingPreferences: InAppRatingPreferences,
-) : AbstractViewModeler<MainViewState>(state) {
-
-  private val vmState = state
+) : MainViewState by state, AbstractViewModeler<MainViewState>(state) {
 
   private val isNetworkCurrentlyRunning =
       MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
@@ -71,7 +69,7 @@ internal constructor(
   }
 
   fun bind(scope: CoroutineScope) {
-    val s = vmState
+    val s = state
 
     // Watch group info
     network.onGroupInfoChanged().also { f ->
@@ -165,7 +163,7 @@ internal constructor(
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    val s = vmState
+    val s = state
     registry
         .consumeRestored(KEY_IS_SETTINGS_OPEN)
         ?.let { it as Boolean }
@@ -182,21 +180,21 @@ internal constructor(
   }
 
   fun handleOpenSettings() {
-    vmState.isSettingsOpen.value = true
+    state.isSettingsOpen.value = true
   }
 
   fun handleCloseSettings() {
-    vmState.isSettingsOpen.value = false
+    state.isSettingsOpen.value = false
   }
 
   fun handleOpenQRCodeDialog() {
     // If the hotspot is valid, we will have this from the group
     val isHotspotDataValid = state.group.value is WiDiNetworkStatus.GroupInfo.Connected
-    vmState.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
+    state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
   }
 
   fun handleCloseQRCodeDialog() {
-    vmState.isShowingQRCodeDialog.value = false
+    state.isShowingQRCodeDialog.value = false
   }
 
   fun handleAnalyticsMarkOpened() {

@@ -197,7 +197,7 @@ fun StatusEntry(
 
   StatusScreen(
       modifier = modifier,
-      state = viewModel.state,
+      state = viewModel,
       serverViewState = serverViewState,
       appName = appName,
       onToggleProxy = { handleToggleProxy() },
