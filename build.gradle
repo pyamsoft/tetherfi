@@ -23,6 +23,10 @@ buildscript {
     targetSdk = 33
     compileSdk = 34
 
+    // Kotlin
+    kotlin = "1.8.21"
+    coroutines = "1.7.2"
+
     // Us
     pydroid = "26.7.0"
 
@@ -39,6 +43,9 @@ buildscript {
     accompanist = "0.30.1"
 
     desugar = "2.0.3"
+
+    // Testing
+    testRunner = "1.5.2"
   }
 }
 
@@ -53,7 +60,7 @@ plugins {
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
-  id("org.jetbrains.kotlin.android") version "1.8.21" apply false
+  id("org.jetbrains.kotlin.android") version "${kotlin}" apply false
 
   // Gradle version checker
   // https://github.com/ben-manes/gradle-versions-plugin
@@ -69,7 +76,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "1.8.21-1.0.11" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-1.0.11" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
