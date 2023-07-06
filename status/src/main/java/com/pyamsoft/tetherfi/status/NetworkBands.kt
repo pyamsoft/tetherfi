@@ -24,6 +24,8 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,10 +41,12 @@ import com.pyamsoft.tetherfi.ui.checkable.rememberHeightMatcherGenerator
 internal fun NetworkBands(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
-    band: ServerNetworkBand?,
+    state: StatusViewState,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
+  val band by state.band.collectAsState()
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
+
   Column(
       modifier = modifier,
   ) {

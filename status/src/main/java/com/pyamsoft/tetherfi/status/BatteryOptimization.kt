@@ -16,18 +16,82 @@
 
 package com.pyamsoft.tetherfi.status
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
+internal fun LazyListScope.renderBatteryAndPerformance(
+    itemModifier: Modifier = Modifier,
+    isEditable: Boolean,
+    appName: String,
+    state: StatusViewState,
+
+    // Battery optimization
+    onDisableBatteryOptimizations: () -> Unit,
+
+    // Wake lock
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
+) {
+  item(
+      contentType = StatusScreenContentTypes.BATTERY_LABEL,
+  ) {
+    Label(
+        modifier =
+            itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.baseline),
+        text = "Battery and Performance",
+    )
+  }
+
+  item(
+      contentType = StatusScreenContentTypes.WAKELOCKS,
+  ) {
+    Wakelocks(
+        modifier =
+            itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content),
+        isEditable = isEditable,
+        appName = appName,
+        state = state,
+        onToggleKeepWakeLock = onToggleKeepWakeLock,
+        onToggleKeepWifiLock = onToggleKeepWifiLock,
+    )
+  }
+
+  item(
+      contentType = StatusScreenContentTypes.BATTERY_OPTIMIZATION,
+  ) {
+    BatteryOptimization(
+        modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
+        isEditable = isEditable,
+        appName = appName,
+        state = state,
+        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+    )
+  }
+}
+
 @Composable
-internal fun BatteryOptimization(
+private fun BatteryOptimization(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
-    isBatteryOptimizationDisabled: Boolean,
+    state: StatusViewState,
     onDisableBatteryOptimizations: () -> Unit,
 ) {
+  val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
+
   CheckableCard(
       modifier = modifier,
       isEditable = isEditable,
