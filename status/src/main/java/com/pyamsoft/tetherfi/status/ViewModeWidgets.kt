@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -87,6 +88,7 @@ internal fun ViewProxy(
 @Composable
 internal fun ViewPassword(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     state: StatusViewState,
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
@@ -113,7 +115,14 @@ internal fun ViewPassword(
     if (group is WiDiNetworkStatus.GroupInfo.Connected) {
       IconToggleButton(
           checked = isPasswordVisible,
-          onCheckedChange = { onTogglePasswordVisibility() },
+          onCheckedChange = {
+            if (isPasswordVisible) {
+              hapticManager.toggleOff()
+            } else {
+              hapticManager.toggleOn()
+            }
+            onTogglePasswordVisibility()
+          },
       ) {
         Icon(
             imageVector =

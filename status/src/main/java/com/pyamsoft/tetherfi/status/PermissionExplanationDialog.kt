@@ -43,11 +43,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 
 @Composable
 internal fun PermissionExplanationDialog(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     appName: String,
     onDismissPermissionExplanation: () -> Unit,
     onOpenPermissionSettings: () -> Unit,
@@ -103,7 +105,10 @@ internal fun PermissionExplanationDialog(
             verticalAlignment = Alignment.CenterVertically,
         ) {
           TextButton(
-              onClick = onOpenPermissionSettings,
+              onClick = {
+                hapticManager.actionButtonPress()
+                onOpenPermissionSettings()
+              },
               colors =
                   ButtonDefaults.textButtonColors(
                       contentColor =
@@ -122,7 +127,6 @@ internal fun PermissionExplanationDialog(
           )
 
           TextButton(
-              onClick = onDismissPermissionExplanation,
               colors =
                   ButtonDefaults.textButtonColors(
                       contentColor =
@@ -130,6 +134,10 @@ internal fun PermissionExplanationDialog(
                               alpha = ContentAlpha.medium,
                           ),
                   ),
+              onClick = {
+                hapticManager.cancelButtonPress()
+                onDismissPermissionExplanation()
+              },
           ) {
             Text(
                 text = "Deny",
@@ -137,7 +145,10 @@ internal fun PermissionExplanationDialog(
           }
 
           TextButton(
-              onClick = onRequestPermissions,
+              onClick = {
+                hapticManager.confirmButtonPress()
+                onRequestPermissions()
+              },
           ) {
             Text(
                 text = "Grant",

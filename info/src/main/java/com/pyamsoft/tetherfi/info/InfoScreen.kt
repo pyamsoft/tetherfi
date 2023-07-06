@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
@@ -45,6 +46,8 @@ fun InfoScreen(
 ) {
   val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
 
+  val hapticManager = rememberHapticManager()
+
   LazyColumn(
       modifier = modifier,
   ) {
@@ -52,6 +55,7 @@ fun InfoScreen(
 
     renderConnectionInstructions(
         itemModifier = itemModifier,
+        hapticManager = hapticManager,
         appName = appName,
         state = state,
         serverViewState = serverViewState,

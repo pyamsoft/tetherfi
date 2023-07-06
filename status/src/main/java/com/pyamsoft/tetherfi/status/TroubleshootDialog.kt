@@ -29,10 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 
 @Composable
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     appName: String,
     isWifiDirectError: Boolean,
     isProxyError: Boolean,
@@ -62,7 +64,10 @@ internal fun TroubleshootDialog(
           )
 
           TextButton(
-              onClick = onDismiss,
+              onClick = {
+                hapticManager.cancelButtonPress()
+                onDismiss()
+              },
           ) {
             Text(
                 text = "Close",

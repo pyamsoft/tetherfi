@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 
@@ -34,6 +36,7 @@ private enum class ConnectionInstructionContentTypes {
 
 internal fun LazyListScope.renderConnectionInstructions(
     itemModifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     appName: String,
     state: InfoViewState,
     serverViewState: ServerViewState,
@@ -75,6 +78,7 @@ internal fun LazyListScope.renderConnectionInstructions(
 
   renderDeviceSetup(
       itemModifier = itemModifier,
+      hapticManager = hapticManager,
       appName = appName,
       state = state,
       serverViewState = serverViewState,
@@ -107,8 +111,10 @@ internal fun LazyListScope.renderConnectionInstructions(
 @Preview
 @Composable
 private fun PreviewConnectionInstructions() {
+  val hapticManager = rememberHapticManager()
   LazyColumn {
     renderConnectionInstructions(
+        hapticManager = hapticManager,
         appName = "TEST",
         serverViewState = TestServerViewState(),
         state = MutableInfoViewState(),

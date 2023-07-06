@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import kotlinx.coroutines.delay
 
 private enum class ServerErrorDialogContentTypes {
@@ -57,12 +58,18 @@ typealias IconButtonContent =
 
 @Composable
 fun ServerErrorTile(
+    hapticManager: HapticManager,
     onShowError: () -> Unit,
     content: IconButtonContent,
 ) {
   /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
   val (showContent, setShowContent) = remember { mutableStateOf(false) }
   val handleShowContent by rememberUpdatedState { setShowContent(true) }
+
+  val handleClick by rememberUpdatedState {
+    hapticManager.confirmButtonPress()
+    onShowError()
+  }
 
   LaunchedEffect(showContent) {
     if (!showContent) {
@@ -78,10 +85,10 @@ fun ServerErrorTile(
       visible = showContent,
   ) {
     content(
-        Modifier.clickable { onShowError() },
+        Modifier.clickable { handleClick() },
     ) {
       IconButton(
-          onClick = onShowError,
+          onClick = { handleClick() },
       ) {
         Icon(
             imageVector = Icons.Filled.Warning,
@@ -96,6 +103,7 @@ fun ServerErrorTile(
 @Composable
 fun ServerErrorDialog(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     title: String,
     error: Throwable,
     onDismiss: () -> Unit,
@@ -109,7 +117,8 @@ fun ServerErrorDialog(
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),
-          onClose = { onDismiss() },
+          hapticManager = hapticManager,
+          onClose = onDismiss,
           title = {
             Text(
                 text = "Hotspot Error",

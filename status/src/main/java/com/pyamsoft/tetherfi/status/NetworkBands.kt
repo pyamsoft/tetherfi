@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -40,6 +41,7 @@ import com.pyamsoft.tetherfi.ui.checkable.rememberHeightMatcherGenerator
 @Composable
 internal fun NetworkBands(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     isEditable: Boolean,
     state: StatusViewState,
     onSelectBand: (ServerNetworkBand) -> Unit,
@@ -81,7 +83,10 @@ internal fun NetworkBands(
               title = b.displayName,
               description = b.description,
               extraHeight = heightMatcher.extraHeight,
-              onClick = { onSelectBand(b) },
+              onClick = {
+                hapticManager.toggleOn()
+                onSelectBand(b)
+              },
           )
         }
       }

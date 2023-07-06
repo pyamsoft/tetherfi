@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.ServerErrorTile
@@ -47,6 +48,7 @@ import kotlinx.coroutines.delay
 @Composable
 internal fun RunningTiles(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     serverViewState: ServerViewState,
 
     // Connections
@@ -157,6 +159,7 @@ internal fun RunningTiles(
             color = MaterialTheme.colors.error,
         ) {
           ServerErrorTile(
+              hapticManager = hapticManager,
               onShowError = onShowNetworkError,
           ) { modifier, iconButton ->
             Row(
@@ -195,6 +198,7 @@ internal fun RunningTiles(
             color = MaterialTheme.colors.error,
         ) {
           ServerErrorTile(
+              hapticManager = hapticManager,
               onShowError = onShowHotspotError,
           ) { modifier, iconButton ->
             Row(

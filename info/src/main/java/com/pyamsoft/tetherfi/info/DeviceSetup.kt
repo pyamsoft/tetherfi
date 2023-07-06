@@ -40,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
@@ -58,6 +60,7 @@ private enum class DeviceSetupContentTypes {
 
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     appName: String,
     state: InfoViewState,
     serverViewState: ServerViewState,
@@ -173,7 +176,14 @@ internal fun LazyListScope.renderDeviceSetup(
             Box(
                 modifier =
                     Modifier.padding(start = MaterialTheme.keylines.baseline)
-                        .clickable { onTogglePasswordVisibility() }
+                        .clickable {
+                          if (isPasswordVisible) {
+                            hapticManager.toggleOff()
+                          } else {
+                            hapticManager.toggleOn()
+                          }
+                          onTogglePasswordVisibility()
+                        }
                         .padding(MaterialTheme.keylines.typography),
                 contentAlignment = Alignment.Center,
             ) {
@@ -279,8 +289,10 @@ internal fun LazyListScope.renderDeviceSetup(
 @Preview
 @Composable
 private fun PreviewDeviceSetup() {
+  val hapticManager = rememberHapticManager()
   LazyColumn {
     renderDeviceSetup(
+        hapticManager = hapticManager,
         appName = "TEST",
         serverViewState = TestServerViewState(),
         state = MutableInfoViewState(),

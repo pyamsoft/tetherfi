@@ -36,6 +36,7 @@ import androidx.compose.ui.window.Dialog
 import coil.ImageLoader
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
@@ -102,6 +103,8 @@ fun QRCodeEntry(
   val viewModel = rememberNotNull(component.viewModel)
   val imageLoader = rememberNotNull(component.imageLoader)
 
+  val hapticManager = rememberHapticManager()
+
   LaunchedEffect(
       viewModel,
   ) {
@@ -120,6 +123,7 @@ fun QRCodeEntry(
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),
+          hapticManager = hapticManager,
           onClose = onDismiss,
           title = {
             Text(

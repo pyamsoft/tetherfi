@@ -9,11 +9,13 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 internal fun LazyListScope.renderLoadedContent(
+    hapticManager: HapticManager,
     appName: String,
     state: StatusViewState,
     serverViewState: ServerViewState,
@@ -49,6 +51,7 @@ internal fun LazyListScope.renderLoadedContent(
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.fillMaxWidth(),
+      hapticManager = hapticManager,
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -79,6 +82,7 @@ internal fun LazyListScope.renderLoadedContent(
 
   renderBatteryAndPerformance(
       itemModifier = Modifier.fillMaxWidth(),
+      hapticManager = hapticManager,
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -101,6 +105,7 @@ internal fun LazyListScope.renderLoadedContent(
   if (showNotificationSettings) {
     renderNotificationSettings(
         itemModifier = Modifier.fillMaxWidth(),
+        hapticManager = hapticManager,
         state = state,
         onRequest = onRequestNotificationPermission,
     )

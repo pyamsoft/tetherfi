@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -163,6 +164,8 @@ fun StatusScreen(
   val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
   val loadingState by state.loadingState.collectAsState()
 
+  val hapticManager = rememberHapticManager()
+
   val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
 
@@ -183,7 +186,10 @@ fun StatusScreen(
                     .padding(top = MaterialTheme.keylines.content)
                     .padding(horizontal = MaterialTheme.keylines.content),
             enabled = isButtonEnabled,
-            onClick = onToggleProxy,
+            onClick = {
+              hapticManager.actionButtonPress()
+              onToggleProxy()
+            },
         ) {
           Text(
               text = buttonText,
@@ -227,6 +233,7 @@ fun StatusScreen(
         }
         StatusViewState.LoadingState.DONE -> {
           renderLoadedContent(
+              hapticManager = hapticManager,
               appName = appName,
               state = state,
               serverViewState = serverViewState,
@@ -253,6 +260,7 @@ fun StatusScreen(
     }
 
     StatusDialogs(
+        hapticManager = hapticManager,
         state = state,
         serverViewState = serverViewState,
         appName = appName,
