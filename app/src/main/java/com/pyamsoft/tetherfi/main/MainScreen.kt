@@ -26,13 +26,14 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.zIndex
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun MainScreen(
     modifier: Modifier = Modifier,
+    hapticManager: HapticManager,
     appName: String,
     state: ServerViewState,
     pagerState: PagerState,
@@ -50,8 +51,8 @@ fun MainScreen(
   ) { pv ->
     Column {
       MainTopBar(
-          // Z-Index to place it above the SwipeRefresh indicator
-          modifier = Modifier.fillMaxWidth().zIndex(1F),
+          modifier = Modifier.fillMaxWidth(),
+          hapticManager = hapticManager,
           appName = appName,
           pagerState = pagerState,
           allTabs = allTabs,
