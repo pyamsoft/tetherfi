@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.ServerErrorTile
@@ -69,6 +70,8 @@ internal fun RunningTiles(
             group is WiDiNetworkStatus.GroupInfo.Connected
       }
 
+  val hapticManager = LocalHapticManager.current
+
   Column(
       modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
   ) {
@@ -80,7 +83,10 @@ internal fun RunningTiles(
           modifier = Modifier.weight(1F),
       ) {
         AttemptRefresh(
-            onClick = onRefreshConnection,
+            onClick = {
+              hapticManager?.actionButtonPress()
+              onRefreshConnection()
+            },
         ) { modifier, iconButton ->
           Row(
               modifier = Modifier.fillMaxWidth().then(modifier),

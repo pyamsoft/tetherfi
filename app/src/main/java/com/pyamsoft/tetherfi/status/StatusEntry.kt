@@ -26,28 +26,26 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
-import com.pyamsoft.pydroid.ui.util.LifecycleEffect
+import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -129,14 +127,15 @@ private fun RegisterPermissionRequests(
 /** On mount hooks */
 @Composable
 private fun MountHooks(
+    scope: CoroutineScope,
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: () -> Unit,
 ) {
   // Wrap in lambda when calling or else bad
-  val handleRefreshSystemInfo by rememberUpdatedState { scope: CoroutineScope ->
-    viewModel.refreshSystemInfo(scope = scope)
+  val handleRefreshSystemInfo by rememberUpdatedState { s: CoroutineScope ->
+    viewModel.refreshSystemInfo(scope = s)
   }
 
   SaveStateDisposableEffect(viewModel)
@@ -156,13 +155,10 @@ private fun MountHooks(
     handleRefreshSystemInfo(this)
   }
 
-  LifecycleEffect {
-    object : DefaultLifecycleObserver {
-
-      override fun onResume(owner: LifecycleOwner) {
-        handleRefreshSystemInfo(owner.lifecycleScope)
-      }
-    }
+  LifecycleEventEffect(
+      event = Lifecycle.Event.ON_RESUME,
+  ) {
+    handleRefreshSystemInfo(scope)
   }
 }
 
@@ -189,6 +185,7 @@ fun StatusEntry(
 
   // Hooks that run on mount
   MountHooks(
+      scope = scope,
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,

@@ -29,14 +29,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
-import com.pyamsoft.pydroid.ui.util.LifecycleEffect
+import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.fullScreenDialog
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -44,12 +42,13 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
-import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
@@ -93,6 +92,7 @@ private fun WatchTabSwipe(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
+    scope: CoroutineScope,
     viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -116,17 +116,10 @@ private fun MountHooks(
     )
   }
 
-  LifecycleEffect {
-    object : DefaultLifecycleObserver {
-
-      override fun onResume(owner: LifecycleOwner) {
-        viewModel.handleRefreshConnectionInfo(owner.lifecycleScope)
-      }
-
-      override fun onStart(owner: LifecycleOwner) {
-        viewModel.handleAnalyticsMarkOpened()
-      }
-    }
+  LifecycleEventEffect(
+      event = Lifecycle.Event.ON_START,
+  ) {
+    viewModel.handleAnalyticsMarkOpened()
   }
 }
 
@@ -148,6 +141,7 @@ fun MainEntry(
   val allTabs = rememberAllTabs()
 
   MountHooks(
+      scope = scope,
       viewModel = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
