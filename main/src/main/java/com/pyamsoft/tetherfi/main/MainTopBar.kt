@@ -138,7 +138,6 @@ fun MainTopBar(
 
             MainTab(
                 tab = tab,
-                hapticManager = hapticManager,
                 isSelected = isSelected,
                 onSelected = {
                   // Click fires the index to update
@@ -157,7 +156,6 @@ fun MainTopBar(
 @Composable
 private fun MainTab(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     tab: MainView,
     isSelected: Boolean,
     onSelected: () -> Unit,
@@ -166,10 +164,7 @@ private fun MainTab(
   Tab(
       modifier = modifier,
       selected = isSelected,
-      onClick = {
-        hapticManager.actionButtonPress()
-        onSelected()
-      },
+      onClick = onSelected,
       text = {
         Text(
             text = tab.displayName,
