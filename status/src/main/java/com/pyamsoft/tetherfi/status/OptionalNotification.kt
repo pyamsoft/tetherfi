@@ -23,7 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
@@ -34,7 +34,6 @@ private enum class OptionalNotificationContentTypes {
 
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     state: StatusViewState,
     onRequest: () -> Unit,
 ) {
@@ -55,6 +54,7 @@ internal fun LazyListScope.renderNotificationSettings(
       contentType = OptionalNotificationContentTypes.CHECK,
   ) {
     val hasPermission by state.hasNotificationPermission.collectAsState()
+    val hapticManager = LocalHapticManager.current
 
     CheckableCard(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
@@ -68,7 +68,7 @@ internal fun LazyListScope.renderNotificationSettings(
                 .trimMargin(),
         onClick = {
           if (!hasPermission) {
-            hapticManager.actionButtonPress()
+            hapticManager?.actionButtonPress()
             onRequest()
           }
         },

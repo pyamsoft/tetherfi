@@ -21,7 +21,6 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     state: StatusViewState,
     serverViewState: ServerViewState,
     appName: String,
@@ -113,7 +112,6 @@ internal fun LazyListScope.renderNetworkInformation(
   if (isEditable) {
     renderEditableItems(
         modifier = itemModifier,
-        hapticManager = hapticManager,
         state = state,
         onSsidChanged = onSsidChanged,
         onPasswordChanged = onPasswordChanged,
@@ -123,7 +121,6 @@ internal fun LazyListScope.renderNetworkInformation(
   } else {
     renderRunningItems(
         modifier = itemModifier,
-        hapticManager = hapticManager,
         state = state,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
@@ -142,7 +139,6 @@ internal fun LazyListScope.renderNetworkInformation(
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(horizontal = MaterialTheme.keylines.content),
-        hapticManager = hapticManager,
         isEditable = isEditable,
         state = state,
         onSelectBand = onSelectBand,
@@ -152,7 +148,6 @@ internal fun LazyListScope.renderNetworkInformation(
 
 private fun LazyListScope.renderRunningItems(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     state: StatusViewState,
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
@@ -181,7 +176,6 @@ private fun LazyListScope.renderRunningItems(
             modifier
                 .padding(bottom = MaterialTheme.keylines.baseline)
                 .padding(horizontal = MaterialTheme.keylines.content),
-        hapticManager = hapticManager,
         state = state,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
@@ -204,7 +198,6 @@ private fun LazyListScope.renderRunningItems(
       contentType = StatusScreenContentTypes.TILES,
   ) {
     RunningTiles(
-        hapticManager = hapticManager,
         serverViewState = serverViewState,
         onShowQRCode = onShowQRCode,
         onRefreshConnection = onRefreshConnection,
@@ -216,7 +209,6 @@ private fun LazyListScope.renderRunningItems(
 
 private fun LazyListScope.renderEditableItems(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     state: StatusViewState,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
@@ -244,7 +236,6 @@ private fun LazyListScope.renderEditableItems(
             modifier
                 .padding(bottom = MaterialTheme.keylines.baseline)
                 .padding(horizontal = MaterialTheme.keylines.content),
-        hapticManager = hapticManager,
         state = state,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onPasswordChanged = onPasswordChanged,

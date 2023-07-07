@@ -49,8 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,12 +65,13 @@ fun rememberAllTabs(): SnapshotStateList<MainView> {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     appName: String,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   Surface(
       modifier = modifier,
       color = MaterialTheme.colors.background,
@@ -101,7 +101,7 @@ fun MainTopBar(
             actions = {
               IconButton(
                   onClick = {
-                    hapticManager.actionButtonPress()
+                    hapticManager?.actionButtonPress()
                     onSettingsOpen()
                   },
               ) {
@@ -182,7 +182,6 @@ private fun MainTab(
 @OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainTopBar() {
   MainTopBar(
-      hapticManager = rememberHapticManager(),
       appName = "TEST",
       pagerState = rememberPagerState(),
       allTabs = rememberAllTabs(),

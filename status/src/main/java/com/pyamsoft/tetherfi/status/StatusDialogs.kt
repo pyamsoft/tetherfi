@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.pydroid.ui.util.fullScreenDialog
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -15,7 +14,6 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 internal fun StatusDialogs(
-    hapticManager: HapticManager,
     state: StatusViewState,
     serverViewState: ServerViewState,
     appName: String,
@@ -49,7 +47,6 @@ internal fun StatusDialogs(
   ) {
     TroubleshootDialog(
         modifier = Modifier.fullScreenDialog(),
-        hapticManager = hapticManager,
         appName = appName,
         isWifiDirectError = isWifiDirectError,
         isProxyError = isProxyError,
@@ -62,7 +59,6 @@ internal fun StatusDialogs(
   ) {
     PermissionExplanationDialog(
         modifier = Modifier.fullScreenDialog(),
-        hapticManager = hapticManager,
         appName = appName,
         onDismissPermissionExplanation = onDismissPermissionExplanation,
         onOpenPermissionSettings = onOpenPermissionSettings,
@@ -76,7 +72,6 @@ internal fun StatusDialogs(
     ) {
       ServerErrorDialog(
           modifier = Modifier.fullScreenDialog(),
-          hapticManager = hapticManager,
           title = "Hotspot Initialization Error",
           error = err.error,
           onDismiss = onHideHotspotError,
@@ -90,7 +85,6 @@ internal fun StatusDialogs(
     ) {
       ServerErrorDialog(
           modifier = Modifier.fullScreenDialog(),
-          hapticManager = hapticManager,
           title = "Network Initialization Error",
           error = err.error,
           onDismiss = onHideNetworkError,

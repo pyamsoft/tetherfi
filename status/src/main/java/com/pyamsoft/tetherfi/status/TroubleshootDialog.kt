@@ -29,17 +29,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 
 @Composable
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     appName: String,
     isWifiDirectError: Boolean,
     isProxyError: Boolean,
     onDismiss: () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   AlertDialog(
       modifier = modifier.padding(MaterialTheme.keylines.content),
       properties = rememberDialogProperties(),
@@ -65,7 +66,7 @@ internal fun TroubleshootDialog(
 
           TextButton(
               onClick = {
-                hapticManager.cancelButtonPress()
+                hapticManager?.cancelButtonPress()
                 onDismiss()
               },
           ) {

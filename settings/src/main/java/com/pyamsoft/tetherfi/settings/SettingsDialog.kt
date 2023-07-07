@@ -37,7 +37,6 @@ import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.settings.SettingsPage
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -59,7 +58,6 @@ fun SettingsDialog(
     appEnvironment: AppDevEnvironment,
     onDismiss: () -> Unit,
 ) {
-  val hapticManager = rememberHapticManager()
   val context = LocalContext.current
   val keylines = MaterialTheme.keylines
 
@@ -72,7 +70,6 @@ fun SettingsDialog(
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),
-          hapticManager = hapticManager,
           onClose = onDismiss,
           title = {
             Text(

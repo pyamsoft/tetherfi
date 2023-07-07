@@ -34,6 +34,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.PYDroidTheme
 import com.pyamsoft.pydroid.theme.attributesFromCurrentTheme
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.theme.Theming
 
 @Composable
@@ -101,15 +103,19 @@ fun Activity.TetherFiTheme(
     content: @Composable () -> Unit,
 ) {
   val isDarkMode = theme.getSystemDarkMode()
+  val hapticManager = rememberHapticManager()
 
   PYDroidTheme(
       colors = themeColors(this, isDarkMode),
       shapes = themeShapes(),
   ) {
-    // We update the LocalContentColor to match our onBackground. This allows the default
-    // content color to be more appropriate to the theme background
     CompositionLocalProvider(
+        // We update the LocalContentColor to match our onBackground. This allows the default
+        // content color to be more appropriate to the theme background
         LocalContentColor provides MaterialTheme.colors.onBackground,
+
+        // We provide the local haptic manager since PYDroid makes it optional
+        LocalHapticManager provides hapticManager,
         content = content,
     )
   }

@@ -40,8 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
@@ -60,7 +59,6 @@ private enum class DeviceSetupContentTypes {
 
 internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     appName: String,
     state: InfoViewState,
     serverViewState: ServerViewState,
@@ -151,6 +149,8 @@ internal fun LazyListScope.renderDeviceSetup(
           val password = rememberServerPassword(group, isPasswordVisible)
           val rawPassword = rememberServerRawPassword(group)
 
+          val hapticManager = LocalHapticManager.current
+
           Text(
               text = "Password",
               style =
@@ -178,9 +178,9 @@ internal fun LazyListScope.renderDeviceSetup(
                     Modifier.padding(start = MaterialTheme.keylines.baseline)
                         .clickable {
                           if (isPasswordVisible) {
-                            hapticManager.toggleOff()
+                            hapticManager?.toggleOff()
                           } else {
-                            hapticManager.toggleOn()
+                            hapticManager?.toggleOn()
                           }
                           onTogglePasswordVisibility()
                         }
@@ -289,10 +289,8 @@ internal fun LazyListScope.renderDeviceSetup(
 @Preview
 @Composable
 private fun PreviewDeviceSetup() {
-  val hapticManager = rememberHapticManager()
   LazyColumn {
     renderDeviceSetup(
-        hapticManager = hapticManager,
         appName = "TEST",
         serverViewState = TestServerViewState(),
         state = MutableInfoViewState(),

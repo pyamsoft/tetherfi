@@ -33,18 +33,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 
 @Composable
 fun DialogToolbar(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     onClose: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
     title: @Composable () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   Surface(
       modifier = modifier,
       elevation = ZeroElevation,
@@ -70,7 +70,7 @@ fun DialogToolbar(
           navigationIcon = {
             IconButton(
                 onClick = {
-                  hapticManager.cancelButtonPress()
+                  hapticManager?.cancelButtonPress()
                   onClose()
                 },
             ) {
@@ -90,7 +90,6 @@ fun DialogToolbar(
 @Composable
 private fun PreviewDialogToolbar() {
   DialogToolbar(
-      hapticManager = rememberHapticManager(),
       onClose = {},
   ) {
     Text(

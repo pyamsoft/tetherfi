@@ -43,18 +43,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 
 @Composable
 internal fun PermissionExplanationDialog(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     appName: String,
     onDismissPermissionExplanation: () -> Unit,
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   // Permission needed is different on T
   val neededPermission = remember {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -106,7 +107,7 @@ internal fun PermissionExplanationDialog(
         ) {
           TextButton(
               onClick = {
-                hapticManager.actionButtonPress()
+                hapticManager?.actionButtonPress()
                 onOpenPermissionSettings()
               },
               colors =
@@ -135,7 +136,7 @@ internal fun PermissionExplanationDialog(
                           ),
                   ),
               onClick = {
-                hapticManager.cancelButtonPress()
+                hapticManager?.cancelButtonPress()
                 onDismissPermissionExplanation()
               },
           ) {
@@ -146,7 +147,7 @@ internal fun PermissionExplanationDialog(
 
           TextButton(
               onClick = {
-                hapticManager.confirmButtonPress()
+                hapticManager?.confirmButtonPress()
                 onRequestPermissions()
               },
           ) {

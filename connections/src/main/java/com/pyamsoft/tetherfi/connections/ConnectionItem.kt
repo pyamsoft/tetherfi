@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import java.time.format.DateTimeFormatter
@@ -38,11 +38,11 @@ private val FIRST_SEEN_DATE_FORMATTER =
 @Composable
 internal fun ConnectionItem(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     blocked: SnapshotStateList<TetherClient>,
     client: TetherClient,
     onClick: (TetherClient) -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
   val name = remember(client) { client.key() }
   val seenTime =
       remember(client) {
@@ -83,11 +83,11 @@ internal fun ConnectionItem(
           )
           Switch(
               checked = isNotBlocked,
-              onCheckedChange = {
-                if (isNotBlocked) {
-                  hapticManager.toggleOff()
+              onCheckedChange = { newBlocked ->
+                if (newBlocked) {
+                  hapticManager?.toggleOn()
                 } else {
-                  hapticManager.toggleOn()
+                  hapticManager?.toggleOff()
                 }
                 onClick(client)
               },

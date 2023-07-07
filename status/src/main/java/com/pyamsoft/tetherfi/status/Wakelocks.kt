@@ -40,13 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
 @Composable
 internal fun Wakelocks(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     appName: String,
     isEditable: Boolean,
     state: StatusViewState,
@@ -129,7 +128,6 @@ internal fun Wakelocks(
       )
 
       WakelockSwitch(
-          hapticManager = hapticManager,
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
@@ -142,7 +140,6 @@ internal fun Wakelocks(
       )
 
       WakelockSwitch(
-          hapticManager = hapticManager,
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
@@ -160,7 +157,6 @@ internal fun Wakelocks(
 @Composable
 private fun WakelockSwitch(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     isEditable: Boolean,
     highAlpha: Float,
     mediumAlpha: Float,
@@ -170,14 +166,16 @@ private fun WakelockSwitch(
     description: String,
     onClick: () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   Column(
       modifier =
           modifier
               .clickable(enabled = isEditable) {
                 if (checked) {
-                  hapticManager.toggleOff()
+                  hapticManager?.toggleOff()
                 } else {
-                  hapticManager.toggleOn()
+                  hapticManager?.toggleOn()
                 }
                 onClick()
               }

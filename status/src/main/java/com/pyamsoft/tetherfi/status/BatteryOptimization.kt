@@ -24,13 +24,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
 internal fun LazyListScope.renderBatteryAndPerformance(
     itemModifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,
@@ -63,7 +62,6 @@ internal fun LazyListScope.renderBatteryAndPerformance(
             itemModifier
                 .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.content),
-        hapticManager = hapticManager,
         isEditable = isEditable,
         appName = appName,
         state = state,
@@ -77,7 +75,6 @@ internal fun LazyListScope.renderBatteryAndPerformance(
   ) {
     BatteryOptimization(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
-        hapticManager = hapticManager,
         isEditable = isEditable,
         appName = appName,
         state = state,
@@ -89,12 +86,12 @@ internal fun LazyListScope.renderBatteryAndPerformance(
 @Composable
 private fun BatteryOptimization(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,
     onDisableBatteryOptimizations: () -> Unit,
 ) {
+  val hapticManager = LocalHapticManager.current
   val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
 
   CheckableCard(
@@ -110,7 +107,7 @@ private fun BatteryOptimization(
               .trimMargin(),
       onClick = {
         if (!isBatteryOptimizationDisabled) {
-          hapticManager.confirmButtonPress()
+          hapticManager?.confirmButtonPress()
         }
         onDisableBatteryOptimizations()
       },

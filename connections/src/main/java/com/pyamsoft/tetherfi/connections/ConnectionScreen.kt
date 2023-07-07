@@ -32,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.util.collectAsStateList
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -48,7 +47,6 @@ fun ConnectionScreen(
   val group by serverViewState.group.collectAsState()
   val clients = state.connections.collectAsStateList()
   val blocked = state.blocked.collectAsStateList()
-  val hapticManager = rememberHapticManager()
 
   Scaffold(
       modifier = modifier,
@@ -57,7 +55,6 @@ fun ConnectionScreen(
       renderPYDroidExtras()
 
       renderList(
-          hapticManager = hapticManager,
           group = group,
           clients = clients,
           blocked = blocked,

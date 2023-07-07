@@ -33,8 +33,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
-import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEffect
@@ -45,12 +44,12 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import javax.inject.Inject
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
@@ -70,10 +69,11 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun WatchTabSwipe(
-    hapticManager: HapticManager,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
 ) {
+  val hapticManager = LocalHapticManager.current
+
   // Watch for a swipe causing a page change and update accordingly
   LaunchedEffect(
       pagerState,
@@ -85,7 +85,7 @@ private fun WatchTabSwipe(
         .mapNotNull { allTabs.getOrNull(it) }
         .collect { page ->
           Timber.d("Page swiped: $page")
-          withContext(context = Dispatchers.Main) { hapticManager.actionButtonPress() }
+          withContext(context = Dispatchers.Main) { hapticManager?.actionButtonPress() }
         }
   }
 }
@@ -93,7 +93,6 @@ private fun WatchTabSwipe(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
-    hapticManager: HapticManager,
     viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -104,7 +103,6 @@ private fun MountHooks(
   SaveStateDisposableEffect(viewModel)
 
   WatchTabSwipe(
-      hapticManager = hapticManager,
       pagerState = pagerState,
       allTabs = allTabs,
   )
@@ -148,10 +146,8 @@ fun MainEntry(
 
   val pagerState = rememberPagerState()
   val allTabs = rememberAllTabs()
-  val hapticManager = rememberHapticManager()
 
   MountHooks(
-      hapticManager = hapticManager,
       viewModel = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
@@ -160,7 +156,6 @@ fun MainEntry(
 
   MainScreen(
       modifier = modifier,
-      hapticManager = hapticManager,
       appName = appName,
       state = viewModel,
       pagerState = pagerState,

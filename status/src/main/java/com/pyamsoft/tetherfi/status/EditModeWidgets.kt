@@ -38,7 +38,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.core.text.trimmedLength
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -76,7 +76,6 @@ internal fun EditPort(
 @Composable
 internal fun EditPassword(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     state: StatusViewState,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
@@ -100,6 +99,8 @@ internal fun EditPassword(
         if (canUseCustomConfig) password.trimmedLength() in 8..63 else true
       }
 
+  val hapticManager = LocalHapticManager.current
+
   StatusEditor(
       modifier = modifier,
       enabled = canUseCustomConfig,
@@ -119,11 +120,11 @@ internal fun EditPassword(
         ) {
           IconToggleButton(
               checked = isPasswordVisible,
-              onCheckedChange = {
-                if (isPasswordVisible) {
-                  hapticManager.toggleOff()
+              onCheckedChange = { newVisible ->
+                if (newVisible) {
+                  hapticManager?.toggleOn()
                 } else {
-                  hapticManager.toggleOn()
+                  hapticManager?.toggleOff()
                 }
                 onTogglePasswordVisibility()
               },

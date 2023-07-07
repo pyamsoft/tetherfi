@@ -11,13 +11,11 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 
 fun LazyListScope.renderList(
-    hapticManager: HapticManager,
     group: WiDiNetworkStatus.GroupInfo,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
@@ -29,7 +27,6 @@ fun LazyListScope.renderList(
         renderRunningNoClients()
       } else {
         renderRunningWithClients(
-            hapticManager = hapticManager,
             clients = clients,
             blocked = blocked,
             onToggleBlock = onToggleBlock,
@@ -58,7 +55,6 @@ private fun LazyListScope.renderRunningNoClients() {
 }
 
 private fun LazyListScope.renderRunningWithClients(
-    hapticManager: HapticManager,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
@@ -91,7 +87,6 @@ private fun LazyListScope.renderRunningWithClients(
   ) { client ->
     ConnectionItem(
         modifier = Modifier.fillMaxWidth(),
-        hapticManager = hapticManager,
         client = client,
         blocked = blocked,
         onClick = onToggleBlock,

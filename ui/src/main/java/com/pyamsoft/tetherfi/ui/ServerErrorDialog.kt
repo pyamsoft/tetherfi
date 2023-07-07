@@ -41,7 +41,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.haptics.HapticManager
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import kotlinx.coroutines.delay
 
 private enum class ServerErrorDialogContentTypes {
@@ -58,7 +58,6 @@ typealias IconButtonContent =
 
 @Composable
 fun ServerErrorTile(
-    hapticManager: HapticManager,
     onShowError: () -> Unit,
     content: IconButtonContent,
 ) {
@@ -66,8 +65,10 @@ fun ServerErrorTile(
   val (showContent, setShowContent) = remember { mutableStateOf(false) }
   val handleShowContent by rememberUpdatedState { setShowContent(true) }
 
+  val hapticManager = LocalHapticManager.current
+
   val handleClick by rememberUpdatedState {
-    hapticManager.confirmButtonPress()
+    hapticManager?.confirmButtonPress()
     onShowError()
   }
 
@@ -103,7 +104,6 @@ fun ServerErrorTile(
 @Composable
 fun ServerErrorDialog(
     modifier: Modifier = Modifier,
-    hapticManager: HapticManager,
     title: String,
     error: Throwable,
     onDismiss: () -> Unit,
@@ -117,7 +117,6 @@ fun ServerErrorDialog(
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),
-          hapticManager = hapticManager,
           onClose = onDismiss,
           title = {
             Text(
