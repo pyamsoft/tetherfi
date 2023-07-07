@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 34
 
     // Kotlin
-    kotlin = "1.8.21"
+    kotlin = "1.8.22"
     coroutines = "1.7.2"
 
     // Us
@@ -38,7 +38,7 @@ buildscript {
 
     // Compose
     compose = "1.4.3"
-    composeCompiler = "1.4.7"
+    composeCompiler = "1.4.8"
     composeMaterial = "1.4.3"
     accompanist = "0.30.1"
 
