@@ -81,9 +81,8 @@ protected constructor(
       MutableStateFlow<WiDiNetworkStatus.ConnectionInfo>(WiDiNetworkStatus.ConnectionInfo.Empty)
   private var lastConnectionRefreshTime = LocalDateTime.MIN
 
-  private var proxyJob: Job? = null
-
   private val mutex = Mutex()
+  private var proxyJob: Job? = null
   private var wifiChannel: Channel? = null
 
   @CheckResult
@@ -101,9 +100,7 @@ protected constructor(
       // In this case the channel may already be dead.
       //
       // We may not be able to perform a full clean stop.
-      // Use Dispatchers.Default here instead of ProxyDispatcher since this can run outside of
-      // Server cycle
-      CoroutineScope(context = Dispatchers.Default).launch {
+      CoroutineScope(context = Dispatchers.IO).launch {
         Timber.d("WifiP2PManager Channel died. Kill network")
         // Fire the shutdown event to the service
         //
@@ -170,7 +167,7 @@ protected constructor(
     enforcer.assertOffMainThread()
 
     Timber.d("Stop existing WiFi Group")
-    suspendCoroutine { cont ->
+    return suspendCoroutine { cont ->
       wifiP2PManager.removeGroup(
           channel,
           object : WifiP2pManager.ActionListener {
@@ -241,16 +238,17 @@ protected constructor(
           }
         }
 
+        // Run this code outside of the lock because we don't want the proxy loop to block the
+        // rest of the lock
+
         // Kill the old one
         killProxyJob()
 
         // Do this outside of the lock, since this will run "forever"
         launchProxy?.also { lp ->
-          val newProxyJob = launch(context = Dispatchers.Default) { onNetworkStarted() }
-          mutex.withLock {
-            Timber.d("Track new proxy job!")
-            proxyJob = newProxyJob
-          }
+          val newProxyJob = launch(context = Dispatchers.IO) { onNetworkStarted() }
+          Timber.d("Track new proxy job!")
+          proxyJob = newProxyJob
 
           Timber.d("WiDi network has started: $lp")
           status.set(lp)
@@ -273,7 +271,6 @@ protected constructor(
     onStop()
   }
 
-  // Lock the mutex to avoid anyone else from using the channel during closing
   private suspend fun shutdownWifiNetwork(channel: Channel) {
     enforcer.assertOffMainThread()
 
@@ -521,34 +518,27 @@ protected constructor(
     return result
   }
 
-  private suspend fun withLockUpdateNetworkInfoChannels() {
-    enforcer.assertOffMainThread()
-
-    mutex.withLock {
-      val groupInfo = withLockGetGroupInfo()
-      if (groupInfo != WiDiNetworkStatus.GroupInfo.Unchanged) {
-        Timber.d("WiFi Direct Group Info: $groupInfo")
-        groupInfoChannel.value = groupInfo
-      } else {
-        Timber.w("Last Group Info request is still fresh, unchanged")
-      }
-
-      val connectionInfo = withLockGetConnectionInfo()
-      if (connectionInfo != WiDiNetworkStatus.ConnectionInfo.Unchanged) {
-        Timber.d("WiFi Direct Connection Info: $connectionInfo")
-        connectionInfoChannel.value = connectionInfo
-      } else {
-        Timber.w("Last Connection Info request is still fresh, unchanged")
-      }
-    }
-  }
-
   final override suspend fun updateNetworkInfo() =
-      // Use Dispatcher.Default here instead since this can run outside of cycle
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
-        withLockUpdateNetworkInfoChannels()
+        mutex.withLock {
+          val groupInfo = withLockGetGroupInfo()
+          if (groupInfo != WiDiNetworkStatus.GroupInfo.Unchanged) {
+            Timber.d("WiFi Direct Group Info: $groupInfo")
+            groupInfoChannel.value = groupInfo
+          } else {
+            Timber.w("Last Group Info request is still fresh, unchanged")
+          }
+
+          val connectionInfo = withLockGetConnectionInfo()
+          if (connectionInfo != WiDiNetworkStatus.ConnectionInfo.Unchanged) {
+            Timber.d("WiFi Direct Connection Info: $connectionInfo")
+            connectionInfoChannel.value = connectionInfo
+          } else {
+            Timber.w("Last Connection Info request is still fresh, unchanged")
+          }
+        }
       }
 
   final override suspend fun start() =

@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -107,35 +108,47 @@ internal constructor(
               enforcer.assertOffMainThread()
 
               f.collect { s ->
-                runningStatus = s
-                updateNotification()
+                if (runningStatus != s) {
+                  runningStatus = s
+                  updateNotification()
+                }
               }
             }
           }
 
           // Listen for client updates
-          seenClients.listenForClients().also { f ->
-            launch {
-              enforcer.assertOffMainThread()
+          seenClients
+              .listenForClients()
+              .map { it.size }
+              .also { f ->
+                launch {
+                  enforcer.assertOffMainThread()
 
-              f.collect { s ->
-                clientCount = s.size
-                updateNotification()
+                  f.collect { c ->
+                    if (clientCount != c) {
+                      clientCount = c
+                      updateNotification()
+                    }
+                  }
+                }
               }
-            }
-          }
 
           // Listen for block updates
-          blockedClients.listenForBlocked().also { f ->
-            launch {
-              enforcer.assertOffMainThread()
+          blockedClients
+              .listenForBlocked()
+              .map { it.size }
+              .also { f ->
+                launch {
+                  enforcer.assertOffMainThread()
 
-              f.collect { s ->
-                blockCount = s.size
-                updateNotification()
+                  f.collect { b ->
+                    if (blockCount != b) {
+                      blockCount = b
+                      updateNotification()
+                    }
+                  }
+                }
               }
-            }
-          }
         }
   }
 

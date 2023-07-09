@@ -1,5 +1,6 @@
 package com.pyamsoft.tetherfi.server.proxy
 
+import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
@@ -8,6 +9,9 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 internal suspend inline fun <T> usingSocket(block: (SocketBuilder) -> T): T {
+  // Tag sockets for Android O strict mode
+  tagSocket()
+
   val manager = SelectorManager(dispatcher = Dispatchers.IO)
   val rawSocket = aSocket(manager)
   try {

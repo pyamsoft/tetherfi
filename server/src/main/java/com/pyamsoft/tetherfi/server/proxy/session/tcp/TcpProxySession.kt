@@ -27,7 +27,6 @@ import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.network.sockets.InetSocketAddress
@@ -376,9 +375,6 @@ internal constructor(
   private suspend inline fun <T> connectToInternet(request: ProxyRequest, block: (Socket) -> T): T {
     enforcer.assertOffMainThread()
 
-    // Tag sockets for Android O strict mode
-    tagSocket()
-
     return usingSocket { rawSocket ->
       // We dont actually use the socket tls() method here since we are not a TLS server
       // We do the CONNECT based workaround to handle HTTPS connections
@@ -571,8 +567,7 @@ internal constructor(
      * Tests if a given string is an IP address
      */
     private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
-            .toRegex()
+        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$""".toRegex()
 
     private const val LINE_ENDING = "\r\n"
 

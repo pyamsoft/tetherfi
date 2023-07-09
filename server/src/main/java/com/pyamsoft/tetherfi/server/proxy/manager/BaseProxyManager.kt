@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.SocketBuilder
@@ -29,9 +28,6 @@ internal abstract class BaseProxyManager<S : ASocket> protected constructor() : 
 
   override suspend fun loop() =
       withContext(context = Dispatchers.IO) {
-        // Tag sockets for Android O strict mode
-        tagSocket()
-
         return@withContext usingSocket { socket ->
           val server = openServer(builder = socket)
           try {

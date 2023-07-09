@@ -83,7 +83,6 @@ internal constructor(
                 enableVibration(true)
               }
 
-      Timber.d("Create notification channel and group: ${channelInfo.id} ${channelInfo.title}")
       channelCreator.apply {
         // Delete the group if it already exists with a bad group ID
         // Group ID and channel ID cannot match
