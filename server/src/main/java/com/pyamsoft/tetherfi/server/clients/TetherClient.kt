@@ -17,8 +17,12 @@
 package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import java.time.LocalDateTime
 
+@Stable
+@Immutable
 sealed class TetherClient(
     open val mostRecentlySeen: LocalDateTime,
 ) {

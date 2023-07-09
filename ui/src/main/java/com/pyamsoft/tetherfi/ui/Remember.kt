@@ -29,6 +29,10 @@ fun rememberServerSSID(group: WiDiNetworkStatus.GroupInfo): String {
       is WiDiNetworkStatus.GroupInfo.Connected -> group.ssid
       is WiDiNetworkStatus.GroupInfo.Empty -> "NO NAME"
       is WiDiNetworkStatus.GroupInfo.Error -> "ERROR"
+      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+        throw IllegalStateException(
+            "GroupInfo.Unchanged should never escape the server-module internals.")
+      }
     }
   }
 }
@@ -43,6 +47,10 @@ fun rememberServerRawPassword(group: WiDiNetworkStatus.GroupInfo): String {
       is WiDiNetworkStatus.GroupInfo.Connected -> group.password
       is WiDiNetworkStatus.GroupInfo.Empty -> ""
       is WiDiNetworkStatus.GroupInfo.Error -> ""
+      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+        throw IllegalStateException(
+            "GroupInfo.Unchanged should never escape the server-module internals.")
+      }
     }
   }
 }
@@ -73,6 +81,10 @@ fun rememberServerPassword(
       is WiDiNetworkStatus.GroupInfo.Error -> {
         "ERROR"
       }
+      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+        throw IllegalStateException(
+            "GroupInfo.Unchanged should never escape the server-module internals.")
+      }
     }
   }
 }
@@ -85,6 +97,10 @@ fun rememberServerIp(connection: WiDiNetworkStatus.ConnectionInfo): String {
       is WiDiNetworkStatus.ConnectionInfo.Connected -> connection.ip
       is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO IP"
       is WiDiNetworkStatus.ConnectionInfo.Error -> "ERROR"
+      is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
+        throw IllegalStateException(
+            "ConnectionInfo.Unchanged should never escape the server-module internals.")
+      }
     }
   }
 }

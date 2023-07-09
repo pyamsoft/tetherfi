@@ -16,16 +16,23 @@
 
 package com.pyamsoft.tetherfi.status
 
-sealed class PermissionRequests {
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 
-  object Server : PermissionRequests()
+@Stable
+@Immutable
+sealed interface PermissionRequests {
 
-  object Notification : PermissionRequests()
+  object Server : PermissionRequests
+
+  object Notification : PermissionRequests
 }
 
-sealed class PermissionResponse {
+@Stable
+@Immutable
+sealed interface PermissionResponse {
 
-  object ToggleProxy : PermissionResponse()
+  object ToggleProxy : PermissionResponse
 
-  object RefreshNotification : PermissionResponse()
+  object RefreshNotification : PermissionResponse
 }

@@ -35,17 +35,22 @@ interface WiDiNetworkStatus : Server {
 
   @Stable
   @Immutable
-  sealed class GroupInfo {
+  sealed interface GroupInfo {
+
+    object Unchanged : GroupInfo
 
     data class Connected
     internal constructor(
         val ssid: String,
         val password: String,
-    ) : GroupInfo()
+    ) : GroupInfo
 
-    object Empty : GroupInfo()
+    object Empty : GroupInfo
 
-    data class Error internal constructor(val error: Throwable) : GroupInfo()
+    data class Error
+    internal constructor(
+        val error: Throwable,
+    ) : GroupInfo
 
     @CheckResult
     fun update(onUpdate: (Connected) -> Connected): GroupInfo {
@@ -53,22 +58,28 @@ interface WiDiNetworkStatus : Server {
         is Connected -> onUpdate(this)
         is Empty -> this
         is Error -> this
+        is Unchanged -> this
       }
     }
   }
 
   @Stable
   @Immutable
-  sealed class ConnectionInfo {
+  sealed interface ConnectionInfo {
+    object Unchanged : ConnectionInfo
+
     data class Connected
     internal constructor(
         val ip: String,
         val hostName: String,
-    ) : ConnectionInfo()
+    ) : ConnectionInfo
 
-    object Empty : ConnectionInfo()
+    object Empty : ConnectionInfo
 
-    data class Error internal constructor(val error: Throwable) : ConnectionInfo()
+    data class Error
+    internal constructor(
+        val error: Throwable,
+    ) : ConnectionInfo
 
     @CheckResult
     fun update(onUpdate: (Connected) -> Connected): ConnectionInfo {
@@ -76,6 +87,7 @@ interface WiDiNetworkStatus : Server {
         is Connected -> onUpdate(this)
         is Empty -> this
         is Error -> this
+        is Unchanged -> this
       }
     }
   }

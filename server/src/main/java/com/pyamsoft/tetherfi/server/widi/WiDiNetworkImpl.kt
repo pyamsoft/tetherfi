@@ -26,6 +26,7 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,7 @@ internal constructor(
     shutdownBus: EventBus<ServerShutdownEvent>,
     context: Context,
     permissionGuard: PermissionGuard,
+    clock: Clock,
     status: WiDiStatus,
     appEnvironment: AppDevEnvironment,
 ) :
@@ -54,6 +56,7 @@ internal constructor(
         config,
         appEnvironment,
         enforcer,
+        clock,
         status,
     ) {
 

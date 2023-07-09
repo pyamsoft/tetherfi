@@ -16,16 +16,25 @@
 
 package com.pyamsoft.tetherfi.server.widi.receiver
 
-sealed class WidiNetworkEvent {
-  object WifiEnabled : WidiNetworkEvent()
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 
-  object WifiDisabled : WidiNetworkEvent()
+@Stable
+@Immutable
+sealed interface WidiNetworkEvent {
 
-  object PeersChanged : WidiNetworkEvent()
+  object WifiEnabled : WidiNetworkEvent
 
-  object ThisDeviceChanged : WidiNetworkEvent()
+  object WifiDisabled : WidiNetworkEvent
 
-  object DiscoveryChanged : WidiNetworkEvent()
+  object PeersChanged : WidiNetworkEvent
 
-  data class ConnectionChanged internal constructor(val ip: String) : WidiNetworkEvent()
+  object ThisDeviceChanged : WidiNetworkEvent
+
+  object DiscoveryChanged : WidiNetworkEvent
+
+  data class ConnectionChanged
+  internal constructor(
+      val ip: String,
+  ) : WidiNetworkEvent
 }
