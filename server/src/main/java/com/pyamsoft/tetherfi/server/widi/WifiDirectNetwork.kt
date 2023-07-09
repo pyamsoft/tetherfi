@@ -221,8 +221,6 @@ protected constructor(
             wifiChannel = channel
           }
 
-          updateNetworkInfoChannels()
-
           launch(context = Dispatchers.Default) { onNetworkStarted() }
 
           Timber.d("WiDi network has started: $runningStatus")
@@ -247,8 +245,6 @@ protected constructor(
       onStop: () -> Unit,
   ) {
     enforcer.assertOffMainThread()
-
-    updateNetworkInfoChannels()
 
     scope.launch(context = Dispatchers.Default) { onNetworkStopped(clearErrorStatus) }
 
@@ -389,7 +385,7 @@ protected constructor(
     }
 
     val result: WiDiNetworkStatus.GroupInfo
-    val group = resolveCurrentGroup(channel)
+    val group = mutex.withLock { resolveCurrentGroup(channel) }
     if (group == null) {
       Timber.w("WiFi Direct did not return Group Info")
       result =
@@ -456,7 +452,7 @@ protected constructor(
     }
 
     val result: WiDiNetworkStatus.ConnectionInfo
-    val info = resolveConnectionInfo(channel)
+    val info = mutex.withLock { resolveConnectionInfo(channel) }
     val host = info?.groupOwnerAddress
     if (host == null) {
       Timber.w("WiFi Direct did not return Connection Info")
