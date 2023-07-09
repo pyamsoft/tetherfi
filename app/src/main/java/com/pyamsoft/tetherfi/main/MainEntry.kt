@@ -92,7 +92,6 @@ private fun WatchTabSwipe(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
-    scope: CoroutineScope,
     viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -141,7 +140,6 @@ fun MainEntry(
   val allTabs = rememberAllTabs()
 
   MountHooks(
-      scope = scope,
       viewModel = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
