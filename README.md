@@ -24,6 +24,11 @@ device's internet connection.
 
 or get the APK from the [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
 
+## Known Not Working
+
+- Anything using UDP (things like games and possibly some streaming services)
+- Facebook Messenger
+
 ## TetherFi may be for you if:
 
 **You want to share your Android's WiFi or Mobile Data**
