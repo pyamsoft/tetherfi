@@ -54,11 +54,8 @@ class MainActivity : AppCompatActivity() {
                     override val applicationIcon = R.mipmap.ic_launcher
 
                     override val changelog = buildChangeLog {
-                      bugfix("Reduce memory usage and make sure we close all sockets after use")
-                      change("Correct attribution for open source libraries")
-                      change("Remove unused code to shrink install size")
-                      change(
-                          "Clear old clients out of Connections if they haven't had activity for 3 minutes.")
+                      feature("Add haptic feedback on some UI actions")
+                      change("Faster proxy performance by ~15%")
                     }
                   },
           )
