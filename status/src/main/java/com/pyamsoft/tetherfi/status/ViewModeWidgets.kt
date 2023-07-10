@@ -58,7 +58,7 @@ internal fun ViewProxy(
       verticalAlignment = Alignment.CenterVertically,
   ) {
     StatusItem(
-        modifier = Modifier.weight(1F),
+        modifier = Modifier.weight(1F, fill = false),
         title = "PROXY URL/HOSTNAME",
         value = ipAddress,
         valueStyle =
@@ -73,7 +73,6 @@ internal fun ViewProxy(
     )
 
     StatusItem(
-        modifier = Modifier.weight(1F),
         title = "PROXY PORT",
         value = portNumber,
         valueStyle =
