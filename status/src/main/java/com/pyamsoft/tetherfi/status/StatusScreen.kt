@@ -175,8 +175,6 @@ fun StatusScreen(
     LazyColumn(
         modifier = Modifier.padding(pv).fillMaxSize(),
     ) {
-      renderPYDroidExtras()
-
       item(
           contentType = StatusScreenContentTypes.BUTTON,
       ) {
@@ -200,6 +198,8 @@ fun StatusScreen(
           )
         }
       }
+
+      renderPYDroidExtras()
 
       item(
           contentType = StatusScreenContentTypes.STATUS,
