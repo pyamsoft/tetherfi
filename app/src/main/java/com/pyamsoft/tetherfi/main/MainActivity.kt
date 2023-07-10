@@ -30,6 +30,7 @@ import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -87,7 +88,10 @@ class MainActivity : AppCompatActivity() {
           theme = theme,
       ) {
         SystemBars()
-        InstallPYDroidExtras()
+        InstallPYDroidExtras(
+            modifier = Modifier.fillUpToPortraitSize(),
+            appName = appName,
+        )
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,

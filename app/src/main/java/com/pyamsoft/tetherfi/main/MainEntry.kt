@@ -35,14 +35,13 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
-import com.pyamsoft.pydroid.ui.util.fullScreenDialog
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
@@ -160,7 +159,7 @@ fun MainEntry(
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsState()
   if (isSettingsOpen) {
     SettingsDialog(
-        modifier = Modifier.fullScreenDialog(),
+        modifier = Modifier.fillUpToPortraitSize(),
         appEnvironment = appEnvironment,
         onDismiss = { viewModel.handleCloseSettings() },
     )

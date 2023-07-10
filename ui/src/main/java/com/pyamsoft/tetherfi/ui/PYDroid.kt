@@ -23,6 +23,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.uri.ExternalUriPortal
 import com.pyamsoft.pydroid.ui.widget.BillingUpsellWidget
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
@@ -37,8 +38,16 @@ private enum class PYDroidContentTypes {
 }
 
 @Composable
-fun InstallPYDroidExtras() {
+fun InstallPYDroidExtras(
+    modifier: Modifier = Modifier,
+    appName: String,
+) {
   ShowDataPolicyDialog()
+
+  ExternalUriPortal(
+      modifier = modifier,
+      appName = appName,
+  )
 }
 
 fun LazyListScope.renderPYDroidExtras() {

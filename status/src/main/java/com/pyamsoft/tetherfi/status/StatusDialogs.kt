@@ -6,7 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.pyamsoft.pydroid.ui.util.fullScreenDialog
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
@@ -46,7 +46,7 @@ internal fun StatusDialogs(
       visible = isShowingSetupError,
   ) {
     TroubleshootDialog(
-        modifier = Modifier.fullScreenDialog(),
+        modifier = Modifier.fillUpToPortraitSize(),
         appName = appName,
         isWifiDirectError = isWifiDirectError,
         isProxyError = isProxyError,
@@ -58,7 +58,7 @@ internal fun StatusDialogs(
       visible = explainPermissions,
   ) {
     PermissionExplanationDialog(
-        modifier = Modifier.fullScreenDialog(),
+        modifier = Modifier.fillUpToPortraitSize(),
         appName = appName,
         onDismissPermissionExplanation = onDismissPermissionExplanation,
         onOpenPermissionSettings = onOpenPermissionSettings,
@@ -71,7 +71,7 @@ internal fun StatusDialogs(
         visible = isShowingHotspotError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fullScreenDialog(),
+          modifier = Modifier.fillUpToPortraitSize(),
           title = "Hotspot Initialization Error",
           error = err.error,
           onDismiss = onHideHotspotError,
@@ -84,7 +84,7 @@ internal fun StatusDialogs(
         visible = isShowingNetworkError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fullScreenDialog(),
+          modifier = Modifier.fillUpToPortraitSize(),
           title = "Network Initialization Error",
           error = err.error,
           onDismiss = onHideNetworkError,

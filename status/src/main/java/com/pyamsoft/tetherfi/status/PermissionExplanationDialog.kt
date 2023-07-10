@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -44,6 +43,7 @@ import androidx.compose.ui.text.withStyle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 
 @Composable
@@ -211,7 +211,7 @@ private fun ViewPrivacyPolicy(
       }
     }
 
-    val uriHandler = LocalUriHandler.current
+    val uriHandler = LocalExternalUriHandler.current
     ClickableText(
         text = text,
         style =
