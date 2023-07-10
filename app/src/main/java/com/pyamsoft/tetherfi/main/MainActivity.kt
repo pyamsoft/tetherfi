@@ -57,7 +57,9 @@ class MainActivity : AppCompatActivity() {
                     override val changelog = buildChangeLog {
                       feature("Add haptic feedback on some UI actions")
                       feature("Preliminary support for Android U (34)")
+                      feature("Confirm external URL links before navigating")
                       change("Faster proxy performance by ~15%")
+                      bugfix("Fix in-app update flow")
                     }
                   },
           )
