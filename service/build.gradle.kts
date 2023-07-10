@@ -48,7 +48,9 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
-  // API for Dagger
+  // API for Dagger to inject
+  // Notifier in ServiceAppModule
+  // NotifyDispatcher in ServiceAppModule
   api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
 
   implementation(project(":core"))
