@@ -30,6 +30,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +60,9 @@ fun SettingsDialog(
     onDismiss: () -> Unit,
 ) {
   val context = LocalContext.current
-  val keylines = MaterialTheme.keylines
+  val baselinePadding = MaterialTheme.keylines.baseline
+  val itemModifier =
+      remember(baselinePadding) { Modifier.fillMaxWidth().padding(bottom = baselinePadding) }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -89,7 +92,7 @@ fun SettingsDialog(
           extraDebugContent = {
             if (context.isDebugMode()) {
               renderExtraDebugContent(
-                  itemModifier = Modifier.fillMaxWidth().padding(bottom = keylines.baseline),
+                  itemModifier = itemModifier,
                   appEnvironment = appEnvironment,
               )
             }

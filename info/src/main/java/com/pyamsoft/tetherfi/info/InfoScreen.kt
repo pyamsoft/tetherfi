@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
@@ -43,7 +44,9 @@ fun InfoScreen(
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
 ) {
-  val itemModifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content)
+  val contentPadding = MaterialTheme.keylines.content
+  val itemModifier =
+      remember(contentPadding) { Modifier.fillMaxWidth().padding(horizontal = contentPadding) }
 
   LazyColumn(
       modifier = modifier,
