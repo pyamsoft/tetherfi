@@ -3,6 +3,17 @@ TetherFi
 
 Share your Android device's Internet connection with other devices without needing Root.
 
+
+### Get TetherFi
+
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+
+or get the APK from the
+[Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
+
+### What is TetherFi
+
 TetherFi works by creating a Wi-Fi Direct legacy group and an HTTP proxy server. Other
 devices can connect to the broadcasted Wi-Fi network, and connect to the Internet by
 setting the proxy server settings to the server created by TetherFi. You do not need a
@@ -44,14 +55,6 @@ TetherFi is developed in the open on GitHub at:
 If you know a few things about Android programming and want to help out with
 development, you can do so by creating issue tickets to squash bugs, and
 proposing feature requests.
-
-### Get TetherFi
-
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
-
-or get the APK from the
-[Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
 
 ## License
 
