@@ -600,8 +600,6 @@ protected constructor(
 
         Timber.d("Starting Wi-Fi Direct Network...")
         try {
-          withLockStopNetwork(clearErrorStatus = true)
-
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           //
