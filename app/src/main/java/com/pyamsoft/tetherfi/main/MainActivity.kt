@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
                     feature("Confirm external URL links before navigating")
                     change("Faster proxy performance by ~15%")
                     bugfix("Fix in-app update flow")
+                    bugfix("Fix a rare crash when launching the app")
                   }
                 },
         )
