@@ -74,7 +74,7 @@ internal constructor(
       val notificationGroup =
           NotificationChannelGroup("${channelInfo.id} Group", "${channelInfo.title} Group")
       val notificationChannel =
-          NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_MIN)
+          NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_LOW)
               .apply {
                 group = notificationGroup.id
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
@@ -105,7 +105,7 @@ internal constructor(
         .setAutoCancel(false)
         .setOngoing(true)
         .setSilent(true)
-        .setPriority(NotificationCompat.PRIORITY_MIN)
+        .setPriority(NotificationCompat.PRIORITY_LOW)
         .setContentIntent(getActivityPendingIntent())
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
         .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
