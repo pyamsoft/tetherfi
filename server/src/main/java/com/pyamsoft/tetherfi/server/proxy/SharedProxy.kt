@@ -17,10 +17,14 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import com.pyamsoft.tetherfi.server.Server
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import kotlinx.coroutines.flow.Flow
 
 interface SharedProxy : Server {
 
-  suspend fun start()
+  suspend fun start(
+      connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>,
+  )
 
   enum class Type {
     TCP,

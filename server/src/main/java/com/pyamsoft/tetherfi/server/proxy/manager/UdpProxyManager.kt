@@ -16,15 +16,12 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
-import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
@@ -38,15 +35,8 @@ internal class UdpProxyManager
 internal constructor(
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<UdpProxyData>,
+    private val hostName: String,
 ) : BaseProxyManager<BoundDatagramSocket>() {
-
-  @CheckResult
-  private fun getServerAddress(): SocketAddress {
-    return InetSocketAddress(
-        hostname = "0.0.0.0",
-        port = 0,
-    )
-  }
 
   private suspend fun runSession(
       scope: CoroutineScope,
@@ -69,9 +59,14 @@ internal constructor(
 
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = Dispatchers.IO) {
-        val localAddress = getServerAddress()
+        val localAddress =
+            getServerAddress(
+                hostName = hostName,
+                port = 0,
+                verifyPort = false,
+                verifyHostName = true,
+            )
         Timber.d("Bind UDP server to local address: $localAddress")
-
         return@withContext builder.udp().bind(localAddress = localAddress)
       }
 

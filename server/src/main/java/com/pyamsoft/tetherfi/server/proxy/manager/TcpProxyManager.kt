@@ -16,15 +16,12 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
@@ -39,16 +36,9 @@ internal class TcpProxyManager
 internal constructor(
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
+    private val hostName: String,
     private val port: Int,
 ) : BaseProxyManager<ServerSocket>() {
-
-  @CheckResult
-  private fun getServerAddress(port: Int): SocketAddress {
-    return InetSocketAddress(
-        hostname = "0.0.0.0",
-        port = port,
-    )
-  }
 
   private suspend fun runSession(
       scope: CoroutineScope,
@@ -71,16 +61,14 @@ internal constructor(
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = Dispatchers.IO) {
-        // Port must be in the valid range
-        if (port > 65000 || port <= 1024) {
-          val err = "Port is invalid: $port"
-          Timber.w(err)
-          throw IllegalArgumentException(err)
-        }
-
-        val localAddress = getServerAddress(port)
+        val localAddress =
+            getServerAddress(
+                hostName,
+                port,
+                verifyPort = true,
+                verifyHostName = true,
+            )
         Timber.d("Bind TCP server to local address: $localAddress")
-
         return@withContext builder.tcp().bind(localAddress = localAddress)
       }
 

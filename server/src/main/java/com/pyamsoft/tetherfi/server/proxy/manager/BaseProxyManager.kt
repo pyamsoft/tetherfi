@@ -19,10 +19,13 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import io.ktor.network.sockets.ASocket
+import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 internal abstract class BaseProxyManager<S : ASocket> protected constructor() : ProxyManager {
 
@@ -41,4 +44,39 @@ internal abstract class BaseProxyManager<S : ASocket> protected constructor() : 
   protected abstract suspend fun runServer(server: S)
 
   @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
+
+  companion object {
+
+    @JvmStatic
+    @CheckResult
+    protected fun getServerAddress(
+        hostName: String,
+        port: Int,
+        verifyPort: Boolean,
+        verifyHostName: Boolean,
+    ): SocketAddress {
+      // Port must be in the valid range
+      if (verifyPort) {
+        if (port > 65000 || port <= 1024) {
+          val err = "Port is invalid: $port"
+          Timber.w(err)
+          throw IllegalArgumentException(err)
+        }
+      }
+
+      if (verifyHostName) {
+        // Name must be valid
+        if (hostName.isBlank()) {
+          val err = "HostName is invalid: $hostName"
+          Timber.w(err)
+          throw IllegalArgumentException(err)
+        }
+      }
+
+      return InetSocketAddress(
+          hostname = hostName,
+          port = port,
+      )
+    }
+  }
 }

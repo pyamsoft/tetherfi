@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -42,7 +43,9 @@ internal constructor(
 ) : ProxyManager.Factory {
 
   @CheckResult
-  private suspend fun createTcp(): ProxyManager {
+  private suspend fun createTcp(
+      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+  ): ProxyManager {
     enforcer.assertOffMainThread()
 
     val port = preferences.listenForPortChanges().first()
@@ -50,25 +53,32 @@ internal constructor(
     return TcpProxyManager(
         enforcer = enforcer,
         session = tcpSession,
+        hostName = info.hostName,
         port = port,
     )
   }
 
   @CheckResult
-  private fun createUdp(): ProxyManager {
+  private fun createUdp(
+      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+  ): ProxyManager {
     enforcer.assertOffMainThread()
 
     return UdpProxyManager(
         enforcer = enforcer,
         session = udpSession,
+        hostName = info.hostName,
     )
   }
 
-  override suspend fun create(type: SharedProxy.Type): ProxyManager =
+  override suspend fun create(
+      type: SharedProxy.Type,
+      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+  ): ProxyManager =
       withContext(context = Dispatchers.Default) {
         return@withContext when (type) {
-          SharedProxy.Type.TCP -> createTcp()
-          SharedProxy.Type.UDP -> createUdp()
+          SharedProxy.Type.TCP -> createTcp(info)
+          SharedProxy.Type.UDP -> createUdp(info)
         }
       }
 }

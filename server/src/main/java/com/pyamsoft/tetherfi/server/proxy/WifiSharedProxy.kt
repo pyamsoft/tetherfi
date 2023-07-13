@@ -25,13 +25,20 @@ import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -56,22 +63,40 @@ internal constructor(
     }
   }
 
-  private suspend fun beginProxyLoop(type: SharedProxy.Type) {
+  private suspend fun beginProxyLoop(
+      type: SharedProxy.Type,
+      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+  ) {
     enforcer.assertOffMainThread()
 
     try {
-      Timber.d("${type.name} Begin proxy server loop")
-      factory.create(type = type).loop()
+      Timber.d("${type.name} Begin proxy server loop: $info")
+      factory
+          .create(
+              type = type,
+              info = info,
+          )
+          .loop()
     } catch (e: Throwable) {
       handleServerLoopError(e, type)
     }
   }
 
-  private fun CoroutineScope.proxyLoop() {
-    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.TCP) }
+  private fun CoroutineScope.proxyLoop(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
+    launch(context = Dispatchers.Default) {
+      beginProxyLoop(
+          type = SharedProxy.Type.TCP,
+          info = info,
+      )
+    }
 
     // TODO: UDP support
-    //    launch(context = Dispatchers.Default) { beginProxyLoop(SharedProxy.Type.UDP) }
+    //   launch(context = Dispatchers.Default) {
+    //     beginProxyLoop(
+    //       type = SharedProxy.Type.UDP,
+    //       info = info,
+    //     )
+    //   }
   }
 
   private fun reset() {
@@ -93,7 +118,7 @@ internal constructor(
         status.set(RunningStatus.NotRunning)
       }
 
-  private suspend fun startServer() {
+  private suspend fun startServer(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
     try {
       // Launch a new scope so this function won't proceed to finally block until the scope is
       // completed/cancelled
@@ -106,29 +131,70 @@ internal constructor(
             clearError = true,
         )
 
-        proxyLoop()
+        proxyLoop(info)
 
         Timber.d("Started Proxy Server")
         status.set(RunningStatus.Running)
       }
     } finally {
-      shutdown(clearErrorStatus = false)
+      Timber.d("Stopped Proxy Server")
     }
   }
 
-  override suspend fun start() =
+  override suspend fun start(connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>) =
       withContext(context = Dispatchers.Default) {
-        reset()
+        // Watch the connection status
         try {
-          startServer()
-        } catch (e: Throwable) {
-          e.ifNotCancellation {
-            Timber.e(e, "Error when running the proxy, shut it all down")
-            reset()
+          // Launch a new scope so this function won't proceed to finally block until the scope is
+          // completed/cancelled
+          //
+          // This will suspend until the proxy server loop dies
+          coroutineScope {
+            val mutex = Mutex()
+            var job: Job? = null
+            connectionStatus.distinctUntilChanged().collect { info ->
+              when (info) {
+                is WiDiNetworkStatus.ConnectionInfo.Connected -> {
+                  // Connected is good, we can launch
+                  mutex.withLock {
+                    job?.cancelAndJoin()
+                    job =
+                        launch(context = Dispatchers.Default) {
+                          reset()
+                          startServer(info)
+                        }
+                  }
+                }
+                is WiDiNetworkStatus.ConnectionInfo.Empty -> {
+                  Timber.w("Connection EMPTY, shut down Proxy")
 
-            status.set(RunningStatus.Error(message = e.message ?: "A proxy error occurred"))
-            shutdownBus.emit(ServerShutdownEvent)
+                  // Empty is missing the channel, bad
+                  mutex.withLock {
+                    job?.cancelAndJoin()
+                    shutdown(clearErrorStatus = false)
+                  }
+                }
+                is WiDiNetworkStatus.ConnectionInfo.Error -> {
+                  Timber.w("Connection ERROR, shut down Proxy")
+
+                  // Error is bad, shut down the proxy
+                  mutex.withLock {
+                    job?.cancelAndJoin()
+                    shutdown(clearErrorStatus = false)
+                  }
+                }
+                is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
+                  Timber.w("UNCHANGED SHOULD NOT HAPPEN")
+                  shutdown(clearErrorStatus = false)
+                  throw IllegalStateException(
+                      "GroupInfo.Unchanged should never escape the server-module internals.")
+                }
+              }
+            }
           }
+        } finally {
+          Timber.d("Proxy stopped from OUTSIDE")
+          shutdown(clearErrorStatus = false)
         }
       }
 }

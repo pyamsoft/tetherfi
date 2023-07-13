@@ -189,8 +189,8 @@ protected constructor(
   /**
    * Re-use the existing group if we can
    *
-   * NOTE: If the SSID/password has changed between creating this group in the past
-   * and retrieving it now, the UI will be out of sync. Do we care?
+   * NOTE: If the SSID/password has changed between creating this group in the past and retrieving
+   * it now, the UI will be out of sync. Do we care?
    */
   @CheckResult
   private suspend fun reuseExistingGroup(channel: Channel): RunningStatus? {
@@ -262,7 +262,8 @@ protected constructor(
 
         // Do this outside of the lock, since this will run "forever"
         launchProxy?.also { lp ->
-          val newProxyJob = launch(context = Dispatchers.IO) { onNetworkStarted() }
+          val newProxyJob =
+              launch(context = Dispatchers.IO) { onNetworkStarted(connectionInfoChannel) }
           Timber.d("Track new proxy job!")
           proxyJob = newProxyJob
 
@@ -595,7 +596,9 @@ protected constructor(
   }
 
   /** Side effects ran from this function should have their own launch {} */
-  protected abstract fun CoroutineScope.onNetworkStarted()
+  protected abstract fun CoroutineScope.onNetworkStarted(
+      connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>,
+  )
 
   /** Side effects ran from this function should have their own launch {} */
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)

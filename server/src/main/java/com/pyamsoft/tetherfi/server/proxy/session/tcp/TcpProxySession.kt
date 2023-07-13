@@ -361,10 +361,7 @@ internal constructor(
       // Wait for internet communication to finish
       job.join()
     } catch (e: Throwable) {
-      e.ifNotCancellation {
-        Timber.e(e, "Error during Internet exchange")
-        writeError(proxyOutput)
-      }
+      e.ifNotCancellation { writeError(proxyOutput) }
     }
   }
 
@@ -474,10 +471,7 @@ internal constructor(
         }
       }
     } catch (e: Throwable) {
-      e.ifNotCancellation {
-        Timber.e(e, "Error during connect to internet: $request")
-        writeError(proxyOutput)
-      }
+      e.ifNotCancellation { writeError(proxyOutput) }
     }
   }
 
@@ -543,7 +537,9 @@ internal constructor(
               proxyOutput = proxyOutput,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation { Timber.e(e, "Error during TCP exchange: $connection") }
+          e.ifNotCancellation {
+            // Do nothing, error logging slows us down too
+          }
         } finally {
           withContext(context = NonCancellable) {
             proxyInput.cancel()
