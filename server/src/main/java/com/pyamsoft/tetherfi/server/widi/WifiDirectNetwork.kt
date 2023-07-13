@@ -200,6 +200,11 @@ protected constructor(
     return null
   }
 
+  private suspend fun shutdownForStatus(newStatus: RunningStatus) {
+    status.set(newStatus)
+    shutdownBus.emit(ServerShutdownEvent)
+  }
+
   private suspend fun withLockStartNetwork() =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
@@ -210,8 +215,7 @@ protected constructor(
 
           if (!permissionGuard.canCreateWiDiNetwork()) {
             Timber.w("Missing permissions for making WiDi network")
-            status.set(RunningStatus.NotRunning)
-            shutdownBus.emit(ServerShutdownEvent)
+            shutdownForStatus(RunningStatus.NotRunning)
             return@withContext
           }
 
@@ -222,8 +226,7 @@ protected constructor(
             Timber.w("Failed to create channel, cannot initialize WiDi network")
 
             completeStop(this, clearErrorStatus = false) {
-              status.set(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
-              shutdownBus.emit(ServerShutdownEvent)
+              shutdownForStatus(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
             }
             return@withContext
           }
@@ -245,8 +248,7 @@ protected constructor(
 
             completeStop(this, clearErrorStatus = false) {
               Timber.w("Stopping proxy after Group failed to create")
-              status.set(runningStatus)
-              shutdownBus.emit(ServerShutdownEvent)
+              shutdownForStatus(runningStatus)
             }
           }
         }
@@ -573,8 +575,7 @@ protected constructor(
           e.ifNotCancellation {
             Timber.e(e, "Error starting Network")
             val msg = e.message ?: "An error occurred while starting the Network"
-            status.set(RunningStatus.Error(msg))
-            shutdownBus.emit(ServerShutdownEvent)
+            shutdownForStatus(RunningStatus.Error(msg))
           }
         } finally {
           withContext(context = NonCancellable) {
