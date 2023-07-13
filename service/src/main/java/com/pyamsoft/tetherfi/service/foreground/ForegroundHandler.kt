@@ -23,8 +23,6 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,6 +31,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ForegroundHandler
@@ -62,20 +62,22 @@ internal constructor(
     // Watch everything else as the parent
     job?.cancel()
     job =
-        scope.launch {
+        scope.launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
           // When shutdown events are received, we kill the service
           shutdownListener.requireNotNull().also { f ->
-            f.collect {
-              Timber.d("Shutdown event received!")
-              onShutdownService()
+            launch(context = Dispatchers.Default) {
+              f.collect {
+                Timber.d("Shutdown event received!")
+                onShutdownService()
+              }
             }
           }
 
           // Watch for notification refresh
           notificationRefreshListener.requireNotNull().also { f ->
-            launch {
+            launch(context = Dispatchers.Default) {
               enforcer.assertOffMainThread()
 
               f.collect {

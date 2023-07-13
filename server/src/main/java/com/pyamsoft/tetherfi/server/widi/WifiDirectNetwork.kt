@@ -598,6 +598,11 @@ protected constructor(
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
+        if (status.get() is RunningStatus.Error) {
+          Timber.w("Reset proxy from error state")
+          withLockStopNetwork(clearErrorStatus = true)
+        }
+
         Timber.d("Starting Wi-Fi Direct Network...")
         try {
           // Launch a new scope so this function won't proceed to finally block until the scope is

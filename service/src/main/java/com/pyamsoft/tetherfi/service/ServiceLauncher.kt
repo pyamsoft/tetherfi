@@ -19,31 +19,120 @@ package com.pyamsoft.tetherfi.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import javax.inject.Inject
+import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.core.cancelChildren
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
+import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ServiceLauncher
 @Inject
 internal constructor(
     private val context: Context,
     private val foregroundServiceClass: Class<out Service>,
+    private val notificationLauncher: NotificationLauncher,
+    private val foregroundHandler: ForegroundHandler,
+    private val wiDiReceiverRegister: WiDiReceiverRegister,
 ) {
 
   private val foregroundService by
       lazy(LazyThreadSafetyMode.NONE) { Intent(context, foregroundServiceClass) }
 
-  fun startForeground() {
+  private val runningState = MutableStateFlow(false)
+
+  private val scope =
+      CoroutineScope(
+          context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+      )
+
+  private fun stopProxy() {
+    notificationLauncher.stop()
+    wiDiReceiverRegister.unregister()
+  }
+
+  private fun CoroutineScope.startProxy() {
+    val scope = this
+    // Start notification first for Android O immediately
+    notificationLauncher.start()
+
+    // Register for WiDi events
+    wiDiReceiverRegister.register()
+
+    // Prepare proxy on create
+    foregroundHandler.bind(
+        scope = scope,
+        onRefreshNotification = {
+          Timber.d("Refresh event received, start notification again")
+          notificationLauncher.start()
+        },
+        onShutdownService = {
+          Timber.d("Shutdown event received. Stopping service")
+          stopForeground()
+        },
+    )
+
+    // We leave the launch call in here so that the service lifecycle is 1-1 tied to the hotspot
+    // network
+    //
+    // Since this is not immediate, we check that the service is infact still alive
+    scope.launch(context = Dispatchers.Default) {
+      Timber.d("Starting Proxy!")
+      foregroundHandler.startProxy()
+    }
+  }
+
+  @CheckResult
+  private suspend fun handleStartService(): Job =
+      withContext(context = Dispatchers.Main) {
+        launch(context = Dispatchers.Main) {
+          startAndroidService()
+          startProxy()
+        }
+      }
+
+  @CheckResult
+  private suspend fun handleStopService(): Job =
+      withContext(context = Dispatchers.Main + NonCancellable) {
+        launch(context = Dispatchers.Main + NonCancellable) {
+          stopAndroidService()
+          stopProxy()
+        }
+      }
+
+  private fun startAndroidService() {
     Timber.d("Start Foreground Service!")
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      context.startForegroundService(foregroundService)
-    } else {
-      context.startService(foregroundService)
+    context.startService(foregroundService)
+  }
+
+  private fun stopAndroidService() {
+    Timber.d("Stop Foreground Service!")
+    context.stopService(foregroundService)
+  }
+
+  fun startForeground() {
+    if (runningState.compareAndSet(expect = false, update = true)) {
+      scope.cancelChildren()
+      scope.launch { handleStartService() }
     }
   }
 
   fun stopForeground() {
-    Timber.d("Stop Foreground Service!")
-    context.stopService(foregroundService)
+    if (runningState.compareAndSet(expect = true, update = false)) {
+      scope.cancelChildren()
+      scope.launch { handleStopService() }
+    }
   }
 }

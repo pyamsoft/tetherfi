@@ -16,12 +16,6 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- To run as service -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
-    <!-- Android 14 requires this permission too -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
-
     <application
         android:name=".TetherFi"
         android:allowBackup="true"
@@ -61,8 +55,7 @@
         <service
             android:name=".foreground.ProxyForegroundService"
             android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="connectedDevice" />
+            android:exported="false" />
 
         <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
         <service

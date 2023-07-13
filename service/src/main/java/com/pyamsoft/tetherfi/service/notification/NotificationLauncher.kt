@@ -16,11 +16,9 @@
 
 package com.pyamsoft.tetherfi.service.notification
 
-import android.app.Service
-
 interface NotificationLauncher {
 
-  fun start(service: Service)
+  fun start()
 
-  fun stop(service: Service)
+  fun stop()
 }

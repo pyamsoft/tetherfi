@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.service.notification
 
-import android.app.Service
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
@@ -26,8 +25,6 @@ import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +33,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -57,7 +56,6 @@ internal constructor(
   private var notificationJob: Job? = null
 
   private fun onStatusUpdated(
-      service: Service,
       status: RunningStatus,
       clientCount: Int,
       blockCount: Int,
@@ -70,8 +68,7 @@ internal constructor(
         )
 
     notifier
-        .startForeground(
-            service = service,
+        .show(
             id = NOTIFICATION_ID,
             channelInfo = CHANNEL_INFO,
             notification = data,
@@ -79,7 +76,7 @@ internal constructor(
         .also { Timber.d("Updated foreground notification: $it: $data") }
   }
 
-  private fun watchNotification(service: Service) {
+  private fun watchNotification() {
     // These are updated in line
     var clientCount = 0
     var blockCount = 0
@@ -89,7 +86,6 @@ internal constructor(
     // I just don't want to declare globals outside of this scope as they are unreliable
     fun updateNotification() {
       onStatusUpdated(
-          service = service,
           status = runningStatus,
           clientCount = clientCount,
           blockCount = blockCount,
@@ -152,13 +148,12 @@ internal constructor(
         }
   }
 
-  override fun start(service: Service) {
+  override fun start() {
     val data = DEFAULT_DATA
 
     // Initialize with blank data first
     notifier
-        .startForeground(
-            service = service,
+        .show(
             id = NOTIFICATION_ID,
             channelInfo = CHANNEL_INFO,
             notification = data,
@@ -166,15 +161,11 @@ internal constructor(
         .also { Timber.d("Started foreground notification: $it: $data") }
 
     // Then immediately open a channel to update
-    watchNotification(service)
+    watchNotification()
   }
 
-  override fun stop(service: Service) {
-    notifier.stopForeground(
-        service = service,
-        id = NOTIFICATION_ID,
-    )
-
+  override fun stop() {
+    notifier.cancel(NOTIFICATION_ID)
     notificationJob?.cancel()
     notificationJob = null
   }
