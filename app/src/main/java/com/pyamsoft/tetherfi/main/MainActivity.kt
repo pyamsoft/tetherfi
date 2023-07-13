@@ -31,7 +31,6 @@ import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
-import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
@@ -45,40 +44,52 @@ class MainActivity : AppCompatActivity() {
   @Inject @JvmField internal var permissions: MainPermissions? = null
   private var pydroid: PYDroidActivityDelegate? = null
 
-  init {
-    doOnCreate {
-      pydroid =
-          installPYDroid(
-              provider =
-                  object : ChangeLogProvider {
+  private fun initializePYDroid() {
+    pydroid =
+        installPYDroid(
+            provider =
+                object : ChangeLogProvider {
 
-                    override val applicationIcon = R.mipmap.ic_launcher
+                  override val applicationIcon = R.mipmap.ic_launcher
 
-                    override val changelog = buildChangeLog {
-                      feature("Add haptic feedback on some UI actions")
-                      feature("Preliminary support for Android U (34)")
-                      feature("Confirm external URL links before navigating")
-                      change("Faster proxy performance by ~15%")
-                      bugfix("Fix in-app update flow")
-                    }
-                  },
-          )
-    }
+                  override val changelog = buildChangeLog {
+                    feature("Add haptic feedback on some UI actions")
+                    feature("Preliminary support for Android U (34)")
+                    feature("Confirm external URL links before navigating")
+                    change("Faster proxy performance by ~15%")
+                    bugfix("Fix in-app update flow")
+                  }
+                },
+        )
+  }
 
-    doOnCreate { permissions.requireNotNull().register(this) }
+  private fun registerPermissionRequester() {
+    permissions.requireNotNull().register(this)
   }
 
   private fun handleShowInAppRating() {
     pydroid?.loadInAppRating()
   }
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    stableLayoutHideNavigation()
+  private fun setupActivity() {
+    // Setup PYDroid first
+    initializePYDroid()
 
+    // Create and initialize the ObjectGraph
     val component = ObjectGraph.ApplicationScope.retrieve(this).plusMain().create()
     component.inject(this)
     ObjectGraph.ActivityScope.install(this, component)
+
+    // Then register for any permissions
+    registerPermissionRequester()
+
+    // Finally update the View
+    stableLayoutHideNavigation()
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setupActivity()
 
     val vm = viewModel.requireNotNull()
     val appName = getString(R.string.app_name)
