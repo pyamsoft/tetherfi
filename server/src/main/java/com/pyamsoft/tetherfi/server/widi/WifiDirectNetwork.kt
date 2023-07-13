@@ -96,18 +96,15 @@ protected constructor(
         appContext,
         Looper.getMainLooper(),
     ) {
-      // Called on the Main thread when the WifiP2p loses connection.
-      // In this case the channel may already be dead.
+      // Before we used to kill the Network
       //
-      // We may not be able to perform a full clean stop.
-      CoroutineScope(context = Dispatchers.IO).launch {
-        Timber.d("WifiP2PManager Channel died. Kill network")
-        // Fire the shutdown event to the service
-        //
-        // The service shutdown will properly clean up things like this WDN, as well as wakelocks
-        // and notifications
-        shutdownBus.emit(ServerShutdownEvent)
-      }
+      // But now we do nothing - if you Swipe Away the app from recents,
+      // the p2p manager will die, but when it comes back we want everything to
+      // attempt to run again so we leave this around.
+      //
+      // Any other unexpected death like Airplane mode or Wifi off should be covered by the receiver
+      // so we should never unintentionally leak the service
+      Timber.d("WifiP2PManager Channel died! Do nothing :D")
     }
   }
 
