@@ -37,11 +37,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import java.time.LocalDateTime
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +49,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.Clock
+import java.time.LocalDateTime
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -183,26 +183,49 @@ protected constructor(
     }
   }
 
-  /**
-   * Re-use the existing group if we can
-   *
-   * NOTE: If the SSID/password has changed between creating this group in the past and retrieving
-   * it now, the UI will be out of sync. Do we care?
-   */
-  @CheckResult
-  private suspend fun reuseExistingGroup(channel: Channel): RunningStatus? {
-    val groupInfo = resolveCurrentGroup(channel)
-    if (groupInfo != null) {
-      Timber.d("Group already connected!")
-      return RunningStatus.Running
-    }
-
-    return null
-  }
-
   private suspend fun shutdownForStatus(newStatus: RunningStatus) {
     status.set(newStatus)
     shutdownBus.emit(ServerShutdownEvent)
+  }
+
+  @CheckResult
+  private suspend fun reUseExistingConnection(channel: Channel): RunningStatus? {
+    val groupInfo = withLockGetGroupInfo(channel, force = true)
+    val connectionInfo = withLockGetConnectionInfo(channel, force = true)
+    when (groupInfo) {
+      is WiDiNetworkStatus.GroupInfo.Connected -> {
+        when (connectionInfo) {
+          is WiDiNetworkStatus.ConnectionInfo.Connected -> {
+            Timber.d("Re-use existing connection: ${groupInfo.ssid} $connectionInfo")
+            groupInfoChannel.value = groupInfo
+            connectionInfoChannel.value = connectionInfo
+            return RunningStatus.Running
+          }
+          is WiDiNetworkStatus.ConnectionInfo.Empty -> {
+            Timber.w("Connection is EMPTY, cannot re-use")
+            return null
+          }
+          is WiDiNetworkStatus.ConnectionInfo.Error -> {
+            Timber.w("Connection is ERROR, cannot re-use")
+            return null
+          }
+          is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
+            throw IllegalStateException("Connection.UNCHANGED should not be reached here!")
+          }
+        }
+      }
+      is WiDiNetworkStatus.GroupInfo.Empty -> {
+        Timber.w("Group is EMPTY, cannot re-use")
+        return null
+      }
+      is WiDiNetworkStatus.GroupInfo.Error -> {
+        Timber.w("Group is ERROR, cannot re-use")
+        return null
+      }
+      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+        throw IllegalStateException("Group.UNCHANGED should not be reached here!")
+      }
+    }
   }
 
   private suspend fun withLockStartNetwork() =
@@ -231,7 +254,11 @@ protected constructor(
             return@withContext
           }
 
-          val runningStatus = reuseExistingGroup(channel) ?: createGroup(channel)
+          // Re-use the existing group if we can
+          // NOTE: If the SSID/password has changed between creating this group in the past and
+          // retrieving it now, the UI will be out of sync. Do we care?
+
+          val runningStatus = reUseExistingConnection(channel) ?: createGroup(channel)
           if (runningStatus is RunningStatus.Running) {
             Timber.d("Network started")
 
@@ -416,7 +443,10 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun withLockGetGroupInfo(): WiDiNetworkStatus.GroupInfo {
+  private suspend fun withLockGetGroupInfo(
+      channel: Channel?,
+      force: Boolean
+  ): WiDiNetworkStatus.GroupInfo {
     enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -424,15 +454,16 @@ protected constructor(
       return WiDiNetworkStatus.GroupInfo.Empty
     }
 
-    val channel = wifiChannel
     if (channel == null) {
       Timber.w("Cannot get group info without Wifi channel")
       return WiDiNetworkStatus.GroupInfo.Empty
     }
 
     val now = LocalDateTime.now(clock)
-    if (lastGroupRefreshTime.plusSeconds(5L) >= now) {
-      return WiDiNetworkStatus.GroupInfo.Unchanged
+    if (!force) {
+      if (lastGroupRefreshTime.plusSeconds(5L) >= now) {
+        return WiDiNetworkStatus.GroupInfo.Unchanged
+      }
     }
 
     val group = resolveCurrentGroup(channel)
@@ -488,7 +519,10 @@ protected constructor(
   }
 
   @CheckResult
-  private suspend fun withLockGetConnectionInfo(): WiDiNetworkStatus.ConnectionInfo {
+  private suspend fun withLockGetConnectionInfo(
+      channel: Channel?,
+      force: Boolean
+  ): WiDiNetworkStatus.ConnectionInfo {
     enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
@@ -496,15 +530,16 @@ protected constructor(
       return WiDiNetworkStatus.ConnectionInfo.Empty
     }
 
-    val channel = wifiChannel
     if (channel == null) {
       Timber.w("Cannot get connection info without Wifi channel")
       return WiDiNetworkStatus.ConnectionInfo.Empty
     }
 
     val now = LocalDateTime.now(clock)
-    if (lastConnectionRefreshTime.plusSeconds(10L) > now) {
-      return WiDiNetworkStatus.ConnectionInfo.Unchanged
+    if (!force) {
+      if (lastConnectionRefreshTime.plusSeconds(10L) > now) {
+        return WiDiNetworkStatus.ConnectionInfo.Unchanged
+      }
     }
 
     val result: WiDiNetworkStatus.ConnectionInfo
@@ -539,7 +574,9 @@ protected constructor(
         enforcer.assertOffMainThread()
 
         mutex.withLock {
-          val groupInfo = withLockGetGroupInfo()
+          val channel = wifiChannel
+
+          val groupInfo = withLockGetGroupInfo(channel, force = false)
           if (groupInfo != WiDiNetworkStatus.GroupInfo.Unchanged) {
             Timber.d("WiFi Direct Group Info: $groupInfo")
             groupInfoChannel.value = groupInfo
@@ -547,7 +584,7 @@ protected constructor(
             Timber.w("Last Group Info request is still fresh, unchanged")
           }
 
-          val connectionInfo = withLockGetConnectionInfo()
+          val connectionInfo = withLockGetConnectionInfo(channel, force = false)
           if (connectionInfo != WiDiNetworkStatus.ConnectionInfo.Unchanged) {
             Timber.d("WiFi Direct Connection Info: $connectionInfo")
             connectionInfoChannel.value = connectionInfo
