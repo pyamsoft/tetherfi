@@ -22,7 +22,8 @@ import android.content.Intent
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
-import com.pyamsoft.tetherfi.service.foreground.ForegroundHandler
+import com.pyamsoft.tetherfi.service.foreground.ForegroundLauncher
+import com.pyamsoft.tetherfi.service.foreground.ForegroundWatcher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -44,8 +45,9 @@ internal constructor(
     private val context: Context,
     private val foregroundServiceClass: Class<out Service>,
     private val notificationLauncher: NotificationLauncher,
-    private val foregroundHandler: ForegroundHandler,
     private val wiDiReceiverRegister: WiDiReceiverRegister,
+    private val foregroundWatcher: ForegroundWatcher,
+    private val foregroundLauncher: ForegroundLauncher,
 ) {
 
   private val foregroundService by
@@ -58,31 +60,33 @@ internal constructor(
           context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
       )
 
-  private fun stopProxy() {
+  private suspend fun stopProxy() {
     notificationLauncher.stop()
     wiDiReceiverRegister.unregister()
   }
 
   private fun CoroutineScope.startProxy() {
     val scope = this
-    // Start notification first for Android O immediately
-    notificationLauncher.start()
 
     // Register for WiDi events
     wiDiReceiverRegister.register()
 
+    // Start notification first for Android O immediately
+    scope.launch(context = Dispatchers.Default) { notificationLauncher.start() }
+
     // Prepare proxy on create
-    foregroundHandler.bind(
-        scope = scope,
-        onRefreshNotification = {
-          Timber.d("Refresh event received, start notification again")
-          notificationLauncher.start()
-        },
-        onShutdownService = {
-          Timber.d("Shutdown event received. Stopping service")
-          stopForeground()
-        },
-    )
+    scope.launch(context = Dispatchers.Default) {
+      foregroundWatcher.bind(
+          onRefreshNotification = {
+            Timber.d("Refresh event received, start notification again")
+            notificationLauncher.start()
+          },
+          onShutdownService = {
+            Timber.d("Shutdown event received. Stopping service")
+            stopForeground()
+          },
+      )
+    }
 
     // We leave the launch call in here so that the service lifecycle is 1-1 tied to the hotspot
     // network
@@ -90,7 +94,7 @@ internal constructor(
     // Since this is not immediate, we check that the service is infact still alive
     scope.launch(context = Dispatchers.Default) {
       Timber.d("Starting Proxy!")
-      foregroundHandler.startProxy()
+      foregroundLauncher.startProxy()
     }
   }
 
@@ -134,5 +138,9 @@ internal constructor(
       scope.cancelChildren()
       scope.launch { handleStopService() }
     }
+  }
+
+  fun resetError() {
+    stopForeground()
   }
 }

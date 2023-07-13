@@ -30,7 +30,6 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -155,8 +155,11 @@ internal constructor(
         serviceLauncher.stopForeground()
       }
       is RunningStatus.Error -> {
-        Timber.w("Resetting Proxy from Error state")
-        serviceLauncher.startForeground()
+        Timber.d("Resetting Proxy from Error state")
+        serviceLauncher.apply {
+          resetError()
+          startForeground()
+        }
       }
       else -> {
         Timber.d("Cannot toggle while we are in the middle of an operation: $status")

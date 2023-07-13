@@ -183,8 +183,8 @@ protected constructor(
     }
   }
 
-  private suspend fun shutdownForStatus(newStatus: RunningStatus) {
-    status.set(newStatus)
+  private suspend fun shutdownForStatus(newStatus: RunningStatus, clearErrorStatus: Boolean) {
+    status.set(newStatus, clearErrorStatus)
     shutdownBus.emit(ServerShutdownEvent)
   }
 
@@ -238,7 +238,7 @@ protected constructor(
 
           if (!permissionGuard.canCreateWiDiNetwork()) {
             Timber.w("Missing permissions for making WiDi network")
-            shutdownForStatus(RunningStatus.NotRunning)
+            shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus = false)
             return@withContext
           }
 
@@ -249,7 +249,10 @@ protected constructor(
             Timber.w("Failed to create channel, cannot initialize WiDi network")
 
             completeStop(this, clearErrorStatus = false) {
-              shutdownForStatus(RunningStatus.Error("Failed to create Wi-Fi Direct Channel"))
+              shutdownForStatus(
+                  RunningStatus.Error("Failed to create Wi-Fi Direct Channel"),
+                  clearErrorStatus = false,
+              )
             }
             return@withContext
           }
@@ -275,7 +278,10 @@ protected constructor(
 
             completeStop(this, clearErrorStatus = false) {
               Timber.w("Stopping proxy after Group failed to create")
-              shutdownForStatus(runningStatus)
+              shutdownForStatus(
+                  runningStatus,
+                  clearErrorStatus = false,
+              )
             }
           }
         }
@@ -352,29 +358,20 @@ protected constructor(
           if (channel == null) {
             completeStop(this, clearErrorStatus) {
               Timber.d("Resetting status back to not running")
-              status.set(
-                  RunningStatus.NotRunning,
-                  clearError = clearErrorStatus,
-              )
+              shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
             }
             return@withContext
           }
 
           // If we do have a channel, mark shutting down as we clean up
           Timber.d("Shutting down wifi network")
-          status.set(
-              RunningStatus.Stopping,
-              clearError = clearErrorStatus,
-          )
+          shutdownForStatus(RunningStatus.Stopping, clearErrorStatus)
 
           shutdownWifiNetwork(channel)
 
           completeStop(this, clearErrorStatus) {
             Timber.d("Proxy was stopped")
-            status.set(
-                RunningStatus.NotRunning,
-                clearError = clearErrorStatus,
-            )
+            shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
           }
         }
       }
@@ -615,7 +612,7 @@ protected constructor(
           e.ifNotCancellation {
             Timber.e(e, "Error starting Network")
             val msg = e.message ?: "An error occurred while starting the Network"
-            shutdownForStatus(RunningStatus.Error(msg))
+            shutdownForStatus(RunningStatus.Error(msg), clearErrorStatus = false)
           }
         } finally {
           withContext(context = NonCancellable) {

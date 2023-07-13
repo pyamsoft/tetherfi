@@ -25,13 +25,11 @@ import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,19 +45,18 @@ internal constructor(
     private val blockedClients: BlockedClients,
 ) : NotificationLauncher {
 
-  private val scope by lazy {
-    CoroutineScope(
-        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
-    )
-  }
-
-  private var notificationJob: Job? = null
+  private val showing = MutableStateFlow(false)
 
   private fun onStatusUpdated(
       status: RunningStatus,
       clientCount: Int,
       blockCount: Int,
   ) {
+    if (!showing.value) {
+      Timber.w("Do not update notification, no longer showing!")
+      return
+    }
+
     val data =
         ServerNotificationData(
             status = status,
@@ -76,24 +73,25 @@ internal constructor(
         .also { Timber.d("Updated foreground notification: $it: $data") }
   }
 
-  private fun watchNotification() {
-    // These are updated in line
-    var clientCount = 0
-    var blockCount = 0
-    var runningStatus: RunningStatus = RunningStatus.NotRunning
+  private suspend fun watchNotification() =
+      withContext(context = Dispatchers.Default) {
+        val scope = this
 
-    // Private scoped is kind of a hack but here we are
-    // I just don't want to declare globals outside of this scope as they are unreliable
-    fun updateNotification() {
-      onStatusUpdated(
-          status = runningStatus,
-          clientCount = clientCount,
-          blockCount = blockCount,
-      )
-    }
+        // These are updated in line
+        var clientCount = 0
+        var blockCount = 0
+        var runningStatus: RunningStatus = RunningStatus.NotRunning
 
-    notificationJob?.cancel()
-    notificationJob =
+        // Private scoped is kind of a hack but here we are
+        // I just don't want to declare globals outside of this scope as they are unreliable
+        fun updateNotification() {
+          onStatusUpdated(
+              status = runningStatus,
+              clientCount = clientCount,
+              blockCount = blockCount,
+          )
+        }
+
         // Supervisor job will cancel all children
         scope.launch {
           enforcer.assertOffMainThread()
@@ -146,28 +144,31 @@ internal constructor(
                 }
               }
         }
+      }
+
+  override suspend fun start() {
+    if (showing.compareAndSet(expect = false, update = true)) {
+      val data = DEFAULT_DATA
+
+      // Initialize with blank data first
+      notifier
+          .show(
+              id = NOTIFICATION_ID,
+              channelInfo = CHANNEL_INFO,
+              notification = data,
+          )
+          .also { Timber.d("Started foreground notification: $it: $data") }
+
+      // Then immediately open a channel to update
+      watchNotification()
+    }
   }
 
-  override fun start() {
-    val data = DEFAULT_DATA
-
-    // Initialize with blank data first
-    notifier
-        .show(
-            id = NOTIFICATION_ID,
-            channelInfo = CHANNEL_INFO,
-            notification = data,
-        )
-        .also { Timber.d("Started foreground notification: $it: $data") }
-
-    // Then immediately open a channel to update
-    watchNotification()
-  }
-
-  override fun stop() {
-    notifier.cancel(NOTIFICATION_ID)
-    notificationJob?.cancel()
-    notificationJob = null
+  override suspend fun stop() {
+    if (showing.compareAndSet(expect = true, update = false)) {
+      Timber.d("Stop foreground notification")
+      notifier.cancel(NOTIFICATION_ID)
+    }
   }
 
   companion object {

@@ -20,48 +20,28 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import com.pyamsoft.tetherfi.service.lock.Locker
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class ForegroundHandler
+class ForegroundWatcher
 @Inject
 internal constructor(
-    @ServiceInternalApi private val locker: Locker,
     private val enforcer: ThreadEnforcer,
     private val shutdownListener: EventConsumer<ServerShutdownEvent>,
     private val notificationRefreshListener: EventConsumer<NotificationRefreshEvent>,
-    private val network: WiDiNetwork,
 ) {
 
-  private var job: Job? = null
+  suspend fun bind(
+      onShutdownService: suspend () -> Unit,
+      onRefreshNotification: suspend () -> Unit,
+  ) =
+      withContext(context = Dispatchers.Default) {
+        val scope = this
 
-  private suspend fun shutdown() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) { locker.release() }
-      }
-
-  private suspend fun lock() = withContext(context = Dispatchers.Default) { locker.acquire() }
-
-  fun bind(
-      scope: CoroutineScope,
-      onShutdownService: () -> Unit,
-      onRefreshNotification: () -> Unit,
-  ) {
-    // Watch everything else as the parent
-    job?.cancel()
-    job =
+        // Watch everything else as the parent
         scope.launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
@@ -78,33 +58,12 @@ internal constructor(
           // Watch for notification refresh
           notificationRefreshListener.requireNotNull().also { f ->
             launch(context = Dispatchers.Default) {
-              enforcer.assertOffMainThread()
-
               f.collect {
                 Timber.d("Refresh notification")
                 onRefreshNotification()
               }
             }
           }
-        }
-  }
-
-  suspend fun startProxy() =
-      withContext(context = Dispatchers.Default) {
-        Timber.d("Start WiDi Network")
-        try {
-          // Claim the wakelock
-          lock()
-
-          // Launch a new scope so this function won't proceed to finally block until the scope is
-          // completed/cancelled
-          //
-          // This will suspend until network.start() completes, which is suspended until the proxy
-          // server
-          // loop dies
-          coroutineScope { network.start() }
-        } finally {
-          shutdown()
         }
       }
 }

@@ -18,7 +18,7 @@ package com.pyamsoft.tetherfi.service.notification
 
 interface NotificationLauncher {
 
-  fun start()
+  suspend fun start()
 
-  fun stop()
+  suspend fun stop()
 }
