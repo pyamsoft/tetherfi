@@ -150,19 +150,23 @@ internal constructor(
           //
           // This will suspend until the proxy server loop dies
           coroutineScope {
+            // Scope local
             val mutex = Mutex()
             var job: Job? = null
+
+            // Watch the connection status for valid info
             connectionStatus.distinctUntilChanged().collect { info ->
               when (info) {
                 is WiDiNetworkStatus.ConnectionInfo.Connected -> {
                   // Connected is good, we can launch
+                  // This will re-launch any time the connection info changes
                   mutex.withLock {
                     job?.cancelAndJoin()
-                    job =
-                        launch(context = Dispatchers.Default) {
-                          reset()
-                          startServer(info)
-                        }
+
+                    reset()
+
+                    // Hold onto the job here so we can cancel it if we need to
+                    job = launch(context = Dispatchers.Default) { startServer(info) }
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Empty -> {
