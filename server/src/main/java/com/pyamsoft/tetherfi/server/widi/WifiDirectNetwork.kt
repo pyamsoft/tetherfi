@@ -133,7 +133,6 @@ protected constructor(
     enforcer.assertOffMainThread()
 
     Timber.d("Creating new wifi p2p group")
-
     val conf = config.getConfiguration()
 
     return suspendCoroutine { cont ->
@@ -187,6 +186,23 @@ protected constructor(
     }
   }
 
+  /**
+   * Re-use the existing group if we can
+   *
+   * NOTE: If the SSID/password has changed between creating this group in the past
+   * and retrieving it now, the UI will be out of sync. Do we care?
+   */
+  @CheckResult
+  private suspend fun reuseExistingGroup(channel: Channel): RunningStatus? {
+    val groupInfo = resolveCurrentGroup(channel)
+    if (groupInfo != null) {
+      Timber.d("Group already connected!")
+      return RunningStatus.Running
+    }
+
+    return null
+  }
+
   private suspend fun withLockStartNetwork() =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
@@ -215,7 +231,7 @@ protected constructor(
             return@withContext
           }
 
-          val runningStatus = createGroup(channel)
+          val runningStatus = reuseExistingGroup(channel) ?: createGroup(channel)
           if (runningStatus is RunningStatus.Running) {
             Timber.d("Network started")
 
