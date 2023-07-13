@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -35,13 +36,17 @@ import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
+import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
   @Inject @JvmField internal var permissions: MainPermissions? = null
+  @Inject @JvmField internal var launcher: ServiceLauncher? = null
   private var pydroid: PYDroidActivityDelegate? = null
 
   private fun initializePYDroid() {
@@ -122,8 +127,13 @@ class MainActivity : AppCompatActivity() {
 
   override fun onResume() {
     super.onResume()
+
     viewModel.requireNotNull().handleSyncDarkTheme(this)
     reportFullyDrawn()
+
+    lifecycleScope.launch(context = Dispatchers.Default) {
+      launcher.requireNotNull().ensureAndroidServiceStartedWhenNeeded()
+    }
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
@@ -139,5 +149,6 @@ class MainActivity : AppCompatActivity() {
     pydroid = null
     permissions = null
     viewModel = null
+    launcher = null
   }
 }

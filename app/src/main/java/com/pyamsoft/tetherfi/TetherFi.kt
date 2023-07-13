@@ -64,7 +64,6 @@ class TetherFi : Application() {
     installLogger()
     val modules = installPYDroid()
     installComponent(modules)
-
     addLibraries()
   }
 

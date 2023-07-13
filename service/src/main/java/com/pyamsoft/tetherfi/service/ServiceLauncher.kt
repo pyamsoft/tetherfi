@@ -126,6 +126,7 @@ internal constructor(
     context.stopService(foregroundService)
   }
 
+  /** Start the service */
   fun startForeground() {
     if (runningState.compareAndSet(expect = false, update = true)) {
       scope.cancelChildren()
@@ -133,6 +134,7 @@ internal constructor(
     }
   }
 
+  /** Stop the service */
   fun stopForeground() {
     if (runningState.compareAndSet(expect = true, update = false)) {
       scope.cancelChildren()
@@ -140,7 +142,17 @@ internal constructor(
     }
   }
 
+  /** If the hotspot is in error state, we reset it so that it can start again */
   fun resetError() {
     stopForeground()
   }
+
+  /** If the launcher state is started, we ensure that the service is started too */
+  suspend fun ensureAndroidServiceStartedWhenNeeded() =
+      withContext(context = Dispatchers.Main) {
+        if (runningState.value) {
+          Timber.d("ServiceLauncher reports Active. Ensure Android service!")
+          startAndroidService()
+        }
+      }
 }
