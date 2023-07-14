@@ -60,7 +60,9 @@ internal constructor(
         status,
     ) {
 
-    override fun CoroutineScope.onNetworkStarted(connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>) {
+  override fun CoroutineScope.onNetworkStarted(
+      connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>
+  ) {
     launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
 
     launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }

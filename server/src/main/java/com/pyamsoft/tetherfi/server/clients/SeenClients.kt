@@ -23,5 +23,5 @@ interface SeenClients {
 
   @CheckResult fun listenForClients(): Flow<Set<TetherClient>>
 
-  fun seen(client: TetherClient)
+  suspend fun seen(client: TetherClient)
 }

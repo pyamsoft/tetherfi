@@ -21,10 +21,10 @@ import android.content.Context
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
-import com.pyamsoft.tetherfi.core.cancelChildren
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
@@ -32,6 +32,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import timber.log.Timber
 
 internal class ProxyTileService internal constructor() : TileService() {
@@ -39,10 +40,18 @@ internal class ProxyTileService internal constructor() : TileService() {
   @Inject @JvmField internal var tileHandler: TileHandler? = null
   @Inject @JvmField internal var tileActivityLauncher: ProxyTileActivityLauncher? = null
 
-  private val scope by lazy {
-    CoroutineScope(
+  private var scope: CoroutineScope? = null
+
+  @CheckResult
+  private fun makeScope(): CoroutineScope {
+    return CoroutineScope(
         context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
     )
+  }
+
+  @CheckResult
+  private fun ensureScope(): CoroutineScope {
+    return (scope ?: makeScope()).also { scope = it }
   }
 
   private inline fun withTile(crossinline block: (Tile) -> Unit) {
@@ -167,7 +176,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
     withHandler { handler ->
       handler.bind(
-          scope = scope,
+          scope = ensureScope(),
           onNetworkError = { err -> handleNetworkErrorState(err) },
           onNetworkNotRunning = { handleNetworkNotRunningState() },
           onNetworkRunning = { handleNetworkRunningState() },
@@ -180,9 +189,10 @@ internal class ProxyTileService internal constructor() : TileService() {
   override fun onDestroy() {
     super.onDestroy()
 
-    // Cancel all children but not this scope
-    scope.cancelChildren()
+    // Cancel everything because this scope is dead
+    scope?.cancel()
 
+    scope = null
     tileHandler = null
   }
 

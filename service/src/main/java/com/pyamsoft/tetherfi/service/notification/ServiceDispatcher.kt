@@ -39,7 +39,6 @@ import com.pyamsoft.tetherfi.service.R
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
-import timber.log.Timber
 
 @Singleton
 internal class ServiceDispatcher
