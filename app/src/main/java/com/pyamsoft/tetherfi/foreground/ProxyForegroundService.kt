@@ -23,7 +23,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.ServiceRunner
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +30,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 internal class ProxyForegroundService internal constructor() : Service() {
 
@@ -50,6 +50,10 @@ internal class ProxyForegroundService internal constructor() : Service() {
     return (scope ?: makeScope()).also { scope = it }
   }
 
+  private fun startRunner() {
+    ensureScope().launch(context = Dispatchers.Default) { runner.requireNotNull().start() }
+  }
+
   override fun onBind(intent: Intent?): IBinder? {
     return null
   }
@@ -60,10 +64,13 @@ internal class ProxyForegroundService internal constructor() : Service() {
     Timber.d("Creating service")
   }
 
+  /**
+   * If the app is in the background, this will not run unless the app sets Battery Optimization off
+   */
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     // Each time the service starts/restarts we use the fact that it is tied to the Android OS
     // lifecycle to restart the launcher which does all the Proxy lifting.
-    ensureScope().launch(context = Dispatchers.Default) { runner.requireNotNull().start() }
+    startRunner()
 
     // Just start sticky here
     return START_STICKY
