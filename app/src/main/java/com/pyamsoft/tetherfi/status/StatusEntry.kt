@@ -206,8 +206,6 @@ fun StatusEntry(
       },
       onDismissPermissionExplanation = { dismissPermissionPopup() },
       onRequestPermissions = {
-        dismissPermissionPopup()
-
         // Request permissions
         scope.launch(context = Dispatchers.Default) {
           // See MainActivity
@@ -215,8 +213,6 @@ fun StatusEntry(
         }
       },
       onOpenPermissionSettings = {
-        dismissPermissionPopup()
-
         safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
       },
       onToggleKeepWakeLock = { viewModel.handleToggleProxyWakelock() },
