@@ -12,6 +12,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.renderLinks
 
 internal fun LazyListScope.renderLoadedContent(
     appName: String,
@@ -71,10 +72,7 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusScreenContentTypes.SPACER,
   ) {
     Spacer(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .height(MaterialTheme.keylines.baseline),
+        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
     )
   }
 
@@ -91,10 +89,7 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusScreenContentTypes.SPACER,
   ) {
     Spacer(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .height(MaterialTheme.keylines.baseline),
+        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
     )
   }
 
@@ -110,13 +105,15 @@ internal fun LazyListScope.renderLoadedContent(
         contentType = StatusScreenContentTypes.SPACER,
     ) {
       Spacer(
-          modifier =
-              Modifier.fillMaxWidth()
-                  .padding(horizontal = MaterialTheme.keylines.content)
-                  .height(MaterialTheme.keylines.content),
+          modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.content),
       )
     }
   }
+
+  renderLinks(
+      itemModifier = Modifier.fillMaxWidth(),
+      appName = appName,
+  )
 
   item(
       contentType = StatusScreenContentTypes.BOTTOM_SPACER,

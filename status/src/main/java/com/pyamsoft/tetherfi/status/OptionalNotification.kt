@@ -45,7 +45,6 @@ internal fun LazyListScope.renderNotificationSettings(
     Label(
         modifier =
             itemModifier
-                .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         text = "Notifications",
@@ -61,7 +60,7 @@ internal fun LazyListScope.renderNotificationSettings(
     val canEdit = remember(isEditable, hasPermission) { isEditable && !hasPermission }
 
     CheckableCard(
-        modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
+        modifier = itemModifier,
         isEditable = canEdit,
         condition = hasPermission,
         title = "Show Hotspot Notification",

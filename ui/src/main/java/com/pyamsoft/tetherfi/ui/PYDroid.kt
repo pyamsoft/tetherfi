@@ -55,10 +55,7 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.UPDATE_VERSION,
   ) {
     UpdateProgressWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
     )
   }
 
@@ -66,10 +63,7 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.NEW_VERSION,
   ) {
     NewVersionWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
     )
   }
 
@@ -77,10 +71,7 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.CHANGELOG,
   ) {
     ShowChangeLogWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
     )
   }
 
@@ -88,10 +79,7 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.BILLING,
   ) {
     BillingUpsellWidget(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
     )
   }
 }

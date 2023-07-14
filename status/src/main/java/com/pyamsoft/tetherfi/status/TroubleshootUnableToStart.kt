@@ -33,10 +33,10 @@ internal fun TroubleshootUnableToStart(
       }
 
   Column(
-      modifier = modifier.padding(horizontal = MaterialTheme.keylines.content),
+      modifier = modifier,
   ) {
     Text(
-        text = "$appName failed to start.",
+        text = "$appName Hotspot failed to start.",
         color = MaterialTheme.colors.error,
         style = MaterialTheme.typography.h6,
     )

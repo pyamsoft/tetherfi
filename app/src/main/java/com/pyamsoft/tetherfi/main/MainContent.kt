@@ -74,6 +74,7 @@ fun MainContent(
       MainView.CONNECTIONS -> {
         ConnectionEntry(
             modifier = Modifier.fillMaxSize(),
+            appName = appName,
             serverViewState = state,
         )
       }

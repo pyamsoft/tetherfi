@@ -44,7 +44,6 @@ internal fun LazyListScope.renderBattery(
     Label(
         modifier =
             itemModifier
-                .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         text = "Operating Settings",
@@ -55,7 +54,7 @@ internal fun LazyListScope.renderBattery(
       contentType = StatusScreenContentTypes.BATTERY_OPTIMIZATION,
   ) {
     BatteryOptimization(
-        modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
+        modifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
         state = state,

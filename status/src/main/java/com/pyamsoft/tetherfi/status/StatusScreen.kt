@@ -20,6 +20,7 @@ import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -174,15 +175,13 @@ fun StatusScreen(
   ) { pv ->
     LazyColumn(
         modifier = Modifier.padding(pv).fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
     ) {
       item(
           contentType = StatusScreenContentTypes.BUTTON,
       ) {
         Button(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(top = MaterialTheme.keylines.content)
-                    .padding(horizontal = MaterialTheme.keylines.content),
+            modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
             enabled = isButtonEnabled,
             onClick = {
               hapticManager?.actionButtonPress()
@@ -219,10 +218,7 @@ fun StatusScreen(
               contentType = StatusScreenContentTypes.LOADING,
           ) {
             Box(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(top = MaterialTheme.keylines.content)
-                        .padding(horizontal = MaterialTheme.keylines.content),
+                modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
                 contentAlignment = Alignment.Center,
             ) {
               CircularProgressIndicator(
@@ -280,7 +276,7 @@ private fun StatusCard(
     hotspotStatus: RunningStatus,
 ) {
   Card(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
+      modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
       elevation = CardDefaults.Elevation,
   ) {
     Column(

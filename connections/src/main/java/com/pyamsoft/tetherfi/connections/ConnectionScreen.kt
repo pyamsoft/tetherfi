@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.connections
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -35,11 +36,13 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.collectAsStateList
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 @Composable
 fun ConnectionScreen(
     modifier: Modifier = Modifier,
+    appName: String,
     state: ConnectionViewState,
     serverViewState: ServerViewState,
     onToggleBlock: (TetherClient) -> Unit,
@@ -51,7 +54,9 @@ fun ConnectionScreen(
   Scaffold(
       modifier = modifier,
   ) { pv ->
-    LazyColumn {
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+    ) {
       renderPYDroidExtras()
 
       renderList(
@@ -62,6 +67,10 @@ fun ConnectionScreen(
       )
 
       renderExcuse()
+
+      renderLinks(
+          appName = appName,
+      )
 
       item(
           contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
@@ -79,7 +88,7 @@ private fun LazyListScope.renderExcuse() {
       contentType = ConnectionScreenContentTypes.SORRY,
   ) {
     Text(
-        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
         text =
             "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
         style =
@@ -97,7 +106,7 @@ private fun LazyListScope.renderExcuse() {
       contentType = ConnectionScreenContentTypes.SORRY_EXTRA,
   ) {
     Text(
-        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
         text = "A more friendly solution is being actively investigated.",
         style =
             MaterialTheme.typography.body2.copy(

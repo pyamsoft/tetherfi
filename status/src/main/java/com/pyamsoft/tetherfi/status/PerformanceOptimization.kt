@@ -61,7 +61,6 @@ internal fun LazyListScope.renderPerformance(
     Label(
         modifier =
             itemModifier
-                .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         text = "Performance Settings",
@@ -72,10 +71,7 @@ internal fun LazyListScope.renderPerformance(
       contentType = StatusScreenContentTypes.WAKELOCKS,
   ) {
     Wakelocks(
-        modifier =
-            itemModifier
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.content),
+        modifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
         state = state,

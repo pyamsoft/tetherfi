@@ -66,7 +66,6 @@ internal fun LazyListScope.renderNetworkInformation(
           modifier =
               itemModifier
                   .fillMaxWidth()
-                  .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content * 2)
                   .border(
                       width = HairlineSize,
@@ -119,10 +118,7 @@ internal fun LazyListScope.renderNetworkInformation(
       contentType = StatusScreenContentTypes.SPACER,
   ) {
     Spacer(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .height(MaterialTheme.keylines.baseline),
+        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
     )
   }
 
@@ -130,10 +126,7 @@ internal fun LazyListScope.renderNetworkInformation(
       contentType = StatusScreenContentTypes.BANDS,
   ) {
     NetworkBands(
-        modifier =
-            itemModifier
-                .padding(top = MaterialTheme.keylines.content)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
         isEditable = isEditable,
         state = state,
         onSelectBand = onSelectBand,
@@ -155,10 +148,7 @@ private fun LazyListScope.renderRunningItems(
       contentType = StatusScreenContentTypes.VIEW_SSID,
   ) {
     ViewSsid(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         serverViewState = serverViewState,
     )
   }
@@ -167,10 +157,7 @@ private fun LazyListScope.renderRunningItems(
       contentType = StatusScreenContentTypes.VIEW_PASSWD,
   ) {
     ViewPassword(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         state = state,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
@@ -181,10 +168,7 @@ private fun LazyListScope.renderRunningItems(
       contentType = StatusScreenContentTypes.VIEW_PROXY,
   ) {
     ViewProxy(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         serverViewState = serverViewState,
     )
   }
@@ -193,6 +177,7 @@ private fun LazyListScope.renderRunningItems(
       contentType = StatusScreenContentTypes.TILES,
   ) {
     RunningTiles(
+        modifier = modifier,
         serverViewState = serverViewState,
         onShowQRCode = onShowQRCode,
         onRefreshConnection = onRefreshConnection,
@@ -214,10 +199,7 @@ private fun LazyListScope.renderEditableItems(
       contentType = StatusScreenContentTypes.EDIT_SSID,
   ) {
     EditSsid(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         state = state,
         onSsidChanged = onSsidChanged,
     )
@@ -227,10 +209,7 @@ private fun LazyListScope.renderEditableItems(
       contentType = StatusScreenContentTypes.EDIT_PASSWD,
   ) {
     EditPassword(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         state = state,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onPasswordChanged = onPasswordChanged,
@@ -241,10 +220,7 @@ private fun LazyListScope.renderEditableItems(
       contentType = StatusScreenContentTypes.EDIT_PORT,
   ) {
     EditPort(
-        modifier =
-            modifier
-                .padding(bottom = MaterialTheme.keylines.baseline)
-                .padding(horizontal = MaterialTheme.keylines.content),
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         state = state,
         onPortChanged = onPortChanged,
     )

@@ -73,7 +73,7 @@ internal fun RunningTiles(
   val hapticManager = LocalHapticManager.current
 
   Column(
-      modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+      modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
   ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),

@@ -54,6 +54,7 @@ private fun MountHooks(
 @Composable
 fun ConnectionEntry(
     modifier: Modifier = Modifier,
+    appName: String,
     serverViewState: ServerViewState,
 ) {
   val component = rememberComposableInjector { ConnectionInjector() }
@@ -66,6 +67,7 @@ fun ConnectionEntry(
 
   ConnectionScreen(
       modifier = modifier,
+      appName = appName,
       state = viewModel,
       serverViewState = serverViewState,
       onToggleBlock = { viewModel.handleToggleBlock(it) },

@@ -16,22 +16,25 @@
 
 package com.pyamsoft.tetherfi.info
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private enum class InfoContentTypes {
+  SPACER,
   BOTTOM_SPACER
 }
 
@@ -44,17 +47,29 @@ fun InfoScreen(
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
 ) {
-  val contentPadding = MaterialTheme.keylines.content
-  val itemModifier =
-      remember(contentPadding) { Modifier.fillMaxWidth().padding(horizontal = contentPadding) }
-
   LazyColumn(
       modifier = modifier,
+      contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
   ) {
     renderPYDroidExtras()
 
+    renderLinks(
+        itemModifier = Modifier.fillMaxWidth(),
+        appName = appName,
+    )
+
+    item(
+        contentType = InfoContentTypes.SPACER,
+    ) {
+      Spacer(
+          modifier =
+              Modifier.padding(top = MaterialTheme.keylines.content)
+                  .height(MaterialTheme.keylines.baseline),
+      )
+    }
+
     renderConnectionInstructions(
-        itemModifier = itemModifier,
+        itemModifier = Modifier.fillMaxWidth(),
         appName = appName,
         state = state,
         serverViewState = serverViewState,

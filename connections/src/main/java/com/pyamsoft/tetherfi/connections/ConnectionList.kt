@@ -45,7 +45,7 @@ private fun LazyListScope.renderRunningNoClients() {
     Text(
         modifier =
             Modifier.fillMaxWidth()
-                .padding(MaterialTheme.keylines.content)
+                .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "No connections yet!",
         style = MaterialTheme.typography.h5,
@@ -65,7 +65,7 @@ private fun LazyListScope.renderRunningWithClients(
     Text(
         modifier =
             Modifier.fillMaxWidth()
-                .padding(MaterialTheme.keylines.content)
+                .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text =
             "By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.",
@@ -101,7 +101,7 @@ private fun LazyListScope.renderNotRunning() {
     Text(
         modifier =
             Modifier.fillMaxWidth()
-                .padding(MaterialTheme.keylines.content)
+                .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "Start the Hotspot to view and manage connected devices.",
         style = MaterialTheme.typography.h5,
