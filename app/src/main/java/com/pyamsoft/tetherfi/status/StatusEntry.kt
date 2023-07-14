@@ -178,7 +178,7 @@ fun StatusEntry(
 
   val activity = rememberActivity()
 
-  val dismissPermissionPopup by rememberUpdatedState { viewModel.handlePermissionsExplained() }
+  val dismissPermissionPopup by rememberUpdatedState { viewModel.handleDismissPermissionPopup() }
   val scope = rememberCoroutineScope()
 
   val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }

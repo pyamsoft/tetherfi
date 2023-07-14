@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
@@ -35,6 +36,7 @@ private enum class OptionalNotificationContentTypes {
 internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
+    isEditable: Boolean,
     onRequest: () -> Unit,
 ) {
   item(
@@ -56,9 +58,11 @@ internal fun LazyListScope.renderNotificationSettings(
     val hasPermission by state.hasNotificationPermission.collectAsState()
     val hapticManager = LocalHapticManager.current
 
+    val canEdit = remember(isEditable, hasPermission) { isEditable && !hasPermission }
+
     CheckableCard(
         modifier = itemModifier.padding(horizontal = MaterialTheme.keylines.content),
-        isEditable = !hasPermission,
+        isEditable = canEdit,
         condition = hasPermission,
         title = "Show Hotspot Notification",
         description =

@@ -22,13 +22,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
-internal fun LazyListScope.renderBatteryAndPerformance(
+internal fun LazyListScope.renderBattery(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
@@ -36,10 +37,6 @@ internal fun LazyListScope.renderBatteryAndPerformance(
 
     // Battery optimization
     onDisableBatteryOptimizations: () -> Unit,
-
-    // Wake lock
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
 ) {
   item(
       contentType = StatusScreenContentTypes.BATTERY_LABEL,
@@ -50,23 +47,7 @@ internal fun LazyListScope.renderBatteryAndPerformance(
                 .padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Battery and Performance",
-    )
-  }
-
-  item(
-      contentType = StatusScreenContentTypes.WAKELOCKS,
-  ) {
-    Wakelocks(
-        modifier =
-            itemModifier
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.content),
-        isEditable = isEditable,
-        appName = appName,
-        state = state,
-        onToggleKeepWakeLock = onToggleKeepWakeLock,
-        onToggleKeepWifiLock = onToggleKeepWifiLock,
+        text = "Operating Settings",
     )
   }
 
@@ -94,22 +75,27 @@ private fun BatteryOptimization(
   val hapticManager = LocalHapticManager.current
   val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
 
+  val canEdit =
+      remember(isEditable, isBatteryOptimizationDisabled) {
+        isEditable && !isBatteryOptimizationDisabled
+      }
+
   CheckableCard(
       modifier = modifier,
-      isEditable = isEditable,
+      isEditable = canEdit,
       condition = isBatteryOptimizationDisabled,
-      title = "Ignore Battery Optimizations",
+      title = "Always Alive",
       description =
-          """This will allow $appName to run at maximum performance.
+          """This will allow the $appName Hotspot to continue running even if the app is closed.
             |
-            |This will significantly enhance your networking experience but may use more battery.
+            |This will significantly enhance your experience and network performance.
             |(recommended)"""
               .trimMargin(),
       onClick = {
         if (!isBatteryOptimizationDisabled) {
           hapticManager?.confirmButtonPress()
+          onDisableBatteryOptimizations()
         }
-        onDisableBatteryOptimizations()
       },
   )
 }

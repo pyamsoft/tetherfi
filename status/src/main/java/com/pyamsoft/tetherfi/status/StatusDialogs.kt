@@ -28,7 +28,7 @@ internal fun StatusDialogs(
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
-  val explainPermissions by state.explainPermissions.collectAsState()
+  val isRequestingHotspotPermissions by state.isRequestingHotspotPermissions.collectAsState()
 
   val isShowingHotspotError by state.isShowingHotspotError.collectAsState()
   val group by serverViewState.group.collectAsState()
@@ -55,7 +55,7 @@ internal fun StatusDialogs(
   }
 
   AnimatedVisibility(
-      visible = explainPermissions,
+      visible = isRequestingHotspotPermissions,
   ) {
     PermissionExplanationDialog(
         modifier = Modifier.fillUpToPortraitSize(),

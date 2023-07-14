@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.Card
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
@@ -41,10 +42,51 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
+internal fun LazyListScope.renderPerformance(
+    itemModifier: Modifier = Modifier,
+    isEditable: Boolean,
+    appName: String,
+    state: StatusViewState,
+
+    // Wake lock
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
+) {
+  item(
+      contentType = StatusScreenContentTypes.BATTERY_LABEL,
+  ) {
+    Label(
+        modifier =
+            itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.baseline),
+        text = "Performance Settings",
+    )
+  }
+
+  item(
+      contentType = StatusScreenContentTypes.WAKELOCKS,
+  ) {
+    Wakelocks(
+        modifier =
+            itemModifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content),
+        isEditable = isEditable,
+        appName = appName,
+        state = state,
+        onToggleKeepWakeLock = onToggleKeepWakeLock,
+        onToggleKeepWifiLock = onToggleKeepWifiLock,
+    )
+  }
+}
+
 @Composable
-internal fun Wakelocks(
+private fun Wakelocks(
     modifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,

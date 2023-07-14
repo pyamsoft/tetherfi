@@ -7,7 +7,6 @@ internal enum class StatusScreenContentTypes {
   SPACER,
   BOTTOM_SPACER,
   NETWORK_ERROR,
-  PERMISSIONS,
   EDIT_SSID,
   EDIT_PASSWD,
   EDIT_PORT,

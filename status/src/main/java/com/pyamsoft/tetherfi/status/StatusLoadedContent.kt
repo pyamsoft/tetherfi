@@ -64,6 +64,7 @@ internal fun LazyListScope.renderLoadedContent(
       onRefreshConnection = onRefreshConnection,
       onShowNetworkError = onShowNetworkError,
       onShowHotspotError = onShowHotspotError,
+      onDisableBatteryOptimizations = onOpenBatterySettings,
   )
 
   item(
@@ -73,16 +74,15 @@ internal fun LazyListScope.renderLoadedContent(
         modifier =
             Modifier.fillMaxWidth()
                 .padding(horizontal = MaterialTheme.keylines.content)
-                .height(MaterialTheme.keylines.content),
+                .height(MaterialTheme.keylines.baseline),
     )
   }
 
-  renderBatteryAndPerformance(
+  renderPerformance(
       itemModifier = Modifier.fillMaxWidth(),
       isEditable = isEditable,
       appName = appName,
       state = state,
-      onDisableBatteryOptimizations = onOpenBatterySettings,
       onToggleKeepWakeLock = onToggleKeepWakeLock,
       onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
@@ -94,7 +94,7 @@ internal fun LazyListScope.renderLoadedContent(
         modifier =
             Modifier.fillMaxWidth()
                 .padding(horizontal = MaterialTheme.keylines.content)
-                .height(MaterialTheme.keylines.content),
+                .height(MaterialTheme.keylines.baseline),
     )
   }
 
@@ -102,6 +102,7 @@ internal fun LazyListScope.renderLoadedContent(
     renderNotificationSettings(
         itemModifier = Modifier.fillMaxWidth(),
         state = state,
+        isEditable = isEditable,
         onRequest = onRequestNotificationPermission,
     )
 

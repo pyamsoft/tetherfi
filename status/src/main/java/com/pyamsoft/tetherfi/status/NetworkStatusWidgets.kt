@@ -3,13 +3,12 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
@@ -35,6 +34,9 @@ internal fun LazyListScope.renderNetworkInformation(
     onPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+
+    // Battery optimization
+    onDisableBatteryOptimizations: () -> Unit,
 
     // Connections
     onShowQRCode: () -> Unit,
@@ -83,31 +85,6 @@ internal fun LazyListScope.renderNetworkInformation(
     }
   }
 
-  item(
-      contentType = StatusScreenContentTypes.PERMISSIONS,
-  ) {
-    val requiresPermissions by state.requiresPermissions.collectAsState()
-
-    AnimatedVisibility(
-        visible = requiresPermissions,
-    ) {
-      Box(
-          modifier =
-              itemModifier
-                  .padding(bottom = MaterialTheme.keylines.content)
-                  .padding(horizontal = MaterialTheme.keylines.content),
-      ) {
-        Text(
-            text = "$appName requires permissions: Click the button and grant permissions",
-            style =
-                MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.error,
-                ),
-        )
-      }
-    }
-  }
-
   if (isEditable) {
     renderEditableItems(
         modifier = itemModifier,
@@ -127,6 +104,25 @@ internal fun LazyListScope.renderNetworkInformation(
         onRefreshConnection = onRefreshConnection,
         onShowHotspotError = onShowHotspotError,
         onShowNetworkError = onShowNetworkError,
+    )
+  }
+
+  renderBattery(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+  )
+
+  item(
+      contentType = StatusScreenContentTypes.SPACER,
+  ) {
+    Spacer(
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .height(MaterialTheme.keylines.baseline),
     )
   }
 

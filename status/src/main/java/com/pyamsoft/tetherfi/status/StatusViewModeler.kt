@@ -30,7 +30,6 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -131,15 +131,15 @@ internal constructor(
     val s = state
 
     // Refresh these state bits
-    val requiresPermissions = !permissions.canCreateWiDiNetwork()
-    s.requiresPermissions.value = requiresPermissions
-    s.explainPermissions.value = requiresPermissions
+    val hasPermission = permissions.canCreateWiDiNetwork()
+    s.hasHotspotPermissions.value = hasPermission
+    s.isRequestingHotspotPermissions.value = !hasPermission
     s.isPasswordVisible.value = false
 
     // If we do not have permission, stop here. s.explainPermissions will cause the permission
     // dialog
     // to show. Upon granting permission, this function will be called again and should pass
-    if (requiresPermissions) {
+    if (!hasPermission) {
       Timber.w("Cannot launch Proxy until Permissions are granted")
       serviceLauncher.stopForeground()
       return
@@ -287,17 +287,13 @@ internal constructor(
       // Notifications
       s.hasNotificationPermission.value = notifyGuard.canPostNotification()
 
-      // If we are in an error state, we tried to run the proxy
-      // If the proxy fails, we should at least check that the permission req is not the cause.
-      if (s.wiDiStatus.value is RunningStatus.Error || s.proxyStatus.value is RunningStatus.Error) {
-        val requiresPermissions = !permissions.canCreateWiDiNetwork()
-        s.requiresPermissions.value = requiresPermissions
-      }
+      // Do we have hotspot permission
+      s.hasHotspotPermissions.value = permissions.canCreateWiDiNetwork()
     }
   }
 
-  fun handlePermissionsExplained() {
-    state.explainPermissions.value = false
+  fun handleDismissPermissionPopup() {
+    state.isRequestingHotspotPermissions.value = false
   }
 
   fun watchStatusUpdates(scope: CoroutineScope) {
