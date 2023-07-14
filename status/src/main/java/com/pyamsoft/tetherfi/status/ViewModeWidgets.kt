@@ -38,7 +38,7 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
-import com.pyamsoft.tetherfi.ui.rememberServerIp
+import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
 
@@ -48,7 +48,7 @@ internal fun ViewProxy(
     serverViewState: ServerViewState,
 ) {
   val connection by serverViewState.connection.collectAsState()
-  val ipAddress = rememberServerIp(connection)
+  val ipAddress = rememberServerHostname(connection)
 
   val port by serverViewState.port.collectAsState()
   val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }

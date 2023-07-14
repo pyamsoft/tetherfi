@@ -91,11 +91,11 @@ fun rememberServerPassword(
 
 @Composable
 @CheckResult
-fun rememberServerIp(connection: WiDiNetworkStatus.ConnectionInfo): String {
+fun rememberServerHostname(connection: WiDiNetworkStatus.ConnectionInfo): String {
   return remember(connection) {
     when (connection) {
-      is WiDiNetworkStatus.ConnectionInfo.Connected -> connection.ip
-      is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO IP"
+      is WiDiNetworkStatus.ConnectionInfo.Connected -> connection.hostName
+      is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO HOST"
       is WiDiNetworkStatus.ConnectionInfo.Error -> "ERROR"
       is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
         throw IllegalStateException(

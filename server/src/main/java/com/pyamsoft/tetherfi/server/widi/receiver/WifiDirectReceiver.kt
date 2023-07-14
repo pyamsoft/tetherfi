@@ -31,8 +31,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +42,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -84,13 +84,9 @@ internal constructor(
   }
 
   private suspend fun handleConnectionChangedAction(intent: Intent) {
-    val ip = resolveWifiGroupIp(intent)
-    if (ip.isNotBlank()) {
-      eventBus.emit(
-          WidiNetworkEvent.ConnectionChanged(
-              ip = ip,
-          ),
-      )
+    val hostName = resolveWifiGroupHostname(intent)
+    if (hostName.isNotBlank()) {
+      eventBus.emit(WidiNetworkEvent.ConnectionChanged(hostName))
     }
   }
 
@@ -187,7 +183,7 @@ internal constructor(
     }
 
     @CheckResult
-    private fun resolveWifiGroupIp(intent: Intent): String {
+    private fun resolveWifiGroupHostname(intent: Intent): String {
       val p2pInfo: WifiP2pInfo? = intent.resolveParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
       if (p2pInfo == null) {
         Timber.w("No P2P Info in connection intent")
@@ -200,7 +196,7 @@ internal constructor(
         return ""
       }
 
-      return address.hostAddress.orEmpty()
+      return address.hostName.orEmpty()
     }
 
     private val INTENT_FILTER =

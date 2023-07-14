@@ -46,7 +46,7 @@ import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
-import com.pyamsoft.tetherfi.ui.rememberServerIp
+import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
@@ -208,7 +208,7 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Row {
           val connection by serverViewState.connection.collectAsState()
-          val ipAddress = rememberServerIp(connection)
+          val ipAddress = rememberServerHostname(connection)
 
           Text(
               text = "URL",

@@ -70,7 +70,6 @@ interface WiDiNetworkStatus : Server {
 
     data class Connected
     internal constructor(
-        val ip: String,
         val hostName: String,
     ) : ConnectionInfo
 

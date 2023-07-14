@@ -58,6 +58,8 @@ class MainActivity : AppCompatActivity() {
                     feature("Added links to the Wiki and FAQs")
                     feature("Improve Hotspot efficiency by re-using connections when possible")
                     feature("Faster hotspot startup")
+                    bugfix(
+                        "Fix connections not working because the Hotspot was trying to bind to the wrong address")
                     change(
                         "Reduce battery usage by no longer using a Foreground Service. To have the Hotspot run all the time like it used to, enable the \"Always Alive\" option.")
                   }

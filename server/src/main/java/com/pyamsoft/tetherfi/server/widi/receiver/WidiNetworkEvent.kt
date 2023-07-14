@@ -35,6 +35,6 @@ sealed interface WidiNetworkEvent {
 
   data class ConnectionChanged
   internal constructor(
-      val ip: String,
+      val hostName: String,
   ) : WidiNetworkEvent
 }
