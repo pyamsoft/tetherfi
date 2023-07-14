@@ -121,16 +121,6 @@ fun StatusScreen(
           return@remember RunningStatus.Stopping
         }
 
-        // If we are not running
-        if (wiDiStatus is RunningStatus.NotRunning && proxyStatus is RunningStatus.NotRunning) {
-          return@remember RunningStatus.NotRunning
-        }
-
-        // If we are running
-        if (wiDiStatus is RunningStatus.Running && proxyStatus is RunningStatus.Running) {
-          return@remember RunningStatus.Running
-        }
-
         // Otherwise fallback to wiDi status
         return@remember wiDiStatus
       }
