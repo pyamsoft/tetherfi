@@ -55,12 +55,9 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Add haptic feedback on some UI actions")
-                    feature("Preliminary support for Android U (34)")
-                    feature("Confirm external URL links before navigating")
-                    change("Faster proxy performance by ~15%")
-                    bugfix("Fix in-app update flow")
-                    bugfix("Fix a rare crash when launching the app")
+                    feature("Added links to the Wiki and FAQs")
+                    change(
+                        "Reduce battery usage by no longer using a Foreground Service. To have the Hotspot run all the time like it used to, enable the \"Always Alive\" option.")
                   }
                 },
         )
