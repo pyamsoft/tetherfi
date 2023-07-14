@@ -27,12 +27,16 @@ import android.os.Parcelable
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -45,6 +49,7 @@ import javax.inject.Singleton
 internal class WifiDirectReceiver
 @Inject
 internal constructor(
+    private val enforcer: ThreadEnforcer,
     private val context: Context,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
@@ -103,26 +108,42 @@ internal constructor(
 
   override fun listenNetworkEvents(): Flow<WidiNetworkEvent> = eventBus
 
-  override fun register() {
-    val self = this
+  private fun unregister() {
+    enforcer.assertOnMainThread()
 
-    if (registered.compareAndSet(expect = false, update = true)) {
-      Timber.d("Register Wifi Receiver")
-      ContextCompat.registerReceiver(
-          context,
-          self,
-          INTENT_FILTER,
-          ContextCompat.RECEIVER_EXPORTED,
-      )
-    }
+    Timber.d("Unregister Wifi Receiver")
+    context.unregisterReceiver(this)
   }
 
-  override fun unregister() {
+  override suspend fun register() {
     val self = this
 
-    if (registered.compareAndSet(expect = true, update = false)) {
-      Timber.d("Unregister Wifi Receiver")
-      context.unregisterReceiver(self)
+    withContext(context = Dispatchers.Default) {
+      if (registered.compareAndSet(expect = false, update = true)) {
+        try {
+          // Hold this here until the coroutine is cancelled
+          coroutineScope {
+            withContext(context = Dispatchers.Main) {
+              Timber.d("Register Wifi Receiver")
+              ContextCompat.registerReceiver(
+                  context,
+                  self,
+                  INTENT_FILTER,
+                  ContextCompat.RECEIVER_EXPORTED,
+              )
+            }
+
+            // Hold the coroutine "forever" until it is cancelled
+            suspendUntilCancel()
+          }
+        } finally {
+          withContext(context = NonCancellable) {
+            if (registered.compareAndSet(expect = true, update = false)) {
+              withContext(context = Dispatchers.Main) { unregister() }
+            }
+          }
+        }
+      }
     }
   }
 

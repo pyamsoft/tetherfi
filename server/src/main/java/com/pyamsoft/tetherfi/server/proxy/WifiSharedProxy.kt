@@ -26,8 +26,6 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,6 +39,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -109,7 +109,7 @@ internal constructor(
       withContext(context = NonCancellable) {
         enforcer.assertOffMainThread()
 
-        Timber.d("Proxy Server is Complete")
+        Timber.d("Proxy Server is Done!")
         status.set(
             RunningStatus.Stopping,
             clearError = clearErrorStatus,
@@ -197,7 +197,6 @@ internal constructor(
             }
           }
         } finally {
-          Timber.d("Proxy stopped from OUTSIDE")
           shutdown(clearErrorStatus = false)
         }
       }

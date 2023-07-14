@@ -307,17 +307,19 @@ protected constructor(
   private inline fun completeStop(
       scope: CoroutineScope,
       clearErrorStatus: Boolean,
-      onStop: () -> Unit,
+      onStopped: () -> Unit,
   ) {
     enforcer.assertOffMainThread()
-
-    scope.launch(context = Dispatchers.Default) { onNetworkStopped(clearErrorStatus) }
 
     Timber.d("Reset last info refresh times")
     lastGroupRefreshTime = LocalDateTime.MIN
     lastConnectionRefreshTime = LocalDateTime.MIN
+    connectionInfoChannel.value = WiDiNetworkStatus.ConnectionInfo.Empty
+    groupInfoChannel.value = WiDiNetworkStatus.GroupInfo.Empty
 
-    onStop()
+    scope.launch(context = Dispatchers.Default) { onNetworkStopped(clearErrorStatus) }
+
+    onStopped()
   }
 
   private suspend fun shutdownWifiNetwork(channel: Channel) {

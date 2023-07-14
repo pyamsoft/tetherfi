@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -38,8 +37,6 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -130,10 +127,6 @@ class MainActivity : AppCompatActivity() {
 
     viewModel.requireNotNull().handleSyncDarkTheme(this)
     reportFullyDrawn()
-
-    lifecycleScope.launch(context = Dispatchers.Default) {
-      launcher.requireNotNull().ensureAndroidServiceStartedWhenNeeded()
-    }
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

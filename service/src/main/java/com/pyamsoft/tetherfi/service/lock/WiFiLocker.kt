@@ -9,16 +9,16 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WiFiLocker
@@ -40,32 +40,28 @@ internal constructor(
   }
 
   // Double check because we are also wrapped in a mutex
-  private var wakeAcquired = AtomicBoolean(false)
+  private val wakeAcquired = MutableStateFlow(false)
 
   override suspend fun acquireLock() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) {
-          mutex.withLock {
-            if (!wakeAcquired.getAndSet(true)) {
-              lock.acquire()
-              Timber.d("####################################")
-              Timber.d("Acquire WiFi wakelock: $tag")
-              Timber.d("####################################")
-            }
+      withContext(context = Dispatchers.Default + NonCancellable) {
+        mutex.withLock {
+          if (wakeAcquired.compareAndSet(expect = false, update = true)) {
+            lock.acquire()
+            Timber.d("####################################")
+            Timber.d("Acquire WiFi wakelock: $tag")
+            Timber.d("####################################")
           }
         }
       }
 
   override suspend fun releaseLock() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) {
-          mutex.withLock {
-            if (wakeAcquired.getAndSet(false)) {
-              Timber.d("####################################")
-              Timber.d("Release WIFI wakelock: $tag")
-              Timber.d("####################################")
-              lock.release()
-            }
+      withContext(context = Dispatchers.Default + NonCancellable) {
+        mutex.withLock {
+          if (wakeAcquired.compareAndSet(expect = true, update = false)) {
+            Timber.d("####################################")
+            Timber.d("Release WIFI wakelock: $tag")
+            Timber.d("####################################")
+            lock.release()
           }
         }
       }

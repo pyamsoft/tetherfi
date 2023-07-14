@@ -30,9 +30,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +40,9 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -212,8 +212,7 @@ internal constructor(
 
       if (!isInAppRatingAlreadyShown()) {
         // Not atomic because shared prefs are lame
-        val old = preferences.getInt(IN_APP_HOTSPOT_USED, 0)
-        preferences.edit { putInt(IN_APP_HOTSPOT_USED, old + 1) }
+        preferences.updateInt(IN_APP_HOTSPOT_USED, 0) { it + 1 }
       }
     }
   }
@@ -224,8 +223,7 @@ internal constructor(
 
       if (!isInAppRatingAlreadyShown()) {
         // Not atomic because shared prefs are lame
-        val old = preferences.getInt(IN_APP_APP_OPENED, 0)
-        preferences.edit { putInt(IN_APP_APP_OPENED, old + 1) }
+        preferences.updateInt(IN_APP_APP_OPENED, 0) { it + 1 }
       }
     }
   }
@@ -236,9 +234,20 @@ internal constructor(
 
       if (!isInAppRatingAlreadyShown()) {
         // Not atomic because shared prefs are lame
-        val old = preferences.getInt(IN_APP_DEVICES_CONNECTED, 0)
-        preferences.edit { putInt(IN_APP_DEVICES_CONNECTED, old + 1) }
+        preferences.updateInt(IN_APP_DEVICES_CONNECTED, 0) { it + 1 }
       }
+    }
+  }
+
+  private fun SharedPreferences.updateInt(key: String, defaultValue: Int, update: (Int) -> Int) {
+    val self = this
+
+    // Kinda atomic-ey
+    while (true) {
+      val prevValue = self.getInt(key, defaultValue)
+      val nextValue = update(prevValue)
+      synchronized(self) { self.edit { putInt(key, nextValue) } }
+      return
     }
   }
 
