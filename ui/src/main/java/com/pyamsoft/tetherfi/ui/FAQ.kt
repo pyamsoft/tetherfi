@@ -110,7 +110,7 @@ fun LazyListScope.renderLinks(
                 color = MaterialTheme.colors.primary,
             ),
         elevation = ZeroElevation,
-        color = MaterialTheme.colors.background,
+        color = Color.Transparent,
         shape = MaterialTheme.shapes.medium,
     ) {
       ClickableText(

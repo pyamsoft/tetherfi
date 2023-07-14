@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity() {
 
                   override val changelog = buildChangeLog {
                     feature("Added links to the Wiki and FAQs")
+                    feature("Improve Hotspot efficiency by re-using connections when possible")
+                    feature("Faster hotspot startup")
                     change(
                         "Reduce battery usage by no longer using a Foreground Service. To have the Hotspot run all the time like it used to, enable the \"Always Alive\" option.")
                   }
