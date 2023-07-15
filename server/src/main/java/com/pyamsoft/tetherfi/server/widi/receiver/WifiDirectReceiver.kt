@@ -125,7 +125,7 @@ internal constructor(
                   context,
                   self,
                   INTENT_FILTER,
-                  ContextCompat.RECEIVER_EXPORTED,
+                  ContextCompat.RECEIVER_NOT_EXPORTED,
               )
             }
 

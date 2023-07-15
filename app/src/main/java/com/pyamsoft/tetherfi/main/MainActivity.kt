@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
@@ -100,6 +101,8 @@ class MainActivity : AppCompatActivity() {
 
     setContent {
       val theme by vm.theme.collectAsState()
+
+      SaveStateDisposableEffect(vm)
 
       TetherFiTheme(
           theme = theme,

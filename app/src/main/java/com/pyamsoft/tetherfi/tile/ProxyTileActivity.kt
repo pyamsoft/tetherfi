@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -48,6 +49,8 @@ class ProxyTileActivity : AppCompatActivity() {
 
     setContent {
       val theme by vm.theme.collectAsState()
+
+      SaveStateDisposableEffect(vm)
 
       SystemBars()
 
