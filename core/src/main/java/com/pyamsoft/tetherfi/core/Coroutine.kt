@@ -1,8 +1,8 @@
 package com.pyamsoft.tetherfi.core
 
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
-private val neverEndingFlow = MutableStateFlow(Unit)
+private val neverEndingFlow = MutableSharedFlow<Nothing>()
 
 /**
  * Hold the coroutine "forever" until it is cancelled
