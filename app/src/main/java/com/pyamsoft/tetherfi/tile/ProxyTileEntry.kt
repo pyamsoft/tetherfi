@@ -23,9 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
-import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import javax.inject.Inject
@@ -75,13 +76,19 @@ fun ProxyTileEntry(
       onToggleProxy = { viewModel.handleToggleProxy() },
   )
 
-  val activity = rememberActivity()
+  val activity = LocalActivity.current
+
+  val handleComplete by rememberUpdatedState { activity.requireNotNull().finishAndRemoveTask() }
+
+  val handleTileUpdate by rememberUpdatedState {
+    ProxyTileService.updateTile(activity.requireNotNull())
+  }
 
   ProxyTileScreen(
       modifier = modifier,
       state = viewModel,
       onDismissed = { viewModel.handleDismissed() },
-      onComplete = { activity.finishAndRemoveTask() },
-      onStatusUpdated = { ProxyTileService.updateTile(activity) },
+      onComplete = { handleComplete() },
+      onStatusUpdated = { handleTileUpdate() },
   )
 }

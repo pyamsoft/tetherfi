@@ -30,10 +30,11 @@ import androidx.lifecycle.Lifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
+import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
-import com.pyamsoft.pydroid.ui.util.rememberActivity
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
@@ -176,12 +177,20 @@ fun StatusEntry(
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
   val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
-  val activity = rememberActivity()
+  val activity = LocalActivity.current
+
+  val handleTileUpdate by rememberUpdatedState {
+    ProxyTileService.updateTile(activity.requireNotNull())
+  }
 
   val dismissPermissionPopup by rememberUpdatedState { viewModel.handleDismissPermissionPopup() }
   val scope = rememberCoroutineScope()
 
   val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
+
+  val handleOpenIntent by rememberUpdatedState { action: String ->
+    safeOpenSettingsIntent(activity.requireNotNull(), action)
+  }
 
   // Hooks that run on mount
   MountHooks(
@@ -202,7 +211,7 @@ fun StatusEntry(
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
       onOpenBatterySettings = {
-        safeOpenSettingsIntent(activity, Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        handleOpenIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
       onDismissPermissionExplanation = { dismissPermissionPopup() },
       onRequestPermissions = {
@@ -212,9 +221,7 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Server)
         }
       },
-      onOpenPermissionSettings = {
-        safeOpenSettingsIntent(activity, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-      },
+      onOpenPermissionSettings = { handleOpenIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
       onToggleKeepWakeLock = { viewModel.handleToggleProxyWakelock() },
       onToggleKeepWifiLock = { viewModel.handleToggleProxyWifilock() },
       onSelectBand = { viewModel.handleChangeBand(it) },
@@ -224,7 +231,7 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Notification)
         }
       },
-      onStatusUpdated = { ProxyTileService.updateTile(activity) },
+      onStatusUpdated = { handleTileUpdate() },
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
       onShowNetworkError = { viewModel.handleOpenNetworkError() },
       onHideNetworkError = { viewModel.handleCloseNetworkError() },
