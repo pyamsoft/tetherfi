@@ -59,7 +59,6 @@ dependencies {
       "com.google.accompanist:accompanist-systemuicontroller:${rootProject.extra["accompanist"]}")
 
   // PYDroid
-  implementation("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 
   implementation(project(":core"))
