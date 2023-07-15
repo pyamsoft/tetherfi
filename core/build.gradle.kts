@@ -59,10 +59,6 @@ dependencies {
   // Compose runtime for annotations
   implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
-  // PYDroid
-  api("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")
-  api("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
-
   // Android support library.
   api("androidx.core:core-ktx:1.10.1")
 

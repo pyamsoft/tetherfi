@@ -122,6 +122,10 @@ dependencies {
   // This pulls in all the UI bits too, which is a little lame.
   implementation("androidx.preference:preference:1.2.0")
 
+  // PYDroid
+  implementation("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")
+  implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
+
   implementation(project(":connections"))
   implementation(project(":core"))
   implementation(project(":info"))

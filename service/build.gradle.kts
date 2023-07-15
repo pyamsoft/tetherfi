@@ -52,6 +52,7 @@ dependencies {
   // Notifier in ServiceAppModule
   // NotifyDispatcher in ServiceAppModule
   api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
+  implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
 
   implementation(project(":core"))
   implementation(project(":server"))

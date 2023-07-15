@@ -53,5 +53,9 @@ dependencies {
 
   implementation("io.ktor:ktor-network:2.3.1")
 
+  // PYDroid
+  implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
+  implementation("com.github.pyamsoft.pydroid:util:${rootProject.extra["pydroid"]}")
+
   implementation(project(":core"))
 }

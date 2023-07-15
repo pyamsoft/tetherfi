@@ -67,6 +67,10 @@ dependencies {
   api("io.coil-kt:coil-compose-base:2.4.0")
   implementation("io.github.g0dkar:qrcode-kotlin-android:3.3.0")
 
+  // PYDroid
+  implementation("com.github.pyamsoft.pydroid:arch:${rootProject.extra["pydroid"]}")
+  implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
+
   implementation(project(":core"))
   implementation(project(":server"))
 }
