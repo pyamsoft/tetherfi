@@ -29,6 +29,12 @@ internal constructor(
     private val context: Context,
 ) : PermissionGuard {
 
+  @CheckResult
+  private fun hasPermission(permission: String): Boolean {
+    return ContextCompat.checkSelfPermission(context.applicationContext, permission) ==
+        PackageManager.PERMISSION_GRANTED
+  }
+
   override val requiredPermissions: List<String> by
       lazy(LazyThreadSafetyMode.NONE) {
         // Always require these WiFi permissions
@@ -46,12 +52,6 @@ internal constructor(
               )
             }
       }
-
-  @CheckResult
-  private fun hasPermission(permission: String): Boolean {
-    return ContextCompat.checkSelfPermission(context.applicationContext, permission) ==
-        PackageManager.PERMISSION_GRANTED
-  }
 
   override fun canCreateWiDiNetwork(): Boolean {
     return requiredPermissions.all { hasPermission(it) }
