@@ -20,11 +20,19 @@ import android.app.Application
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.PYDroidLogger
 import com.pyamsoft.pydroid.ui.debug.InAppDebugLogger.Companion.createInAppDebugLogger
+import com.pyamsoft.pydroid.ui.debug.InAppDebugStatus
 import com.pyamsoft.pydroid.util.isDebugMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-fun Application.installLogger() {
-  val self = this
+fun Application.installLogger(
+    scope: CoroutineScope,
+    inAppDebugStatus: InAppDebugStatus,
+) {
   if (isDebugMode()) {
     // For debug logcat
     Timber.plant(
@@ -36,23 +44,55 @@ fun Application.installLogger() {
     )
   }
 
-  // For optional in-app debug
-  Timber.plant(
+  observeInAppDebugLogger(
+      scope = scope,
+      inAppDebugStatus = inAppDebugStatus,
+  )
+}
+
+private fun Application.observeInAppDebugLogger(
+    scope: CoroutineScope,
+    inAppDebugStatus: InAppDebugStatus,
+) {
+  val self = this
+
+  val tree =
       object : Timber.Tree() {
 
-        private val logger = self.createInAppDebugLogger()
+        private val logger by lazy { self.createInAppDebugLogger() }
 
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
           logger.log(priority, tag, message, t)
         }
-      },
-  )
+      }
+
+  val isPlanted = MutableStateFlow(false)
+  inAppDebugStatus.listenForInAppDebuggingEnabled().also { f ->
+    scope.launch(context = Dispatchers.Default) {
+      f.collect { enabled ->
+        if (enabled) {
+          if (isPlanted.compareAndSet(expect = false, update = true)) {
+            withContext(context = Dispatchers.Main) { Timber.plant(tree) }
+          }
+        } else {
+          if (isPlanted.compareAndSet(expect = true, update = false)) {
+            withContext(context = Dispatchers.Main) { Timber.uproot(tree) }
+          }
+        }
+      }
+    }
+  }
 }
 
 @CheckResult
 fun createLogger(): PYDroidLogger {
   return object : PYDroidLogger {
 
+    override fun d(tag: String, message: () -> String) {
+      Timber.tag(tag).d(message())
+    }
+
+    @Deprecated("Use the lazy form of d()")
     override fun d(
         tag: String,
         message: String,
@@ -61,6 +101,7 @@ fun createLogger(): PYDroidLogger {
       Timber.tag(tag).d(message, args)
     }
 
+    @Deprecated("Use the lazy form of d()")
     override fun w(
         tag: String,
         message: String,
@@ -69,6 +110,11 @@ fun createLogger(): PYDroidLogger {
       Timber.tag(tag).w(message, args)
     }
 
+    override fun w(tag: String, message: () -> String) {
+      Timber.tag(tag).w(message())
+    }
+
+    @Deprecated("Use the lazy form of d()")
     override fun e(
         tag: String,
         throwable: Throwable,
@@ -76,6 +122,10 @@ fun createLogger(): PYDroidLogger {
         vararg args: Any,
     ) {
       Timber.tag(tag).e(throwable, message, args)
+    }
+
+    override fun e(tag: String, throwable: Throwable, message: () -> String) {
+      Timber.tag(tag).e(throwable, message())
     }
   }
 }

@@ -26,6 +26,10 @@ import com.pyamsoft.pydroid.ui.installPYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 class TetherFi : Application() {
 
@@ -61,10 +65,18 @@ class TetherFi : Application() {
 
   override fun onCreate() {
     super.onCreate()
-    installLogger()
     val modules = installPYDroid()
     installComponent(modules)
     addLibraries()
+
+    val scope =
+        CoroutineScope(
+            context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+        )
+    installLogger(
+        scope = scope,
+        inAppDebugStatus = modules.get().inAppDebugStatus(),
+    )
   }
 
   companion object {
