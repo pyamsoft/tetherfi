@@ -37,6 +37,7 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -46,7 +47,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -80,7 +80,7 @@ private fun safeOpenSettingsIntent(
     val intent = Intent(action, "package:${activity.packageName}".toUri())
     activity.startActivity(intent)
   } catch (e: Throwable) {
-    Timber.e(e, "Failed specific intent for $action")
+    Timber.e(e) { "Failed specific intent for $action" }
     val intent = Intent(action)
     activity.startActivity(intent)
   }

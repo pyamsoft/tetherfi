@@ -56,7 +56,6 @@ dependencies {
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 
-
   implementation(project(":core"))
   implementation(project(":ui"))
 }

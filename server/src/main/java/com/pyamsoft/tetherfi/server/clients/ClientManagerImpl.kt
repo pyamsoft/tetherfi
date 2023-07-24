@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.clients
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
+import com.pyamsoft.tetherfi.core.Timber
 import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -39,7 +40,6 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 internal class ClientManagerImpl
@@ -84,14 +84,14 @@ internal constructor(
   }
 
   private fun CoroutineScope.onNewClientSeen(client: TetherClient) {
-    Timber.d("First time seeing client: $client")
+    Timber.d { "First time seeing client: $client" }
     inAppRatingPreferences.markDeviceConnected()
 
     startWatchingForOldClients()
   }
 
   private fun purgeOldClients(cutoffTime: LocalDateTime) {
-    Timber.d("Attempt to purge old clients before $cutoffTime")
+    Timber.d { "Attempt to purge old clients before $cutoffTime" }
 
     // "Live" client must have activity within 5 minutes
     val newClients =
@@ -99,7 +99,7 @@ internal constructor(
           set.filter {
                 val newEnough = it.mostRecentlySeen >= cutoffTime
                 if (!newEnough) {
-                  Timber.d("Client is too old: $it. Last seen ${it.mostRecentlySeen}")
+                  Timber.d { "Client is too old: $it. Last seen ${it.mostRecentlySeen}" }
                 }
                 return@filter newEnough
               }
@@ -140,7 +140,9 @@ internal constructor(
     timerJob =
         timerJob
             ?: timerFlow(PERIOD_IN_MINUTES.minutes).let { f ->
-              Timber.d("Start a timer flow to check old clients every $PERIOD_IN_MINUTES minutes")
+              Timber.d {
+                "Start a timer flow to check old clients every $PERIOD_IN_MINUTES minutes"
+              }
               scope.launch(context = Dispatchers.IO) {
                 f.collect {
                   // Cutoff time is X minutes ago

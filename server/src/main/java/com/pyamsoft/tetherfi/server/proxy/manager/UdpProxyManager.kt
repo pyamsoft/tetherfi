@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
@@ -29,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class UdpProxyManager
 internal constructor(
@@ -53,7 +53,7 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e, "Error during session $datagram") }
+      e.ifNotCancellation { Timber.e(e) { "Error during session $datagram" } }
     }
   }
 
@@ -66,13 +66,13 @@ internal constructor(
                 verifyPort = false,
                 verifyHostName = true,
             )
-        Timber.d("Bind UDP server to local address: $localAddress")
+        Timber.d { "Bind UDP server to local address: $localAddress" }
         return@withContext builder.udp().bind(localAddress = localAddress)
       }
 
   override suspend fun runServer(server: BoundDatagramSocket) =
       withContext(context = Dispatchers.IO) {
-        Timber.d("Awaiting UDP connections on ${server.localAddress}")
+        Timber.d { "Awaiting UDP connections on ${server.localAddress}" }
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (isActive && !server.isClosed) {
@@ -84,7 +84,7 @@ internal constructor(
             launch(context = Dispatchers.IO) { runSession(this, datagram) }
           } else {
             // Immediately drop the connection
-            Timber.w("Server is closed, immediately drop connection")
+            Timber.w { "Server is closed, immediately drop connection" }
           }
         }
       }

@@ -20,6 +20,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
@@ -36,7 +37,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -57,7 +57,7 @@ internal constructor(
       blockCount: Int,
   ) {
     if (!showing.value) {
-      Timber.w("Do not update notification, no longer showing!")
+      Timber.w { "Do not update notification, no longer showing!" }
       return
     }
 
@@ -75,7 +75,7 @@ internal constructor(
               channelInfo = CHANNEL_INFO,
               notification = data,
           )
-          .also { Timber.d("Updated foreground notification: $it: $data") }
+          .also { Timber.d { "Updated foreground notification: $it: $data" } }
     }
   }
 
@@ -154,7 +154,7 @@ internal constructor(
   private fun stop() {
     enforcer.assertOnMainThread()
 
-    Timber.d("Stop foreground notification")
+    Timber.d { "Stop foreground notification" }
     notifier.cancel(NOTIFICATION_ID)
   }
 
@@ -176,7 +176,7 @@ internal constructor(
                         channelInfo = CHANNEL_INFO,
                         notification = data,
                     )
-                    .also { Timber.d("Started foreground notification: $it: $data") }
+                    .also { Timber.d { "Started foreground notification: $it: $data" } }
               }
 
               // Then immediately open a channel to update

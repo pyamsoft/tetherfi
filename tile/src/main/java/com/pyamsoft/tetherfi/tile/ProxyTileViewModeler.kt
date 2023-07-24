@@ -17,13 +17,13 @@
 package com.pyamsoft.tetherfi.tile
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import timber.log.Timber
 
 class ProxyTileViewModeler
 @Inject
@@ -66,7 +66,7 @@ internal constructor(
     // dialog
     // to show. Upon granting permission, this function will be called again and should pass
     if (requiresPermissions) {
-      Timber.w("Cannot launch Proxy until Permissions are granted")
+      Timber.w { "Cannot launch Proxy until Permissions are granted" }
       s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
       serviceLauncher.stopForeground()
       return
@@ -74,15 +74,15 @@ internal constructor(
 
     when (val status = handler.getNetworkStatus()) {
       is RunningStatus.NotRunning -> {
-        Timber.d("Starting Proxy...")
+        Timber.d { "Starting Proxy..." }
         serviceLauncher.startForeground()
       }
       is RunningStatus.Running -> {
-        Timber.d("Stopping Proxy")
+        Timber.d { "Stopping Proxy" }
         serviceLauncher.stopForeground()
       }
       else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
       }
     }
   }

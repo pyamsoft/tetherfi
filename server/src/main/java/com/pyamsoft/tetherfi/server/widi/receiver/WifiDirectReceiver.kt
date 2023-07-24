@@ -28,6 +28,7 @@ import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 internal class WifiDirectReceiver
@@ -66,11 +66,11 @@ internal constructor(
   private suspend fun handleStateChangedAction(intent: Intent) {
     when (val p2pState = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, 0)) {
       WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
-        Timber.d("WiFi Direct: Enabled")
+        Timber.d { "WiFi Direct: Enabled" }
         eventBus.emit(WidiNetworkEvent.WifiEnabled)
       }
       WifiP2pManager.WIFI_P2P_STATE_DISABLED -> {
-        Timber.d("WiFi Direct: Disabled")
+        Timber.d { "WiFi Direct: Disabled" }
         eventBus.emit(WidiNetworkEvent.WifiDisabled)
 
         // Fire the shutdown event to the service
@@ -79,7 +79,7 @@ internal constructor(
         // and notifications
         shutdownBus.emit(ServerShutdownEvent)
       }
-      else -> Timber.w("Unknown Wifi p2p state: $p2pState")
+      else -> Timber.w { "Unknown Wifi p2p state: $p2pState" }
     }
   }
 
@@ -107,7 +107,7 @@ internal constructor(
   private fun unregister() {
     enforcer.assertOnMainThread()
 
-    Timber.d("Unregister Wifi Receiver")
+    Timber.d { "Unregister Wifi Receiver" }
     context.unregisterReceiver(this)
   }
 
@@ -120,7 +120,7 @@ internal constructor(
           // Hold this here until the coroutine is cancelled
           coroutineScope {
             withContext(context = Dispatchers.Main) {
-              Timber.d("Register Wifi Receiver")
+              Timber.d { "Register Wifi Receiver" }
               ContextCompat.registerReceiver(
                   context,
                   self,
@@ -158,7 +158,7 @@ internal constructor(
           WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION ->
               handleThisDeviceChangedAction(intent)
           else -> {
-            Timber.w("Unhandled intent action: $action")
+            Timber.w { "Unhandled intent action: $action" }
           }
         }
       } finally {
@@ -186,13 +186,13 @@ internal constructor(
     private fun resolveWifiGroupHostname(intent: Intent): String {
       val p2pInfo: WifiP2pInfo? = intent.resolveParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
       if (p2pInfo == null) {
-        Timber.w("No P2P Info in connection intent")
+        Timber.w { "No P2P Info in connection intent" }
         return ""
       }
 
       val address = p2pInfo.groupOwnerAddress
       if (address == null) {
-        Timber.w("No Group owner address in connection intent")
+        Timber.w { "No Group owner address in connection intent" }
         return ""
       }
 

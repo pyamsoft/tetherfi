@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service.foreground
 
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
@@ -25,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 class ForegroundLauncher
@@ -44,7 +44,7 @@ internal constructor(
 
   suspend fun startProxy() =
       withContext(context = Dispatchers.Default) {
-        Timber.d("Start WiDi Network")
+        Timber.d { "Start WiDi Network" }
         try {
           // Claim the wakelock
           lock()

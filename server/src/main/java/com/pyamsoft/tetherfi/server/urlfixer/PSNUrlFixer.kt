@@ -16,8 +16,8 @@
 
 package com.pyamsoft.tetherfi.server.urlfixer
 
+import com.pyamsoft.tetherfi.core.Timber
 import javax.inject.Inject
-import timber.log.Timber
 
 class PSNUrlFixer @Inject internal constructor() : UrlFixer {
 
@@ -39,7 +39,7 @@ class PSNUrlFixer @Inject internal constructor() : UrlFixer {
       val httpIndex = url.lastIndexOf("http")
       if (httpIndex >= 0) {
         val fixed = url.substring(httpIndex + 1)
-        Timber.d("Fixed bad Playstation URL: $url => $fixed")
+        Timber.d { "Fixed bad Playstation URL: $url => $fixed" }
         return fixed
       }
     }

@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service
 
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundLauncher
 import com.pyamsoft.tetherfi.service.foreground.ForegroundWatcher
@@ -29,7 +30,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 class ServiceRunner
@@ -56,11 +56,11 @@ internal constructor(
     scope.launch(context = Dispatchers.Default) {
       foregroundWatcher.bind(
           onRefreshNotification = {
-            Timber.d("Refresh event received, start notification again")
+            Timber.d { "Refresh event received, start notification again" }
             notificationLauncher.start()
           },
           onShutdownService = {
-            Timber.d("Shutdown event received!")
+            Timber.d { "Shutdown event received!" }
             withContext(context = Dispatchers.Main) { serviceLauncher.stopForeground() }
           },
       )
@@ -68,7 +68,7 @@ internal constructor(
 
     // And Start the proxy Wifi Direct and our HTTP server
     scope.launch(context = Dispatchers.Default) {
-      Timber.d("Starting Proxy!")
+      Timber.d { "Starting Proxy!" }
       foregroundLauncher.startProxy()
     }
   }
@@ -78,12 +78,12 @@ internal constructor(
       withContext(context = Dispatchers.Default) {
         if (runningState.compareAndSet(expect = false, update = true)) {
           try {
-            Timber.d("Starting runner!")
+            Timber.d { "Starting runner!" }
             coroutineScope { startProxy() }
           } finally {
             withContext(context = NonCancellable) {
               if (runningState.compareAndSet(expect = true, update = false)) {
-                Timber.d("Stopping runner!")
+                Timber.d { "Stopping runner!" }
               }
             }
           }

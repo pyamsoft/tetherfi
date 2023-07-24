@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
@@ -50,7 +51,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class TcpProxySession
 @Inject
@@ -82,7 +82,7 @@ internal constructor(
 
     // No line, no go
     if (line.isNullOrBlank()) {
-      Timber.w("No input read from proxy")
+      Timber.w { "No input read from proxy" }
       return null
     }
 
@@ -90,7 +90,7 @@ internal constructor(
       // Given the line, it needs to be in an expected format or we can't do it
       val methodData = getMethodAndUrlString(line)
       if (methodData == null) {
-        Timber.w("Unable to parse method and URL: $line")
+        Timber.w { "Unable to parse method and URL: $line" }
         return null
       }
 
@@ -105,7 +105,7 @@ internal constructor(
       )
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        Timber.e(e, "Unable to parse request: $line")
+        Timber.e(e) { "Unable to parse request: $line" }
         return null
       }
     }
@@ -159,8 +159,9 @@ internal constructor(
         port =
             portString.toIntOrNull().let { maybePort ->
               if (maybePort == null) {
-                Timber.w(
-                    "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString")
+                Timber.w {
+                  "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString"
+                }
                 // Default to port 80 for HTTP
                 80
               } else {
@@ -232,7 +233,7 @@ internal constructor(
     // We find the first space
     val firstSpace = line.indexOf(' ')
     if (firstSpace < 0) {
-      Timber.w("Invalid request line format. No space: '$line'")
+      Timber.w { "Invalid request line format. No space: '$line'" }
       return null
     }
 
@@ -245,7 +246,7 @@ internal constructor(
     // Need to have the last space so we know the version too
     val nextSpace = restOfLine.indexOf(' ')
     if (nextSpace < 0) {
-      Timber.w("Invalid request line format. No nextSpace: '$line' => '$restOfLine'")
+      Timber.w { "Invalid request line format. No nextSpace: '$line' => '$restOfLine'" }
       return null
     }
 
@@ -401,7 +402,7 @@ internal constructor(
   private fun resolveClient(connection: Socket): TetherClient? {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
-      Timber.w("Block non-internet socket addresses, we expect clients to be inet: $connection")
+      Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
       return null
     }
 
@@ -489,7 +490,7 @@ internal constructor(
 
     // If the client is blocked we do not process any inpue
     if (isBlockedClient(client)) {
-      Timber.w("Client is marked blocked: $client")
+      Timber.w { "Client is marked blocked: $client" }
       writeError(proxyOutput)
       return
     }
@@ -497,7 +498,7 @@ internal constructor(
     // We use a string parsing to figure out what this HTTP request wants to do
     val request = parseRequest(proxyInput)
     if (request == null) {
-      Timber.w("Could not parse proxy request")
+      Timber.w { "Could not parse proxy request" }
       writeError(proxyOutput)
       return
     }
@@ -525,7 +526,7 @@ internal constructor(
           // Resolve the client as an IP or hostname
           val client = resolveClient(connection)
           if (client == null) {
-            Timber.w("Unable to resolve TetherClient for connection: $connection")
+            Timber.w { "Unable to resolve TetherClient for connection: $connection" }
             writeError(proxyOutput)
             return@withContext
           }

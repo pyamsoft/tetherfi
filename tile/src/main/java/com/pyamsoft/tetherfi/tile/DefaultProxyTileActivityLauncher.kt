@@ -23,9 +23,9 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
 import androidx.annotation.RequiresApi
+import com.pyamsoft.tetherfi.core.Timber
 import javax.inject.Inject
 import javax.inject.Named
-import timber.log.Timber
 
 internal class DefaultProxyTileActivityLauncher
 @Inject
@@ -72,18 +72,18 @@ internal constructor(
       private inline fun ensureUnlocked(crossinline block: () -> Unit) {
         if (service.isLocked) {
           service.unlockAndRun {
-            Timber.d("Unlock device before running launcher")
+            Timber.d { "Unlock device before running launcher" }
             block()
           }
         } else {
-          Timber.d("Device is unlocked, run launcher")
+          Timber.d { "Device is unlocked, run launcher" }
           block()
         }
       }
 
       final override fun launchTileActivity() {
         ensureUnlocked {
-          Timber.d("Start TileActivity!")
+          Timber.d { "Start TileActivity!" }
           onLaunchTileActivity(service)
         }
       }

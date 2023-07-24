@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
@@ -40,7 +41,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 internal class WifiSharedProxy
@@ -55,7 +55,7 @@ internal constructor(
 
   private suspend fun handleServerLoopError(e: Throwable, type: SharedProxy.Type) {
     e.ifNotCancellation {
-      Timber.e(e, "Error running server loop: ${type.name}")
+      Timber.e(e) { "Error running server loop: ${type.name}" }
 
       reset()
       status.set(RunningStatus.Error(e.message ?: "An unexpected error occurred."))
@@ -70,7 +70,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     try {
-      Timber.d("${type.name} Begin proxy server loop: $info")
+      Timber.d { "${type.name} Begin proxy server loop: $info" }
       factory
           .create(
               type = type,
@@ -109,7 +109,7 @@ internal constructor(
       withContext(context = NonCancellable) {
         enforcer.assertOffMainThread()
 
-        Timber.d("Proxy Server is Done!")
+        Timber.d { "Proxy Server is Done!" }
         status.set(
             RunningStatus.Stopping,
             clearError = clearErrorStatus,
@@ -125,7 +125,7 @@ internal constructor(
       //
       // This will suspend until the proxy server loop dies
       coroutineScope {
-        Timber.d("Starting proxy server ...")
+        Timber.d { "Starting proxy server ..." }
         status.set(
             RunningStatus.Starting,
             clearError = true,
@@ -133,11 +133,11 @@ internal constructor(
 
         proxyLoop(info)
 
-        Timber.d("Started Proxy Server")
+        Timber.d { "Started Proxy Server" }
         status.set(RunningStatus.Running)
       }
     } finally {
-      Timber.d("Stopped Proxy Server")
+      Timber.d { "Stopped Proxy Server" }
     }
   }
 
@@ -170,7 +170,7 @@ internal constructor(
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Empty -> {
-                  Timber.w("Connection EMPTY, shut down Proxy")
+                  Timber.w { "Connection EMPTY, shut down Proxy" }
 
                   // Empty is missing the channel, bad
                   mutex.withLock {
@@ -179,7 +179,7 @@ internal constructor(
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Error -> {
-                  Timber.w("Connection ERROR, shut down Proxy")
+                  Timber.w { "Connection ERROR, shut down Proxy" }
 
                   // Error is bad, shut down the proxy
                   mutex.withLock {
@@ -188,10 +188,11 @@ internal constructor(
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
-                  Timber.w("UNCHANGED SHOULD NOT HAPPEN")
+                  Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
                   shutdown(clearErrorStatus = false)
-                  throw IllegalStateException(
-                      "GroupInfo.Unchanged should never escape the server-module internals.")
+                  throw AssertionError(
+                      "GroupInfo.Unchanged should never escape the server-module internals.",
+                  )
                 }
               }
             }

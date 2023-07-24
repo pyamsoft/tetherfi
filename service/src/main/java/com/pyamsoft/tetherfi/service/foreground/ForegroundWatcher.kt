@@ -19,12 +19,12 @@ package com.pyamsoft.tetherfi.service.foreground
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 class ForegroundWatcher
 @Inject
@@ -49,7 +49,7 @@ internal constructor(
           shutdownListener.requireNotNull().also { f ->
             launch(context = Dispatchers.Default) {
               f.collect {
-                Timber.d("Shutdown event received!")
+                Timber.d { "Shutdown event received!" }
                 onShutdownService()
               }
             }
@@ -59,7 +59,7 @@ internal constructor(
           notificationRefreshListener.requireNotNull().also { f ->
             launch(context = Dispatchers.Default) {
               f.collect {
-                Timber.d("Refresh notification")
+                Timber.d { "Refresh notification" }
                 onRefreshNotification()
               }
             }

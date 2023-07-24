@@ -47,9 +47,9 @@ import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.delay
-import timber.log.Timber
 
 private val CONNECTOR_SIZE = 16.dp
 private val STEP_SIZE = ImageDefaults.ItemSize
@@ -85,7 +85,7 @@ fun ProxyTileScreen(
             return@remember status is RunningStatus.Stopping || status is RunningStatus.NotRunning
           }
           else -> {
-            Timber.w("Unexpected middle step, we are in progress so mark us as middle: $status")
+            Timber.w { "Unexpected middle step, we are in progress so mark us as middle: $status" }
             return@remember true
           }
         }
@@ -106,8 +106,9 @@ fun ProxyTileScreen(
             return@remember status is RunningStatus.NotRunning
           }
           else -> {
-            Timber.w(
-                "Unexpected final step, we are in progress so do not mark us as final: $status")
+            Timber.w {
+              "Unexpected final step, we are in progress so do not mark us as final: $status"
+            }
             return@remember false
           }
         }

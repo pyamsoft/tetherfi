@@ -7,6 +7,7 @@ import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @Singleton
 internal class WakeLocker
@@ -45,9 +45,9 @@ internal constructor(
       withContext(context = Dispatchers.Default + NonCancellable) {
         mutex.withLock {
           if (wakeAcquired.compareAndSet(expect = false, update = true)) {
-            Timber.d("####################################")
-            Timber.d("Acquire CPU wakelock: $tag")
-            Timber.d("####################################")
+            Timber.d { "####################################" }
+            Timber.d { "Acquire CPU wakelock: $tag" }
+            Timber.d { "####################################" }
             lock.acquire()
           }
         }
@@ -57,9 +57,9 @@ internal constructor(
       withContext(context = Dispatchers.Default + NonCancellable) {
         mutex.withLock {
           if (wakeAcquired.compareAndSet(expect = true, update = false)) {
-            Timber.d("####################################")
-            Timber.d("Release CPU wakelock: $tag")
-            Timber.d("####################################")
+            Timber.d { "####################################" }
+            Timber.d { "Release CPU wakelock: $tag" }
+            Timber.d { "####################################" }
             lock.release()
           }
         }

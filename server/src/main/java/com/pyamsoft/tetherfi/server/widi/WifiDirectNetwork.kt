@@ -32,6 +32,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -53,7 +54,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -89,7 +89,7 @@ protected constructor(
   private fun createChannel(): Channel? {
     enforcer.assertOffMainThread()
 
-    Timber.d("Creating WifiP2PManager Channel")
+    Timber.d { "Creating WifiP2PManager Channel" }
 
     // This can return null if initialization fails
     return wifiP2PManager.initialize(
@@ -104,7 +104,7 @@ protected constructor(
       //
       // Any other unexpected death like Airplane mode or Wifi off should be covered by the receiver
       // so we should never unintentionally leak the service
-      Timber.d("WifiP2PManager Channel died! Do nothing :D")
+      Timber.d { "WifiP2PManager Channel died! Do nothing :D" }
     }
   }
 
@@ -129,20 +129,20 @@ protected constructor(
   private suspend fun createGroup(channel: Channel): RunningStatus {
     enforcer.assertOffMainThread()
 
-    Timber.d("Creating new wifi p2p group")
+    Timber.d { "Creating new wifi p2p group" }
     val conf = config.getConfiguration()
 
     return suspendCoroutine { cont ->
       val listener =
           object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-              Timber.d("New network created")
+              Timber.d { "New network created" }
               cont.resume(RunningStatus.Running)
             }
 
             override fun onFailure(reason: Int) {
               val msg = "Failed to create network: ${reasonToString(reason)}"
-              Timber.w(msg)
+              Timber.w { msg }
               cont.resume(RunningStatus.Error(msg))
             }
           }
@@ -162,20 +162,20 @@ protected constructor(
   private suspend fun removeGroup(channel: Channel) {
     enforcer.assertOffMainThread()
 
-    Timber.d("Stop existing WiFi Group")
+    Timber.d { "Stop existing WiFi Group" }
     return suspendCoroutine { cont ->
       wifiP2PManager.removeGroup(
           channel,
           object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-              Timber.d("Wifi P2P Channel is removed")
+              Timber.d { "Wifi P2P Channel is removed" }
               cont.resume(Unit)
             }
 
             override fun onFailure(reason: Int) {
-              Timber.w("Failed to stop network: ${reasonToString(reason)}")
+              Timber.w { "Failed to stop network: ${reasonToString(reason)}" }
 
-              Timber.d("Close Group failed but continue teardown anyway")
+              Timber.d { "Close Group failed but continue teardown anyway" }
               cont.resume(Unit)
             }
           },
@@ -196,17 +196,17 @@ protected constructor(
       is WiDiNetworkStatus.GroupInfo.Connected -> {
         when (connectionInfo) {
           is WiDiNetworkStatus.ConnectionInfo.Connected -> {
-            Timber.d("Re-use existing connection: ${groupInfo.ssid} $connectionInfo")
+            Timber.d { "Re-use existing connection: ${groupInfo.ssid} $connectionInfo" }
             groupInfoChannel.value = groupInfo
             connectionInfoChannel.value = connectionInfo
             return RunningStatus.Running
           }
           is WiDiNetworkStatus.ConnectionInfo.Empty -> {
-            Timber.w("Connection is EMPTY, cannot re-use")
+            Timber.w { "Connection is EMPTY, cannot re-use" }
             return null
           }
           is WiDiNetworkStatus.ConnectionInfo.Error -> {
-            Timber.w("Connection is ERROR, cannot re-use")
+            Timber.w { "Connection is ERROR, cannot re-use" }
             return null
           }
           is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
@@ -215,11 +215,11 @@ protected constructor(
         }
       }
       is WiDiNetworkStatus.GroupInfo.Empty -> {
-        Timber.w("Group is EMPTY, cannot re-use")
+        Timber.w { "Group is EMPTY, cannot re-use" }
         return null
       }
       is WiDiNetworkStatus.GroupInfo.Error -> {
-        Timber.w("Group is ERROR, cannot re-use")
+        Timber.w { "Group is ERROR, cannot re-use" }
         return null
       }
       is WiDiNetworkStatus.GroupInfo.Unchanged -> {
@@ -234,10 +234,10 @@ protected constructor(
 
         var launchProxy: RunningStatus? = null
         mutex.withLock {
-          Timber.d("START NEW NETWORK")
+          Timber.d { "START NEW NETWORK" }
 
           if (!permissionGuard.canCreateWiDiNetwork()) {
-            Timber.w("Missing permissions for making WiDi network")
+            Timber.w { "Missing permissions for making WiDi network" }
             shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus = false)
             return@withContext
           }
@@ -246,7 +246,7 @@ protected constructor(
           val channel = createChannel()
 
           if (channel == null) {
-            Timber.w("Failed to create channel, cannot initialize WiDi network")
+            Timber.w { "Failed to create channel, cannot initialize WiDi network" }
 
             completeStop(this, clearErrorStatus = false) {
               shutdownForStatus(
@@ -263,21 +263,21 @@ protected constructor(
 
           val runningStatus = reUseExistingConnection(channel) ?: createGroup(channel)
           if (runningStatus is RunningStatus.Running) {
-            Timber.d("Network started")
+            Timber.d { "Network started" }
 
             // Only store the channel if it successfully "finished" creating.
-            Timber.d("Store WiFi channel")
+            Timber.d { "Store WiFi channel" }
             wifiChannel = channel
 
             launchProxy = runningStatus
           } else {
-            Timber.w("Group failed creation, stop proxy")
+            Timber.w { "Group failed creation, stop proxy" }
 
             // Remove whatever was created (should be a no-op if everyone follows API correctly)
             shutdownWifiNetwork(channel)
 
             completeStop(this, clearErrorStatus = false) {
-              Timber.w("Stopping proxy after Group failed to create")
+              Timber.w { "Stopping proxy after Group failed to create" }
               shutdownForStatus(
                   runningStatus,
                   clearErrorStatus = false,
@@ -296,10 +296,10 @@ protected constructor(
         launchProxy?.also { lp ->
           val newProxyJob =
               launch(context = Dispatchers.IO) { onNetworkStarted(connectionInfoChannel) }
-          Timber.d("Track new proxy job!")
+          Timber.d { "Track new proxy job!" }
           proxyJob = newProxyJob
 
-          Timber.d("WiDi network has started: $lp")
+          Timber.d { "WiDi network has started: $lp" }
           status.set(lp)
         }
       }
@@ -311,7 +311,7 @@ protected constructor(
   ) {
     enforcer.assertOffMainThread()
 
-    Timber.d("Reset last info refresh times")
+    Timber.d { "Reset last info refresh times" }
     lastGroupRefreshTime = LocalDateTime.MIN
     lastConnectionRefreshTime = LocalDateTime.MIN
     connectionInfoChannel.value = WiDiNetworkStatus.ConnectionInfo.Empty
@@ -330,7 +330,7 @@ protected constructor(
     removeGroup(channel)
 
     // Close the wifi channel now that we are done with it
-    Timber.d("Close WiFiP2PManager channel")
+    Timber.d { "Close WiFiP2PManager channel" }
     closeSilent(channel)
 
     // Clear out so nobody else can use a dead channel
@@ -339,7 +339,7 @@ protected constructor(
 
   private fun killProxyJob() {
     proxyJob?.also { p ->
-      Timber.d("Stop proxy job")
+      Timber.d { "Stop proxy job" }
       p.cancel()
     }
     proxyJob = null
@@ -350,7 +350,7 @@ protected constructor(
         enforcer.assertOffMainThread()
 
         mutex.withLock {
-          Timber.d("STOP NETWORK")
+          Timber.d { "STOP NETWORK" }
           val channel = wifiChannel
 
           killProxyJob()
@@ -359,20 +359,20 @@ protected constructor(
           // is basically a no-op
           if (channel == null) {
             completeStop(this, clearErrorStatus) {
-              Timber.d("Resetting status back to not running")
+              Timber.d { "Resetting status back to not running" }
               shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
             }
             return@withContext
           }
 
           // If we do have a channel, mark shutting down as we clean up
-          Timber.d("Shutting down wifi network")
+          Timber.d { "Shutting down wifi network" }
           shutdownForStatus(RunningStatus.Stopping, clearErrorStatus)
 
           shutdownWifiNetwork(channel)
 
           completeStop(this, clearErrorStatus) {
-            Timber.d("Proxy was stopped")
+            Timber.d { "Proxy was stopped" }
             shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
           }
         }
@@ -390,7 +390,7 @@ protected constructor(
           cont.resume(it)
         }
       } catch (e: Throwable) {
-        Timber.e(e, "Error getting WiFi Direct Group Info")
+        Timber.e(e) { "Error getting WiFi Direct Group Info" }
         cont.resumeWithException(e)
       }
     }
@@ -407,7 +407,7 @@ protected constructor(
           cont.resume(it)
         }
       } catch (e: Throwable) {
-        Timber.e(e, "Error getting WiFi Direct Connection Info")
+        Timber.e(e) { "Error getting WiFi Direct Connection Info" }
         cont.resumeWithException(e)
       }
     }
@@ -419,19 +419,19 @@ protected constructor(
 
     val debugGroup = appEnvironment.group
     if (debugGroup.isEmpty.value) {
-      Timber.w("DEBUG forcing Empty group response")
+      Timber.w { "DEBUG forcing Empty group response" }
       return WiDiNetworkStatus.GroupInfo.Empty
     }
 
     if (debugGroup.isError.value) {
-      Timber.w("DEBUG forcing Error group response")
+      Timber.w { "DEBUG forcing Error group response" }
       return WiDiNetworkStatus.GroupInfo.Error(
           error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
       )
     }
 
     if (debugGroup.isConnected.value) {
-      Timber.w("DEBUG forcing Connected group response")
+      Timber.w { "DEBUG forcing Connected group response" }
       return WiDiNetworkStatus.GroupInfo.Connected(
           ssid = "DEBUG SSID",
           password = "DEBUG PASSWORD",
@@ -449,12 +449,12 @@ protected constructor(
     enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
-      Timber.w("Missing permissions, cannot get Group Info")
+      Timber.w { "Missing permissions, cannot get Group Info" }
       return WiDiNetworkStatus.GroupInfo.Empty
     }
 
     if (channel == null) {
-      Timber.w("Cannot get group info without Wifi channel")
+      Timber.w { "Cannot get group info without Wifi channel" }
       return WiDiNetworkStatus.GroupInfo.Empty
     }
 
@@ -484,7 +484,7 @@ protected constructor(
 
     val forcedDebugResult = handleGroupDebugEnvironment()
     if (forcedDebugResult != null) {
-      Timber.w("Returning DEBUG result which overrides real: $result")
+      Timber.w { "Returning DEBUG result which overrides real: $result" }
       return forcedDebugResult
     }
 
@@ -497,19 +497,19 @@ protected constructor(
 
     val debugConnection = appEnvironment.connection
     if (debugConnection.isEmpty.value) {
-      Timber.w("DEBUG forcing Empty connection response")
+      Timber.w { "DEBUG forcing Empty connection response" }
       return WiDiNetworkStatus.ConnectionInfo.Empty
     }
 
     if (debugConnection.isError.value) {
-      Timber.w("DEBUG forcing Error connection response")
+      Timber.w { "DEBUG forcing Error connection response" }
       return WiDiNetworkStatus.ConnectionInfo.Error(
           error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
       )
     }
 
     if (debugConnection.isConnected.value) {
-      Timber.w("DEBUG forcing Connected connection response")
+      Timber.w { "DEBUG forcing Connected connection response" }
       return WiDiNetworkStatus.ConnectionInfo.Connected(hostName = "DEBUG HOSTNAME")
     }
 
@@ -524,12 +524,12 @@ protected constructor(
     enforcer.assertOffMainThread()
 
     if (!permissionGuard.canCreateWiDiNetwork()) {
-      Timber.w("Missing permissions, cannot get Connection Info")
+      Timber.w { "Missing permissions, cannot get Connection Info" }
       return WiDiNetworkStatus.ConnectionInfo.Empty
     }
 
     if (channel == null) {
-      Timber.w("Cannot get connection info without Wifi channel")
+      Timber.w { "Cannot get connection info without Wifi channel" }
       return WiDiNetworkStatus.ConnectionInfo.Empty
     }
 
@@ -560,7 +560,7 @@ protected constructor(
 
     val forcedDebugResult = handleConnectionDebugEnvironment()
     if (forcedDebugResult != null) {
-      Timber.w("Returning DEBUG result which overrides real: $result")
+      Timber.w { "Returning DEBUG result which overrides real: $result" }
       return forcedDebugResult
     }
     return result
@@ -575,18 +575,18 @@ protected constructor(
 
           val groupInfo = withLockGetGroupInfo(channel, force = false)
           if (groupInfo != WiDiNetworkStatus.GroupInfo.Unchanged) {
-            Timber.d("WiFi Direct Group Info: $groupInfo")
+            Timber.d { "WiFi Direct Group Info: $groupInfo" }
             groupInfoChannel.value = groupInfo
           } else {
-            Timber.w("Last Group Info request is still fresh, unchanged")
+            Timber.w { "Last Group Info request is still fresh, unchanged" }
           }
 
           val connectionInfo = withLockGetConnectionInfo(channel, force = false)
           if (connectionInfo != WiDiNetworkStatus.ConnectionInfo.Unchanged) {
-            Timber.d("WiFi Direct Connection Info: $connectionInfo")
+            Timber.d { "WiFi Direct Connection Info: $connectionInfo" }
             connectionInfoChannel.value = connectionInfo
           } else {
-            Timber.w("Last Connection Info request is still fresh, unchanged")
+            Timber.w { "Last Connection Info request is still fresh, unchanged" }
           }
         }
       }
@@ -596,11 +596,11 @@ protected constructor(
         enforcer.assertOffMainThread()
 
         if (status.get() is RunningStatus.Error) {
-          Timber.w("Reset proxy from error state")
+          Timber.w { "Reset proxy from error state" }
           withLockStopNetwork(clearErrorStatus = true)
         }
 
-        Timber.d("Starting Wi-Fi Direct Network...")
+        Timber.d { "Starting Wi-Fi Direct Network..." }
         try {
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
@@ -610,13 +610,13 @@ protected constructor(
           coroutineScope { withLockStartNetwork() }
         } catch (e: Throwable) {
           e.ifNotCancellation {
-            Timber.e(e, "Error starting Network")
+            Timber.e(e) { "Error starting Network" }
             val msg = e.message ?: "An error occurred while starting the Network"
             shutdownForStatus(RunningStatus.Error(msg), clearErrorStatus = false)
           }
         } finally {
           withContext(context = NonCancellable) {
-            Timber.d("Stopping Wi-Fi Direct Network...")
+            Timber.d { "Stopping Wi-Fi Direct Network..." }
             withLockStopNetwork(clearErrorStatus = false)
           }
         }
@@ -658,7 +658,7 @@ protected constructor(
         try {
           s.close()
         } catch (e: Throwable) {
-          Timber.e(e, "Failed to close WifiP2P Channel")
+          Timber.e(e) { "Failed to close WifiP2P Channel" }
         }
       }
     }

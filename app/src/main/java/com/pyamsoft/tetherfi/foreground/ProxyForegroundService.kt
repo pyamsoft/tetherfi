@@ -22,6 +22,7 @@ import android.os.IBinder
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.ServiceRunner
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
@@ -30,7 +31,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 internal class ProxyForegroundService internal constructor() : Service() {
 
@@ -61,7 +61,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
   override fun onCreate() {
     super.onCreate()
     ObjectGraph.ApplicationScope.retrieve(this).plusForeground().create().inject(this)
-    Timber.d("Creating service")
+    Timber.d { "Creating service" }
   }
 
   /**
@@ -78,7 +78,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
   override fun onDestroy() {
     super.onDestroy()
-    Timber.d("Destroying service")
+    Timber.d { "Destroying service" }
 
     scope?.cancel()
 

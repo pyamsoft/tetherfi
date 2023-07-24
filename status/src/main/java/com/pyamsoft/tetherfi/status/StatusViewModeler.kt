@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -41,7 +42,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class StatusViewModeler
 @Inject
@@ -140,29 +140,29 @@ internal constructor(
     // dialog
     // to show. Upon granting permission, this function will be called again and should pass
     if (!hasPermission) {
-      Timber.w("Cannot launch Proxy until Permissions are granted")
+      Timber.w { "Cannot launch Proxy until Permissions are granted" }
       serviceLauncher.stopForeground()
       return
     }
 
     when (val status = network.getCurrentStatus()) {
       is RunningStatus.NotRunning -> {
-        Timber.d("Starting Proxy...")
+        Timber.d { "Starting Proxy..." }
         serviceLauncher.startForeground()
       }
       is RunningStatus.Running -> {
-        Timber.d("Stopping Proxy")
+        Timber.d { "Stopping Proxy" }
         serviceLauncher.stopForeground()
       }
       is RunningStatus.Error -> {
-        Timber.d("Resetting Proxy from Error state")
+        Timber.d { "Resetting Proxy from Error state" }
         serviceLauncher.apply {
           resetError()
           startForeground()
         }
       }
       else -> {
-        Timber.d("Cannot toggle while we are in the middle of an operation: $status")
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
       }
     }
   }
@@ -300,7 +300,7 @@ internal constructor(
     network.onProxyStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
-          Timber.d("Proxy Status Changed: $status")
+          Timber.d { "Proxy Status Changed: $status" }
           state.proxyStatus.value = status
         }
       }
@@ -309,7 +309,7 @@ internal constructor(
     network.onStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
-          Timber.d("WiDi Status Changed: $status")
+          Timber.d { "WiDi Status Changed: $status" }
           state.wiDiStatus.value = status
         }
       }

@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.service.tile
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -25,7 +26,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class TileHandler
 @Inject
@@ -52,10 +52,10 @@ internal constructor(
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {
-                Timber.w("Error running Proxy: ${status.message}")
+                Timber.w { "Error running Proxy: ${status.message}" }
                 onNetworkError(status)
               }
-              else -> Timber.d("Unhandled Proxy status event $status")
+              else -> Timber.d { "Unhandled Proxy status event $status" }
             }
           }
         }
@@ -68,7 +68,7 @@ internal constructor(
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {
-                Timber.w("Error running WiDi network: ${status.message}")
+                Timber.w { "Error running WiDi network: ${status.message}" }
                 onNetworkError(status)
               }
               is RunningStatus.NotRunning -> onNetworkNotRunning()

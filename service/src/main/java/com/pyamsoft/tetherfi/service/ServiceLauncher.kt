@@ -19,8 +19,8 @@ package com.pyamsoft.tetherfi.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import com.pyamsoft.tetherfi.core.Timber
 import javax.inject.Inject
-import timber.log.Timber
 
 class ServiceLauncher
 @Inject
@@ -32,24 +32,16 @@ internal constructor(
   private val foregroundService by
       lazy(LazyThreadSafetyMode.NONE) { Intent(context, foregroundServiceClass) }
 
-  private fun startAndroidService() {
-    Timber.d("Start Foreground Service!")
-    context.startService(foregroundService)
-  }
-
-  private fun stopAndroidService() {
-    Timber.d("Stop Foreground Service!")
-    context.stopService(foregroundService)
-  }
-
   /** Start the service */
   fun startForeground() {
-    startAndroidService()
+    Timber.d { "Start Foreground Service!" }
+    context.startService(foregroundService)
   }
 
   /** Stop the service */
   fun stopForeground() {
-    stopAndroidService()
+    Timber.d { "Stop Foreground Service!" }
+    context.stopService(foregroundService)
   }
 
   /** If the hotspot is in error state, we reset it so that it can start again */

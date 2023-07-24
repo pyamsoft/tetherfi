@@ -17,12 +17,12 @@
 package com.pyamsoft.tetherfi.server.proxy.session.udp
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class UdpProxySession
 @Inject
@@ -36,6 +36,6 @@ internal constructor(
   ) =
       withContext(context = Dispatchers.IO) {
         val datagram = data.datagram
-        Timber.d("Process UDP proxy data: ${datagram.address} ${datagram.packet}")
+        Timber.d { "Process UDP proxy data: ${datagram.address} ${datagram.packet}" }
       }
 }

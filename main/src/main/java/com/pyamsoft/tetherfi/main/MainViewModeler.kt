@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.main
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 class MainViewModeler
 @Inject
@@ -60,7 +60,7 @@ internal constructor(
           scope.launch(context = Dispatchers.Default) {
             f.collect { show ->
               if (show) {
-                Timber.d("Show in-app rating")
+                Timber.d { "Show in-app rating" }
                 withContext(context = Dispatchers.Main) { onShowInAppRating() }
               }
             }
@@ -91,7 +91,7 @@ internal constructor(
 
           // If the network was switched off, clear everything
           if (wasRunning && !currentlyRunning) {
-            Timber.d("Hotspot was turned OFF, refresh network settings to clear")
+            Timber.d { "Hotspot was turned OFF, refresh network settings to clear" }
 
             // Refresh connection info, should blank out
             handleRefreshConnectionInfo(this)
@@ -99,7 +99,7 @@ internal constructor(
             // Explicitly close the QR code
             handleCloseQRCodeDialog()
           } else if (!wasRunning && currentlyRunning) {
-            Timber.d("Hotspot was turned ON, refresh network settings to update")
+            Timber.d { "Hotspot was turned ON, refresh network settings to update" }
 
             // Refresh connection info, should populate
             handleRefreshConnectionInfo(this)

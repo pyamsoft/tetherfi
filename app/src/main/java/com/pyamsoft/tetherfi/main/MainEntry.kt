@@ -39,6 +39,7 @@ import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
@@ -47,7 +48,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
@@ -82,7 +82,7 @@ private fun WatchTabSwipe(
         .distinctUntilChanged()
         .mapNotNull { allTabs.getOrNull(it) }
         .collect { page ->
-          Timber.d("Page swiped: $page")
+          Timber.d { "Page swiped: $page" }
           withContext(context = Dispatchers.Main) { hapticManager?.actionButtonPress() }
         }
   }

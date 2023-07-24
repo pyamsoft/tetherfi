@@ -6,13 +6,13 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnDestroy
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class MainPermissions
 @Inject
@@ -37,14 +37,14 @@ internal constructor(
         serverPermissionRequester
             .registerRequester(activity) { granted ->
               if (granted) {
-                Timber.d("Network permission granted, toggle proxy")
+                Timber.d { "Network permission granted, toggle proxy" }
 
                 // Broadcast in the background
                 activity.lifecycleScope.launch(context = Dispatchers.Default) {
                   permissionResponseBus.emit(PermissionResponse.ToggleProxy)
                 }
               } else {
-                Timber.w("Network permission not granted")
+                Timber.w { "Network permission not granted" }
               }
             }
             .also { serverRequester = it }
@@ -53,14 +53,14 @@ internal constructor(
         notificationPermissionRequester
             .registerRequester(activity) { granted ->
               if (granted) {
-                Timber.d("Notification permission granted")
+                Timber.d { "Notification permission granted" }
 
                 // Broadcast in the background
                 activity.lifecycleScope.launch(context = Dispatchers.Default) {
                   permissionResponseBus.emit(PermissionResponse.RefreshNotification)
                 }
               } else {
-                Timber.w("Notification permission not granted")
+                Timber.w { "Notification permission not granted" }
               }
             }
             .also { notificationRequester = it }

@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import io.ktor.network.sockets.ServerSocket
@@ -30,7 +31,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 internal class TcpProxyManager
 internal constructor(
@@ -55,7 +55,7 @@ internal constructor(
               ),
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e, "Error during session $connection") }
+      e.ifNotCancellation { Timber.e(e) { "Error during session $connection" } }
     }
   }
 
@@ -68,13 +68,13 @@ internal constructor(
                 verifyPort = true,
                 verifyHostName = true,
             )
-        Timber.d("Bind TCP server to local address: $localAddress")
+        Timber.d { "Bind TCP server to local address: $localAddress" }
         return@withContext builder.tcp().bind(localAddress = localAddress)
       }
 
   override suspend fun runServer(server: ServerSocket) =
       withContext(context = Dispatchers.IO) {
-        Timber.d("Awaiting TCP connections on ${server.localAddress}")
+        Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (isActive && !server.isClosed) {

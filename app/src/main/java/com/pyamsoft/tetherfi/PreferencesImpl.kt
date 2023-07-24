@@ -26,6 +26,7 @@ import com.pyamsoft.pydroid.util.preferenceBooleanFlow
 import com.pyamsoft.pydroid.util.preferenceIntFlow
 import com.pyamsoft.pydroid.util.preferenceStringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -42,7 +43,6 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @Singleton
 internal class PreferencesImpl
@@ -173,17 +173,18 @@ internal constructor(
           ) { hotspotUsed, devicesConnected, appOpened, lastVersionShown ->
             enforcer.assertOffMainThread()
 
-            Timber.d(
-                "In app rating check: ${mapOf(
+            Timber.d {
+              "In app rating check: ${mapOf(
                     "lastVersion" to lastVersionShown,
                     "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
                     "hotspotUsed" to hotspotUsed,
                     "devicesConnected" to devicesConnected,
                     "appOpened" to appOpened,
-                )}")
+                )}"
+            }
 
             if (lastVersionShown.isInAppRatingAlreadyShown()) {
-              Timber.w("Already shown in-app rating for version: $lastVersionShown")
+              Timber.w { "Already shown in-app rating for version: $lastVersionShown" }
               emit(false)
             } else {
               val show = hotspotUsed >= 3 && devicesConnected >= 2 && appOpened >= 7
