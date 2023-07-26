@@ -29,21 +29,21 @@ import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -129,8 +129,8 @@ internal constructor(
               )
             }
 
-            // Hold the coroutine "forever" until it is cancelled
-            suspendUntilCancel()
+            // And suspend until we are done
+            awaitCancellation()
           }
         } finally {
           withContext(context = NonCancellable) {

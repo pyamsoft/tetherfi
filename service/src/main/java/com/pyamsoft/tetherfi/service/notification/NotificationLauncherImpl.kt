@@ -21,22 +21,22 @@ import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.core.suspendUntilCancel
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -183,7 +183,7 @@ internal constructor(
               scope.watchNotification()
 
               // And suspend until we are done
-              suspendUntilCancel()
+              awaitCancellation()
             }
           } finally {
             withContext(context = NonCancellable) {
