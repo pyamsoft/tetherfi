@@ -22,7 +22,6 @@ import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLicenses
 import com.pyamsoft.pydroid.ui.ModuleProvider
 import com.pyamsoft.pydroid.ui.PYDroid
-import com.pyamsoft.pydroid.ui.installPYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
@@ -66,8 +65,6 @@ class TetherFi : Application() {
   override fun onCreate() {
     super.onCreate()
     val modules = installPYDroid()
-    installComponent(modules)
-    addLibraries()
 
     val scope =
         CoroutineScope(
@@ -77,6 +74,9 @@ class TetherFi : Application() {
         scope = scope,
         inAppDebugStatus = modules.get().inAppDebugStatus(),
     )
+
+    installComponent(modules)
+    addLibraries()
   }
 
   companion object {
