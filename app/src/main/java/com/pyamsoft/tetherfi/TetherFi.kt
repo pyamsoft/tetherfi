@@ -33,7 +33,7 @@ import kotlinx.coroutines.SupervisorJob
 class TetherFi : Application() {
 
   @CheckResult
-  private fun installPYDroid(): ModuleProvider {
+  private fun initPYDroid(): ModuleProvider {
     val url = "https://github.com/pyamsoft/tetherfi"
 
     return installPYDroid(
@@ -64,7 +64,7 @@ class TetherFi : Application() {
 
   override fun onCreate() {
     super.onCreate()
-    val modules = installPYDroid()
+    val modules = initPYDroid()
 
     val scope =
         CoroutineScope(
