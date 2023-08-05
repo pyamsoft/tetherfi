@@ -51,7 +51,7 @@ dependencies {
   // Compose runtime for annotations
   implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
-  implementation("io.ktor:ktor-network:2.3.1")
+  implementation("io.ktor:ktor-network:2.3.3")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")

@@ -120,7 +120,7 @@ dependencies {
   // Needed just for androidx.preference.PreferenceManager
   // Eventually, big G may push for DataStore being a requirement, which will be pain
   // This pulls in all the UI bits too, which is a little lame.
-  implementation("androidx.preference:preference:1.2.0")
+  implementation("androidx.preference:preference:1.2.1")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")

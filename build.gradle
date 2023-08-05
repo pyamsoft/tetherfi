@@ -24,8 +24,8 @@ buildscript {
     compileSdk = 34
 
     // Kotlin
-    kotlin = "1.8.22"
-    coroutines = "1.7.2"
+    kotlin = "1.9.0"
+    coroutines = "1.7.3"
 
     // Us
     pydroid = "26.8.1"
@@ -34,11 +34,11 @@ buildscript {
     leakCanary = "2.12"
 
     // Dagger
-    dagger = "2.46.1"
+    dagger = "2.47"
 
     // Compose
     compose = "1.4.3"
-    composeCompiler = "1.4.8"
+    composeCompiler = "1.5.1"
     composeMaterial = "1.4.3"
     accompanist = "0.30.1"
 
@@ -76,7 +76,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-1.0.11" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-1.0.13" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
