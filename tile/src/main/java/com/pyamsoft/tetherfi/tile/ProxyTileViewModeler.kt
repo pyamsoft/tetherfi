@@ -18,9 +18,10 @@ package com.pyamsoft.tetherfi.tile
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
+import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
+import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
@@ -29,14 +30,30 @@ class ProxyTileViewModeler
 @Inject
 internal constructor(
     override val state: MutableProxyTileViewState,
-    private val permissions: PermissionGuard,
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,
+    private val requirements: HotspotRequirements,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
   init {
     // Sync up the network state on init so that we can immediately capture it in the View
     state.status.value = handler.getNetworkStatus()
+  }
+
+  private fun toggleProxy() {
+    when (val status = handler.getNetworkStatus()) {
+      is RunningStatus.NotRunning -> {
+        Timber.d { "Starting Proxy..." }
+        serviceLauncher.startForeground()
+      }
+      is RunningStatus.Running -> {
+        Timber.d { "Stopping Proxy" }
+        serviceLauncher.stopForeground()
+      }
+      else -> {
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+      }
+    }
   }
 
   fun handleDismissed() {
@@ -59,31 +76,24 @@ internal constructor(
   fun handleToggleProxy() {
     val s = state
 
-    // Refresh these state bits
-    val requiresPermissions = !permissions.canCreateWiDiNetwork()
+    val blockers = requirements.blockers()
 
-    // If we do not have permission, stop here. s.explainPermissions will cause the permission
-    // dialog
-    // to show. Upon granting permission, this function will be called again and should pass
-    if (requiresPermissions) {
-      Timber.w { "Cannot launch Proxy until Permissions are granted" }
-      s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
+    if (blockers.isNotEmpty()) {
       serviceLauncher.stopForeground()
+
+      if (blockers.contains(HotspotStartBlocker.PERMISSION)) {
+        Timber.w { "Cannot launch Proxy until Permissions are granted" }
+        s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
+      }
+
+      if (blockers.contains(HotspotStartBlocker.VPN)) {
+        Timber.w { "Cannot launch Proxy until VPN is off" }
+        s.status.value = RunningStatus.Error("Cannot start Hotspot while VPN is connected")
+      }
+
       return
     }
 
-    when (val status = handler.getNetworkStatus()) {
-      is RunningStatus.NotRunning -> {
-        Timber.d { "Starting Proxy..." }
-        serviceLauncher.startForeground()
-      }
-      is RunningStatus.Running -> {
-        Timber.d { "Stopping Proxy" }
-        serviceLauncher.stopForeground()
-      }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
-      }
-    }
+    toggleProxy()
   }
 }
