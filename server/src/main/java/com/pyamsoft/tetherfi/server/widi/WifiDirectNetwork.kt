@@ -57,14 +57,14 @@ import kotlinx.coroutines.withContext
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-  private val shutdownBus: EventBus<ServerShutdownEvent>,
-  private val appContext: Context,
-  private val permissionGuard: PermissionGuard,
-  private val config: WiDiConfig,
-  private val appEnvironment: AppDevEnvironment,
-  private val enforcer: ThreadEnforcer,
-  private val clock: Clock,
-  status: WiDiStatus,
+    private val shutdownBus: EventBus<ServerShutdownEvent>,
+    private val appContext: Context,
+    private val permissionGuard: PermissionGuard,
+    private val config: WiDiConfig,
+    private val appEnvironment: AppDevEnvironment,
+    private val enforcer: ThreadEnforcer,
+    private val clock: Clock,
+    status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {
