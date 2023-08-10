@@ -44,28 +44,37 @@ internal fun StatusDialogs(
   val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
   val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
-  for (blocker in blockers) {
-    AnimatedVisibility(
-        visible = blocker == HotspotStartBlocker.PERMISSION,
-    ) {
-      PermissionBlocker(
-          modifier = Modifier.fillUpToPortraitSize(),
-          appName = appName,
-          onDismiss = { onDismissBlocker(blocker) },
-          onOpenPermissionSettings = onOpenPermissionSettings,
-          onRequestPermissions = onRequestPermissions,
-      )
-    }
+  // Show the Required blocks first, and if all required ones are done, show the "skippable" ones
+  // even though we don't support skipping yet.
+  val requiredBlockers = remember(blockers) { blockers.filter { it.required } }
+  val skippableBlockers = remember(blockers) { blockers.filterNot { it.required } }
 
+  if (requiredBlockers.isNotEmpty()) {
+    for (blocker in requiredBlockers) {
+      AnimatedVisibility(
+          visible = blocker == HotspotStartBlocker.PERMISSION,
+      ) {
+        PermissionBlocker(
+            modifier = Modifier.fillUpToPortraitSize(),
+            appName = appName,
+            onDismiss = { onDismissBlocker(blocker) },
+            onOpenPermissionSettings = onOpenPermissionSettings,
+            onRequestPermissions = onRequestPermissions,
+        )
+      }
+    }
+  } else {
+    for (blocker in skippableBlockers) {
       AnimatedVisibility(
           visible = blocker == HotspotStartBlocker.VPN,
       ) {
-          VpnBlocker(
-              modifier = Modifier.fillUpToPortraitSize(),
-              appName = appName,
-              onDismiss = { onDismissBlocker(blocker) },
-          )
+        VpnBlocker(
+            modifier = Modifier.fillUpToPortraitSize(),
+            appName = appName,
+            onDismiss = { onDismissBlocker(blocker) },
+        )
       }
+    }
   }
 
   AnimatedVisibility(
