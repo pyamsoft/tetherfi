@@ -42,7 +42,6 @@ fun MainContent(
 ) {
   HorizontalPager(
       modifier = modifier,
-      pageCount = allTabs.size,
       state = pagerState,
   ) { page ->
     val screen =

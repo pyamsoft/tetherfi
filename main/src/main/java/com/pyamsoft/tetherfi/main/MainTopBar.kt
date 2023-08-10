@@ -181,10 +181,16 @@ private fun MainTab(
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainTopBar() {
+  val allTabs = rememberAllTabs()
   MainTopBar(
       appName = "TEST",
-      pagerState = rememberPagerState(),
-      allTabs = rememberAllTabs(),
+      pagerState =
+          rememberPagerState(
+              initialPage = 0,
+              initialPageOffsetFraction = 0F,
+              pageCount = { allTabs.size },
+          ),
+      allTabs = allTabs,
       onSettingsOpen = {},
   )
 }
