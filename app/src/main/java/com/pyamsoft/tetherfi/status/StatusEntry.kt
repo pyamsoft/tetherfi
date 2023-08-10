@@ -41,12 +41,12 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -183,11 +183,7 @@ fun StatusEntry(
     ProxyTileService.updateTile(activity.requireNotNull())
   }
 
-  val dismissPermissionPopup by rememberUpdatedState { viewModel.handleDismissPermissionPopup() }
   val scope = rememberCoroutineScope()
-
-  val handleToggleProxy by rememberUpdatedState { viewModel.handleToggleProxy() }
-
   val handleOpenIntent by rememberUpdatedState { action: String ->
     safeOpenSettingsIntent(activity.requireNotNull(), action)
   }
@@ -198,7 +194,7 @@ fun StatusEntry(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
-      onToggleProxy = { handleToggleProxy() },
+      onToggleProxy = { viewModel.handleToggleProxy() },
   )
 
   StatusScreen(
@@ -206,14 +202,14 @@ fun StatusEntry(
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,
-      onToggleProxy = { handleToggleProxy() },
+      onToggleProxy = { viewModel.handleToggleProxy() },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
       onOpenBatterySettings = {
         handleOpenIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
-      onDismissPermissionExplanation = { dismissPermissionPopup() },
+      onDismissBlocker = { viewModel.handleDismissBlocker(it) },
       onRequestPermissions = {
         // Request permissions
         scope.launch(context = Dispatchers.Default) {

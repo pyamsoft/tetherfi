@@ -31,7 +31,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
+import com.pyamsoft.tetherfi.status.vpn.VpnChecker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -55,6 +56,7 @@ internal constructor(
     private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
+    private val vpnChecker: VpnChecker,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -92,6 +94,47 @@ internal constructor(
           // Once dialog dismissed, if OFF and error, don't dialog again because still TRUE
           // otherwise if OFF and no error, no dialog
           .distinctUntilChanged()
+
+  @CheckResult
+  private fun refreshHotspotStartBlockers(
+      hasPermission: Boolean,
+      isUsingVpn: Boolean,
+  ): List<HotspotStartBlocker> {
+    val blockers = mutableListOf<HotspotStartBlocker>()
+
+    if (!hasPermission) {
+      blockers.add(HotspotStartBlocker.PERMISSION)
+    }
+
+    if (isUsingVpn) {
+      blockers.add(HotspotStartBlocker.VPN)
+    }
+
+    return blockers
+  }
+
+  private fun toggleProxy() {
+    when (val status = network.getCurrentStatus()) {
+      is RunningStatus.NotRunning -> {
+        Timber.d { "Starting Proxy..." }
+        serviceLauncher.startForeground()
+      }
+      is RunningStatus.Running -> {
+        Timber.d { "Stopping Proxy" }
+        serviceLauncher.stopForeground()
+      }
+      is RunningStatus.Error -> {
+        Timber.d { "Resetting Proxy from Error state" }
+        serviceLauncher.apply {
+          resetError()
+          startForeground()
+        }
+      }
+      else -> {
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+      }
+    }
+  }
 
   override fun registerSaveState(
       registry: SaveableStateRegistry
@@ -133,38 +176,22 @@ internal constructor(
     // Refresh these state bits
     val hasPermission = permissions.canCreateWiDiNetwork()
     s.hasHotspotPermissions.value = hasPermission
-    s.isRequestingHotspotPermissions.value = !hasPermission
     s.isPasswordVisible.value = false
 
-    // If we do not have permission, stop here. s.explainPermissions will cause the permission
-    // dialog
-    // to show. Upon granting permission, this function will be called again and should pass
-    if (!hasPermission) {
-      Timber.w { "Cannot launch Proxy until Permissions are granted" }
+    // If something is blocking hotspot startup we will show it in the view
+    val blockers =
+        refreshHotspotStartBlockers(
+            hasPermission = hasPermission,
+            isUsingVpn = vpnChecker.isUsingVpn(),
+        )
+    s.startBlockers.value = blockers
+    if (blockers.isNotEmpty()) {
+      Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
       serviceLauncher.stopForeground()
       return
     }
 
-    when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> {
-        Timber.d { "Starting Proxy..." }
-        serviceLauncher.startForeground()
-      }
-      is RunningStatus.Running -> {
-        Timber.d { "Stopping Proxy" }
-        serviceLauncher.stopForeground()
-      }
-      is RunningStatus.Error -> {
-        Timber.d { "Resetting Proxy from Error state" }
-        serviceLauncher.apply {
-          resetError()
-          startForeground()
-        }
-      }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
-      }
-    }
+    toggleProxy()
   }
 
   fun loadPreferences(scope: CoroutineScope) {
@@ -292,8 +319,8 @@ internal constructor(
     }
   }
 
-  fun handleDismissPermissionPopup() {
-    state.isRequestingHotspotPermissions.value = false
+  fun handleDismissBlocker(blocker: HotspotStartBlocker) {
+    state.startBlockers.update { it - blocker }
   }
 
   fun watchStatusUpdates(scope: CoroutineScope) {

@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
+import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
@@ -17,18 +19,18 @@ internal fun StatusDialogs(
     state: StatusViewState,
     serverViewState: ServerViewState,
     appName: String,
+    onDismissBlocker: (HotspotStartBlocker) -> Unit,
 
     // Location Permission
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
-    onDismissPermissionExplanation: () -> Unit,
 
     // Errors
     onHideSetupError: () -> Unit,
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
-  val isRequestingHotspotPermissions by state.isRequestingHotspotPermissions.collectAsState()
+  val blockers by state.startBlockers.collectAsState()
 
   val isShowingHotspotError by state.isShowingHotspotError.collectAsState()
   val group by serverViewState.group.collectAsState()
@@ -42,6 +44,30 @@ internal fun StatusDialogs(
   val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
   val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
+  for (blocker in blockers) {
+    AnimatedVisibility(
+        visible = blocker == HotspotStartBlocker.PERMISSION,
+    ) {
+      PermissionBlocker(
+          modifier = Modifier.fillUpToPortraitSize(),
+          appName = appName,
+          onDismiss = { onDismissBlocker(blocker) },
+          onOpenPermissionSettings = onOpenPermissionSettings,
+          onRequestPermissions = onRequestPermissions,
+      )
+    }
+
+      AnimatedVisibility(
+          visible = blocker == HotspotStartBlocker.VPN,
+      ) {
+          VpnBlocker(
+              modifier = Modifier.fillUpToPortraitSize(),
+              appName = appName,
+              onDismiss = { onDismissBlocker(blocker) },
+          )
+      }
+  }
+
   AnimatedVisibility(
       visible = isShowingSetupError,
   ) {
@@ -51,18 +77,6 @@ internal fun StatusDialogs(
         isWifiDirectError = isWifiDirectError,
         isProxyError = isProxyError,
         onDismiss = onHideSetupError,
-    )
-  }
-
-  AnimatedVisibility(
-      visible = isRequestingHotspotPermissions,
-  ) {
-    PermissionExplanationDialog(
-        modifier = Modifier.fillUpToPortraitSize(),
-        appName = appName,
-        onDismissPermissionExplanation = onDismissPermissionExplanation,
-        onOpenPermissionSettings = onOpenPermissionSettings,
-        onRequestPermissions = onRequestPermissions,
     )
   }
 

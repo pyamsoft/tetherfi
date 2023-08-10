@@ -76,10 +76,12 @@ fun StatusScreen(
     // Battery Optimization
     onOpenBatterySettings: () -> Unit,
 
+    // Blockers
+    onDismissBlocker: (HotspotStartBlocker) -> Unit,
+
     // Location Permission
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
-    onDismissPermissionExplanation: () -> Unit,
 
     // Notification
     onRequestNotificationPermission: () -> Unit,
@@ -248,7 +250,7 @@ fun StatusScreen(
         state = state,
         serverViewState = serverViewState,
         appName = appName,
-        onDismissPermissionExplanation = onDismissPermissionExplanation,
+        onDismissBlocker = onDismissBlocker,
         onOpenPermissionSettings = onOpenPermissionSettings,
         onRequestPermissions = onRequestPermissions,
         onHideNetworkError = onHideNetworkError,
@@ -330,7 +332,7 @@ private fun PreviewStatusScreen(
       onRequestNotificationPermission = {},
       onToggleKeepWakeLock = {},
       onSelectBand = {},
-      onDismissPermissionExplanation = {},
+      onDismissBlocker = {},
       onOpenBatterySettings = {},
       onOpenPermissionSettings = {},
       onPasswordChanged = {},
