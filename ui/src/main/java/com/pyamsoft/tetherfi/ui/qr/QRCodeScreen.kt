@@ -64,6 +64,7 @@ fun QRCodeScreen(
         contentType = QRCodeScreenContentTypes.QR,
     ) {
       Crossfade(
+          label = "QRCode",
           targetState = qrCode,
       ) { code ->
         if (code == null) {
