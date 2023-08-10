@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.pyamsoft.pydroid.ui.util.collectAsStateList
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -31,7 +32,7 @@ internal fun StatusDialogs(
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
-  val blockers by state.startBlockers.collectAsState()
+  val blockers = state.startBlockers.collectAsStateList()
 
   val isShowingHotspotError by state.isShowingHotspotError.collectAsState()
   val group by serverViewState.group.collectAsState()

@@ -11,8 +11,8 @@ internal constructor(
     private val vpnChecker: VpnChecker,
 ) : HotspotRequirements {
 
-  override fun blockers(): List<HotspotStartBlocker> {
-    val blockers = mutableListOf<HotspotStartBlocker>()
+  override fun blockers(): Collection<HotspotStartBlocker> {
+    val blockers = mutableSetOf<HotspotStartBlocker>()
 
     if (!permission.canCreateWiDiNetwork()) {
       blockers.add(HotspotStartBlocker.PERMISSION)
