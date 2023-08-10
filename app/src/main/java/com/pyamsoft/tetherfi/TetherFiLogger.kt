@@ -92,36 +92,8 @@ fun createLogger(): PYDroidLogger {
       Timber.tag(tag).d(message())
     }
 
-    @Deprecated("Use the lazy form of d()")
-    override fun d(
-        tag: String,
-        message: String,
-        vararg args: Any,
-    ) {
-      Timber.tag(tag).d(message, args)
-    }
-
-    @Deprecated("Use the lazy form of d()")
-    override fun w(
-        tag: String,
-        message: String,
-        vararg args: Any,
-    ) {
-      Timber.tag(tag).w(message, args)
-    }
-
     override fun w(tag: String, message: () -> String) {
       Timber.tag(tag).w(message())
-    }
-
-    @Deprecated("Use the lazy form of d()")
-    override fun e(
-        tag: String,
-        throwable: Throwable,
-        message: String,
-        vararg args: Any,
-    ) {
-      Timber.tag(tag).e(throwable, message, args)
     }
 
     override fun e(tag: String, throwable: Throwable, message: () -> String) {
