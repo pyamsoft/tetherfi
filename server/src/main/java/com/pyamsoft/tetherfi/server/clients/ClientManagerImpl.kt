@@ -20,12 +20,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,6 +34,12 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class ClientManagerImpl
@@ -50,8 +50,8 @@ internal constructor(
     private val clock: Clock,
 ) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser {
 
-  private val blockedClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
-  private val seenClients = MutableStateFlow<Set<TetherClient>>(mutableSetOf())
+  private val blockedClients = MutableStateFlow<Collection<TetherClient>>(mutableSetOf())
+  private val seenClients = MutableStateFlow<List<TetherClient>>(mutableListOf())
 
   private var timerJob: Job? = null
 
@@ -95,15 +95,14 @@ internal constructor(
 
     // "Live" client must have activity within 5 minutes
     val newClients =
-        seenClients.updateAndGet { set ->
-          set.filter {
-                val newEnough = it.mostRecentlySeen >= cutoffTime
-                if (!newEnough) {
-                  Timber.d { "Client is too old: $it. Last seen ${it.mostRecentlySeen}" }
-                }
-                return@filter newEnough
-              }
-              .toSet()
+        seenClients.updateAndGet { list ->
+          list.filter {
+            val newEnough = it.mostRecentlySeen >= cutoffTime
+            if (!newEnough) {
+              Timber.d { "Client is too old: $it. Last seen ${it.mostRecentlySeen}" }
+            }
+            return@filter newEnough
+          }
         }
     blockedClients.update { set ->
       set.filter { bc ->
@@ -188,20 +187,19 @@ internal constructor(
 
   override suspend fun seen(client: TetherClient) =
       withContext(context = Dispatchers.Default) {
-        seenClients.update { set ->
-          val existing = set.firstOrNull { isMatchingClient(it, client) }
+        seenClients.update { list ->
+          val existing = list.firstOrNull { isMatchingClient(it, client) }
 
           if (existing == null) {
-            return@update (set + client).also { onNewClientSeen(client) }
+            return@update (list + client).also { onNewClientSeen(client) }
           } else {
-            return@update set.map { c ->
-                  if (c == existing) {
-                    return@map markLastSeenNow(c)
-                  } else {
-                    return@map c
-                  }
-                }
-                .toSet()
+            return@update list.map { c ->
+              if (c == existing) {
+                return@map markLastSeenNow(c)
+              } else {
+                return@map c
+              }
+            }
           }
         }
       }
@@ -209,17 +207,17 @@ internal constructor(
   override fun clear() {
     timerJob?.cancel()
 
-    seenClients.value = emptySet()
+    seenClients.value = emptyList()
     blockedClients.value = emptySet()
 
     timerJob = null
   }
 
-  override fun listenForClients(): Flow<Set<TetherClient>> {
+  override fun listenForClients(): Flow<List<TetherClient>> {
     return seenClients
   }
 
-  override fun listenForBlocked(): Flow<Set<TetherClient>> {
+  override fun listenForBlocked(): Flow<Collection<TetherClient>> {
     return blockedClients
   }
 

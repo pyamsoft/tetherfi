@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface SeenClients {
 
-  @CheckResult fun listenForClients(): Flow<Set<TetherClient>>
+  @CheckResult fun listenForClients(): Flow<List<TetherClient>>
 
   suspend fun seen(client: TetherClient)
 }
