@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.status.vpn
+package com.pyamsoft.tetherfi.server.prereq.vpn
 
 import android.content.Context
 import android.net.ConnectivityManager

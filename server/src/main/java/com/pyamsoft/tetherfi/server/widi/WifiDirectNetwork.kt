@@ -36,7 +36,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import java.time.Clock
 import java.time.LocalDateTime
@@ -57,14 +57,14 @@ import kotlinx.coroutines.withContext
 
 internal abstract class WifiDirectNetwork
 protected constructor(
-    private val shutdownBus: EventBus<ServerShutdownEvent>,
-    private val appContext: Context,
-    private val permissionGuard: PermissionGuard,
-    private val config: WiDiConfig,
-    private val appEnvironment: AppDevEnvironment,
-    private val enforcer: ThreadEnforcer,
-    private val clock: Clock,
-    status: WiDiStatus,
+  private val shutdownBus: EventBus<ServerShutdownEvent>,
+  private val appContext: Context,
+  private val permissionGuard: PermissionGuard,
+  private val config: WiDiConfig,
+  private val appEnvironment: AppDevEnvironment,
+  private val enforcer: ThreadEnforcer,
+  private val clock: Clock,
+  status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
   private val wifiP2PManager by lazy {

@@ -26,12 +26,12 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import com.pyamsoft.tetherfi.status.vpn.VpnChecker
+import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
+import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -53,10 +53,9 @@ internal constructor(
     private val servicePreferences: ServicePreferences,
     private val network: WiDiNetworkStatus,
     private val notifyGuard: NotifyGuard,
-    private val permissions: PermissionGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
-    private val vpnChecker: VpnChecker,
+    private val requirements: HotspotRequirements,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -173,17 +172,11 @@ internal constructor(
   fun handleToggleProxy() {
     val s = state
 
-    // Refresh these state bits
-    val hasPermission = permissions.canCreateWiDiNetwork()
-    s.hasHotspotPermissions.value = hasPermission
+    val blockers = requirements.blockers()
+    // Hide the password
     s.isPasswordVisible.value = false
 
     // If something is blocking hotspot startup we will show it in the view
-    val blockers =
-        refreshHotspotStartBlockers(
-            hasPermission = hasPermission,
-            isUsingVpn = vpnChecker.isUsingVpn(),
-        )
     s.startBlockers.value = blockers
     if (blockers.isNotEmpty()) {
       Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
@@ -313,9 +306,6 @@ internal constructor(
 
       // Notifications
       s.hasNotificationPermission.value = notifyGuard.canPostNotification()
-
-      // Do we have hotspot permission
-      s.hasHotspotPermissions.value = permissions.canCreateWiDiNetwork()
     }
   }
 

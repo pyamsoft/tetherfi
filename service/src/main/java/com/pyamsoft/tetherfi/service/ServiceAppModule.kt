@@ -31,6 +31,8 @@ import com.pyamsoft.tetherfi.service.lock.WiFiLocker
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncherImpl
 import com.pyamsoft.tetherfi.service.notification.ServiceDispatcher
+import com.pyamsoft.tetherfi.service.prereq.AndroidHotspotRequirements
+import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,12 +42,14 @@ import javax.inject.Singleton
 @Module
 abstract class ServiceAppModule {
 
+  @Binds internal abstract fun bindLauncher(impl: NotificationLauncherImpl): NotificationLauncher
+
+  @Binds internal abstract fun bindPrereqs(impl: AndroidHotspotRequirements): HotspotRequirements
+
   @Binds
   @IntoSet
   @ServiceInternalApi
   internal abstract fun bindServiceDispatcher(impl: ServiceDispatcher): NotifyDispatcher<*>
-
-  @Binds internal abstract fun bindLauncher(impl: NotificationLauncherImpl): NotificationLauncher
 
   @Binds
   @CheckResult

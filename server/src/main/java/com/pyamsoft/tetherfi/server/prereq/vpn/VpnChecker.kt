@@ -1,8 +1,8 @@
-package com.pyamsoft.tetherfi.status.vpn
+package com.pyamsoft.tetherfi.server.prereq.vpn
 
 import androidx.annotation.CheckResult
 
-internal interface VpnChecker {
+interface VpnChecker {
 
   @CheckResult fun isUsingVpn(): Boolean
 }

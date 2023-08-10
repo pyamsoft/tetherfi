@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.service.prereq
 
 enum class HotspotStartBlocker(val required: Boolean) {
   /** We must have permission */

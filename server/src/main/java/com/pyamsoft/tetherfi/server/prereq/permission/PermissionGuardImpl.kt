@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.permission
+package com.pyamsoft.tetherfi.server.prereq.permission
 
 import android.content.Context
 import android.content.pm.PackageManager

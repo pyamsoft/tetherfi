@@ -42,7 +42,6 @@ import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
-import com.pyamsoft.tetherfi.status.StatusAppModule
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
@@ -65,7 +64,6 @@ import javax.inject.Singleton
             // Other Modules
             ServerAppModule::class,
             ServiceAppModule::class,
-            StatusAppModule::class,
         ],
 )
 internal interface TetherFiComponent {

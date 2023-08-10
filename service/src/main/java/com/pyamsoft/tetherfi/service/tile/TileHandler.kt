@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.service.tile
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject

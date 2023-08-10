@@ -18,12 +18,12 @@ package com.pyamsoft.tetherfi.tile
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import javax.inject.Inject
 
 class ProxyTileViewModeler
 @Inject

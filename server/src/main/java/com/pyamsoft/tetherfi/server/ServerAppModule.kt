@@ -29,8 +29,10 @@ import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
-import com.pyamsoft.tetherfi.server.permission.PermissionGuardImpl
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuardImpl
+import com.pyamsoft.tetherfi.server.prereq.vpn.AndroidVpnChecker
+import com.pyamsoft.tetherfi.server.prereq.vpn.VpnChecker
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
@@ -67,9 +69,12 @@ abstract class ServerAppModule {
       impl: EventBus<ServerShutdownEvent>
   ): EventConsumer<ServerShutdownEvent>
 
+  // Prereqs
   @Binds
   @CheckResult
   internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
+
+  @Binds @CheckResult internal abstract fun bindVpnChecker(impl: AndroidVpnChecker): VpnChecker
 
   @Binds @CheckResult internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
 

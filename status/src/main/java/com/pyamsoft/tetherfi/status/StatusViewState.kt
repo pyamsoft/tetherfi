@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -40,7 +41,6 @@ interface StatusViewState : UiViewState {
   val band: StateFlow<ServerNetworkBand?>
 
   // Permissions
-  val hasHotspotPermissions: StateFlow<Boolean>
   val hasNotificationPermission: StateFlow<Boolean>
 
   val startBlockers: StateFlow<List<HotspotStartBlocker>>
@@ -78,7 +78,6 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val band = MutableStateFlow<ServerNetworkBand?>(null)
 
   override val startBlockers = MutableStateFlow(emptyList<HotspotStartBlocker>())
-  override val hasHotspotPermissions = MutableStateFlow(false)
   override val hasNotificationPermission = MutableStateFlow(false)
 
   override val keepWakeLock = MutableStateFlow(false)

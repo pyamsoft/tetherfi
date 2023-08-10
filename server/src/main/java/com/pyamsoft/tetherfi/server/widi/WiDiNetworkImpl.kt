@@ -23,7 +23,7 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.permission.PermissionGuard
+import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import java.time.Clock
