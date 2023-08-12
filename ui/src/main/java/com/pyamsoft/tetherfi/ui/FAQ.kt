@@ -12,10 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
@@ -25,34 +23,6 @@ import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
 
 private enum class LinkContentTypes {
   FAQ_LINK
-}
-
-private fun AnnotatedString.Builder.appendLink(
-    tag: String,
-    linkColor: Color,
-    text: String,
-    url: String
-) {
-  val startIndex = this.length
-  append(text)
-  val endIndex = this.length
-
-  addStyle(
-      style =
-          SpanStyle(
-              color = linkColor,
-              textDecoration = TextDecoration.Underline,
-          ),
-      start = startIndex,
-      end = endIndex,
-  )
-
-  addStringAnnotation(
-      tag = tag,
-      annotation = url,
-      start = startIndex,
-      end = endIndex,
-  )
 }
 
 fun LazyListScope.renderLinks(

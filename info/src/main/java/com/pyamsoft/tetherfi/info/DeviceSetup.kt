@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -35,14 +36,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -202,8 +208,9 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Text(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-            text = "Also configure the Proxy settings",
-            style = MaterialTheme.typography.body2,
+            text =
+                "Configure the proxy settings. Use MANUAL mode and configure both HTTP and HTTPS proxy options.",
+            style = MaterialTheme.typography.body1,
         )
 
         Row {
@@ -211,6 +218,7 @@ internal fun LazyListScope.renderDeviceSetup(
           val ipAddress = rememberServerHostname(connection)
 
           Text(
+              modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
               text = "URL",
               style =
                   MaterialTheme.typography.body1.copy(
@@ -267,6 +275,10 @@ internal fun LazyListScope.renderDeviceSetup(
                         ),
                 ),
         )
+
+        FullConnectionInstructions(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
+        )
       }
     }
   }
@@ -284,6 +296,60 @@ internal fun LazyListScope.renderDeviceSetup(
       )
     }
   }
+}
+
+@Composable
+private fun FullConnectionInstructions(
+    modifier: Modifier = Modifier,
+) {
+  val uriHandler = LocalExternalUriHandler.current
+
+  val textColor = MaterialTheme.colors.onSurface
+  val linkColor = MaterialTheme.colors.primary
+  val instructions =
+      remember(
+          textColor,
+          linkColor,
+      ) {
+        buildAnnotatedString {
+          withStyle(
+              style =
+                  SpanStyle(
+                      color = textColor,
+                  ),
+          ) {
+            append("You can view more detailed connection instructions ")
+            appendLink(
+                tag = "instructions",
+                linkColor = linkColor,
+                text = "here",
+                url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+            )
+          }
+        }
+      }
+
+  ClickableText(
+      modifier = modifier,
+      text = instructions,
+      style =
+          MaterialTheme.typography.caption.copy(
+              color =
+                  MaterialTheme.colors.onBackground.copy(
+                      alpha = ContentAlpha.medium,
+                  ),
+          ),
+      onClick = { offset ->
+        instructions
+            .getStringAnnotations(
+                tag = "instructions",
+                start = offset,
+                end = offset,
+            )
+            .firstOrNull()
+            ?.also { uriHandler.openUri(it.item) }
+      },
+  )
 }
 
 @Preview
