@@ -25,6 +25,9 @@ private enum class LinkContentTypes {
   FAQ_LINK
 }
 
+private const val FAQ_TEXT = "FAQs"
+private const val KNW_TEXT = "Known to Not Work"
+
 fun LazyListScope.renderLinks(
     itemModifier: Modifier = Modifier,
     appName: String,
@@ -55,14 +58,14 @@ fun LazyListScope.renderLinks(
               appendLink(
                   tag = "FAQ",
                   linkColor = linkColor,
-                  text = "FAQs",
+                  text = FAQ_TEXT,
                   url = "https://github.com/pyamsoft/tetherfi/wiki",
               )
               append(" and apps that are ")
               appendLink(
                   tag = "KNW",
                   linkColor = linkColor,
-                  text = "Known to Not Work",
+                  text = KNW_TEXT,
                   url = "https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working",
               )
             }
@@ -92,7 +95,7 @@ fun LazyListScope.renderLinks(
                 .getStringAnnotations(
                     tag = "FAQ",
                     start = offset,
-                    end = offset,
+                    end = offset + FAQ_TEXT.length,
                 )
                 .firstOrNull()
                 ?.also { uriHandler.openUri(it.item) }
@@ -101,7 +104,7 @@ fun LazyListScope.renderLinks(
                 .getStringAnnotations(
                     tag = "KNW",
                     start = offset,
-                    end = offset,
+                    end = offset + KNW_TEXT.length,
                 )
                 .firstOrNull()
                 ?.also { uriHandler.openUri(it.item) }

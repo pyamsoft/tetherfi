@@ -20,6 +20,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+
+private inline fun AnnotatedString.Builder.withStringAnnotation(
+    tag: String,
+    annotation: String,
+    content: () -> Unit
+) {
+  pushStringAnnotation(tag = tag, annotation = annotation)
+  content()
+  pop()
+}
 
 fun AnnotatedString.Builder.appendLink(
     tag: String,
@@ -27,24 +38,18 @@ fun AnnotatedString.Builder.appendLink(
     text: String,
     url: String,
 ) {
-  val startIndex = this.length
-  append(text)
-  val endIndex = this.length
-
-  addStyle(
-      style =
-          SpanStyle(
-              color = linkColor,
-              textDecoration = TextDecoration.Underline,
-          ),
-      start = startIndex,
-      end = endIndex,
-  )
-
-  addStringAnnotation(
+  withStringAnnotation(
       tag = tag,
       annotation = url,
-      start = startIndex,
-      end = endIndex,
-  )
+  ) {
+    withStyle(
+        style =
+            SpanStyle(
+                textDecoration = TextDecoration.Underline,
+                color = linkColor,
+            ),
+    ) {
+      append(text)
+    }
+  }
 }

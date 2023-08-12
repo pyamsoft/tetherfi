@@ -264,18 +264,6 @@ internal fun LazyListScope.renderDeviceSetup(
           )
         }
 
-        Text(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
-            text = "Leave all other proxy options blank!",
-            style =
-                MaterialTheme.typography.caption.copy(
-                    color =
-                        MaterialTheme.colors.onBackground.copy(
-                            alpha = ContentAlpha.medium,
-                        ),
-                ),
-        )
-
         FullConnectionInstructions(
             modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
         )
@@ -297,6 +285,8 @@ internal fun LazyListScope.renderDeviceSetup(
     }
   }
 }
+
+private const val LINK_TEXT = "here"
 
 @Composable
 private fun FullConnectionInstructions(
@@ -322,7 +312,7 @@ private fun FullConnectionInstructions(
             appendLink(
                 tag = "instructions",
                 linkColor = linkColor,
-                text = "here",
+                text = LINK_TEXT,
                 url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
             )
           }
@@ -333,7 +323,7 @@ private fun FullConnectionInstructions(
       modifier = modifier,
       text = instructions,
       style =
-          MaterialTheme.typography.caption.copy(
+          MaterialTheme.typography.body2.copy(
               color =
                   MaterialTheme.colors.onBackground.copy(
                       alpha = ContentAlpha.medium,
@@ -344,7 +334,7 @@ private fun FullConnectionInstructions(
             .getStringAnnotations(
                 tag = "instructions",
                 start = offset,
-                end = offset,
+                end = offset + LINK_TEXT.length,
             )
             .firstOrNull()
             ?.also { uriHandler.openUri(it.item) }
