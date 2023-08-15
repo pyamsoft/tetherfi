@@ -40,20 +40,35 @@ internal constructor(
     state.status.value = handler.getNetworkStatus()
   }
 
-  private fun toggleProxy() {
-    when (val status = handler.getNetworkStatus()) {
-      is RunningStatus.NotRunning -> {
-        Timber.d { "Starting Proxy..." }
-        serviceLauncher.startForeground()
+  private fun startProxy() {
+    val blockers = requirements.blockers()
+
+    // If something is blocking hotspot startup we will show it in the view
+    if (blockers.isNotEmpty()) {
+      Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
+      stopProxy()
+
+      if (blockers.contains(HotspotStartBlocker.PERMISSION)) {
+        Timber.w { "Cannot launch Proxy until Permissions are granted" }
+        state.status.value =
+            RunningStatus.Error("Missing required permission, cannot start Hotspot")
       }
-      is RunningStatus.Running -> {
-        Timber.d { "Stopping Proxy" }
-        serviceLauncher.stopForeground()
+
+      if (blockers.contains(HotspotStartBlocker.VPN)) {
+        Timber.w { "Cannot launch Proxy until VPN is off" }
+        state.status.value = RunningStatus.Error("Cannot start Hotspot while VPN is connected")
       }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
-      }
+
+      return
     }
+
+    Timber.d { "Starting Proxy..." }
+    serviceLauncher.startForeground()
+  }
+
+  private fun stopProxy() {
+    Timber.d { "Stopping Proxy" }
+    serviceLauncher.stopForeground()
   }
 
   fun handleDismissed() {
@@ -74,26 +89,16 @@ internal constructor(
   }
 
   fun handleToggleProxy() {
-    val s = state
-
-    val blockers = requirements.blockers()
-
-    if (blockers.isNotEmpty()) {
-      serviceLauncher.stopForeground()
-
-      if (blockers.contains(HotspotStartBlocker.PERMISSION)) {
-        Timber.w { "Cannot launch Proxy until Permissions are granted" }
-        s.status.value = RunningStatus.Error("Missing required permission, cannot start Hotspot")
+    when (val status = handler.getNetworkStatus()) {
+      is RunningStatus.NotRunning -> {
+        startProxy()
       }
-
-      if (blockers.contains(HotspotStartBlocker.VPN)) {
-        Timber.w { "Cannot launch Proxy until VPN is off" }
-        s.status.value = RunningStatus.Error("Cannot start Hotspot while VPN is connected")
+      is RunningStatus.Running -> {
+        stopProxy()
       }
-
-      return
+      else -> {
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+      }
     }
-
-    toggleProxy()
   }
 }

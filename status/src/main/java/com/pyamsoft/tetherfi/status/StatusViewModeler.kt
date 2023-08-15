@@ -112,27 +112,29 @@ internal constructor(
     return blockers
   }
 
-  private fun toggleProxy() {
-    when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> {
-        Timber.d { "Starting Proxy..." }
-        serviceLauncher.startForeground()
-      }
-      is RunningStatus.Running -> {
-        Timber.d { "Stopping Proxy" }
-        serviceLauncher.stopForeground()
-      }
-      is RunningStatus.Error -> {
-        Timber.d { "Resetting Proxy from Error state" }
-        serviceLauncher.apply {
-          resetError()
-          startForeground()
-        }
-      }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
-      }
+  private fun startProxy() {
+    val blockers = requirements.blockers()
+    // If something is blocking hotspot startup we will show it in the view
+    state.startBlockers.value = blockers
+    if (blockers.isNotEmpty()) {
+      Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
+      stopProxy()
+      return
     }
+
+    Timber.d { "Starting Proxy..." }
+    serviceLauncher.startForeground()
+  }
+
+  private fun stopProxy() {
+    Timber.d { "Stopping Proxy" }
+    serviceLauncher.stopForeground()
+  }
+
+  private fun resetErrorAndRestart() {
+    Timber.d { "Resetting Proxy from Error state" }
+    serviceLauncher.resetError()
+    startProxy()
   }
 
   override fun registerSaveState(
@@ -170,21 +172,23 @@ internal constructor(
   }
 
   fun handleToggleProxy() {
-    val s = state
-
-    val blockers = requirements.blockers()
     // Hide the password
-    s.isPasswordVisible.value = false
+    state.isPasswordVisible.value = false
 
-    // If something is blocking hotspot startup we will show it in the view
-    s.startBlockers.value = blockers
-    if (blockers.isNotEmpty()) {
-      Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
-      serviceLauncher.stopForeground()
-      return
+    when (val status = network.getCurrentStatus()) {
+      is RunningStatus.NotRunning -> {
+        startProxy()
+      }
+      is RunningStatus.Running -> {
+        stopProxy()
+      }
+      is RunningStatus.Error -> {
+        resetErrorAndRestart()
+      }
+      else -> {
+        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+      }
     }
-
-    toggleProxy()
   }
 
   fun loadPreferences(scope: CoroutineScope) {
