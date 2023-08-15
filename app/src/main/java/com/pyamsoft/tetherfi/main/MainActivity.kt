@@ -58,13 +58,10 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Added links to the Wiki and FAQs")
-                    feature("Improve Hotspot efficiency by re-using connections when possible")
-                    feature("Faster hotspot startup")
-                    bugfix(
-                        "Fix connections not working because the Hotspot was trying to bind to the wrong address")
-                    change(
-                        "Reduce battery usage by no longer using a Foreground Service. To have the Hotspot run all the time like it used to, enable the \"Always Alive\" option.")
+                    feature("Warn when VPN usage would conflict with Hotspot startup")
+                    feature("Include more instructions around setting up a proxy")
+                    feature("Include external link to instructions for proxy setup")
+                    change("More compact and readable screen usage in landscape mode")
                   }
                 },
         )
