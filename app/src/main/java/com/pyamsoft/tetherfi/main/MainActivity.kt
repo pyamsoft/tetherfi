@@ -22,6 +22,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -31,13 +32,14 @@ import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
 import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -109,7 +111,7 @@ class MainActivity : AppCompatActivity() {
       ) {
         SystemBars()
         InstallPYDroidExtras(
-            modifier = Modifier.fillUpToPortraitSize(),
+            modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
         )
         MainEntry(

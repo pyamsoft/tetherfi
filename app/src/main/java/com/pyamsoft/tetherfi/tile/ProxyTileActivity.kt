@@ -20,7 +20,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -32,6 +32,7 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.main.SystemBars
 import com.pyamsoft.tetherfi.main.ThemeViewModeler
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
 
 class ProxyTileActivity : AppCompatActivity() {
@@ -58,7 +59,7 @@ class ProxyTileActivity : AppCompatActivity() {
           theme = theme,
       ) {
         ProxyTileEntry(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         )
       }
     }

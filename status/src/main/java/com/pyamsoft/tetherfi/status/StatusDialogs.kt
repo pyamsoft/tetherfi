@@ -1,18 +1,20 @@
 package com.pyamsoft.tetherfi.status
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.ui.util.collectAsStateList
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
@@ -57,7 +59,7 @@ internal fun StatusDialogs(
           visible = blocker == HotspotStartBlocker.PERMISSION,
       ) {
         PermissionBlocker(
-            modifier = Modifier.fillUpToPortraitSize(),
+            modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
             onDismiss = { onDismissBlocker(blocker) },
             onOpenPermissionSettings = onOpenPermissionSettings,
@@ -71,7 +73,7 @@ internal fun StatusDialogs(
           visible = blocker == HotspotStartBlocker.VPN,
       ) {
         VpnBlocker(
-            modifier = Modifier.fillUpToPortraitSize(),
+            modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
             onDismiss = { onDismissBlocker(blocker) },
         )
@@ -83,7 +85,7 @@ internal fun StatusDialogs(
       visible = isShowingSetupError,
   ) {
     TroubleshootDialog(
-        modifier = Modifier.fillUpToPortraitSize(),
+        modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
         isWifiDirectError = isWifiDirectError,
         isProxyError = isProxyError,
@@ -96,7 +98,7 @@ internal fun StatusDialogs(
         visible = isShowingHotspotError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitSize(),
+          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
           title = "Hotspot Initialization Error",
           error = err.error,
           onDismiss = onHideHotspotError,
@@ -109,7 +111,7 @@ internal fun StatusDialogs(
         visible = isShowingNetworkError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitSize(),
+          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
           title = "Network Initialization Error",
           error = err.error,
           onDismiss = onHideNetworkError,

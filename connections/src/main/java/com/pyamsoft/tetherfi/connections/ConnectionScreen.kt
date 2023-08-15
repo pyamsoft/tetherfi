@@ -21,20 +21,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.collectAsStateList
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
@@ -51,44 +53,50 @@ fun ConnectionScreen(
   val clients = state.connections.collectAsStateList()
   val blocked = state.blocked.collectAsStateList()
 
-  Scaffold(
-      modifier = modifier,
-  ) { pv ->
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+  LazyColumn(
+      modifier = Modifier.fillMaxWidth(),
+      contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+      horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    renderPYDroidExtras(
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+    )
+
+    renderList(
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        group = group,
+        clients = clients,
+        blocked = blocked,
+        onToggleBlock = onToggleBlock,
+    )
+
+    renderExcuse(
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+    )
+
+    renderLinks(
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        appName = appName,
+    )
+
+    item(
+        contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
     ) {
-      renderPYDroidExtras()
-
-      renderList(
-          group = group,
-          clients = clients,
-          blocked = blocked,
-          onToggleBlock = onToggleBlock,
+      Spacer(
+          modifier = Modifier.navigationBarsPadding(),
       )
-
-      renderExcuse()
-
-      renderLinks(
-          appName = appName,
-      )
-
-      item(
-          contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
-      ) {
-        Spacer(
-            modifier = Modifier.navigationBarsPadding().padding(pv),
-        )
-      }
     }
   }
 }
 
-private fun LazyListScope.renderExcuse() {
+private fun LazyListScope.renderExcuse(
+    modifier: Modifier = Modifier,
+) {
   item(
       contentType = ConnectionScreenContentTypes.SORRY,
   ) {
     Text(
-        modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
+        modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
         text =
             "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
         style =
@@ -106,7 +114,7 @@ private fun LazyListScope.renderExcuse() {
       contentType = ConnectionScreenContentTypes.SORRY_EXTRA,
   ) {
     Text(
-        modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
+        modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
         text = "A more friendly solution is being actively investigated.",
         style =
             MaterialTheme.typography.body2.copy(

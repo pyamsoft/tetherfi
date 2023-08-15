@@ -213,12 +213,14 @@ internal fun LazyListScope.renderDeviceSetup(
             style = MaterialTheme.typography.body1,
         )
 
-        Row {
+        Row(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
           val connection by serverViewState.connection.collectAsState()
           val ipAddress = rememberServerHostname(connection)
 
           Text(
-              modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
               text = "URL",
               style =
                   MaterialTheme.typography.body1.copy(
@@ -239,7 +241,9 @@ internal fun LazyListScope.renderDeviceSetup(
           )
         }
 
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
           Text(
               text = "Port",
               style =

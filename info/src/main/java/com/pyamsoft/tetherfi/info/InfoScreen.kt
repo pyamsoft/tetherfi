@@ -18,16 +18,18 @@ package com.pyamsoft.tetherfi.info
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
@@ -50,11 +52,14 @@ fun InfoScreen(
   LazyColumn(
       modifier = modifier,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+      horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    renderPYDroidExtras()
+    renderPYDroidExtras(
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+    )
 
     renderLinks(
-        itemModifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
     )
 
@@ -69,7 +74,7 @@ fun InfoScreen(
     }
 
     renderConnectionInstructions(
-        itemModifier = Modifier.fillMaxWidth(),
+        itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
         state = state,
         serverViewState = serverViewState,

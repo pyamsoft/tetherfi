@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 
@@ -49,7 +51,7 @@ internal fun LazyListScope.renderLoadedContent(
     onShowHotspotError: () -> Unit,
 ) {
   renderNetworkInformation(
-      itemModifier = Modifier.fillMaxWidth(),
+      itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -77,7 +79,7 @@ internal fun LazyListScope.renderLoadedContent(
   }
 
   renderPerformance(
-      itemModifier = Modifier.fillMaxWidth(),
+      itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -95,7 +97,7 @@ internal fun LazyListScope.renderLoadedContent(
 
   if (showNotificationSettings) {
     renderNotificationSettings(
-        itemModifier = Modifier.fillMaxWidth(),
+        itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         state = state,
         isEditable = isEditable,
         onRequest = onRequestNotificationPermission,
@@ -111,7 +113,7 @@ internal fun LazyListScope.renderLoadedContent(
   }
 
   renderLinks(
-      itemModifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
       appName = appName,
   )
 

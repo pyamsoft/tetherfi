@@ -29,7 +29,7 @@ private const val FAQ_TEXT = "FAQs"
 private const val KNW_TEXT = "Known to Not Work"
 
 fun LazyListScope.renderLinks(
-    itemModifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     appName: String,
 ) {
   item(
@@ -74,7 +74,7 @@ fun LazyListScope.renderLinks(
 
     Surface(
         modifier =
-            itemModifier
+            modifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
         border =

@@ -82,6 +82,7 @@ fun SettingsDialog(
       )
       SettingsPage(
           modifier = Modifier.fillMaxWidth().weight(1F),
+          dialogModifier = modifier,
           customElevation = DialogDefaults.Elevation,
           customBottomItemMargin = MaterialTheme.keylines.baseline,
           shape =

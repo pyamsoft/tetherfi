@@ -16,14 +16,15 @@
 
 package com.pyamsoft.tetherfi.ui
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.ExternalUriPortal
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.pydroid.ui.widget.BillingUpsellWidget
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
@@ -42,7 +43,9 @@ fun InstallPYDroidExtras(
     modifier: Modifier = Modifier,
     appName: String,
 ) {
-  ShowDataPolicyDialog()
+  ShowDataPolicyDialog(
+      dialogModifier = modifier,
+  )
 
   ExternalUriPortal(
       modifier = modifier,
@@ -50,12 +53,14 @@ fun InstallPYDroidExtras(
   )
 }
 
-fun LazyListScope.renderPYDroidExtras() {
+fun LazyListScope.renderPYDroidExtras(
+    modifier: Modifier = Modifier,
+) {
   item(
       contentType = PYDroidContentTypes.UPDATE_VERSION,
   ) {
     UpdateProgressWidget(
-        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
     )
   }
 
@@ -63,7 +68,7 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.NEW_VERSION,
   ) {
     NewVersionWidget(
-        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
     )
   }
 
@@ -71,7 +76,12 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.CHANGELOG,
   ) {
     ShowChangeLogWidget(
-        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
+        dialogModifier =
+            Modifier.fillUpToPortraitHeight()
+                .widthIn(
+                    max = LANDSCAPE_MAX_WIDTH,
+                ),
     )
   }
 
@@ -79,7 +89,12 @@ fun LazyListScope.renderPYDroidExtras() {
       contentType = PYDroidContentTypes.BILLING,
   ) {
     BillingUpsellWidget(
-        modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
+        dialogModifier =
+            Modifier.fillUpToPortraitHeight()
+                .widthIn(
+                    max = LANDSCAPE_MAX_WIDTH,
+                ),
     )
   }
 }

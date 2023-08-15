@@ -1,6 +1,5 @@
 package com.pyamsoft.tetherfi.connections
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -16,6 +15,7 @@ import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 
 fun LazyListScope.renderList(
+    modifier: Modifier = Modifier,
     group: WiDiNetworkStatus.GroupInfo,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
@@ -24,27 +24,34 @@ fun LazyListScope.renderList(
   group.also { gi ->
     if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
       if (clients.isEmpty()) {
-        renderRunningNoClients()
+        renderRunningNoClients(
+            modifier = modifier,
+        )
       } else {
         renderRunningWithClients(
+            modifier = modifier,
             clients = clients,
             blocked = blocked,
             onToggleBlock = onToggleBlock,
         )
       }
     } else {
-      renderNotRunning()
+      renderNotRunning(
+          modifier = modifier,
+      )
     }
   }
 }
 
-private fun LazyListScope.renderRunningNoClients() {
+private fun LazyListScope.renderRunningNoClients(
+    modifier: Modifier = Modifier,
+) {
   item(
       contentType = ConnectionScreenContentTypes.EMPTY,
   ) {
     Text(
         modifier =
-            Modifier.fillMaxWidth()
+            modifier
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "No connections yet!",
@@ -55,6 +62,7 @@ private fun LazyListScope.renderRunningNoClients() {
 }
 
 private fun LazyListScope.renderRunningWithClients(
+    modifier: Modifier = Modifier,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
@@ -64,7 +72,7 @@ private fun LazyListScope.renderRunningWithClients(
   ) {
     Text(
         modifier =
-            Modifier.fillMaxWidth()
+            modifier
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text =
@@ -86,7 +94,7 @@ private fun LazyListScope.renderRunningWithClients(
       contentType = { ConnectionScreenContentTypes.CLIENT },
   ) { client ->
     ConnectionItem(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         client = client,
         blocked = blocked,
         onClick = onToggleBlock,
@@ -94,13 +102,13 @@ private fun LazyListScope.renderRunningWithClients(
   }
 }
 
-private fun LazyListScope.renderNotRunning() {
+private fun LazyListScope.renderNotRunning(modifier: Modifier = Modifier) {
   item(
       contentType = ConnectionScreenContentTypes.START,
   ) {
     Text(
         modifier =
-            Modifier.fillMaxWidth()
+            modifier
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "Start the Hotspot to view and manage connected devices.",
