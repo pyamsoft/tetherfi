@@ -1,101 +1,76 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright 2023 pyamsoft
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
+<?xml version="1.0" encoding="utf-8"?><!-- ~ Copyright 2023 pyamsoft ~ ~
+  Licensed under the Apache License, Version 2.0 (the "License"); ~ you may
+  not use this file except in compliance with the License. ~ You may obtain
+  a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~
+  ~ Unless required by applicable law or agreed to in writing, software ~ distributed
+  under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES
+  OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for
+  the specific language governing permissions and ~ limitations under the License. -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+  xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application
-        android:name=".TetherFi"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.TetherFi"
-        android:usesCleartextTraffic="true">
+  <application android:name=".TetherFi"
+    android:allowBackup="true" android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher" android:supportsRtl="true"
+    android:theme="@style/Theme.TetherFi"
+    android:usesCleartextTraffic="true">
 
-        <!--
-        Compose Handles config changes
+    <!-- Compose Handles config changes https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/ -->
+    <activity android:name=".main.MainActivity"
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+      android:excludeFromRecents="false" android:exported="true"
+      android:launchMode="singleTask" android:noHistory="false"
+      android:windowSoftInputMode="adjustPan">
 
-        https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
-        -->
-        <activity
-            android:name=".main.MainActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:excludeFromRecents="false"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:noHistory="false"
-            android:windowSoftInputMode="adjustPan">
+      <!-- Launcher Activity -->
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
 
-            <!-- Launcher Activity -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+      <!-- QS Tile Long Press Activity -->
+      <intent-filter>
+        <action
+          android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+      </intent-filter>
+    </activity>
 
-            <!-- QS Tile Long Press Activity -->
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
-            </intent-filter>
-        </activity>
+    <service android:name=".foreground.ProxyForegroundService"
+      android:enabled="true" android:exported="false" />
 
-        <service
-            android:name=".foreground.ProxyForegroundService"
-            android:enabled="true"
-            android:exported="false" />
+    <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
+    <service android:name=".tile.ProxyTileService"
+      android:enabled="true" android:exported="true"
+      android:icon="@drawable/ic_wifi_tethering_24"
+      android:label="@string/app_name"
+      android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter>
+        <action
+          android:name="android.service.quicksettings.action.QS_TILE" />
+      </intent-filter>
 
-        <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
-        <service
-            android:name=".tile.ProxyTileService"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@drawable/ic_wifi_tethering_24"
-            android:label="@string/app_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
+      <!-- Mark Tile active -->
+      <meta-data
+        android:name="android.service.quicksettings.ACTIVE_TILE"
+        android:value="true" />
 
-            <!-- Mark Tile active -->
-            <meta-data
-                android:name="android.service.quicksettings.ACTIVE_TILE"
-                android:value="true" />
+      <!-- Tile can be toggled -->
+      <meta-data
+        android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+        android:value="true" />
+    </service>
 
-            <!-- Tile can be toggled -->
-            <meta-data
-                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
-                android:value="true" />
-        </service>
+    <!-- Compose Handles config changes https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/ -->
+    <activity android:name=".tile.ProxyTileActivity"
+      android:clearTaskOnLaunch="true"
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+      android:excludeFromRecents="true" android:exported="true"
+      android:launchMode="singleInstance" android:noHistory="true"
+      android:theme="@style/Theme.TetherFi.Tile"
+      android:windowSoftInputMode="adjustPan" />
 
-        <!--
-        Compose Handles config changes
-
-        https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
-        -->
-        <activity
-            android:name=".tile.ProxyTileActivity"
-            android:clearTaskOnLaunch="true"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:theme="@style/Theme.TetherFi.Tile"
-            android:windowSoftInputMode="adjustPan" />
-
-    </application>
+  </application>
 
 </manifest>

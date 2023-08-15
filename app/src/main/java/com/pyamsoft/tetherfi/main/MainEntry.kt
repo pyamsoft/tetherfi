@@ -45,11 +45,11 @@ import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 

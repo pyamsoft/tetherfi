@@ -159,5 +159,13 @@ allprojects {
       endWithNewline()
       indentWithSpaces(2)
     }
+    format "xml", {
+      target("src/**/*.xml")
+      eclipseWtp("xml")
+
+      trimTrailingWhitespace()
+      endWithNewline()
+      indentWithSpaces(2)
+    }
   }
 }
