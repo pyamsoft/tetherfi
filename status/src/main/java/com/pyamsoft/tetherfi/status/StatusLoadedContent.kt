@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
@@ -51,7 +52,7 @@ internal fun LazyListScope.renderLoadedContent(
     onShowHotspotError: () -> Unit,
 ) {
   renderNetworkInformation(
-      itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+      itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -79,7 +80,7 @@ internal fun LazyListScope.renderLoadedContent(
   }
 
   renderPerformance(
-      itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+      itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
       isEditable = isEditable,
       appName = appName,
       state = state,

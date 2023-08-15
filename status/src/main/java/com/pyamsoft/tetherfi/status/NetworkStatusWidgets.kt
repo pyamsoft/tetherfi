@@ -65,7 +65,6 @@ internal fun LazyListScope.renderNetworkInformation(
       Box(
           modifier =
               itemModifier
-                  .fillMaxWidth()
                   .padding(bottom = MaterialTheme.keylines.content * 2)
                   .border(
                       width = HairlineSize,
