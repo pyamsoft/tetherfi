@@ -38,6 +38,8 @@ import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
@@ -76,6 +78,12 @@ abstract class ServerAppModule {
 
   @Binds @CheckResult internal abstract fun bindVpnChecker(impl: AndroidVpnChecker): VpnChecker
 
+  // OS level
+  @Binds
+  @CheckResult
+  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
+
+  // Wifi network
   @Binds @CheckResult internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
 
   @Binds
@@ -84,8 +92,16 @@ abstract class ServerAppModule {
 
   @Binds
   @CheckResult
-  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
+  @ServerInternalApi
+  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
 
+  @Binds @CheckResult internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WiDiReceiverRegister
+
+  // Client tracking
   @Binds
   @CheckResult
   internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
@@ -98,30 +114,26 @@ abstract class ServerAppModule {
   @CheckResult
   internal abstract fun bindBlockedClientTracker(impl: ClientManagerImpl): BlockedClientTracker
 
-  // Internals
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
-
+  // URL fixers
   @Binds
   @IntoSet
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
 
-  @Binds @CheckResult internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
+  // Session transports
+  @Binds
+  @IntoSet
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindTcpHttpTransport(impl: HttpTcpTransport): TcpSessionTransport
 
   @Binds
   @CheckResult
-  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WiDiReceiverRegister
+  @ServerInternalApi
+  internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
 
+  // Proxy
   @Binds
   @CheckResult
   @ServerInternalApi
