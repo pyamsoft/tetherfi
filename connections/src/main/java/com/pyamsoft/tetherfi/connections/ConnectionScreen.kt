@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.util.collectAsStateList
+import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -49,8 +49,8 @@ fun ConnectionScreen(
     onToggleBlock: (TetherClient) -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
-  val clients = state.connections.collectAsStateList()
-  val blocked = state.blocked.collectAsStateList()
+  val clients = state.connections.collectAsStateListWithLifecycle()
+  val blocked = state.blocked.collectAsStateListWithLifecycle()
 
   LazyColumn(
       modifier = modifier,

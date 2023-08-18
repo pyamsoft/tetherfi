@@ -7,7 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.pyamsoft.pydroid.ui.util.collectAsStateList
+import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
@@ -34,7 +34,7 @@ internal fun StatusDialogs(
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
-  val blockers = state.startBlockers.collectAsStateList()
+  val blockers = state.startBlockers.collectAsStateListWithLifecycle()
 
   val isShowingHotspotError by state.isShowingHotspotError.collectAsStateWithLifecycle()
   val group by serverViewState.group.collectAsStateWithLifecycle()
