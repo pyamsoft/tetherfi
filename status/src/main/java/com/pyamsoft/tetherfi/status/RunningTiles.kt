@@ -25,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,8 +58,8 @@ internal fun RunningTiles(
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
 ) {
-  val group by serverViewState.group.collectAsState()
-  val connection by serverViewState.connection.collectAsState()
+  val group by serverViewState.group.collectAsStateWithLifecycle()
+  val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
   val isQREnabled =
       remember(

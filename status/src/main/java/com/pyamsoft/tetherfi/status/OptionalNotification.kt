@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -54,7 +54,7 @@ internal fun LazyListScope.renderNotificationSettings(
   item(
       contentType = OptionalNotificationContentTypes.CHECK,
   ) {
-    val hasPermission by state.hasNotificationPermission.collectAsState()
+    val hasPermission by state.hasNotificationPermission.collectAsStateWithLifecycle()
     val hapticManager = LocalHapticManager.current
 
     val canEdit = remember(isEditable, hasPermission) { isEditable && !hasPermission }

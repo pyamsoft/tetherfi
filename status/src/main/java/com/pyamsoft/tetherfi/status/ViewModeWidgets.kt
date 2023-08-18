@@ -25,7 +25,7 @@ import androidx.compose.material.IconToggleButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,10 +47,10 @@ internal fun ViewProxy(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-  val connection by serverViewState.connection.collectAsState()
+  val connection by serverViewState.connection.collectAsStateWithLifecycle()
   val ipAddress = rememberServerHostname(connection)
 
-  val port by serverViewState.port.collectAsState()
+  val port by serverViewState.port.collectAsStateWithLifecycle()
   val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
 
   Row(
@@ -92,8 +92,8 @@ internal fun ViewPassword(
     onTogglePasswordVisibility: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
-  val group by serverViewState.group.collectAsState()
-  val isPasswordVisible by state.isPasswordVisible.collectAsState()
+  val group by serverViewState.group.collectAsStateWithLifecycle()
+  val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
   val password = rememberServerPassword(group, isPasswordVisible)
 
   Row(
@@ -139,7 +139,7 @@ internal fun ViewSsid(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-  val group by serverViewState.group.collectAsState()
+  val group by serverViewState.group.collectAsStateWithLifecycle()
   val ssid = rememberServerSSID(group)
 
   Row(

@@ -31,7 +31,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -97,7 +97,7 @@ internal fun LazyListScope.renderDeviceSetup(
         )
 
         Row {
-          val group by serverViewState.group.collectAsState()
+          val group by serverViewState.group.collectAsStateWithLifecycle()
           val ssid = rememberServerSSID(group)
 
           val password = rememberServerRawPassword(group)
@@ -150,8 +150,8 @@ internal fun LazyListScope.renderDeviceSetup(
         }
 
         Row {
-          val group by serverViewState.group.collectAsState()
-          val isPasswordVisible by state.isPasswordVisible.collectAsState()
+          val group by serverViewState.group.collectAsStateWithLifecycle()
+          val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
           val password = rememberServerPassword(group, isPasswordVisible)
           val rawPassword = rememberServerRawPassword(group)
 
@@ -217,7 +217,7 @@ internal fun LazyListScope.renderDeviceSetup(
             modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-          val connection by serverViewState.connection.collectAsState()
+          val connection by serverViewState.connection.collectAsStateWithLifecycle()
           val ipAddress = rememberServerHostname(connection)
 
           Text(
@@ -255,7 +255,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
 
-          val port by serverViewState.port.collectAsState()
+          val port by serverViewState.port.collectAsStateWithLifecycle()
           val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),

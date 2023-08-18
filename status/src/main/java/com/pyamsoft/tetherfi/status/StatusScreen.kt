@@ -35,7 +35,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -44,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
@@ -103,8 +103,8 @@ fun StatusScreen(
     onShowHotspotError: () -> Unit,
     onHideHotspotError: () -> Unit,
 ) {
-  val wiDiStatus by state.wiDiStatus.collectAsState()
-  val proxyStatus by state.proxyStatus.collectAsState()
+  val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
+  val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
 
   val hotspotStatus =
       remember(
@@ -157,7 +157,7 @@ fun StatusScreen(
       }
 
   val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
-  val loadingState by state.loadingState.collectAsState()
+  val loadingState by state.loadingState.collectAsStateWithLifecycle()
 
   val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }

@@ -26,7 +26,6 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +36,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import com.pyamsoft.pydroid.theme.keylines
@@ -53,7 +53,7 @@ fun QRCodeScreen(
     state: QRCodeViewState,
     imageLoader: ImageLoader,
 ) {
-  val qrCode by state.qrCode.collectAsState()
+  val qrCode by state.qrCode.collectAsStateWithLifecycle()
   val (qrCodeSize, setQrCodeSize) = remember { mutableStateOf(Dp.Unspecified) }
   val density = LocalDensity.current
 

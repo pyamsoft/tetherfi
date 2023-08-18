@@ -24,7 +24,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,7 +45,7 @@ internal fun NetworkBands(
     state: StatusViewState,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
-  val band by state.band.collectAsState()
+  val band by state.band.collectAsStateWithLifecycle()
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val hapticManager = LocalHapticManager.current
 

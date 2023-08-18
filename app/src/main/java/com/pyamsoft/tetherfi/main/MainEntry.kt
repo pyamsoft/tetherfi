@@ -23,7 +23,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -163,7 +163,7 @@ fun MainEntry(
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
   )
 
-  val isSettingsOpen by viewModel.isSettingsOpen.collectAsState()
+  val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()
   if (isSettingsOpen) {
     SettingsDialog(
         modifier =
@@ -176,9 +176,9 @@ fun MainEntry(
     )
   }
 
-  val isShowingQRCodeDialog by viewModel.isShowingQRCodeDialog.collectAsState()
+  val isShowingQRCodeDialog by viewModel.isShowingQRCodeDialog.collectAsStateWithLifecycle()
   if (isShowingQRCodeDialog) {
-    val group by viewModel.group.collectAsState()
+    val group by viewModel.group.collectAsStateWithLifecycle()
 
     (group as? WiDiNetworkStatus.GroupInfo.Connected)?.also { grp ->
       QRCodeEntry(

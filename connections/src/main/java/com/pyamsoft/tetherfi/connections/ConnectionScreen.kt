@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.connections
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -28,11 +27,11 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.collectAsStateList
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -49,12 +48,12 @@ fun ConnectionScreen(
     serverViewState: ServerViewState,
     onToggleBlock: (TetherClient) -> Unit,
 ) {
-  val group by serverViewState.group.collectAsState()
+  val group by serverViewState.group.collectAsStateWithLifecycle()
   val clients = state.connections.collectAsStateList()
   val blocked = state.blocked.collectAsStateList()
 
   LazyColumn(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = modifier,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {

@@ -21,7 +21,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
@@ -49,7 +49,7 @@ class ProxyTileActivity : AppCompatActivity() {
     val vm = viewModel.requireNotNull()
 
     setContent {
-      val theme by vm.theme.collectAsState()
+      val theme by vm.theme.collectAsStateWithLifecycle()
 
       SaveStateDisposableEffect(vm)
 

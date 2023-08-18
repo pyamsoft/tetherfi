@@ -27,7 +27,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,7 +51,7 @@ internal fun EditPort(
     state: StatusViewState,
     onPortChanged: (String) -> Unit,
 ) {
-  val port by state.port.collectAsState()
+  val port by state.port.collectAsStateWithLifecycle()
   val portNumber = remember(port) { "$port" }
   val isValid = remember(port) { port in 1025..64000 }
 
@@ -81,8 +81,8 @@ internal fun EditPassword(
     onTogglePasswordVisibility: () -> Unit,
 ) {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
-  val password by state.password.collectAsState()
-  val isPasswordVisible by state.isPasswordVisible.collectAsState()
+  val password by state.password.collectAsStateWithLifecycle()
+  val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
   val hotspotPassword =
       remember(
           canUseCustomConfig,
@@ -153,7 +153,7 @@ internal fun EditSsid(
     onSsidChanged: (String) -> Unit,
 ) {
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
-  val ssid by state.ssid.collectAsState()
+  val ssid by state.ssid.collectAsStateWithLifecycle()
   val hotspotSsid =
       remember(
           canUseCustomConfig,

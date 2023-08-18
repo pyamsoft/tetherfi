@@ -28,7 +28,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -153,7 +153,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_GROUP_EMPTY,
   ) {
-    val isGroupFakeEmpty by appEnvironment.group.isEmpty.collectAsState()
+    val isGroupFakeEmpty by appEnvironment.group.isEmpty.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Empty Group Info",
@@ -166,7 +166,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_GROUP_GOOD,
   ) {
-    val isGroupFakeConnected by appEnvironment.group.isConnected.collectAsState()
+    val isGroupFakeConnected by appEnvironment.group.isConnected.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Connected Group Info",
@@ -179,7 +179,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_GROUP_ERROR,
   ) {
-    val isGroupFakeError by appEnvironment.group.isError.collectAsState()
+    val isGroupFakeError by appEnvironment.group.isError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Error Group Info",
@@ -192,7 +192,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_CONN_EMPTY,
   ) {
-    val isConnectionFakeEmpty by appEnvironment.connection.isEmpty.collectAsState()
+    val isConnectionFakeEmpty by appEnvironment.connection.isEmpty.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Empty Connection Info",
@@ -205,7 +205,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_CONN_GOOD,
   ) {
-    val isConnectionFakeConnected by appEnvironment.connection.isConnected.collectAsState()
+    val isConnectionFakeConnected by appEnvironment.connection.isConnected.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Connected Connection Info",
@@ -218,7 +218,7 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_CONN_ERROR,
   ) {
-    val isConnectionFakeError by appEnvironment.connection.isError.collectAsState()
+    val isConnectionFakeError by appEnvironment.connection.isError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Error Connection Info",

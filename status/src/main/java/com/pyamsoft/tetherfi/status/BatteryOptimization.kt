@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -72,7 +72,7 @@ private fun BatteryOptimization(
     onDisableBatteryOptimizations: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
-  val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsState()
+  val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsStateWithLifecycle()
 
   val canEdit =
       remember(isEditable, isBatteryOptimizationDisabled) {

@@ -30,7 +30,7 @@ import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TriStateCheckbox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -90,8 +90,8 @@ private fun Wakelocks(
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
 ) {
-  val keepWakeLock by state.keepWakeLock.collectAsState()
-  val keepWifiLock by state.keepWifiLock.collectAsState()
+  val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
+  val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
 
   val wakeLockColor by rememberCheckableColor(keepWakeLock, MaterialTheme.colors.primary)
   val wifiLockColor by rememberCheckableColor(keepWifiLock, MaterialTheme.colors.primary)

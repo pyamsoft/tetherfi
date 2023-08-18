@@ -3,7 +3,7 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -36,15 +36,15 @@ internal fun StatusDialogs(
 ) {
   val blockers = state.startBlockers.collectAsStateList()
 
-  val isShowingHotspotError by state.isShowingHotspotError.collectAsState()
-  val group by serverViewState.group.collectAsState()
+  val isShowingHotspotError by state.isShowingHotspotError.collectAsStateWithLifecycle()
+  val group by serverViewState.group.collectAsStateWithLifecycle()
 
-  val isShowingNetworkError by state.isShowingNetworkError.collectAsState()
-  val connection by serverViewState.connection.collectAsState()
+  val isShowingNetworkError by state.isShowingNetworkError.collectAsStateWithLifecycle()
+  val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
-  val wiDiStatus by state.wiDiStatus.collectAsState()
-  val proxyStatus by state.proxyStatus.collectAsState()
-  val isShowingSetupError by state.isShowingSetupError.collectAsState()
+  val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
+  val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
+  val isShowingSetupError by state.isShowingSetupError.collectAsStateWithLifecycle()
   val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
   val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 

@@ -31,7 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -62,8 +62,8 @@ fun ProxyTileScreen(
     onComplete: () -> Unit,
     onStatusUpdated: (RunningStatus) -> Unit,
 ) {
-  val status by state.status.collectAsState()
-  val isShowing by state.isShowing.collectAsState()
+  val status by state.status.collectAsStateWithLifecycle()
+  val isShowing by state.isShowing.collectAsStateWithLifecycle()
 
   val initialStatus = remember { status }
   val isInitialStatusError = remember(initialStatus) { initialStatus is RunningStatus.Error }
