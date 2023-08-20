@@ -46,49 +46,49 @@ internal fun ToggleSwitch(
 ) {
   val hapticManager = LocalHapticManager.current
 
-    Column(
-        modifier =
-        modifier
-            .clickable(enabled = isEditable) {
+  Column(
+      modifier =
+          modifier
+              .clickable(enabled = isEditable) {
                 if (checked) {
-                    hapticManager?.toggleOff()
+                  hapticManager?.toggleOff()
                 } else {
-                    hapticManager?.toggleOn()
+                  hapticManager?.toggleOn()
                 }
                 onClick()
-            }
-            .padding(horizontal = MaterialTheme.keylines.content)
-            .padding(bottom = MaterialTheme.keylines.content),
+              }
+              .padding(horizontal = MaterialTheme.keylines.content)
+              .padding(bottom = MaterialTheme.keylines.content),
+  ) {
+    Row(
+        modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Switch(
-                modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-                enabled = isEditable,
-                checked = checked,
-                onCheckedChange = null,
-            )
+      Switch(
+          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+          enabled = isEditable,
+          checked = checked,
+          onCheckedChange = null,
+      )
 
-            Text(
-                modifier = Modifier.weight(1F),
-                text = title,
-                style =
-                MaterialTheme.typography.body1.copy(
-                    fontWeight = FontWeight.W700,
-                    color = color.copy(alpha = highAlpha),
-                ),
-            )
-        }
+      Text(
+          modifier = Modifier.weight(1F),
+          text = title,
+          style =
+              MaterialTheme.typography.body1.copy(
+                  fontWeight = FontWeight.W700,
+                  color = color.copy(alpha = highAlpha),
+              ),
+      )
+    }
 
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = description,
-            style =
+    Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = description,
+        style =
             MaterialTheme.typography.caption.copy(
                 color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
             ),
-        )
-    }
+    )
+  }
 }

@@ -28,13 +28,13 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
@@ -205,7 +205,8 @@ private fun LazyListScope.renderExtraDebugContent(
   item(
       contentType = SettingsContentTypes.DEBUG_CONN_GOOD,
   ) {
-    val isConnectionFakeConnected by appEnvironment.connection.isConnected.collectAsStateWithLifecycle()
+    val isConnectionFakeConnected by
+        appEnvironment.connection.isConnected.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
         title = "Connected Connection Info",

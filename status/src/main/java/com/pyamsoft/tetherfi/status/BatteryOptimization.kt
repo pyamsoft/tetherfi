@@ -20,10 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.ui.Label
@@ -72,7 +72,8 @@ private fun BatteryOptimization(
     onDisableBatteryOptimizations: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
-  val isBatteryOptimizationDisabled by state.isBatteryOptimizationsIgnored.collectAsStateWithLifecycle()
+  val isBatteryOptimizationDisabled by
+      state.isBatteryOptimizationsIgnored.collectAsStateWithLifecycle()
 
   val canEdit =
       remember(isEditable, isBatteryOptimizationDisabled) {
