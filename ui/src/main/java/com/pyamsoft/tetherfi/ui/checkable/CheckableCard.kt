@@ -36,6 +36,7 @@ import com.pyamsoft.pydroid.ui.theme.ZeroSize
 @Composable
 @CheckResult
 fun rememberCheckableColor(
+    label: String,
     condition: Boolean,
     selectedColor: Color,
 ): State<Color> {
@@ -48,7 +49,10 @@ fun rememberCheckableColor(
       ) {
         if (condition) selectedColor else unselectedColor
       }
-  return animateColorAsState(color)
+  return animateColorAsState(
+      label = label,
+      targetValue = color,
+  )
 }
 
 @Composable
@@ -103,7 +107,12 @@ private fun CheckableCard(
 ) {
   val iconColor = rememberCheckableIconColor(condition)
   val alphas = rememberCheckableAlpha(isEditable)
-  val color by rememberCheckableColor(condition, selectedColor)
+  val color by
+      rememberCheckableColor(
+          label = title,
+          condition = condition,
+          selectedColor = selectedColor,
+      )
 
   val checkIcon =
       remember(condition) {
