@@ -20,27 +20,35 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
+
+private const val SETUP_TAG = "setup_instructions"
+private const val SETUP_TEXT = "setup instructions"
 
 @Composable
 internal fun ViewProxy(
@@ -157,4 +165,45 @@ internal fun ViewSsid(
             ),
     )
   }
+}
+
+@Composable
+internal fun ViewInstructions(
+    modifier: Modifier = Modifier,
+    onJumpToHowTo: () -> Unit,
+) {
+  val text = buildAnnotatedString {
+    appendLine("Confused on what to do next?")
+    append("View the ")
+
+    appendLink(
+        tag = SETUP_TAG,
+        linkColor = MaterialTheme.colors.primary,
+        text = SETUP_TEXT,
+        url = SETUP_TAG,
+    )
+  }
+
+  ClickableText(
+      modifier = modifier,
+      style =
+          MaterialTheme.typography.body2.copy(
+              color =
+                  MaterialTheme.colors.onBackground.copy(
+                      alpha = ContentAlpha.medium,
+                  ),
+              textAlign = TextAlign.Center,
+          ),
+      text = text,
+      onClick = { start ->
+        text
+            .getStringAnnotations(
+                tag = SETUP_TAG,
+                start = start,
+                end = start + SETUP_TAG.length,
+            )
+            .firstOrNull()
+            ?.also { onJumpToHowTo() }
+      },
+  )
 }
