@@ -8,14 +8,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.appendLink
+
+private const val SETUP_TAG = "setup_instructions"
+private const val SETUP_TEXT = "setup instructions"
 
 internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
@@ -45,6 +53,9 @@ internal fun LazyListScope.renderNetworkInformation(
     // Errors
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
+
+    // Jump links
+    onJumpToHowTo: () -> Unit,
 ) {
   item(
       contentType = StatusScreenContentTypes.NETWORK_ERROR,
@@ -102,6 +113,7 @@ internal fun LazyListScope.renderNetworkInformation(
         onRefreshConnection = onRefreshConnection,
         onShowHotspotError = onShowHotspotError,
         onShowNetworkError = onShowNetworkError,
+        onJumpToHowTo = onJumpToHowTo,
     )
   }
 
@@ -142,7 +154,46 @@ private fun LazyListScope.renderRunningItems(
     onRefreshConnection: () -> Unit,
     onShowHotspotError: () -> Unit,
     onShowNetworkError: () -> Unit,
+    onJumpToHowTo: () -> Unit,
 ) {
+  item(
+      contentType = StatusScreenContentTypes.VIEW_HOWTO,
+  ) {
+    val text = buildAnnotatedString {
+      appendLine("Confused on what to do next?")
+      append("View the ")
+
+      appendLink(
+          tag = SETUP_TAG,
+          linkColor = MaterialTheme.colors.primary,
+          text = SETUP_TEXT,
+          url = SETUP_TAG,
+      )
+    }
+
+    ClickableText(
+        modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
+        style =
+            MaterialTheme.typography.body2.copy(
+                color =
+                    MaterialTheme.colors.onBackground.copy(
+                        alpha = ContentAlpha.medium,
+                    ),
+                textAlign = TextAlign.Center,
+            ),
+        text = text,
+        onClick = { start ->
+          text
+              .getStringAnnotations(
+                  tag = SETUP_TAG,
+                  start = start,
+                  end = start + SETUP_TAG.length,
+              )
+              .firstOrNull()
+              ?.also { onJumpToHowTo() }
+        },
+    )
+  }
   item(
       contentType = StatusScreenContentTypes.VIEW_SSID,
   ) {

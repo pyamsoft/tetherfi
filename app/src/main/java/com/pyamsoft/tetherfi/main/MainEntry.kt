@@ -23,7 +23,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -31,6 +30,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
@@ -49,6 +49,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
@@ -145,6 +146,14 @@ fun MainEntry(
           pageCount = { allTabs.size },
       )
 
+  val handleTabSelected by rememberUpdatedState { tab: MainView ->
+    // Click fires the index to update
+    // The index updating is caught by the snapshot flow
+    // Which then triggers the page update function
+    val index = allTabs.indexOf(tab)
+    scope.launch(context = Dispatchers.Main) { pagerState.animateScrollToPage(index) }
+  }
+
   MountHooks(
       viewModel = viewModel,
       pagerState = pagerState,
@@ -158,9 +167,11 @@ fun MainEntry(
       state = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,
+      onTabChanged = { handleTabSelected(it) },
       onSettingsOpen = { viewModel.handleOpenSettings() },
       onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
+      onJumpToHowTo = { handleTabSelected(MainView.INFO) },
   )
 
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()

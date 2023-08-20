@@ -53,6 +53,9 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
+
+    // Jump links
+    onJumpToHowTo: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
@@ -72,6 +75,7 @@ internal fun LazyListScope.renderLoadedContent(
       onShowNetworkError = onShowNetworkError,
       onShowHotspotError = onShowHotspotError,
       onDisableBatteryOptimizations = onOpenBatterySettings,
+      onJumpToHowTo = onJumpToHowTo,
   )
 
   item(

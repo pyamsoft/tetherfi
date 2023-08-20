@@ -170,6 +170,7 @@ fun StatusEntry(
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+    onJumpToHowTo: () -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -202,6 +203,9 @@ fun StatusEntry(
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,
+      onShowQRCode = onShowQRCode,
+      onRefreshConnection = onRefreshConnection,
+      onJumpToHowTo = onJumpToHowTo,
       onToggleProxy = { viewModel.handleToggleProxy(scope = scope) },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
@@ -234,8 +238,6 @@ fun StatusEntry(
       onShowHotspotError = { viewModel.handleOpenHotspotError() },
       onHideHotspotError = { viewModel.handleCloseHotspotError() },
       onHideSetupError = { viewModel.handleCloseSetupError() },
-      onToggleIgnoreVpn = {viewModel.handleToggleIgnoreVpn() },
-      onShowQRCode = onShowQRCode,
-      onRefreshConnection = onRefreshConnection,
+      onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
   )
 }

@@ -37,8 +37,13 @@ fun MainContent(
     pagerState: PagerState,
     state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,
+
+    // Running Status
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Jump Links
+    onJumpToHowTo: () -> Unit,
 ) {
   HorizontalPager(
       modifier = modifier,
@@ -68,6 +73,7 @@ fun MainContent(
             serverViewState = state,
             onShowQRCode = onShowQRCode,
             onRefreshConnection = onRefreshConnection,
+            onJumpToHowTo = onJumpToHowTo,
         )
       }
       MainView.CONNECTIONS -> {

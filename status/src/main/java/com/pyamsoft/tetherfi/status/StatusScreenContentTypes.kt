@@ -10,6 +10,7 @@ internal enum class StatusScreenContentTypes {
   EDIT_SSID,
   EDIT_PASSWD,
   EDIT_PORT,
+  VIEW_HOWTO,
   VIEW_SSID,
   VIEW_PASSWD,
   VIEW_PROXY,

@@ -27,7 +27,10 @@ private inline fun AnnotatedString.Builder.withStringAnnotation(
     annotation: String,
     content: () -> Unit
 ) {
-  pushStringAnnotation(tag = tag, annotation = annotation)
+  pushStringAnnotation(
+      tag = tag,
+      annotation = annotation,
+  )
   content()
   pop()
 }

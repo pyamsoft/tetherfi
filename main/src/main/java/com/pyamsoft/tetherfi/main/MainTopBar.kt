@@ -40,7 +40,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
@@ -51,8 +50,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 @CheckResult
@@ -69,6 +66,7 @@ fun MainTopBar(
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
     onSettingsOpen: () -> Unit,
+    onTabChanged: (MainView) -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
 
@@ -125,7 +123,6 @@ fun MainTopBar(
               )
             },
         ) {
-          val scope = rememberCoroutineScope()
           for (index in allTabs.indices) {
             val tab = allTabs[index]
             val isSelected =
@@ -139,12 +136,7 @@ fun MainTopBar(
             MainTab(
                 tab = tab,
                 isSelected = isSelected,
-                onSelected = {
-                  // Click fires the index to update
-                  // The index updating is caught by the snapshot flow
-                  // Which then triggers the page update function
-                  scope.launch(context = Dispatchers.Main) { pagerState.animateScrollToPage(index) }
-                },
+                onSelected = { onTabChanged(tab) },
             )
           }
         }
@@ -192,5 +184,6 @@ private fun PreviewMainTopBar() {
           ),
       allTabs = allTabs,
       onSettingsOpen = {},
+      onTabChanged = {},
   )
 }

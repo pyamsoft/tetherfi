@@ -38,11 +38,15 @@ fun MainScreen(
     allTabs: SnapshotStateList<MainView>,
 
     // Settings
+    onTabChanged: (MainView) -> Unit,
     onSettingsOpen: () -> Unit,
 
     // Running status
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Jump Links
+    onJumpToHowTo: () -> Unit,
 ) {
   Scaffold(
       modifier = modifier.fillMaxSize(),
@@ -54,6 +58,7 @@ fun MainScreen(
           pagerState = pagerState,
           allTabs = allTabs,
           onSettingsOpen = onSettingsOpen,
+          onTabChanged = onTabChanged,
       )
 
       MainContent(
@@ -64,6 +69,7 @@ fun MainScreen(
           allTabs = allTabs,
           onShowQRCode = onShowQRCode,
           onRefreshConnection = onRefreshConnection,
+          onJumpToHowTo = onJumpToHowTo,
       )
     }
   }
