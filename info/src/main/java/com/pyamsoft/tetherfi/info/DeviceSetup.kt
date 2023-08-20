@@ -57,6 +57,9 @@ import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
 
+private const val LINK_TAG = "instructions"
+private const val LINK_TEXT = "here"
+
 private enum class DeviceSetupContentTypes {
   SETTINGS,
   CONNECT,
@@ -290,15 +293,16 @@ internal fun LazyListScope.renderDeviceSetup(
   }
 }
 
-private const val LINK_TEXT = "here"
-
 @Composable
 private fun FullConnectionInstructions(
     modifier: Modifier = Modifier,
 ) {
   val uriHandler = LocalExternalUriHandler.current
 
-  val textColor = MaterialTheme.colors.onSurface
+  val textColor =
+      MaterialTheme.colors.onBackground.copy(
+          alpha = ContentAlpha.medium,
+      )
   val linkColor = MaterialTheme.colors.primary
   val instructions =
       remember(
@@ -312,9 +316,9 @@ private fun FullConnectionInstructions(
                       color = textColor,
                   ),
           ) {
-            append("You can view more detailed connection instructions ")
+            append("Having trouble configuring Proxy Settings? See more detailed instructions ")
             appendLink(
-                tag = "instructions",
+                tag = LINK_TAG,
                 linkColor = linkColor,
                 text = LINK_TEXT,
                 url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
@@ -326,17 +330,11 @@ private fun FullConnectionInstructions(
   ClickableText(
       modifier = modifier,
       text = instructions,
-      style =
-          MaterialTheme.typography.body2.copy(
-              color =
-                  MaterialTheme.colors.onBackground.copy(
-                      alpha = ContentAlpha.medium,
-                  ),
-          ),
+      style = MaterialTheme.typography.body1,
       onClick = { offset ->
         instructions
             .getStringAnnotations(
-                tag = "instructions",
+                tag = LINK_TAG,
                 start = offset,
                 end = offset + LINK_TEXT.length,
             )
