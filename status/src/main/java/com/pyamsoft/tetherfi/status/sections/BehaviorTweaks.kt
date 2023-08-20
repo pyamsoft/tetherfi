@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.status.sections
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -33,6 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.tetherfi.status.StatusScreenContentTypes
+import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.status.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 

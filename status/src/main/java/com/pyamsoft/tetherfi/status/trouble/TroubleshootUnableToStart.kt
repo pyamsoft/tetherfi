@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.status.trouble
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

@@ -15,6 +15,8 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.status.sections.renderBattery
+import com.pyamsoft.tetherfi.status.trouble.TroubleshootUnableToStart
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 internal fun LazyListScope.renderNetworkInformation(
