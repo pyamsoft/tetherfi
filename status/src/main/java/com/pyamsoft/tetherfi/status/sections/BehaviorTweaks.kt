@@ -45,6 +45,7 @@ internal fun LazyListScope.renderTweaks(
     appName: String,
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
 ) {
   item(
       contentType = StatusScreenContentTypes.TWEAK_LABEL,
@@ -67,6 +68,7 @@ internal fun LazyListScope.renderTweaks(
         appName = appName,
         state = state,
         onToggleIgnoreVpn = onToggleIgnoreVpn,
+        onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
     )
   }
 }
@@ -78,8 +80,13 @@ private fun BehaviorTweaks(
     isEditable: Boolean,
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
 ) {
   val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
+  val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
+
+  val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+  val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
   val ignoreVpnColor by
       rememberCheckableColor(
@@ -88,8 +95,12 @@ private fun BehaviorTweaks(
           selectedColor = MaterialTheme.colors.primary,
       )
 
-  val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-  val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+  val shutdownNoClientsColor by
+      rememberCheckableColor(
+          label = "Shutdown No Clients",
+          condition = isShutdownWithNoClients,
+          selectedColor = MaterialTheme.colors.primary,
+      )
 
   Card(
       modifier =
@@ -142,6 +153,21 @@ private fun BehaviorTweaks(
                   |If you KNOW your VPN app works fine with $appName, turn this option on to avoid the blocking dialog."""
                   .trimMargin(),
           onClick = onToggleIgnoreVpn,
+      )
+
+      ToggleSwitch(
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = shutdownNoClientsColor,
+          checked = isShutdownWithNoClients,
+          title = "Stop Hotspot With No Clients",
+          description =
+              """If the $appName hotspot has been running for 10 minutes without serving any client devices, shut it down.
+                  |
+                  |Automatically shutting down the hotspot when it is not being used can save battery."""
+                  .trimMargin(),
+          onClick = onToggleShutdownWithNoClients,
       )
     }
   }

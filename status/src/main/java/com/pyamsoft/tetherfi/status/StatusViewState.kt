@@ -57,6 +57,7 @@ interface StatusViewState : UiViewState {
 
   // Tweaks
   val isIgnoreVpn: StateFlow<Boolean>
+  val isShutdownWithNoClients: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -92,4 +93,5 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isShowingHotspotError = MutableStateFlow(false)
 
   override val isIgnoreVpn = MutableStateFlow(false)
+  override val isShutdownWithNoClients = MutableStateFlow(false)
 }

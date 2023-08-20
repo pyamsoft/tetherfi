@@ -105,6 +105,7 @@ fun StatusScreen(
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
 
     // Jump links
     onJumpToHowTo: () -> Unit,
@@ -255,6 +256,7 @@ fun StatusScreen(
             onShowHotspotError = onShowHotspotError,
             onShowNetworkError = onShowNetworkError,
             onToggleIgnoreVpn = onToggleIgnoreVpn,
+            onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onJumpToHowTo = onJumpToHowTo,
         )
       }
@@ -364,6 +366,7 @@ private fun PreviewStatusScreen(
       onHideNetworkError = {},
       onHideSetupError = {},
       onToggleIgnoreVpn = {},
+      onToggleShutdownWithNoClients = {},
       onJumpToHowTo = {},
   )
 }

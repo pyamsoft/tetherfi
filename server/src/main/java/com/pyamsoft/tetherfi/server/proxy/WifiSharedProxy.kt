@@ -23,6 +23,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
+import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -48,7 +49,8 @@ internal class WifiSharedProxy
 internal constructor(
     @ServerInternalApi private val factory: ProxyManager.Factory,
     private val enforcer: ThreadEnforcer,
-    private val eraser: ClientEraser,
+    private val clientEraser: ClientEraser,
+    private val startedClients: StartedClients,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
@@ -102,7 +104,7 @@ internal constructor(
   private fun reset() {
     enforcer.assertOffMainThread()
 
-    eraser.clear()
+    clientEraser.clear()
   }
 
   private suspend fun shutdown(clearErrorStatus: Boolean) =
@@ -131,7 +133,11 @@ internal constructor(
             clearError = true,
         )
 
-        proxyLoop(info)
+        // Start the proxy server loop
+        launch(context = Dispatchers.Default) { proxyLoop(info) }
+
+        // Notify the client connection watcher that we have started
+        launch(context = Dispatchers.Default) { startedClients.started() }
 
         Timber.d { "Started Proxy Server" }
         status.set(RunningStatus.Running)

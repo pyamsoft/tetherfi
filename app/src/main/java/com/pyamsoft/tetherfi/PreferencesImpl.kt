@@ -176,6 +176,18 @@ internal constructor(
     }
   }
 
+  override fun listenForShutdownWithNoClients(): Flow<Boolean> =
+      preferenceBooleanFlow(SHUTDOWN_NO_CLIENTS, false) { preferences }
+          .flowOn(context = Dispatchers.Default)
+
+  override fun setShutdownWithNoClients(shutdown: Boolean) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putBoolean(SHUTDOWN_NO_CLIENTS, shutdown) }
+    }
+  }
+
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
               preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
@@ -303,5 +315,6 @@ internal constructor(
     private const val IN_APP_RATING_SHOWN_VERSION = "key_in_app_rating_shown_version"
 
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
+    private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
   }
 }

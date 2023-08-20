@@ -239,5 +239,6 @@ fun StatusEntry(
       onHideHotspotError = { viewModel.handleCloseHotspotError() },
       onHideSetupError = { viewModel.handleCloseSetupError() },
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
+      onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
   )
 }

@@ -56,6 +56,7 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
 
     // Jump links
     onJumpToHowTo: () -> Unit,
@@ -112,6 +113,7 @@ internal fun LazyListScope.renderLoadedContent(
       appName = appName,
       state = state,
       onToggleIgnoreVpn = onToggleIgnoreVpn,
+      onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
   )
 
   item(

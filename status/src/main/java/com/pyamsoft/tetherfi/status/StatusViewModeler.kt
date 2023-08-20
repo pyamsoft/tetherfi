@@ -66,6 +66,7 @@ internal constructor(
       var wakeLock: Boolean,
       var wifiLock: Boolean,
       var ignoreVpn: Boolean,
+      var shutdownWithNoClients: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
@@ -73,6 +74,7 @@ internal constructor(
         config.wifiLock &&
         config.wakeLock &&
         config.ignoreVpn &&
+        config.shutdownWithNoClients &&
         config.ssid &&
         config.password &&
         config.band) {
@@ -195,6 +197,7 @@ internal constructor(
             wakeLock = false,
             wifiLock = false,
             ignoreVpn = false,
+            shutdownWithNoClients = false,
         )
 
     // Start loading
@@ -239,6 +242,21 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.ignoreVpn = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest shutdown value
+    serverPreferences.listenForShutdownWithNoClients().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { shutdown ->
+          s.isShutdownWithNoClients.value = shutdown
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.shutdownWithNoClients = true
             markPreferencesLoaded(config)
           }
         }
@@ -413,6 +431,11 @@ internal constructor(
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
     serverPreferences.setStartIgnoreVpn(newVal)
+  }
+
+  fun handleToggleShutdownNoClients() {
+    val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
+    serverPreferences.setShutdownWithNoClients(newVal)
   }
 
   companion object {

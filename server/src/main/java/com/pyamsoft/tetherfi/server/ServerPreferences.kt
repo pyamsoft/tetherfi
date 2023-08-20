@@ -41,4 +41,8 @@ interface ServerPreferences {
   @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
 
   fun setStartIgnoreVpn(ignore: Boolean)
+
+  @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
+
+  fun setShutdownWithNoClients(shutdown: Boolean)
 }
