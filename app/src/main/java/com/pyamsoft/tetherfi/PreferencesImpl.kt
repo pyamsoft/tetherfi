@@ -164,6 +164,18 @@ internal constructor(
     }
   }
 
+  override fun listenForStartIgnoreVpn(): Flow<Boolean> =
+      preferenceBooleanFlow(START_IGNORE_VPN, false) { preferences }
+          .flowOn(context = Dispatchers.Default)
+
+  override fun setStartIgnoreVpn(ignore: Boolean) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putBoolean(START_IGNORE_VPN, ignore) }
+    }
+  }
+
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
               preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
@@ -289,5 +301,7 @@ internal constructor(
     private const val IN_APP_APP_OPENED = "key_in_app_app_opened_1"
 
     private const val IN_APP_RATING_SHOWN_VERSION = "key_in_app_rating_shown_version"
+
+    private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
   }
 }
