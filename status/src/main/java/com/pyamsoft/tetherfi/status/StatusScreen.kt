@@ -102,6 +102,9 @@ fun StatusScreen(
     onHideNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
     onHideHotspotError: () -> Unit,
+
+    // Tweaks
+    onToggleIgnoreVpn: () -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
@@ -248,6 +251,7 @@ fun StatusScreen(
             onToggleKeepWifiLock = onToggleKeepWifiLock,
             onShowHotspotError = onShowHotspotError,
             onShowNetworkError = onShowNetworkError,
+            onToggleIgnoreVpn = onToggleIgnoreVpn,
         )
       }
     }
@@ -355,6 +359,7 @@ private fun PreviewStatusScreen(
       onShowNetworkError = {},
       onHideNetworkError = {},
       onHideSetupError = {},
+      onToggleIgnoreVpn = {},
   )
 }
 

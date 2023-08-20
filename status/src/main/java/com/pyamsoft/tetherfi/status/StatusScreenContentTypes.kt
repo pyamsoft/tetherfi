@@ -18,4 +18,6 @@ internal enum class StatusScreenContentTypes {
   BATTERY_LABEL,
   BATTERY_OPTIMIZATION,
   WAKELOCKS,
+  TWEAK_LABEL,
+  TWEAKS,
 }

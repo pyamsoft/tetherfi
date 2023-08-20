@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -31,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
@@ -57,6 +58,7 @@ private val STEP_SIZE = ImageDefaults.ItemSize
 @Composable
 fun ProxyTileScreen(
     modifier: Modifier = Modifier,
+    appName: String,
     state: ProxyTileViewState,
     onDismissed: () -> Unit,
     onComplete: () -> Unit,
@@ -155,6 +157,21 @@ fun ProxyTileScreen(
               isMiddleStep = isMiddleStep,
               isFinalStep = isFinalStep,
           )
+
+          if (isError) {
+            Text(
+                modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.baseline),
+                textAlign = TextAlign.Center,
+                text = "Please open the $appName app and try again.",
+                style =
+                    MaterialTheme.typography.body2.copy(
+                        color =
+                            MaterialTheme.colors.error.copy(
+                                alpha = ContentAlpha.medium,
+                            ),
+                    ),
+            )
+          }
         }
       }
     }
@@ -419,6 +436,7 @@ private fun SideEffectComplete(
 private fun PreviewProxyTileScreenInitial() {
   ProxyTileScreen(
       state = MutableProxyTileViewState(),
+      appName = "TEST",
       onDismissed = {},
       onComplete = {},
       onStatusUpdated = {},

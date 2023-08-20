@@ -50,6 +50,9 @@ internal fun LazyListScope.renderLoadedContent(
     // Errors
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
+
+    // Tweaks
+    onToggleIgnoreVpn: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
@@ -86,6 +89,22 @@ internal fun LazyListScope.renderLoadedContent(
       state = state,
       onToggleKeepWakeLock = onToggleKeepWakeLock,
       onToggleKeepWifiLock = onToggleKeepWifiLock,
+  )
+
+  item(
+      contentType = StatusScreenContentTypes.SPACER,
+  ) {
+    Spacer(
+        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
+    )
+  }
+
+  renderTweaks(
+      itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      onToggleIgnoreVpn = onToggleIgnoreVpn,
   )
 
   item(

@@ -67,6 +67,7 @@ private fun MountHooks(
 @Composable
 fun ProxyTileEntry(
     modifier: Modifier = Modifier,
+    appName: String,
 ) {
   val component = rememberComposableInjector { ProxyTileInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -87,6 +88,7 @@ fun ProxyTileEntry(
 
   ProxyTileScreen(
       modifier = modifier,
+      appName = appName,
       state = viewModel,
       onDismissed = { viewModel.handleDismissed() },
       onComplete = { handleComplete() },

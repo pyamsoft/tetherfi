@@ -234,6 +234,7 @@ fun StatusEntry(
       onShowHotspotError = { viewModel.handleOpenHotspotError() },
       onHideHotspotError = { viewModel.handleCloseHotspotError() },
       onHideSetupError = { viewModel.handleCloseSetupError() },
+      onToggleIgnoreVpn = {viewModel.handleToggleIgnoreVpn() },
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
   )

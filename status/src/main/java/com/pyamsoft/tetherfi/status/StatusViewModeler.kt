@@ -63,14 +63,16 @@ internal constructor(
       var password: Boolean,
       var port: Boolean,
       var band: Boolean,
-      var wakelock: Boolean,
-      var wifilock: Boolean,
+      var wakeLock: Boolean,
+      var wifiLock: Boolean,
+      var ignoreVpn: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port &&
-        config.wifilock &&
-        config.wakelock &&
+        config.wifiLock &&
+        config.wakeLock &&
+        config.ignoreVpn &&
         config.ssid &&
         config.password &&
         config.band) {
@@ -190,8 +192,9 @@ internal constructor(
             password = false,
             port = false,
             band = false,
-            wakelock = false,
-            wifilock = false,
+            wakeLock = false,
+            wifiLock = false,
+            ignoreVpn = false,
         )
 
     // Start loading
@@ -205,7 +208,7 @@ internal constructor(
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.wakelock = true
+            config.wakeLock = true
             markPreferencesLoaded(config)
           }
         }
@@ -220,7 +223,22 @@ internal constructor(
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.wifilock = true
+            config.wifiLock = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest ignore value
+    serverPreferences.listenForStartIgnoreVpn().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { ignore ->
+          s.isIgnoreVpn.value = ignore
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.ignoreVpn = true
             markPreferencesLoaded(config)
           }
         }
@@ -390,6 +408,11 @@ internal constructor(
 
   fun handleCloseNetworkError() {
     state.isShowingNetworkError.value = false
+  }
+
+  fun handleToggleIgnoreVpn() {
+    val newVal = state.isIgnoreVpn.updateAndGet { !it }
+    serverPreferences.setStartIgnoreVpn(newVal)
   }
 
   companion object {

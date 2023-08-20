@@ -21,9 +21,9 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.widthIn
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
@@ -47,6 +47,7 @@ class ProxyTileActivity : AppCompatActivity() {
     stableLayoutHideNavigation()
 
     val vm = viewModel.requireNotNull()
+    val appName = getString(R.string.app_name)
 
     setContent {
       val theme by vm.theme.collectAsStateWithLifecycle()
@@ -60,6 +61,7 @@ class ProxyTileActivity : AppCompatActivity() {
       ) {
         ProxyTileEntry(
             modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+            appName = appName,
         )
       }
     }

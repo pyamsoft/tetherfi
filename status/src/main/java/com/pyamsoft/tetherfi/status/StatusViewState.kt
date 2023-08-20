@@ -55,6 +55,9 @@ interface StatusViewState : UiViewState {
   val isShowingNetworkError: StateFlow<Boolean>
   val isShowingHotspotError: StateFlow<Boolean>
 
+  // Tweaks
+  val isIgnoreVpn: StateFlow<Boolean>
+
   @Stable
   @Immutable
   enum class LoadingState {
@@ -87,4 +90,6 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isShowingSetupError = MutableStateFlow(false)
   override val isShowingNetworkError = MutableStateFlow(false)
   override val isShowingHotspotError = MutableStateFlow(false)
+
+  override val isIgnoreVpn = MutableStateFlow(false)
 }
