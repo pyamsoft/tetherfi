@@ -37,6 +37,11 @@ internal constructor(
     private val requirements: HotspotRequirements,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
+  init {
+    // Sync up the network state on init so that we can immediately capture it in the View
+    state.status.value = handler.getNetworkStatus()
+  }
+
   private suspend fun startProxy() {
     val blockers = requirements.blockers()
 
