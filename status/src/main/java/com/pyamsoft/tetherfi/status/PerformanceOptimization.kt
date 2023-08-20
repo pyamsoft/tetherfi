@@ -30,7 +30,6 @@ import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TriStateCheckbox
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
@@ -93,8 +93,18 @@ private fun Wakelocks(
   val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
   val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
 
-  val wakeLockColor by rememberCheckableColor(keepWakeLock, MaterialTheme.colors.primary)
-  val wifiLockColor by rememberCheckableColor(keepWifiLock, MaterialTheme.colors.primary)
+  val wakeLockColor by
+      rememberCheckableColor(
+          label = "CPU Lock",
+          condition = keepWakeLock,
+          selectedColor = MaterialTheme.colors.primary,
+      )
+  val wifiLockColor by
+      rememberCheckableColor(
+          label = "Wi-Fi Lock",
+          condition = keepWifiLock,
+          selectedColor = MaterialTheme.colors.primary,
+      )
 
   val checkboxState =
       remember(
@@ -111,7 +121,12 @@ private fun Wakelocks(
       }
 
   val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
-  val cardColor by rememberCheckableColor(isChecked, MaterialTheme.colors.primary)
+  val cardColor by
+      rememberCheckableColor(
+          label = "Wake Locks",
+          condition = isChecked,
+          selectedColor = MaterialTheme.colors.primary,
+      )
   val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
   val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 

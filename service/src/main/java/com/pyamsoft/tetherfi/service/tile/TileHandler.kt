@@ -19,7 +19,6 @@ package com.pyamsoft.tetherfi.service.tile
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
@@ -32,7 +31,6 @@ class TileHandler
 internal constructor(
     private val enforcer: ThreadEnforcer,
     private val network: WiDiNetworkStatus,
-    private val permissionGuard: PermissionGuard,
 ) {
 
   private fun CoroutineScope.watchStatusUpdates(
@@ -84,10 +82,6 @@ internal constructor(
 
   @CheckResult
   fun getNetworkStatus(): RunningStatus {
-    if (!permissionGuard.canCreateWiDiNetwork()) {
-      return STATUS_MISSING_PERMISSION
-    }
-
     return network.getCurrentStatus()
   }
 
@@ -106,9 +100,4 @@ internal constructor(
           onNetworkRunning = onNetworkRunning,
           onNetworkStopping = onNetworkStopping,
       )
-
-  companion object {
-
-    private val STATUS_MISSING_PERMISSION = RunningStatus.Error("Missing required permissions.")
-  }
 }

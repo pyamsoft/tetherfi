@@ -91,7 +91,7 @@ private fun safeOpenSettingsIntent(
 private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: () -> Unit,
+    onToggleProxy: CoroutineScope.() -> Unit,
     onRefreshSystemInfo: (CoroutineScope) -> Unit,
 ) {
   // Create requesters
@@ -132,7 +132,7 @@ private fun MountHooks(
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    onToggleProxy: () -> Unit,
+    onToggleProxy: CoroutineScope.() -> Unit,
 ) {
   // Wrap in lambda when calling or else bad
   val handleRefreshSystemInfo by rememberUpdatedState { s: CoroutineScope ->
@@ -194,7 +194,7 @@ fun StatusEntry(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
-      onToggleProxy = { viewModel.handleToggleProxy() },
+      onToggleProxy = { viewModel.handleToggleProxy(scope = this) },
   )
 
   StatusScreen(
@@ -202,7 +202,7 @@ fun StatusEntry(
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,
-      onToggleProxy = { viewModel.handleToggleProxy() },
+      onToggleProxy = { viewModel.handleToggleProxy(scope = scope) },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },

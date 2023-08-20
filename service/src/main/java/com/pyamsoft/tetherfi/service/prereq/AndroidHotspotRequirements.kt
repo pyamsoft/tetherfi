@@ -3,6 +3,8 @@ package com.pyamsoft.tetherfi.service.prereq
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.prereq.vpn.VpnChecker
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal class AndroidHotspotRequirements
 @Inject
@@ -11,17 +13,18 @@ internal constructor(
     private val vpnChecker: VpnChecker,
 ) : HotspotRequirements {
 
-  override fun blockers(): Collection<HotspotStartBlocker> {
-    val blockers = mutableSetOf<HotspotStartBlocker>()
+  override suspend fun blockers(): Collection<HotspotStartBlocker> =
+      withContext(context = Dispatchers.Default) {
+        val blockers = mutableSetOf<HotspotStartBlocker>()
 
-    if (!permission.canCreateWiDiNetwork()) {
-      blockers.add(HotspotStartBlocker.PERMISSION)
-    }
+        if (!permission.canCreateWiDiNetwork()) {
+          blockers.add(HotspotStartBlocker.PERMISSION)
+        }
 
-    if (vpnChecker.isUsingVpn()) {
-      blockers.add(HotspotStartBlocker.VPN)
-    }
+        if (vpnChecker.isUsingVpn()) {
+          blockers.add(HotspotStartBlocker.VPN)
+        }
 
-    return blockers
-  }
+        return@withContext blockers
+      }
 }

@@ -22,5 +22,5 @@ interface PermissionGuard {
 
   @get:CheckResult val requiredPermissions: List<String>
 
-  @CheckResult fun canCreateWiDiNetwork(): Boolean
+  @CheckResult suspend fun canCreateWiDiNetwork(): Boolean
 }

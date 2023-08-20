@@ -36,4 +36,9 @@ interface ServerPreferences {
   @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
 
   fun setNetworkBand(band: ServerNetworkBand)
+
+  // Tweaks
+  @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
+
+  fun setStartIgnoreVpn(ignore: Boolean)
 }

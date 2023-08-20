@@ -22,6 +22,8 @@ import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 internal class PermissionGuardImpl
 @Inject
@@ -53,9 +55,10 @@ internal constructor(
             }
       }
 
-  override fun canCreateWiDiNetwork(): Boolean {
-    return requiredPermissions.all { hasPermission(it) }
-  }
+  override suspend fun canCreateWiDiNetwork(): Boolean =
+      withContext(context = Dispatchers.Main) {
+        return@withContext requiredPermissions.all { hasPermission(it) }
+      }
 
   companion object {
 

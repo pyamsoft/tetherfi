@@ -25,6 +25,8 @@ import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProxyTileViewModeler
 @Inject
@@ -35,12 +37,7 @@ internal constructor(
     private val requirements: HotspotRequirements,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
-  init {
-    // Sync up the network state on init so that we can immediately capture it in the View
-    state.status.value = handler.getNetworkStatus()
-  }
-
-  private fun startProxy() {
+  private suspend fun startProxy() {
     val blockers = requirements.blockers()
 
     // If something is blocking hotspot startup we will show it in the view
@@ -88,16 +85,18 @@ internal constructor(
     )
   }
 
-  fun handleToggleProxy() {
-    when (val status = handler.getNetworkStatus()) {
-      is RunningStatus.NotRunning -> {
-        startProxy()
-      }
-      is RunningStatus.Running -> {
-        stopProxy()
-      }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+  fun handleToggleProxy(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Default) {
+      when (val status = handler.getNetworkStatus()) {
+        is RunningStatus.NotRunning -> {
+          startProxy()
+        }
+        is RunningStatus.Running -> {
+          stopProxy()
+        }
+        else -> {
+          Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+        }
       }
     }
   }

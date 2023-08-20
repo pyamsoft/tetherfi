@@ -4,5 +4,5 @@ import androidx.annotation.CheckResult
 
 interface VpnChecker {
 
-  @CheckResult fun isUsingVpn(): Boolean
+  @CheckResult suspend fun isUsingVpn(): Boolean
 }

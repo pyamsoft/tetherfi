@@ -94,25 +94,7 @@ internal constructor(
           // otherwise if OFF and no error, no dialog
           .distinctUntilChanged()
 
-  @CheckResult
-  private fun refreshHotspotStartBlockers(
-      hasPermission: Boolean,
-      isUsingVpn: Boolean,
-  ): List<HotspotStartBlocker> {
-    val blockers = mutableListOf<HotspotStartBlocker>()
-
-    if (!hasPermission) {
-      blockers.add(HotspotStartBlocker.PERMISSION)
-    }
-
-    if (isUsingVpn) {
-      blockers.add(HotspotStartBlocker.VPN)
-    }
-
-    return blockers
-  }
-
-  private fun startProxy() {
+  private suspend fun startProxy() {
     val blockers = requirements.blockers()
     // If something is blocking hotspot startup we will show it in the view
     state.startBlockers.value = blockers
@@ -131,7 +113,7 @@ internal constructor(
     serviceLauncher.stopForeground()
   }
 
-  private fun resetErrorAndRestart() {
+  private suspend fun resetErrorAndRestart() {
     Timber.d { "Resetting Proxy from Error state" }
     serviceLauncher.resetError()
     startProxy()
@@ -171,22 +153,24 @@ internal constructor(
         ?.also { state.isShowingSetupError.value = it }
   }
 
-  fun handleToggleProxy() {
+  fun handleToggleProxy(scope: CoroutineScope) {
     // Hide the password
     state.isPasswordVisible.value = false
 
-    when (val status = network.getCurrentStatus()) {
-      is RunningStatus.NotRunning -> {
-        startProxy()
-      }
-      is RunningStatus.Running -> {
-        stopProxy()
-      }
-      is RunningStatus.Error -> {
-        resetErrorAndRestart()
-      }
-      else -> {
-        Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+    scope.launch(context = Dispatchers.Default) {
+      when (val status = network.getCurrentStatus()) {
+        is RunningStatus.NotRunning -> {
+          startProxy()
+        }
+        is RunningStatus.Running -> {
+          stopProxy()
+        }
+        is RunningStatus.Error -> {
+          resetErrorAndRestart()
+        }
+        else -> {
+          Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+        }
       }
     }
   }

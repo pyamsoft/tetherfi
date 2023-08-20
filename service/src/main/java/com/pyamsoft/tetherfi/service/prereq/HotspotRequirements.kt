@@ -4,5 +4,5 @@ import androidx.annotation.CheckResult
 
 interface HotspotRequirements {
 
-  @CheckResult fun blockers(): Collection<HotspotStartBlocker>
+  @CheckResult suspend fun blockers(): Collection<HotspotStartBlocker>
 }
