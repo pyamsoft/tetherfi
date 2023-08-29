@@ -43,25 +43,29 @@ internal constructor(
   private val wakeAcquired = MutableStateFlow(false)
 
   override suspend fun acquireLock() =
-      withContext(context = Dispatchers.Default + NonCancellable) {
-        mutex.withLock {
-          if (wakeAcquired.compareAndSet(expect = false, update = true)) {
-            lock.acquire()
-            Timber.d { "####################################" }
-            Timber.d { "Acquire WiFi wakelock: $tag" }
-            Timber.d { "####################################" }
+      withContext(context = Dispatchers.Default) {
+        withContext(context = NonCancellable) {
+          mutex.withLock {
+            if (wakeAcquired.compareAndSet(expect = false, update = true)) {
+              lock.acquire()
+              Timber.d { "####################################" }
+              Timber.d { "Acquire WiFi wakelock: $tag" }
+              Timber.d { "####################################" }
+            }
           }
         }
       }
 
   override suspend fun releaseLock() =
-      withContext(context = Dispatchers.Default + NonCancellable) {
-        mutex.withLock {
-          if (wakeAcquired.compareAndSet(expect = true, update = false)) {
-            Timber.d { "####################################" }
-            Timber.d { "Release WIFI wakelock: $tag" }
-            Timber.d { "####################################" }
-            lock.release()
+      withContext(context = Dispatchers.Default) {
+        withContext(context = NonCancellable) {
+          mutex.withLock {
+            if (wakeAcquired.compareAndSet(expect = true, update = false)) {
+              Timber.d { "####################################" }
+              Timber.d { "Release WIFI wakelock: $tag" }
+              Timber.d { "####################################" }
+              lock.release()
+            }
           }
         }
       }

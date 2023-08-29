@@ -105,7 +105,16 @@ internal constructor(
     Timber.d { "First time seeing client: $client" }
     inAppRatingPreferences.markDeviceConnected()
 
-    startWatchingForOldClients()
+    watchForOldClients()
+  }
+
+  @Suppress("UnusedReceiverParameter")
+  private fun CoroutineScope.onClientsUpdated(
+      @Suppress("UNUSED_PARAMETER") clients: List<TetherClient>,
+  ) {
+    // TODO(Peter): Should we restart the watchForNoClients timer here?
+    //              This function could be called a bunch and it would cause tons of scopes to be
+    //              created and cancelled, which could kill performance.
   }
 
   private suspend fun purgeOldClients(cutoffTime: LocalDateTime) {
@@ -136,30 +145,31 @@ internal constructor(
   }
 
   private suspend fun shutdownWithNoClients() {
-    Timber.d { "Shutdown the server if there are no connected clients" }
     if (seenClients.value.isEmpty()) {
       Timber.d { "No clients are connected. Shutdown Proxy!" }
       shutdownBus.emit(ServerShutdownEvent)
     }
   }
 
-  private fun CoroutineScope.startWatchingForOldClients() {
+  private fun CoroutineScope.watchForOldClients() {
     oldClientCheck.start(scope = this) { purgeOldClients(it) }
   }
 
-  override suspend fun started() =
-      withContext(context = Dispatchers.Default) {
-        if (serverPreferences.listenForShutdownWithNoClients().first()) {
-          noClientCheck.start(
-              scope = this,
-              initialDelay = NO_CLIENTS_TIMER_PERIOD,
-          ) {
-            shutdownWithNoClients()
-          }
-        } else {
-          noClientCheck.cancel()
-        }
+  private suspend fun CoroutineScope.watchForNoClients() {
+    if (serverPreferences.listenForShutdownWithNoClients().first()) {
+      noClientCheck.start(
+          scope = this,
+          initialDelay = NO_CLIENTS_TIMER_PERIOD,
+      ) {
+        shutdownWithNoClients()
       }
+    } else {
+      noClientCheck.cancel()
+    }
+  }
+
+  override suspend fun started() =
+      withContext(context = Dispatchers.Default) { watchForNoClients() }
 
   override fun block(client: TetherClient) {
     blockedClients.update { set ->
@@ -196,21 +206,24 @@ internal constructor(
 
   override suspend fun seen(client: TetherClient) =
       withContext(context = Dispatchers.Default) {
-        seenClients.update { list ->
-          val existing = list.firstOrNull { isMatchingClient(it, client) }
+        val clients =
+            seenClients.updateAndGet { list ->
+              val existing = list.firstOrNull { isMatchingClient(it, client) }
 
-          if (existing == null) {
-            return@update (list + client).also { onNewClientSeen(client) }
-          } else {
-            return@update list.map { c ->
-              if (c == existing) {
-                return@map markLastSeenNow(c)
+              if (existing == null) {
+                return@updateAndGet (list + client).also { onNewClientSeen(client) }
               } else {
-                return@map c
+                return@updateAndGet list.map { c ->
+                  if (c == existing) {
+                    return@map markLastSeenNow(c)
+                  } else {
+                    return@map c
+                  }
+                }
               }
             }
-          }
-        }
+
+        onClientsUpdated(clients)
       }
 
   override fun clear() {
@@ -263,7 +276,6 @@ internal constructor(
       job =
           job
               ?: timerFlow(timerPeriod, initialDelay).let { f ->
-                Timber.d { "Start a timer flow to check old clients every $timerPeriod minutes" }
                 scope.launch(context = Dispatchers.IO) {
                   f.collect {
                     // Cutoff time is X minutes ago

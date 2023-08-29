@@ -42,25 +42,29 @@ internal constructor(
 
   @SuppressLint("WakelockTimeout")
   override suspend fun acquireLock() =
-      withContext(context = Dispatchers.Default + NonCancellable) {
-        mutex.withLock {
-          if (wakeAcquired.compareAndSet(expect = false, update = true)) {
-            Timber.d { "####################################" }
-            Timber.d { "Acquire CPU wakelock: $tag" }
-            Timber.d { "####################################" }
-            lock.acquire()
+      withContext(context = Dispatchers.Default) {
+        withContext(context = NonCancellable) {
+          mutex.withLock {
+            if (wakeAcquired.compareAndSet(expect = false, update = true)) {
+              Timber.d { "####################################" }
+              Timber.d { "Acquire CPU wakelock: $tag" }
+              Timber.d { "####################################" }
+              lock.acquire()
+            }
           }
         }
       }
 
   override suspend fun releaseLock() =
-      withContext(context = Dispatchers.Default + NonCancellable) {
-        mutex.withLock {
-          if (wakeAcquired.compareAndSet(expect = true, update = false)) {
-            Timber.d { "####################################" }
-            Timber.d { "Release CPU wakelock: $tag" }
-            Timber.d { "####################################" }
-            lock.release()
+      withContext(context = Dispatchers.Default) {
+        withContext(context = NonCancellable) {
+          mutex.withLock {
+            if (wakeAcquired.compareAndSet(expect = true, update = false)) {
+              Timber.d { "####################################" }
+              Timber.d { "Release CPU wakelock: $tag" }
+              Timber.d { "####################################" }
+              lock.release()
+            }
           }
         }
       }

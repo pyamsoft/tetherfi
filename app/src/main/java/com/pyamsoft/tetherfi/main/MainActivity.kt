@@ -58,10 +58,12 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Warn when VPN usage would conflict with Hotspot startup")
-                    feature("Include more instructions around setting up a proxy")
-                    feature("Include external link to instructions for proxy setup")
-                    change("More compact and readable screen usage in landscape mode")
+                    feature("Add Tweaks section to modify the default behavior of the hotspot.")
+                    feature("Add Tweak to start the Hotspot even if a VPN is running.")
+                    feature(
+                        "Add Tweak to turn off the Hotspot after about 10 minutes with no clients connected.")
+                    bugfix("Better performance with CPU lock when the screen is off")
+                    change("Include link to more detailed instructions on Status and How To pages")
                   }
                 },
         )
