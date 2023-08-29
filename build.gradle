@@ -72,7 +72,7 @@ plugins {
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id("com.diffplug.spotless") version "6.20.0" apply false
+  id("com.diffplug.spotless") version "6.21.0" apply false
 
   // KSP
   // https://github.com/google/ksp
