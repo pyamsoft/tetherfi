@@ -117,7 +117,7 @@ internal constructor(
     //              created and cancelled, which could kill performance.
   }
 
-  private suspend fun purgeOldClients(cutoffTime: LocalDateTime) {
+  private fun purgeOldClients(cutoffTime: LocalDateTime) {
     Timber.d { "Attempt to purge old clients before $cutoffTime" }
 
     // "Live" client must have activity within 2 minutes
@@ -141,13 +141,15 @@ internal constructor(
           .toSet()
     }
 
-    shutdownWithNoClients()
+    // Don't call shutdownWithNoClients here, we want to call it only on its own schedule
   }
 
   private suspend fun shutdownWithNoClients() {
-    if (seenClients.value.isEmpty()) {
-      Timber.d { "No clients are connected. Shutdown Proxy!" }
-      shutdownBus.emit(ServerShutdownEvent)
+    if (isShutdownWithNoClientsEnabled()) {
+      if (seenClients.value.isEmpty()) {
+        Timber.d { "No clients are connected. Shutdown Proxy!" }
+        shutdownBus.emit(ServerShutdownEvent)
+      }
     }
   }
 
@@ -155,8 +157,13 @@ internal constructor(
     oldClientCheck.start(scope = this) { purgeOldClients(it) }
   }
 
+  @CheckResult
+  private suspend fun isShutdownWithNoClientsEnabled(): Boolean {
+    return serverPreferences.listenForShutdownWithNoClients().first()
+  }
+
   private suspend fun CoroutineScope.watchForNoClients() {
-    if (serverPreferences.listenForShutdownWithNoClients().first()) {
+    if (isShutdownWithNoClientsEnabled()) {
       noClientCheck.start(
           scope = this,
           initialDelay = NO_CLIENTS_TIMER_PERIOD,

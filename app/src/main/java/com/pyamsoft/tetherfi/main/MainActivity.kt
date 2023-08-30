@@ -62,6 +62,8 @@ class MainActivity : AppCompatActivity() {
                     feature("Add Tweak to start the Hotspot even if a VPN is running.")
                     feature(
                         "Add Tweak to turn off the Hotspot after about 10 minutes with no clients connected.")
+                    bugfix(
+                        "Fix the Tweak to turn off the Hotspot with no clients from running at the wrong time.")
                     bugfix("Better performance with CPU lock when the screen is off")
                     change("Include link to more detailed instructions on Status and How To pages")
                   }
