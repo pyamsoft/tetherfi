@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 34
 
     // Kotlin
-    kotlin = "1.9.0"
+    kotlin = "1.9.10"
     coroutines = "1.7.3"
 
     // Us
