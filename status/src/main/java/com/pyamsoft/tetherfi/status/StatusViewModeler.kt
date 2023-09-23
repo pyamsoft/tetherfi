@@ -18,6 +18,10 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
@@ -32,7 +36,6 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +46,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -179,7 +183,7 @@ internal constructor(
     }
   }
 
-  fun loadPreferences(scope: CoroutineScope) {
+  private fun loadPreferences(scope: CoroutineScope) {
     val s = state
 
     // If we are already loading, ignore this call
@@ -333,11 +337,7 @@ internal constructor(
     }
   }
 
-  fun handleDismissBlocker(blocker: HotspotStartBlocker) {
-    state.startBlockers.update { it - blocker }
-  }
-
-  fun watchStatusUpdates(scope: CoroutineScope) {
+  private fun watchStatusUpdates(scope: CoroutineScope) {
     network.onProxyStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
@@ -357,7 +357,7 @@ internal constructor(
     }
   }
 
-  fun bind(scope: CoroutineScope) {
+  private fun watchSetupError(scope: CoroutineScope) {
     // If either of these sets an error state, we will mark the error dialog as shown
     // Need this or we run on the main thread
     resolveErrorFlow().flowOn(context = Dispatchers.Default).also { f ->
@@ -369,6 +369,31 @@ internal constructor(
         }
       }
     }
+  }
+
+  fun bind(
+      owner: LifecycleOwner,
+      onRefreshConnectionInfo: () -> Unit,
+  ) {
+    val scope = owner.lifecycleScope
+
+    watchSetupError(scope)
+    watchStatusUpdates(scope)
+    loadPreferences(scope)
+
+    scope.launch(context = Dispatchers.Main) {
+      owner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+        // Refresh system info
+        refreshSystemInfo(this)
+
+        // Refresh connection info
+        onRefreshConnectionInfo()
+      }
+    }
+  }
+
+  fun handleDismissBlocker(blocker: HotspotStartBlocker) {
+    state.startBlockers.update { it - blocker }
   }
 
   fun handleCloseSetupError() {

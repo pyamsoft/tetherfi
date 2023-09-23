@@ -25,8 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.net.toUri
-import androidx.lifecycle.Lifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
@@ -34,7 +34,6 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
-import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.Timber
@@ -92,7 +91,7 @@ private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: CoroutineScope.() -> Unit,
-    onRefreshSystemInfo: (CoroutineScope) -> Unit,
+    onRefreshSystemInfo: CoroutineScope.() -> Unit,
 ) {
   // Create requesters
   val handleToggleProxy by rememberUpdatedState(onToggleProxy)
@@ -128,16 +127,17 @@ private fun RegisterPermissionRequests(
 /** On mount hooks */
 @Composable
 private fun MountHooks(
-    scope: CoroutineScope,
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
     notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: CoroutineScope.() -> Unit,
+    onRefreshConnection: () -> Unit
 ) {
   // Wrap in lambda when calling or else bad
   val handleRefreshSystemInfo by rememberUpdatedState { s: CoroutineScope ->
     viewModel.refreshSystemInfo(scope = s)
   }
+  val handleRefreshConnectionInfo by rememberUpdatedState { onRefreshConnection() }
 
   SaveStateDisposableEffect(viewModel)
 
@@ -146,20 +146,18 @@ private fun MountHooks(
       notificationRefreshBus = notificationRefreshBus,
       permissionResponseBus = permissionResponseBus,
       onToggleProxy = onToggleProxy,
-      onRefreshSystemInfo = { handleRefreshSystemInfo(it) },
+      onRefreshSystemInfo = { handleRefreshSystemInfo(this) },
   )
 
-  LaunchedEffect(viewModel) {
-    viewModel.loadPreferences(scope = this)
-    viewModel.watchStatusUpdates(scope = this)
-    viewModel.bind(scope = this)
-    handleRefreshSystemInfo(this)
-  }
-
-  LifecycleEventEffect(
-      event = Lifecycle.Event.ON_RESUME,
+  val owner = LocalLifecycleOwner.current
+  LaunchedEffect(
+      viewModel,
+      owner,
   ) {
-    handleRefreshSystemInfo(scope)
+    viewModel.bind(
+        owner = owner,
+        onRefreshConnectionInfo = handleRefreshConnectionInfo,
+    )
   }
 }
 
@@ -191,11 +189,11 @@ fun StatusEntry(
 
   // Hooks that run on mount
   MountHooks(
-      scope = scope,
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
       onToggleProxy = { viewModel.handleToggleProxy(scope = this) },
+      onRefreshConnection = onRefreshConnection,
   )
 
   StatusScreen(
