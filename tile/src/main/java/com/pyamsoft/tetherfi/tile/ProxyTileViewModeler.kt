@@ -19,15 +19,18 @@ package com.pyamsoft.tetherfi.tile
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
 class ProxyTileViewModeler
 @Inject
@@ -36,6 +39,8 @@ internal constructor(
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,
     private val requirements: HotspotRequirements,
+    private val wiDiReceiver: WiDiReceiver,
+    private val network: WiDiNetworkStatus,
     @Named("app_scope") private val appScope: CoroutineScope,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
@@ -75,6 +80,10 @@ internal constructor(
     serviceLauncher.stopForeground()
   }
 
+  private fun handleRefreshConnectionInfo(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Default) { network.updateNetworkInfo() }
+  }
+
   fun handleDismissed() {
     state.isShowing.value = false
   }
@@ -90,6 +99,35 @@ internal constructor(
         onNetworkNotRunning = { s.status.value = RunningStatus.NotRunning },
         onNetworkRunning = { s.status.value = RunningStatus.Running },
     )
+
+    // But then once we are done editing and we start getting events from the receiver,
+    // take them instead
+    wiDiReceiver.listenNetworkEvents().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { event ->
+          when (event) {
+            is WidiNetworkEvent.ConnectionChanged -> {
+              handleRefreshConnectionInfo(this)
+            }
+            is WidiNetworkEvent.ThisDeviceChanged -> {
+              handleRefreshConnectionInfo(this)
+            }
+            is WidiNetworkEvent.PeersChanged -> {
+              handleRefreshConnectionInfo(this)
+            }
+            is WidiNetworkEvent.WifiDisabled -> {
+              handleRefreshConnectionInfo(this)
+            }
+            is WidiNetworkEvent.WifiEnabled -> {
+              handleRefreshConnectionInfo(this)
+            }
+            is WidiNetworkEvent.DiscoveryChanged -> {
+              handleRefreshConnectionInfo(this)
+            }
+          }
+        }
+      }
+    }
   }
 
   fun handleToggleProxy() {

@@ -377,8 +377,8 @@ private fun SideEffectStep(
   ) {
     // If the current status is an error
     if (status is RunningStatus.Error) {
-      // display the error message for ~2 seconds and then dismiss
-      delay(2_000)
+      // display the error message for ~5 seconds and then dismiss
+      delay(5_000)
       handleDismissed()
       return@LaunchedEffect
     }
@@ -389,8 +389,8 @@ private fun SideEffectStep(
       val isInitialStarting =
           initialStatus is RunningStatus.NotRunning || initialStatus is RunningStatus.Starting
       if (isInitialStarting && status is RunningStatus.Running) {
-        // display for ~1 second and dismiss
-        delay(1_000)
+        // display for ~2 seconds and dismiss
+        delay(2_000)
         handleDismissed()
         return@LaunchedEffect
       }
@@ -399,8 +399,8 @@ private fun SideEffectStep(
       val isInitialStopping =
           initialStatus is RunningStatus.Running || initialStatus is RunningStatus.Stopping
       if (isInitialStopping && status is RunningStatus.NotRunning) {
-        // display for ~1 second and dismiss
-        delay(1_000)
+        // display for ~2 seconds and dismiss
+        delay(2_000)
         handleDismissed()
         return@LaunchedEffect
       }
