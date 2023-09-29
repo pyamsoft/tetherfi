@@ -37,9 +37,9 @@ buildscript {
     dagger = "2.48"
 
     // Compose
-    compose = "1.5.1"
+    compose = "1.5.2"
     composeCompiler = "1.5.3"
-    composeMaterial = "1.5.1"
+    composeMaterial = "1.5.2"
     accompanist = "0.32.0"
 
     desugar = "2.0.3"
@@ -52,11 +52,11 @@ buildscript {
 plugins {
   // Android AGP
   // https://developer.android.com/studio/build#top-level
-  id("com.android.library") version "8.1.1" apply false
+  id("com.android.library") version "8.1.2" apply false
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id("org.gradle.android.cache-fix") version "2.8.0" apply false
+  id("org.gradle.android.cache-fix") version "2.8.1" apply false
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
@@ -72,7 +72,7 @@ plugins {
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id("com.diffplug.spotless") version "6.21.0" apply false
+  id("com.diffplug.spotless") version "6.22.0" apply false
 
   // KSP
   // https://github.com/google/ksp
