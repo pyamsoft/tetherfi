@@ -54,6 +54,7 @@ import dagger.Provides
 import java.time.Clock
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 @Component(
@@ -82,6 +83,7 @@ internal interface TetherFiComponent {
     @CheckResult
     fun create(
         @Named("debug") @BindsInstance debug: Boolean,
+        @Named("app_scope") @BindsInstance scope: CoroutineScope,
         @BindsInstance application: Application,
         @BindsInstance imageLoader: ImageLoader,
         @BindsInstance theming: Theming,

@@ -24,6 +24,7 @@ import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
+import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,6 +36,7 @@ internal constructor(
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,
     private val requirements: HotspotRequirements,
+    @Named("app_scope") private val appScope: CoroutineScope,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
   init {
@@ -90,8 +92,8 @@ internal constructor(
     )
   }
 
-  fun handleToggleProxy(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Default) {
+  fun handleToggleProxy() {
+    appScope.launch(context = Dispatchers.Default) {
       when (val status = handler.getNetworkStatus()) {
         is RunningStatus.NotRunning -> {
           startProxy()

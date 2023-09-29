@@ -49,12 +49,16 @@ class TetherFi : Application() {
     )
   }
 
-  private fun installComponent(moduleProvider: ModuleProvider) {
+  private fun installComponent(
+      scope: CoroutineScope,
+      moduleProvider: ModuleProvider,
+  ) {
     val mods = moduleProvider.get()
     val component =
         DaggerTetherFiComponent.factory()
             .create(
                 debug = isDebugMode(),
+                scope = scope,
                 application = this,
                 imageLoader = mods.imageLoader(),
                 theming = mods.theming(),
@@ -76,7 +80,10 @@ class TetherFi : Application() {
         inAppDebugStatus = modules.get().inAppDebugStatus(),
     )
 
-    installComponent(modules)
+    installComponent(
+        scope = scope,
+        moduleProvider = modules,
+    )
     addLibraries()
   }
 

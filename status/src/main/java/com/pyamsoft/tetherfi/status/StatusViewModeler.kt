@@ -37,6 +37,7 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import javax.inject.Inject
+import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +61,7 @@ internal constructor(
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
     private val requirements: HotspotRequirements,
+    @Named("app_scope") private val appScope: CoroutineScope,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -161,11 +163,11 @@ internal constructor(
         ?.also { state.isShowingSetupError.value = it }
   }
 
-  fun handleToggleProxy(scope: CoroutineScope) {
+  fun handleToggleProxy() {
     // Hide the password
     state.isPasswordVisible.value = false
 
-    scope.launch(context = Dispatchers.Default) {
+    appScope.launch(context = Dispatchers.Default) {
       when (val status = network.getCurrentStatus()) {
         is RunningStatus.NotRunning -> {
           startProxy()

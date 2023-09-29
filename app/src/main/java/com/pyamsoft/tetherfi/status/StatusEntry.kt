@@ -168,7 +168,7 @@ fun StatusEntry(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
       notificationRefreshBus = notificationRefreshBus,
-      onToggleProxy = { viewModel.handleToggleProxy(scope = this) },
+      onToggleProxy = { viewModel.handleToggleProxy() },
       onRefreshConnection = onRefreshConnection,
   )
 
@@ -180,7 +180,7 @@ fun StatusEntry(
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onJumpToHowTo = onJumpToHowTo,
-      onToggleProxy = { viewModel.handleToggleProxy(scope = scope) },
+      onToggleProxy = { viewModel.handleToggleProxy() },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
