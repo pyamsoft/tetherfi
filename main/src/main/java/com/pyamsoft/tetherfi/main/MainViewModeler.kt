@@ -121,22 +121,9 @@ internal constructor(
           when (event) {
             is WidiNetworkEvent.ConnectionChanged -> {
               s.connection.update { info -> info.update { it.copy(hostName = event.hostName) } }
-              handleRefreshConnectionInfo(this)
             }
-            is WidiNetworkEvent.ThisDeviceChanged -> {
-              handleRefreshConnectionInfo(this)
-            }
-            is WidiNetworkEvent.PeersChanged -> {
-              handleRefreshConnectionInfo(this)
-            }
-            is WidiNetworkEvent.WifiDisabled -> {
-              handleRefreshConnectionInfo(this)
-            }
-            is WidiNetworkEvent.WifiEnabled -> {
-              handleRefreshConnectionInfo(this)
-            }
-            is WidiNetworkEvent.DiscoveryChanged -> {
-              handleRefreshConnectionInfo(this)
+            else -> {
+              // Unhandled event
             }
           }
         }
