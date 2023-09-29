@@ -23,8 +23,6 @@ import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import com.pyamsoft.tetherfi.service.foreground.ForegroundLauncher
 import com.pyamsoft.tetherfi.service.foreground.ForegroundWatcher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -32,6 +30,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ServiceRunner
@@ -47,10 +47,6 @@ internal constructor(
 ) {
   private val runningState = MutableStateFlow(false)
 
-  private suspend fun handleRefreshConnectionInfo() {
-    networkStatus.updateNetworkInfo()
-  }
-
   private fun CoroutineScope.startProxy() {
     val scope = this
 
@@ -58,7 +54,9 @@ internal constructor(
     // without this block, we do not properly refresh
     // CONNECTION and GROUP info and can lead to errors
     wiDiReceiver.listenNetworkEvents().also { f ->
-      scope.launch(context = Dispatchers.Default) { f.collect { handleRefreshConnectionInfo() } }
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { networkStatus.updateNetworkInfo() }
+      }
     }
 
     // Start notification first for Android O immediately

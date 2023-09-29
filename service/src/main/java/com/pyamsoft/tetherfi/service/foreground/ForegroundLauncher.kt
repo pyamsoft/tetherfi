@@ -20,12 +20,12 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ForegroundLauncher
@@ -53,8 +53,7 @@ internal constructor(
           // completed/cancelled
           //
           // This will suspend until network.start() completes, which is suspended until the proxy
-          // server
-          // loop dies
+          // server loop dies
           coroutineScope { network.start() }
         } finally {
           shutdown()
