@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.status
 
-import android.content.Intent
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
@@ -26,26 +25,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.core.net.toUri
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
-import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
-import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -66,22 +61,6 @@ internal class StatusInjector : ComposableInjector() {
     notificationRefreshBus = null
     permissionRequestBus = null
     permissionResponseBus = null
-  }
-}
-
-private fun safeOpenSettingsIntent(
-    activity: ComponentActivity,
-    action: String,
-) {
-
-  // Try specific first, may fail on some devices
-  try {
-    val intent = Intent(action, "package:${activity.packageName}".toUri())
-    activity.startActivity(intent)
-  } catch (e: Throwable) {
-    Timber.e(e) { "Failed specific intent for $action" }
-    val intent = Intent(action)
-    activity.startActivity(intent)
   }
 }
 
@@ -166,9 +145,15 @@ fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
     serverViewState: ServerViewState,
+
+    // Actions
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
     onJumpToHowTo: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+
+    // Tile
+    onUpdateTile: (RunningStatus) -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -176,16 +161,7 @@ fun StatusEntry(
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
   val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
-  val activity = LocalActivity.current
-
-  val handleTileUpdate by rememberUpdatedState {
-    ProxyTileService.updateTile(activity.requireNotNull())
-  }
-
   val scope = rememberCoroutineScope()
-  val handleOpenIntent by rememberUpdatedState { action: String ->
-    safeOpenSettingsIntent(activity.requireNotNull(), action)
-  }
 
   // Hooks that run on mount
   MountHooks(
@@ -209,7 +185,7 @@ fun StatusEntry(
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
       onOpenBatterySettings = {
-        handleOpenIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        onLaunchIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
       onDismissBlocker = { viewModel.handleDismissBlocker(it) },
       onRequestPermissions = {
@@ -219,7 +195,7 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Server)
         }
       },
-      onOpenPermissionSettings = { handleOpenIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
+      onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
       onToggleKeepWakeLock = { viewModel.handleToggleProxyWakelock() },
       onToggleKeepWifiLock = { viewModel.handleToggleProxyWifilock() },
       onSelectBand = { viewModel.handleChangeBand(it) },
@@ -229,7 +205,7 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Notification)
         }
       },
-      onStatusUpdated = { handleTileUpdate() },
+      onStatusUpdated = onUpdateTile,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
       onShowNetworkError = { viewModel.handleOpenNetworkError() },
       onHideNetworkError = { viewModel.handleCloseNetworkError() },

@@ -62,6 +62,8 @@ class ProxyTileActivity : AppCompatActivity() {
         ProxyTileEntry(
             modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
+            onComplete = { finishAndRemoveTask() },
+            onUpdateTile = { ProxyTileService.updateTile(this) },
         )
       }
     }

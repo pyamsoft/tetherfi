@@ -26,6 +26,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import com.pyamsoft.tetherfi.connections.ConnectionEntry
 import com.pyamsoft.tetherfi.info.InfoEntry
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.StatusEntry
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
@@ -38,12 +39,14 @@ fun MainContent(
     state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,
 
-    // Running Status
+    // Actions
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
-
-    // Jump Links
     onJumpToHowTo: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+
+    // Tile
+    onUpdateTile: (RunningStatus) -> Unit,
 ) {
   HorizontalPager(
       modifier = modifier,
@@ -74,6 +77,8 @@ fun MainContent(
             onShowQRCode = onShowQRCode,
             onRefreshConnection = onRefreshConnection,
             onJumpToHowTo = onJumpToHowTo,
+            onUpdateTile = onUpdateTile,
+            onLaunchIntent = onLaunchIntent,
         )
       }
       MainView.CONNECTIONS -> {

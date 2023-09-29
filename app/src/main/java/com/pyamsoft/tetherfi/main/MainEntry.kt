@@ -42,15 +42,16 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
@@ -129,7 +130,13 @@ private fun MountHooks(
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,
+
+    // Action
     onShowInAppRating: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+
+    // Tile
+    onUpdateTile: (RunningStatus) -> Unit,
 ) {
   val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
 
@@ -172,6 +179,8 @@ fun MainEntry(
       onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
       onJumpToHowTo = { handleTabSelected(MainView.INFO) },
+      onUpdateTile = onUpdateTile,
+      onLaunchIntent = onLaunchIntent,
   )
 
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()

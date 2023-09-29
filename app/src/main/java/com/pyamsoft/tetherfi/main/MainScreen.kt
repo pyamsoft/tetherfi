@@ -26,6 +26,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
@@ -41,12 +42,14 @@ fun MainScreen(
     onTabChanged: (MainView) -> Unit,
     onSettingsOpen: () -> Unit,
 
-    // Running status
+    // Actions
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
-
-    // Jump Links
     onJumpToHowTo: () -> Unit,
+    onLaunchIntent: (String) -> Unit,
+
+    // Tile
+    onUpdateTile: (RunningStatus) -> Unit,
 ) {
   Scaffold(
       modifier = modifier.fillMaxSize(),
@@ -70,6 +73,8 @@ fun MainScreen(
           onShowQRCode = onShowQRCode,
           onRefreshConnection = onRefreshConnection,
           onJumpToHowTo = onJumpToHowTo,
+          onUpdateTile = onUpdateTile,
+          onLaunchIntent = onLaunchIntent,
       )
     }
   }

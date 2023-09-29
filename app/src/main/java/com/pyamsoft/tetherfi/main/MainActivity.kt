@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -37,7 +38,9 @@ import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.ServiceLauncher
+import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
@@ -95,6 +98,19 @@ class MainActivity : AppCompatActivity() {
     stableLayoutHideNavigation()
   }
 
+  private fun safeOpenSettingsIntent(action: String) {
+
+    // Try specific first, may fail on some devices
+    try {
+      val intent = Intent(action, "package:${packageName}".toUri())
+      startActivity(intent)
+    } catch (e: Throwable) {
+      Timber.e(e) { "Failed specific intent for $action" }
+      val intent = Intent(action)
+      startActivity(intent)
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setupActivity()
@@ -119,6 +135,8 @@ class MainActivity : AppCompatActivity() {
             modifier = Modifier.fillMaxSize(),
             appName = appName,
             onShowInAppRating = { handleShowInAppRating() },
+            onUpdateTile = { ProxyTileService.updateTile(this) },
+            onLaunchIntent = { safeOpenSettingsIntent(it) },
         )
       }
     }
