@@ -61,14 +61,11 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Add Tweaks section to modify the default behavior of the hotspot.")
-                    feature("Add Tweak to start the Hotspot even if a VPN is running.")
-                    feature(
-                        "Add Tweak to turn off the Hotspot after about 10 minutes with no clients connected.")
+                    bugfix("Fix Tile action not fully starting the Hotspot")
+                    bugfix("Fix needing the App UI to be open to correctly launch a Hotspot")
+                    bugfix("Fix hotspot 'dying' too early when the screen is closed")
                     bugfix(
-                        "Fix the Tweak to turn off the Hotspot with no clients from running at the wrong time.")
-                    bugfix("Better performance with CPU lock when the screen is off")
-                    change("Include link to more detailed instructions on Status and How To pages")
+                        "Fix hotspot not capturing updated network information when a change occurs")
                   }
                 },
         )
