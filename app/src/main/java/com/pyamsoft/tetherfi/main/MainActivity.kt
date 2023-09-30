@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                     bugfix("Fix hotspot 'dying' too early when the screen is closed")
                     bugfix(
                         "Fix hotspot not capturing updated network information when a change occurs")
+                    change("Tip Jar popup is less frequent")
                   }
                 },
         )
