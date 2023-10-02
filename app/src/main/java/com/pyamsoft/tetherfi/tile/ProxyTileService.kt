@@ -60,7 +60,13 @@ internal class ProxyTileService internal constructor() : TileService() {
       block(tile)
 
       // Make sure we call this or nothing actually happens
-      tile.updateTile()
+      try {
+        tile.updateTile()
+      } catch (e: Throwable) {
+        // Sometimes this just crashes because of an NPE
+        // fun I know.
+        Timber.e(e) { "Unable to update tile :(" }
+      }
     } else {
       Timber.w { "Cannot update tile, no QS Tile, try requesting LS update" }
       updateTile(application)
