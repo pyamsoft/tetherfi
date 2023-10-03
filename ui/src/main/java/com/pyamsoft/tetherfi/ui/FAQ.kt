@@ -43,6 +43,7 @@ fun LazyListScope.renderLinks(
         remember(
             textColor,
             linkColor,
+            appName,
         ) {
           buildAnnotatedString {
             withStyle(
