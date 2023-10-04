@@ -18,11 +18,8 @@ package com.pyamsoft.tetherfi.status
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.saveable.SaveableStateRegistry
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.core.Timber
@@ -34,10 +31,9 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -48,11 +44,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
 class StatusViewModeler
 @Inject
 internal constructor(
     override val state: MutableStatusViewState,
+    private val notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     private val enforcer: ThreadEnforcer,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
@@ -327,18 +326,6 @@ internal constructor(
     }
   }
 
-  fun refreshSystemInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Default) {
-      val s = state
-
-      // Battery optimization
-      s.isBatteryOptimizationsIgnored.value = batteryOptimizer.isOptimizationsIgnored()
-
-      // Notifications
-      s.hasNotificationPermission.value = notifyGuard.canPostNotification()
-    }
-  }
-
   private fun watchStatusUpdates(scope: CoroutineScope) {
     network.onProxyStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
@@ -374,23 +361,38 @@ internal constructor(
   }
 
   fun bind(
-      owner: LifecycleOwner,
-      onRefreshConnectionInfo: () -> Unit,
+      scope: CoroutineScope,
   ) {
-    val scope = owner.lifecycleScope
-
     watchSetupError(scope)
     watchStatusUpdates(scope)
     loadPreferences(scope)
+  }
 
+  fun bindLifecycleResumed(
+      scope: CoroutineScope,
+      onRefreshConnectionInfo: () -> Unit,
+  ) {
     scope.launch(context = Dispatchers.Main) {
-      owner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-        // Refresh system info
-        refreshSystemInfo(this)
+      // Refresh system info
+      handleRefreshSystemInfo(this)
 
-        // Refresh connection info
-        onRefreshConnectionInfo()
-      }
+      // Refresh connection info
+      onRefreshConnectionInfo()
+    }
+  }
+
+  fun handleRefreshSystemInfo(scope: CoroutineScope) {
+    scope.launch(context = Dispatchers.Default) {
+      val s = state
+
+      // Battery optimization
+      s.isBatteryOptimizationsIgnored.value = batteryOptimizer.isOptimizationsIgnored()
+
+      // Notifications
+      s.hasNotificationPermission.value = notifyGuard.canPostNotification()
+
+      // Tell the service to refresh
+      notificationRefreshBus.emit(NotificationRefreshEvent)
     }
   }
 

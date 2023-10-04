@@ -24,29 +24,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
+import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: StatusViewModeler? = null
-
-  @JvmField @Inject internal var notificationRefreshBus: EventBus<NotificationRefreshEvent>? = null
 
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
 
@@ -58,7 +56,6 @@ internal class StatusInjector : ComposableInjector() {
 
   override fun onDispose() {
     viewModel = null
-    notificationRefreshBus = null
     permissionRequestBus = null
     permissionResponseBus = null
   }
@@ -68,7 +65,6 @@ internal class StatusInjector : ComposableInjector() {
 @Composable
 private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
-    notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: CoroutineScope.() -> Unit,
     onRefreshSystemInfo: CoroutineScope.() -> Unit,
 ) {
@@ -78,7 +74,6 @@ private fun RegisterPermissionRequests(
 
   LaunchedEffect(
       permissionResponseBus,
-      notificationRefreshBus,
   ) {
 
     // See MainActivity
@@ -87,9 +82,6 @@ private fun RegisterPermissionRequests(
         f.collect { resp ->
           when (resp) {
             is PermissionResponse.RefreshNotification -> {
-              // Tell the service to refresh
-              notificationRefreshBus.emit(NotificationRefreshEvent)
-
               // Call to the VM to refresh info
               handleRefreshSystemInfo(this)
             }
@@ -108,35 +100,42 @@ private fun RegisterPermissionRequests(
 private fun MountHooks(
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
-    notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     onToggleProxy: CoroutineScope.() -> Unit,
     onRefreshConnection: () -> Unit
 ) {
-  // Wrap in lambda when calling or else bad
-  val handleRefreshSystemInfo by rememberUpdatedState { s: CoroutineScope ->
-    viewModel.refreshSystemInfo(scope = s)
-  }
-  val handleRefreshConnectionInfo by rememberUpdatedState { onRefreshConnection() }
+  val scope = rememberCoroutineScope()
 
-  SaveStateDisposableEffect(viewModel)
+  val handleRefreshSystemInfo by rememberUpdatedState { s: CoroutineScope ->
+    viewModel.handleRefreshSystemInfo(scope = s)
+  }
+
+  val handleRefreshConnectionInfo by rememberUpdatedState { onRefreshConnection() }
+  val bindLifecycleResumed by rememberUpdatedState {
+    viewModel.bindLifecycleResumed(
+        scope = scope,
+        onRefreshConnectionInfo = { handleRefreshConnectionInfo() },
+    )
+  }
 
   // As early as possible because of Lifecycle quirks
   RegisterPermissionRequests(
-      notificationRefreshBus = notificationRefreshBus,
       permissionResponseBus = permissionResponseBus,
       onToggleProxy = onToggleProxy,
       onRefreshSystemInfo = { handleRefreshSystemInfo(this) },
   )
 
-  val owner = LocalLifecycleOwner.current
+  SaveStateDisposableEffect(viewModel)
+
   LaunchedEffect(
       viewModel,
-      owner,
   ) {
-    viewModel.bind(
-        owner = owner,
-        onRefreshConnectionInfo = handleRefreshConnectionInfo,
-    )
+    viewModel.bind(scope = this)
+  }
+
+  LifecycleEventEffect(
+      event = Lifecycle.Event.ON_RESUME,
+  ) {
+    bindLifecycleResumed()
   }
 }
 
@@ -159,7 +158,6 @@ fun StatusEntry(
   val viewModel = rememberNotNull(component.viewModel)
   val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
-  val notificationRefreshBus = rememberNotNull(component.notificationRefreshBus)
 
   val scope = rememberCoroutineScope()
 
@@ -167,7 +165,6 @@ fun StatusEntry(
   MountHooks(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
-      notificationRefreshBus = notificationRefreshBus,
       onToggleProxy = { viewModel.handleToggleProxy() },
       onRefreshConnection = onRefreshConnection,
   )
