@@ -127,6 +127,11 @@ fun StatusScreen(
           return@remember RunningStatus.Starting
         }
 
+        // If the wifi direct broadcast is up, but the proxy is not up yet, mark starting
+        if (wiDiStatus is RunningStatus.Running && proxyStatus !is RunningStatus.Running) {
+          return@remember RunningStatus.Starting
+        }
+
         // If either is stopping, mark us stopping
         if (wiDiStatus is RunningStatus.Stopping || proxyStatus is RunningStatus.Stopping) {
           return@remember RunningStatus.Stopping
