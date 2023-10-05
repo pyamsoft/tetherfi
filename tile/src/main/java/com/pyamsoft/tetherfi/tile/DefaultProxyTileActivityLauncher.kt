@@ -48,7 +48,7 @@ internal constructor(
     launchMethod.launchTileActivity()
   }
 
-  internal sealed interface LaunchMethod {
+  internal interface LaunchMethod {
 
     /** Open the tile activity */
     fun launchTileActivity()

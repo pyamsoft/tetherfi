@@ -23,15 +23,15 @@ import androidx.compose.runtime.Stable
 @Immutable
 sealed interface WidiNetworkEvent {
 
-  object WifiEnabled : WidiNetworkEvent
+  data object WifiEnabled : WidiNetworkEvent
 
-  object WifiDisabled : WidiNetworkEvent
+  data object WifiDisabled : WidiNetworkEvent
 
-  object PeersChanged : WidiNetworkEvent
+  data object PeersChanged : WidiNetworkEvent
 
-  object ThisDeviceChanged : WidiNetworkEvent
+  data object ThisDeviceChanged : WidiNetworkEvent
 
-  object DiscoveryChanged : WidiNetworkEvent
+  data object DiscoveryChanged : WidiNetworkEvent
 
   data class ConnectionChanged
   internal constructor(

@@ -23,16 +23,16 @@ import androidx.compose.runtime.Stable
 @Immutable
 sealed interface PermissionRequests {
 
-  object Server : PermissionRequests
+  data object Server : PermissionRequests
 
-  object Notification : PermissionRequests
+  data object Notification : PermissionRequests
 }
 
 @Stable
 @Immutable
 sealed interface PermissionResponse {
 
-  object ToggleProxy : PermissionResponse
+  data object ToggleProxy : PermissionResponse
 
-  object RefreshNotification : PermissionResponse
+  data object RefreshNotification : PermissionResponse
 }

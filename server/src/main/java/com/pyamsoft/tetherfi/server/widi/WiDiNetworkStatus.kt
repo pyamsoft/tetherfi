@@ -37,7 +37,7 @@ interface WiDiNetworkStatus : Server {
   @Immutable
   sealed interface GroupInfo {
 
-    object Unchanged : GroupInfo
+    data object Unchanged : GroupInfo
 
     data class Connected
     internal constructor(
@@ -45,7 +45,7 @@ interface WiDiNetworkStatus : Server {
         val password: String,
     ) : GroupInfo
 
-    object Empty : GroupInfo
+    data object Empty : GroupInfo
 
     data class Error
     internal constructor(
@@ -66,14 +66,14 @@ interface WiDiNetworkStatus : Server {
   @Stable
   @Immutable
   sealed interface ConnectionInfo {
-    object Unchanged : ConnectionInfo
+    data object Unchanged : ConnectionInfo
 
     data class Connected
     internal constructor(
         val hostName: String,
     ) : ConnectionInfo
 
-    object Empty : ConnectionInfo
+    data object Empty : ConnectionInfo
 
     data class Error
     internal constructor(

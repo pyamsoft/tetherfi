@@ -23,11 +23,11 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
 class ProxyTileViewModeler
 @Inject
@@ -55,12 +55,13 @@ internal constructor(
       if (blockers.contains(HotspotStartBlocker.PERMISSION)) {
         Timber.w { "Cannot launch Proxy until Permissions are granted" }
         state.status.value =
-            RunningStatus.Error("Missing required permission, cannot start Hotspot")
+            RunningStatus.HotspotError("Missing required permission, cannot start Hotspot")
       }
 
       if (blockers.contains(HotspotStartBlocker.VPN)) {
         Timber.w { "Cannot launch Proxy until VPN is off" }
-        state.status.value = RunningStatus.Error("Cannot start Hotspot while VPN is connected")
+        state.status.value =
+            RunningStatus.HotspotError("Cannot start Hotspot while VPN is connected")
       }
 
       return

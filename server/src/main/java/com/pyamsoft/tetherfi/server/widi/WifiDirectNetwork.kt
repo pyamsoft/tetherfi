@@ -38,11 +38,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import java.time.LocalDateTime
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +49,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -141,9 +141,10 @@ protected constructor(
             }
 
             override fun onFailure(reason: Int) {
-              val msg = "Failed to create network: ${reasonToString(reason)}"
+              val r = RunningStatus.WiFiDirectError.Reason.parseReason(reason)
+              val msg = "Broadcast Error: ${r.displayReason}"
               Timber.w { msg }
-              cont.resume(RunningStatus.Error(msg))
+              cont.resume(RunningStatus.WiFiDirectError(r, msg))
             }
           }
 
@@ -173,7 +174,8 @@ protected constructor(
             }
 
             override fun onFailure(reason: Int) {
-              Timber.w { "Failed to stop network: ${reasonToString(reason)}" }
+              val r = RunningStatus.WiFiDirectError.Reason.parseReason(reason)
+              Timber.w { "Failed to stop network: ${r.displayReason}" }
 
               Timber.d { "Close Group failed but continue teardown anyway" }
               cont.resume(Unit)
@@ -250,7 +252,7 @@ protected constructor(
 
             completeStop(this, clearErrorStatus = false) {
               shutdownForStatus(
-                  RunningStatus.Error("Failed to create Wi-Fi Direct Channel"),
+                  RunningStatus.HotspotError("Failed to create Wi-Fi Direct Channel"),
                   clearErrorStatus = false,
               )
             }
@@ -612,7 +614,7 @@ protected constructor(
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }
             val msg = e.message ?: "An error occurred while starting the Network"
-            shutdownForStatus(RunningStatus.Error(msg), clearErrorStatus = false)
+            shutdownForStatus(RunningStatus.HotspotError(msg), clearErrorStatus = false)
           }
         } finally {
           withContext(context = NonCancellable) {
@@ -639,18 +641,6 @@ protected constructor(
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
   companion object {
-
-    @JvmStatic
-    @CheckResult
-    private fun reasonToString(reason: Int): String {
-      return when (reason) {
-        WifiP2pManager.P2P_UNSUPPORTED -> "P2P Unsupported"
-        WifiP2pManager.NO_SERVICE_REQUESTS -> "No Service Requests"
-        WifiP2pManager.ERROR -> "Error"
-        WifiP2pManager.BUSY -> "Busy"
-        else -> "Unknown"
-      }
-    }
 
     @JvmStatic
     private fun closeSilent(s: Channel) {

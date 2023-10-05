@@ -55,7 +55,7 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
-private val HOTSPOT_ERROR_STATUS = RunningStatus.Error("Unable to start Hotspot")
+private val staticHotspotError = RunningStatus.HotspotError("Unable to start Hotspot")
 
 @Composable
 fun StatusScreen(
@@ -119,7 +119,7 @@ fun StatusScreen(
           proxyStatus,
       ) {
         if (wiDiStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
-          return@remember HOTSPOT_ERROR_STATUS
+            return@remember staticHotspotError
         }
 
         // If either is starting, mark us starting
