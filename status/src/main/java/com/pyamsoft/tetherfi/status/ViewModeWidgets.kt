@@ -58,8 +58,13 @@ internal fun ViewProxy(
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
   val ipAddress = rememberServerHostname(connection)
 
-  val port by serverViewState.port.collectAsStateWithLifecycle()
-  val portNumber = remember(port) { if (port <= 1024) "INVALID PORT" else "$port" }
+  val portNumber by serverViewState.port.collectAsStateWithLifecycle()
+  val port =
+      remember(
+          portNumber,
+      ) {
+        if (portNumber in 1024..65000) "$portNumber" else "INVALID PORT"
+      }
 
   Row(
       modifier = modifier,
@@ -82,7 +87,7 @@ internal fun ViewProxy(
 
     StatusItem(
         title = "PROXY PORT",
-        value = portNumber,
+        value = port,
         valueStyle =
             MaterialTheme.typography.h6.copy(
                 fontWeight = FontWeight.W400,

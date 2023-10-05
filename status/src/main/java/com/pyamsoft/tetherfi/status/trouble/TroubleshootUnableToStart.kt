@@ -103,7 +103,7 @@ internal fun TroubleshootUnableToStart(
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot port number must be between 1028 and 60000",
+          text = "• The Hotspot port number must be between 1025 and 65000",
           style = MaterialTheme.typography.body1,
       )
     }

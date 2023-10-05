@@ -52,13 +52,13 @@ internal fun EditPort(
     onPortChanged: (String) -> Unit,
 ) {
   val port by state.port.collectAsStateWithLifecycle()
-  val portNumber = remember(port) { "$port" }
-  val isValid = remember(port) { port in 1025..64000 }
+  val portNumber = remember(port) { port.toIntOrNull() }
+  val isValid = remember(portNumber) { portNumber != null && portNumber in 1025..65000 }
 
   StatusEditor(
       modifier = modifier,
       title = "PROXY PORT",
-      value = portNumber,
+      value = port,
       onChange = onPortChanged,
       keyboardOptions =
           KeyboardOptions(

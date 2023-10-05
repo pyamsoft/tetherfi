@@ -122,10 +122,9 @@ internal constructor(
     serviceLauncher.stopForeground()
   }
 
-  private suspend fun resetErrorAndRestart() {
+  private fun resetError() {
     Timber.d { "Resetting Proxy from Error state" }
     serviceLauncher.resetError()
-    startProxy()
   }
 
   override fun registerSaveState(
@@ -167,18 +166,24 @@ internal constructor(
     state.isPasswordVisible.value = false
 
     appScope.launch(context = Dispatchers.Default) {
-      when (val status = network.getCurrentStatus()) {
-        is RunningStatus.NotRunning -> {
-          startProxy()
-        }
-        is RunningStatus.Running -> {
-          stopProxy()
-        }
-        is RunningStatus.Error -> {
-          resetErrorAndRestart()
-        }
-        else -> {
-          Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
+      val networkStatus = network.getCurrentStatus()
+      val proxyStatus = network.getCurrentProxyStatus()
+
+      if (networkStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
+        // If either is in error, reset network and restart
+        resetError()
+      } else {
+        // Otherwise just go by Wifi direct
+        when (networkStatus) {
+          is RunningStatus.NotRunning -> {
+            startProxy()
+          }
+          is RunningStatus.Running -> {
+            stopProxy()
+          }
+          else -> {
+            Timber.d { "Cannot toggle while we are in the middle of an operation: $networkStatus" }
+          }
         }
       }
     }
@@ -271,7 +276,8 @@ internal constructor(
     // Only pull once since after this point, the state will be driven by the input
     serverPreferences.listenForPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
-        s.port.value = f.first()
+        val p = f.first()
+        s.port.value = if (p == 0) "" else "$p"
 
         config.port = true
         markPreferencesLoaded(config)
@@ -415,11 +421,10 @@ internal constructor(
   }
 
   fun handlePortChanged(port: String) {
+    state.port.value = port
+
     val portValue = port.toIntOrNull()
-    if (portValue != null) {
-      state.port.value = portValue
-      serverPreferences.setPort(portValue)
-    }
+    serverPreferences.setPort(portValue ?: 0)
   }
 
   fun handleToggleProxyWakelock() {

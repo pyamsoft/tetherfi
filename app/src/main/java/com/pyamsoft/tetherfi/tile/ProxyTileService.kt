@@ -28,12 +28,12 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -81,7 +81,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       is RunningStatus.Error -> {
         state = Tile.STATE_INACTIVE
         title = "ERROR"
-        description = "Unable to start Hotspot. Click to View Error"
+        description = status.message
       }
       is RunningStatus.NotRunning -> {
         state = Tile.STATE_INACTIVE
@@ -167,7 +167,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onStartListening() {
     withHandler { handler ->
-      when (val status = handler.getNetworkStatus()) {
+      when (val status = handler.getOverallStatus()) {
         is RunningStatus.Error -> handleNetworkErrorState(status)
         is RunningStatus.NotRunning -> handleNetworkNotRunningState()
         is RunningStatus.Running -> handleNetworkRunningState()

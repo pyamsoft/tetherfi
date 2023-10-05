@@ -21,10 +21,10 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class TileHandler
 @Inject
@@ -81,8 +81,20 @@ internal constructor(
   }
 
   @CheckResult
-  fun getNetworkStatus(): RunningStatus {
-    return network.getCurrentStatus()
+  fun getOverallStatus(): RunningStatus {
+    val networkStatus = network.getCurrentStatus()
+    val proxyStatus = network.getCurrentProxyStatus()
+
+    // If either piece has a specific error state, return it
+    if (networkStatus is RunningStatus.Error) {
+      return networkStatus
+    }
+    if (proxyStatus is RunningStatus.Error) {
+      return proxyStatus
+    }
+
+    // Otherwise we only care about Wifi direct
+    return networkStatus
   }
 
   fun bind(

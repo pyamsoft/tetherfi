@@ -31,6 +31,8 @@ interface WiDiNetworkStatus : Server {
 
   @CheckResult fun onConnectionInfoChanged(): Flow<ConnectionInfo>
 
+  @CheckResult fun getCurrentProxyStatus(): RunningStatus
+
   @CheckResult fun onProxyStatusChanged(): Flow<RunningStatus>
 
   @Stable

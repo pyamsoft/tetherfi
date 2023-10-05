@@ -41,7 +41,7 @@ internal constructor(
 
   init {
     // Sync up the network state on init so that we can immediately capture it in the View
-    state.status.value = handler.getNetworkStatus()
+    state.status.value = handler.getOverallStatus()
   }
 
   private suspend fun startProxy() {
@@ -95,7 +95,7 @@ internal constructor(
 
   fun handleToggleProxy() {
     appScope.launch(context = Dispatchers.Default) {
-      when (val status = handler.getNetworkStatus()) {
+      when (val status = handler.getOverallStatus()) {
         is RunningStatus.NotRunning -> {
           startProxy()
         }

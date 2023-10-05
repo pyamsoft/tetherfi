@@ -23,4 +23,4 @@ import javax.inject.Singleton
 
 @Singleton
 @ServerInternalApi
-internal class WiDiStatus @Inject internal constructor() : BaseStatusBroadcaster()
+class WiDiStatus @Inject internal constructor() : BaseStatusBroadcaster()

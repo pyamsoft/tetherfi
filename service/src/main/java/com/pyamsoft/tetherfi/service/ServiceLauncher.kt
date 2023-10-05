@@ -20,6 +20,9 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.proxy.ProxyStatus
+import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.widi.WiDiStatus
 import javax.inject.Inject
 
 class ServiceLauncher
@@ -27,6 +30,8 @@ class ServiceLauncher
 internal constructor(
     private val context: Context,
     private val foregroundServiceClass: Class<out Service>,
+    private val wiDiStatus: WiDiStatus,
+    private val proxyStatus: ProxyStatus,
 ) {
 
   private val foregroundService by
@@ -47,5 +52,10 @@ internal constructor(
   /** If the hotspot is in error state, we reset it so that it can start again */
   fun resetError() {
     stopForeground()
+
+    // Reset status after shutdown
+    Timber.d { "Resetting network Status" }
+    wiDiStatus.set(RunningStatus.NotRunning, clearError = true)
+    proxyStatus.set(RunningStatus.NotRunning, clearError = true)
   }
 }

@@ -23,4 +23,4 @@ import javax.inject.Singleton
 
 @Singleton
 @ServerInternalApi
-internal class ProxyStatus @Inject internal constructor() : BaseStatusBroadcaster()
+class ProxyStatus @Inject internal constructor() : BaseStatusBroadcaster()

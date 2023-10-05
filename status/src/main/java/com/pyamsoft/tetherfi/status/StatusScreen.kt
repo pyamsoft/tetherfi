@@ -119,7 +119,7 @@ fun StatusScreen(
           proxyStatus,
       ) {
         if (wiDiStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
-            return@remember staticHotspotError
+          return@remember staticHotspotError
         }
 
         // If either is starting, mark us starting
@@ -339,7 +339,7 @@ private fun PreviewStatusScreen(
                 else StatusViewState.LoadingState.DONE
             this.ssid.value = ssid
             this.password.value = password
-            this.port.value = port
+            this.port.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
       serverViewState = TestServerViewState(),
