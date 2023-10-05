@@ -57,8 +57,14 @@ internal abstract class BaseProxyManager<S : ASocket> protected constructor() : 
     ): SocketAddress {
       // Port must be in the valid range
       if (verifyPort) {
-        if (port > 65000 || port <= 1024) {
-          val err = "Port is invalid: $port"
+        if (port > 65000) {
+          val err = "Port must be <65000: $port"
+          Timber.w { err }
+          throw IllegalArgumentException(err)
+        }
+
+        if (port <= 1024) {
+          val err = "Port must be >1024: $port"
           Timber.w { err }
           throw IllegalArgumentException(err)
         }
