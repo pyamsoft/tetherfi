@@ -145,12 +145,11 @@ internal constructor(
       withContext(context = NonCancellable) {
         enforcer.assertOffMainThread()
 
-        Timber.d { "Proxy Server is Done!" }
-
         // Update status if we were running
         if (status.get() is RunningStatus.Running) {
           status.set(RunningStatus.Stopping)
         }
+
         reset()
         status.set(RunningStatus.NotRunning)
       }
@@ -191,19 +190,28 @@ internal constructor(
 
         watchServerReadyStatus()
 
-        // Start the proxy server loop
-        launch(context = Dispatchers.Default) { proxyLoop(info) }
-
         // Notify the client connection watcher that we have started
         launch(context = Dispatchers.Default) { startedClients.started() }
+
+        // Start the proxy server loop
+        launch(context = Dispatchers.Default) { proxyLoop(info) }
       }
     } finally {
       Timber.d { "Stopped Proxy Server" }
     }
   }
 
+  private suspend fun Job.stopProxyLoop() {
+    status.set(RunningStatus.Stopping)
+    cancelAndJoin()
+  }
+
   override suspend fun start(connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>) =
       withContext(context = Dispatchers.Default) {
+        // Scope local
+        val mutex = Mutex()
+        var job: Job? = null
+
         // Watch the connection status
         try {
           // Launch a new scope so this function won't proceed to finally block until the scope is
@@ -211,9 +219,6 @@ internal constructor(
           //
           // This will suspend until the proxy server loop dies
           coroutineScope {
-            // Scope local
-            val mutex = Mutex()
-            var job: Job? = null
 
             // Watch the connection status for valid info
             connectionStatus.distinctUntilChanged().collect { info ->
@@ -222,7 +227,8 @@ internal constructor(
                   // Connected is good, we can launch
                   // This will re-launch any time the connection info changes
                   mutex.withLock {
-                    job?.cancelAndJoin()
+                    job?.stopProxyLoop()
+                    job = null
 
                     reset()
 
@@ -235,26 +241,29 @@ internal constructor(
 
                   // Empty is missing the channel, bad
                   mutex.withLock {
-                    job?.cancelAndJoin()
-                    shutdown()
+                    job?.stopProxyLoop()
+                    job = null
                   }
+                  shutdown()
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Error -> {
                   Timber.w { "Connection ERROR, shut down Proxy" }
 
                   // Error is bad, shut down the proxy
                   mutex.withLock {
-                    job?.cancelAndJoin()
-                    shutdown()
+                    job?.stopProxyLoop()
+                    job = null
                   }
+                  shutdown()
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
                   // This should not happen - coding issue
                   mutex.withLock {
-                    job?.cancelAndJoin()
-                    shutdown()
+                    job?.stopProxyLoop()
+                    job = null
                   }
+                  shutdown()
                   throw AssertionError(
                       "GroupInfo.Unchanged should never escape the server-module internals.",
                   )
@@ -263,7 +272,17 @@ internal constructor(
             }
           }
         } finally {
-          shutdown()
+          withContext(context = NonCancellable) {
+            Timber.d { "Shutting down proxy..." }
+            mutex.withLock {
+              job?.stopProxyLoop()
+              job = null
+            }
+
+            shutdown()
+
+            Timber.d { "Proxy Server is Done!" }
+          }
         }
       }
 

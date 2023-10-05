@@ -47,6 +47,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -273,13 +274,13 @@ protected constructor(
 
             launchProxy = runningStatus
           } else {
-            Timber.w { "Group failed creation, stop proxy" }
+            Timber.w { "Group failed creation, stop network" }
 
             // Remove whatever was created (should be a no-op if everyone follows API correctly)
             shutdownWifiNetwork(channel)
 
             completeStop(this, clearErrorStatus = false) {
-              Timber.w { "Stopping proxy after Group failed to create" }
+              Timber.w { "Stopping network after Group failed to create" }
               shutdownForStatus(
                   runningStatus,
                   clearErrorStatus = false,
@@ -336,10 +337,10 @@ protected constructor(
     wifiChannel = null
   }
 
-  private fun killProxyJob() {
+  private suspend fun killProxyJob() {
     proxyJob?.also { p ->
-      Timber.d { "Stop proxy job" }
-      p.cancel()
+      p.cancelAndJoin()
+      Timber.d { "Stopped proxy job" }
     }
     proxyJob = null
   }
@@ -371,8 +372,8 @@ protected constructor(
           shutdownWifiNetwork(channel)
 
           completeStop(this, clearErrorStatus) {
-            Timber.d { "Proxy was stopped" }
             shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
+            Timber.d { "Network was stopped" }
           }
         }
       }
@@ -595,7 +596,7 @@ protected constructor(
         enforcer.assertOffMainThread()
 
         if (status.get() is RunningStatus.Error) {
-          Timber.w { "Reset proxy from error state" }
+          Timber.w { "Reset network from error state" }
           withLockStopNetwork(clearErrorStatus = true)
         }
 
