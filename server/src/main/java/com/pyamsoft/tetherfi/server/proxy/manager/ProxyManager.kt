@@ -22,7 +22,9 @@ import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 
 internal interface ProxyManager {
 
-  suspend fun loop()
+  suspend fun loop(
+      onOpened: () -> Unit,
+  )
 
   interface Factory {
 

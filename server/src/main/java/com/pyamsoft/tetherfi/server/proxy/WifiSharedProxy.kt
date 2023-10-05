@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
@@ -35,7 +36,11 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -54,6 +59,32 @@ internal constructor(
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
+
+  private val overallState =
+      MutableStateFlow(
+          ProxyState(
+              tcp = false,
+              udp = false,
+          ),
+      )
+
+  private fun readyState(type: SharedProxy.Type) {
+    overallState.update { s ->
+      when (type) {
+        SharedProxy.Type.TCP -> s.copy(tcp = true)
+        SharedProxy.Type.UDP -> s.copy(udp = true)
+      }
+    }
+  }
+
+  private fun resetState() {
+    overallState.update {
+      it.copy(
+          tcp = false,
+          udp = false,
+      )
+    }
+  }
 
   private suspend fun handleServerLoopError(e: Throwable, type: SharedProxy.Type) {
     e.ifNotCancellation {
@@ -78,7 +109,7 @@ internal constructor(
               type = type,
               info = info,
           )
-          .loop()
+          .loop { readyState(type) }
     } catch (e: Throwable) {
       handleServerLoopError(e, type)
     }
@@ -93,32 +124,56 @@ internal constructor(
     }
 
     // TODO: UDP support
-    //   launch(context = Dispatchers.Default) {
-    //     beginProxyLoop(
-    //       type = SharedProxy.Type.UDP,
-    //       info = info,
-    //     )
-    //   }
+    if (FLAG_ENABLE_UDP) {
+      launch(context = Dispatchers.Default) {
+        beginProxyLoop(
+            type = SharedProxy.Type.UDP,
+            info = info,
+        )
+      }
+    }
   }
 
   private fun reset() {
     enforcer.assertOffMainThread()
 
     clientEraser.clear()
+    resetState()
   }
 
-  private suspend fun shutdown(clearErrorStatus: Boolean) =
+  private suspend fun shutdown() =
       withContext(context = NonCancellable) {
         enforcer.assertOffMainThread()
 
         Timber.d { "Proxy Server is Done!" }
-        status.set(
-            RunningStatus.Stopping,
-            clearError = clearErrorStatus,
-        )
+
+        // Update status if we were running
+        if (status.get() is RunningStatus.Running) {
+          status.set(RunningStatus.Stopping)
+        }
         reset()
         status.set(RunningStatus.NotRunning)
       }
+
+  private fun CoroutineScope.watchServerReadyStatus() {
+    // When all proxy bits declare they are ready, the proxy status is "ready"
+    overallState
+        .map { it.isReady() }
+        .filter { it }
+        .also { f ->
+          launch(context = Dispatchers.Default) {
+            f.collect { ready ->
+              if (ready) {
+                Timber.d { "Proxy has fully launched, update status!" }
+                status.set(
+                    RunningStatus.Running,
+                    clearError = true,
+                )
+              }
+            }
+          }
+        }
+  }
 
   private suspend fun startServer(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
     try {
@@ -127,20 +182,20 @@ internal constructor(
       //
       // This will suspend until the proxy server loop dies
       coroutineScope {
+        // Mark proxy launching
         Timber.d { "Starting proxy server ..." }
         status.set(
             RunningStatus.Starting,
             clearError = true,
         )
 
+        watchServerReadyStatus()
+
         // Start the proxy server loop
         launch(context = Dispatchers.Default) { proxyLoop(info) }
 
         // Notify the client connection watcher that we have started
         launch(context = Dispatchers.Default) { startedClients.started() }
-
-        Timber.d { "Started Proxy Server" }
-        status.set(RunningStatus.Running)
       }
     } finally {
       Timber.d { "Stopped Proxy Server" }
@@ -181,7 +236,7 @@ internal constructor(
                   // Empty is missing the channel, bad
                   mutex.withLock {
                     job?.cancelAndJoin()
-                    shutdown(clearErrorStatus = false)
+                    shutdown()
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Error -> {
@@ -190,12 +245,16 @@ internal constructor(
                   // Error is bad, shut down the proxy
                   mutex.withLock {
                     job?.cancelAndJoin()
-                    shutdown(clearErrorStatus = false)
+                    shutdown()
                   }
                 }
                 is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
-                  shutdown(clearErrorStatus = false)
+                  // This should not happen - coding issue
+                  mutex.withLock {
+                    job?.cancelAndJoin()
+                    shutdown()
+                  }
                   throw AssertionError(
                       "GroupInfo.Unchanged should never escape the server-module internals.",
                   )
@@ -204,7 +263,26 @@ internal constructor(
             }
           }
         } finally {
-          shutdown(clearErrorStatus = false)
+          shutdown()
         }
       }
+
+  private data class ProxyState(
+      val tcp: Boolean,
+      val udp: Boolean,
+  ) {
+
+    @CheckResult
+    fun isReady(): Boolean {
+      if (!tcp) {
+        return false
+      }
+
+      return if (FLAG_ENABLE_UDP) udp else true
+    }
+  }
+
+  companion object {
+    private const val FLAG_ENABLE_UDP = false
+  }
 }

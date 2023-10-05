@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
@@ -29,6 +30,7 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.time.Clock
 import javax.inject.Inject
@@ -63,6 +65,19 @@ internal constructor(
   override fun CoroutineScope.onNetworkStarted(
       connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>
   ) {
+    // Once the proxy is marked "starting", then the Wifi-Direct side is done
+    proxy
+        .onStatusChanged()
+        .filter { it is RunningStatus.Starting }
+        .also { f ->
+          launch(context = Dispatchers.Default) {
+            f.collect {
+              Timber.d { "Wifi Direct is fully set up!" }
+              status.set(RunningStatus.Running)
+            }
+          }
+        }
+
     launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
 
     launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }

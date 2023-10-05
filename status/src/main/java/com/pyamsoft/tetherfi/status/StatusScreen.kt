@@ -132,8 +132,13 @@ fun StatusScreen(
           return@remember RunningStatus.Stopping
         }
 
-        // Otherwise fallback to wiDi status
-        return@remember wiDiStatus
+        if (wiDiStatus is RunningStatus.Running) {
+          // If the Wifi Direct is running, watch the proxy status
+          return@remember proxyStatus
+        } else {
+          // Otherwise fallback to wiDi status
+          return@remember wiDiStatus
+        }
       }
 
   val isButtonEnabled =

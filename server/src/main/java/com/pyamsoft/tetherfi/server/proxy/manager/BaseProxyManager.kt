@@ -29,11 +29,14 @@ import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket> protected constructor() : ProxyManager {
 
-  override suspend fun loop() =
+  override suspend fun loop(
+      onOpened: () -> Unit,
+  ) =
       withContext(context = Dispatchers.IO) {
         return@withContext usingSocket { socket ->
           val server = openServer(builder = socket)
           try {
+            onOpened()
             runServer(server)
           } finally {
             withContext(context = NonCancellable) { server.dispose() }

@@ -295,14 +295,11 @@ protected constructor(
         killProxyJob()
 
         // Do this outside of the lock, since this will run "forever"
-        launchProxy?.also { lp ->
+        launchProxy?.also {
           val newProxyJob =
               launch(context = Dispatchers.IO) { onNetworkStarted(connectionInfoChannel) }
           Timber.d { "Track new proxy job!" }
           proxyJob = newProxyJob
-
-          Timber.d { "WiDi network has started: $lp" }
-          status.set(lp)
         }
       }
 
