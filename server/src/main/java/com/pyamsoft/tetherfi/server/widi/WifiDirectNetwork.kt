@@ -38,11 +38,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import java.time.LocalDateTime
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,6 +50,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -186,7 +186,10 @@ protected constructor(
     }
   }
 
-  private suspend fun shutdownForStatus(newStatus: RunningStatus, clearErrorStatus: Boolean) {
+  private suspend fun shutdownForStatus(
+      newStatus: RunningStatus,
+      clearErrorStatus: Boolean,
+  ) {
     status.set(newStatus, clearErrorStatus)
     shutdownBus.emit(ServerShutdownEvent)
   }
@@ -235,19 +238,29 @@ protected constructor(
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
+        // Mark starting
+        status.set(
+            RunningStatus.Starting,
+            clearError = true,
+        )
+
+        // Kill the old proxy
+        killProxyJob()
+
         var launchProxy: RunningStatus? = null
         mutex.withLock {
           Timber.d { "START NEW NETWORK" }
 
           if (!permissionGuard.canCreateWiDiNetwork()) {
             Timber.w { "Missing permissions for making WiDi network" }
-            shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus = false)
+            shutdownForStatus(
+                RunningStatus.NotRunning,
+                clearErrorStatus = false,
+            )
             return@withContext
           }
 
-          status.set(RunningStatus.Starting, clearError = true)
           val channel = createChannel()
-
           if (channel == null) {
             Timber.w { "Failed to create channel, cannot initialize WiDi network" }
 
@@ -291,9 +304,6 @@ protected constructor(
 
         // Run this code outside of the lock because we don't want the proxy loop to block the
         // rest of the lock
-
-        // Kill the old one
-        killProxyJob()
 
         // Do this outside of the lock, since this will run "forever"
         launchProxy?.also {
@@ -351,28 +361,28 @@ protected constructor(
 
         mutex.withLock {
           Timber.d { "STOP NETWORK" }
-          val channel = wifiChannel
 
+          // If we do have a channel, mark shutting down as we clean up
+          Timber.d { "Shutting down wifi network" }
+          shutdownForStatus(
+              RunningStatus.Stopping,
+              clearErrorStatus,
+          )
+
+          val channel = wifiChannel
           killProxyJob()
 
           // If we have no channel, we haven't started yet. Make sure we are clean, but this
           // is basically a no-op
-          if (channel == null) {
-            completeStop(this, clearErrorStatus) {
-              Timber.d { "Resetting status back to not running" }
-              shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
-            }
-            return@withContext
+          if (channel != null) {
+            shutdownWifiNetwork(channel)
           }
 
-          // If we do have a channel, mark shutting down as we clean up
-          Timber.d { "Shutting down wifi network" }
-          shutdownForStatus(RunningStatus.Stopping, clearErrorStatus)
-
-          shutdownWifiNetwork(channel)
-
           completeStop(this, clearErrorStatus) {
-            shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
+            shutdownForStatus(
+                RunningStatus.NotRunning,
+                clearErrorStatus,
+            )
             Timber.d { "Network was stopped" }
           }
         }
@@ -612,7 +622,10 @@ protected constructor(
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }
             val msg = e.message ?: "An error occurred while starting the Network"
-            shutdownForStatus(RunningStatus.HotspotError(msg), clearErrorStatus = false)
+            shutdownForStatus(
+                RunningStatus.HotspotError(msg),
+                clearErrorStatus = false,
+            )
           }
         } finally {
           withContext(context = NonCancellable) {
