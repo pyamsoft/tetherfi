@@ -61,12 +61,11 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix("Fix Tile action not fully starting the Hotspot")
-                    bugfix("Fix needing the App UI to be open to correctly launch a Hotspot")
-                    bugfix("Fix hotspot 'dying' too early when the screen is closed")
-                    bugfix(
-                        "Fix hotspot not capturing updated network information when a change occurs")
-                    change("Tip Jar popup is less frequent")
+                    bugfix("Fix hotspot sometimes showing started before it really was.")
+                    bugfix("Fix hotspot sometimes not showing started when it actually was.")
+                    bugfix("Fix notification not showing in some cases.")
+                    bugfix("Fix status showing as healthy if the Broadcast starts up but not the proxy.")
+                    bugfix("Ensure the proxy is fully stopped when shutting down.")
                   }
                 },
         )
