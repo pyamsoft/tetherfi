@@ -27,8 +27,8 @@ android {
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
 
-    versionCode = 35
-    versionName = "20231010-1"
+    versionCode = 36
+    versionName = "20231015-1"
 
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
