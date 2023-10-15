@@ -55,13 +55,17 @@ internal constructor(
       if (blockers.contains(HotspotStartBlocker.PERMISSION)) {
         Timber.w { "Cannot launch Proxy until Permissions are granted" }
         state.status.value =
-            RunningStatus.HotspotError("Missing required permission, cannot start Hotspot")
+            RunningStatus.HotspotError(
+                IllegalStateException("Missing required permission, cannot start Hotspot"),
+            )
       }
 
       if (blockers.contains(HotspotStartBlocker.VPN)) {
         Timber.w { "Cannot launch Proxy until VPN is off" }
         state.status.value =
-            RunningStatus.HotspotError("Cannot start Hotspot while VPN is connected")
+            RunningStatus.HotspotError(
+                IllegalStateException("Cannot start Hotspot while VPN is connected"),
+            )
       }
 
       return

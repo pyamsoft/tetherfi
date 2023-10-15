@@ -34,6 +34,8 @@ internal fun StatusDialogs(
     onHideSetupError: () -> Unit,
     onHideNetworkError: () -> Unit,
     onHideHotspotError: () -> Unit,
+    onHideBroadcastError: () -> Unit,
+    onHideProxyError: () -> Unit,
 ) {
   val blockers = state.startBlockers.collectAsStateListWithLifecycle()
 
@@ -43,11 +45,12 @@ internal fun StatusDialogs(
   val isShowingNetworkError by state.isShowingNetworkError.collectAsStateWithLifecycle()
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
+  val isShowingBroadcastError by state.isShowingBroadcastError.collectAsStateWithLifecycle()
+  val isShowingProxyError by state.isShowingProxyError.collectAsStateWithLifecycle()
   val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
+
   val isShowingSetupError by state.isShowingSetupError.collectAsStateWithLifecycle()
-  val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
-  val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
   // Show the Required blocks first, and if all required ones are done, show the "skippable" ones
   // even though we don't support skipping yet.
@@ -85,6 +88,9 @@ internal fun StatusDialogs(
   AnimatedVisibility(
       visible = isShowingSetupError,
   ) {
+    val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+    val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
+
     TroubleshootDialog(
         modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
@@ -116,6 +122,32 @@ internal fun StatusDialogs(
           title = "Network Initialization Error",
           error = err.error,
           onDismiss = onHideNetworkError,
+      )
+    }
+  }
+
+  (wiDiStatus as? RunningStatus.Error)?.also { err ->
+    AnimatedVisibility(
+        visible = isShowingBroadcastError,
+    ) {
+      ServerErrorDialog(
+          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          title = "Broadcast Initialization Error",
+          error = err.throwable,
+          onDismiss = onHideBroadcastError,
+      )
+    }
+  }
+
+  (proxyStatus as? RunningStatus.Error)?.also { err ->
+    AnimatedVisibility(
+        visible = isShowingProxyError,
+    ) {
+      ServerErrorDialog(
+          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          title = "Proxy Initialization Error",
+          error = err.throwable,
+          onDismiss = onHideProxyError,
       )
     }
   }

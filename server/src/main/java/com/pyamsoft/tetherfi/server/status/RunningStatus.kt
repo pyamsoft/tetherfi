@@ -34,8 +34,8 @@ sealed interface RunningStatus {
 
   data class WiFiDirectError(
       val reason: Reason,
-      override val message: String,
-  ) : Error(message) {
+      override val throwable: Throwable,
+  ) : Error(throwable) {
 
     sealed class Reason(
         open val code: Int,
@@ -70,15 +70,15 @@ sealed interface RunningStatus {
   }
 
   data class HotspotError(
-      override val message: String,
-  ) : Error(message)
+      override val throwable: Throwable,
+  ) : Error(throwable)
 
   data class ProxyError(
-      override val message: String,
-  ) : Error(message)
+      override val throwable: Throwable,
+  ) : Error(throwable)
 
   abstract class Error
   protected constructor(
-      open val message: String,
+      open val throwable: Throwable,
   ) : RunningStatus
 }

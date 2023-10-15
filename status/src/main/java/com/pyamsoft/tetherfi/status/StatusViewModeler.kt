@@ -462,6 +462,22 @@ internal constructor(
     state.isShowingNetworkError.value = false
   }
 
+  fun handleOpenBroadcastError() {
+    state.isShowingBroadcastError.value = true
+  }
+
+  fun handleCloseBroadcastError() {
+    state.isShowingBroadcastError.value = false
+  }
+
+  fun handleOpenProxyError() {
+    state.isShowingProxyError.value = true
+  }
+
+  fun handleCloseProxyError() {
+    state.isShowingProxyError.value = false
+  }
+
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
     serverPreferences.setStartIgnoreVpn(newVal)

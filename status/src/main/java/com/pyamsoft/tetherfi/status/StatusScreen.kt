@@ -55,7 +55,10 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
-private val staticHotspotError = RunningStatus.HotspotError("Unable to start Hotspot")
+private val staticHotspotError =
+    RunningStatus.HotspotError(
+        RuntimeException("Unable to start Hotspot"),
+    )
 
 @Composable
 fun StatusScreen(
@@ -102,6 +105,10 @@ fun StatusScreen(
     onHideNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
     onHideHotspotError: () -> Unit,
+    onShowBroadcastError: () -> Unit,
+    onHideBroadcastError: () -> Unit,
+    onShowProxyError: () -> Unit,
+    onHideProxyError: () -> Unit,
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
@@ -222,6 +229,8 @@ fun StatusScreen(
           wiDiStatus = wiDiStatus,
           proxyStatus = proxyStatus,
           hotspotStatus = hotspotStatus,
+          onShowBroadcastError = onShowBroadcastError,
+          onShowProxyError = onShowProxyError,
       )
     }
 
@@ -283,6 +292,8 @@ fun StatusScreen(
       onHideNetworkError = onHideNetworkError,
       onHideHotspotError = onHideHotspotError,
       onHideSetupError = onHideSetupError,
+      onHideProxyError = onHideProxyError,
+      onHideBroadcastError = onHideBroadcastError,
   )
 }
 
@@ -292,6 +303,8 @@ private fun StatusCard(
     wiDiStatus: RunningStatus,
     proxyStatus: RunningStatus,
     hotspotStatus: RunningStatus,
+    onShowBroadcastError: () -> Unit,
+    onShowProxyError: () -> Unit,
 ) {
   Card(
       modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
@@ -310,6 +323,7 @@ private fun StatusCard(
             title = "Broadcast Status:",
             status = wiDiStatus,
             size = StatusSize.SMALL,
+            onClickShowError = onShowBroadcastError,
         )
 
         DisplayStatus(
@@ -317,6 +331,7 @@ private fun StatusCard(
             title = "Proxy Status:",
             status = proxyStatus,
             size = StatusSize.SMALL,
+            onClickShowError = onShowProxyError,
         )
       }
 
@@ -378,6 +393,10 @@ private fun PreviewStatusScreen(
       onToggleIgnoreVpn = {},
       onToggleShutdownWithNoClients = {},
       onJumpToHowTo = {},
+      onShowBroadcastError = {},
+      onHideBroadcastError = {},
+      onShowProxyError = {},
+      onHideProxyError = {},
   )
 }
 

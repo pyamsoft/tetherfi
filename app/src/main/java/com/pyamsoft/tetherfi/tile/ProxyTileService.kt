@@ -81,7 +81,7 @@ internal class ProxyTileService internal constructor() : TileService() {
       is RunningStatus.Error -> {
         state = Tile.STATE_INACTIVE
         title = "ERROR"
-        description = status.message
+        description = status.throwable.message ?: "An unexpected error occurred"
       }
       is RunningStatus.NotRunning -> {
         state = Tile.STATE_INACTIVE

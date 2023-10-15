@@ -31,6 +31,7 @@ internal fun StatusItem(
     valueModifier: Modifier = Modifier,
     title: String,
     value: String,
+    showError: (() -> Unit)? = null,
     valueStyle: TextStyle = MaterialTheme.typography.body1,
     color: Color = Color.Unspecified,
 ) {
@@ -40,6 +41,7 @@ internal fun StatusItem(
     Label(
         text = title,
         color = MaterialTheme.colors.onSurface,
+        onAction = showError,
     )
     Text(
         modifier = valueModifier,

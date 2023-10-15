@@ -143,9 +143,9 @@ protected constructor(
 
             override fun onFailure(reason: Int) {
               val r = RunningStatus.WiFiDirectError.Reason.parseReason(reason)
-              val msg = "Broadcast Error: ${r.displayReason}"
-              Timber.w { msg }
-              cont.resume(RunningStatus.WiFiDirectError(r, msg))
+              val e = RuntimeException("Broadcast Error: ${r.displayReason}")
+              Timber.e(e) { "Unable to create Wifi Direct Group" }
+              cont.resume(RunningStatus.WiFiDirectError(r, e))
             }
           }
 
@@ -265,8 +265,9 @@ protected constructor(
             Timber.w { "Failed to create channel, cannot initialize WiDi network" }
 
             completeStop(this, clearErrorStatus = false) {
+              val e = RuntimeException("Failed to create Wi-Fi Direct Channel")
               shutdownForStatus(
-                  RunningStatus.HotspotError("Failed to create Wi-Fi Direct Channel"),
+                  RunningStatus.HotspotError(e),
                   clearErrorStatus = false,
               )
             }
@@ -621,9 +622,8 @@ protected constructor(
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }
-            val msg = e.message ?: "An error occurred while starting the Network"
             shutdownForStatus(
-                RunningStatus.HotspotError(msg),
+                RunningStatus.HotspotError(e),
                 clearErrorStatus = false,
             )
           }

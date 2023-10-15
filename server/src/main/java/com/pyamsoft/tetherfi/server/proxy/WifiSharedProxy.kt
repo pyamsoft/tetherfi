@@ -91,7 +91,7 @@ internal constructor(
       Timber.e(e) { "Error running server loop: ${type.name}" }
 
       reset()
-      status.set(RunningStatus.ProxyError(e.message ?: "An unexpected error occurred."))
+      status.set(RunningStatus.ProxyError(e))
       shutdownBus.emit(ServerShutdownEvent)
     }
   }

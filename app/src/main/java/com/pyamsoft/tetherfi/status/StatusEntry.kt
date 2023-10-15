@@ -211,5 +211,9 @@ fun StatusEntry(
       onHideSetupError = { viewModel.handleCloseSetupError() },
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
       onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
+      onShowProxyError = { viewModel.handleOpenProxyError() },
+      onHideProxyError = { viewModel.handleCloseProxyError() },
+      onShowBroadcastError = { viewModel.handleOpenBroadcastError() },
+      onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
   )
 }

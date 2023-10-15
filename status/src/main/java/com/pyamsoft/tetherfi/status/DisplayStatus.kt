@@ -42,12 +42,13 @@ internal fun DisplayStatus(
     modifier: Modifier = Modifier,
     title: String,
     status: RunningStatus,
-    size: StatusSize
+    size: StatusSize,
+    onClickShowError: (() -> Unit)? = null,
 ) {
   val text =
       remember(status) {
         when (status) {
-          is RunningStatus.Error -> status.message
+          is RunningStatus.Error -> status.throwable.message ?: "An unexpected error occurred."
           is RunningStatus.NotRunning -> "Not Running"
           is RunningStatus.Running -> "Running"
           is RunningStatus.Starting -> "Starting"
@@ -121,11 +122,20 @@ internal fun DisplayStatus(
         }
       }
 
+  val showError =
+      remember(
+          onClickShowError,
+          status,
+      ) {
+        if (status is RunningStatus.Error) onClickShowError else null
+      }
+
   StatusItem(
       modifier = modifier,
       title = title,
       value = text,
       color = fgColor,
+      showError = showError,
       valueModifier =
           Modifier.run {
                 when (size) {

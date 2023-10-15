@@ -50,7 +50,7 @@ internal constructor(
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {
-                Timber.w { "Error running Proxy: ${status.message}" }
+                Timber.e(status.throwable) { "Error running Proxy" }
                 onNetworkError(status)
               }
               else -> Timber.d { "Unhandled Proxy status event $status" }
@@ -66,7 +66,7 @@ internal constructor(
           f.collect { status ->
             when (status) {
               is RunningStatus.Error -> {
-                Timber.w { "Error running WiDi network: ${status.message}" }
+                Timber.e(status.throwable) { "Error running WiDi network" }
                 onNetworkError(status)
               }
               is RunningStatus.NotRunning -> onNetworkNotRunning()

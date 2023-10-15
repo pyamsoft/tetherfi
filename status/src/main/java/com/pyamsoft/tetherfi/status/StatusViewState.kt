@@ -54,6 +54,8 @@ interface StatusViewState : UiViewState {
   val isShowingSetupError: StateFlow<Boolean>
   val isShowingNetworkError: StateFlow<Boolean>
   val isShowingHotspotError: StateFlow<Boolean>
+  val isShowingBroadcastError: StateFlow<Boolean>
+  val isShowingProxyError: StateFlow<Boolean>
 
   // Tweaks
   val isIgnoreVpn: StateFlow<Boolean>
@@ -91,6 +93,8 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isShowingSetupError = MutableStateFlow(false)
   override val isShowingNetworkError = MutableStateFlow(false)
   override val isShowingHotspotError = MutableStateFlow(false)
+  override val isShowingBroadcastError = MutableStateFlow(false)
+  override val isShowingProxyError = MutableStateFlow(false)
 
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)
