@@ -127,6 +127,14 @@ internal constructor(
     serviceLauncher.resetError()
   }
 
+  private fun closeAllDialogs() {
+    handleCloseProxyError()
+    handleCloseBroadcastError()
+    handleCloseHotspotError()
+    handleCloseSetupError()
+    handleCloseNetworkError()
+  }
+
   override fun registerSaveState(
       registry: SaveableStateRegistry
   ): List<SaveableStateRegistry.Entry> =
@@ -164,6 +172,8 @@ internal constructor(
   fun handleToggleProxy() {
     // Hide the password
     state.isPasswordVisible.value = false
+
+    closeAllDialogs()
 
     appScope.launch(context = Dispatchers.Default) {
       val networkStatus = network.getCurrentStatus()
