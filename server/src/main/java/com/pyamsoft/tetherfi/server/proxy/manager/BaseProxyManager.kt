@@ -29,6 +29,43 @@ import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket> protected constructor() : ProxyManager {
 
+  @CheckResult
+  protected fun getServerAddress(
+      hostName: String,
+      port: Int,
+      verifyPort: Boolean,
+      verifyHostName: Boolean,
+  ): SocketAddress {
+    // Port must be in the valid range
+    if (verifyPort) {
+      if (port > 65000) {
+        val err = "Port must be <65000: $port"
+        Timber.w { err }
+        throw IllegalArgumentException(err)
+      }
+
+      if (port <= 1024) {
+        val err = "Port must be >1024: $port"
+        Timber.w { err }
+        throw IllegalArgumentException(err)
+      }
+    }
+
+    if (verifyHostName) {
+      // Name must be valid
+      if (hostName.isBlank()) {
+        val err = "HostName is invalid: $hostName"
+        Timber.w { err }
+        throw IllegalArgumentException(err)
+      }
+    }
+
+    return InetSocketAddress(
+        hostname = hostName,
+        port = port,
+    )
+  }
+
   override suspend fun loop(
       onOpened: () -> Unit,
   ) =
@@ -49,43 +86,7 @@ internal abstract class BaseProxyManager<S : ASocket> protected constructor() : 
   @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
 
   companion object {
-
-    @JvmStatic
-    @CheckResult
-    protected fun getServerAddress(
-        hostName: String,
-        port: Int,
-        verifyPort: Boolean,
-        verifyHostName: Boolean,
-    ): SocketAddress {
-      // Port must be in the valid range
-      if (verifyPort) {
-        if (port > 65000) {
-          val err = "Port must be <65000: $port"
-          Timber.w { err }
-          throw IllegalArgumentException(err)
-        }
-
-        if (port <= 1024) {
-          val err = "Port must be >1024: $port"
-          Timber.w { err }
-          throw IllegalArgumentException(err)
-        }
-      }
-
-      if (verifyHostName) {
-        // Name must be valid
-        if (hostName.isBlank()) {
-          val err = "HostName is invalid: $hostName"
-          Timber.w { err }
-          throw IllegalArgumentException(err)
-        }
-      }
-
-      return InetSocketAddress(
-          hostname = hostName,
-          port = port,
-      )
-    }
+    /** The zero address binds to "all" interfaces */
+    const val HOSTNAME_BIND_ALL = "0.0.0.0"
   }
 }

@@ -188,6 +188,18 @@ internal constructor(
     }
   }
 
+  override fun listenForProxyBindAll(): Flow<Boolean> =
+      preferenceBooleanFlow(PROXY_BIND_ALL, false) { preferences }
+          .flowOn(context = Dispatchers.Default)
+
+  override fun setProxyBindAll(bind: Boolean) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+
+      preferences.edit { putBoolean(PROXY_BIND_ALL, bind) }
+    }
+  }
+
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
               preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
@@ -316,5 +328,7 @@ internal constructor(
 
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
+
+    private const val PROXY_BIND_ALL = "key_proxy_bind_all_1"
   }
 }

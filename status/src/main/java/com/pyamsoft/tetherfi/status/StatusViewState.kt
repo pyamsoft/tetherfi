@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 interface StatusViewState : UiViewState {
+
   val loadingState: StateFlow<LoadingState>
 
   val wiDiStatus: StateFlow<RunningStatus>
@@ -60,6 +61,7 @@ interface StatusViewState : UiViewState {
   // Tweaks
   val isIgnoreVpn: StateFlow<Boolean>
   val isShutdownWithNoClients: StateFlow<Boolean>
+  val isBindProxyAll: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -98,4 +100,5 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
 
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)
+  override val isBindProxyAll = MutableStateFlow(false)
 }

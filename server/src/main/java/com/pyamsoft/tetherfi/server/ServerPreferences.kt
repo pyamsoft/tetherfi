@@ -45,4 +45,8 @@ interface ServerPreferences {
   @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
 
   fun setShutdownWithNoClients(shutdown: Boolean)
+
+  @CheckResult fun listenForProxyBindAll(): Flow<Boolean>
+
+  fun setProxyBindAll(bind: Boolean)
 }

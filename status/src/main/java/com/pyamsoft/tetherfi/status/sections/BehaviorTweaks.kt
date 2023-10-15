@@ -46,6 +46,7 @@ internal fun LazyListScope.renderTweaks(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
+    onToggleBindProxyAll: () -> Unit,
 ) {
   item(
       contentType = StatusScreenContentTypes.TWEAK_LABEL,
@@ -69,6 +70,7 @@ internal fun LazyListScope.renderTweaks(
         state = state,
         onToggleIgnoreVpn = onToggleIgnoreVpn,
         onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
+        onToggleBindProxyAll = onToggleBindProxyAll,
     )
   }
 }
@@ -81,9 +83,11 @@ private fun BehaviorTweaks(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
+    onToggleBindProxyAll: () -> Unit,
 ) {
   val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
   val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
+  val isBindProxyAll by state.isBindProxyAll.collectAsStateWithLifecycle()
 
   val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
   val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
@@ -99,6 +103,13 @@ private fun BehaviorTweaks(
       rememberCheckableColor(
           label = "Shutdown No Clients",
           condition = isShutdownWithNoClients,
+          selectedColor = MaterialTheme.colors.primary,
+      )
+
+  val bindProxyAllColor by
+      rememberCheckableColor(
+          label = "Bind Proxy to All Interfaces",
+          condition = isBindProxyAll,
           selectedColor = MaterialTheme.colors.primary,
       )
 
@@ -168,6 +179,19 @@ private fun BehaviorTweaks(
                   |Automatically shutting down the hotspot when it is not being used can save battery."""
                   .trimMargin(),
           onClick = onToggleShutdownWithNoClients,
+      )
+
+      ToggleSwitch(
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = bindProxyAllColor,
+          checked = isBindProxyAll,
+          title = "Bind Proxy to All Interfaces",
+          description =
+              """If $appName has problems launching the Proxy but no problems with the Broadcast, you can try this tweak to have the hotspot bind to all interfaces, which might avoid the problem."""
+                  .trimMargin(),
+          onClick = onToggleBindProxyAll,
       )
     }
   }

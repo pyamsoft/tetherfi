@@ -72,6 +72,7 @@ internal constructor(
       var wifiLock: Boolean,
       var ignoreVpn: Boolean,
       var shutdownWithNoClients: Boolean,
+      var proxyBind: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
@@ -80,6 +81,7 @@ internal constructor(
         config.wakeLock &&
         config.ignoreVpn &&
         config.shutdownWithNoClients &&
+        config.proxyBind &&
         config.ssid &&
         config.password &&
         config.band) {
@@ -218,6 +220,7 @@ internal constructor(
             wifiLock = false,
             ignoreVpn = false,
             shutdownWithNoClients = false,
+            proxyBind = false,
         )
 
     // Start loading
@@ -277,6 +280,21 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.shutdownWithNoClients = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest proxy bind value
+    serverPreferences.listenForProxyBindAll().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { bind ->
+          s.isBindProxyAll.value = bind
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.proxyBind = true
             markPreferencesLoaded(config)
           }
         }
@@ -496,6 +514,11 @@ internal constructor(
   fun handleToggleShutdownNoClients() {
     val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
     serverPreferences.setShutdownWithNoClients(newVal)
+  }
+
+  fun handleToggleBindProxyAll() {
+    val newVal = state.isBindProxyAll.updateAndGet { !it }
+    serverPreferences.setProxyBindAll(newVal)
   }
 
   companion object {

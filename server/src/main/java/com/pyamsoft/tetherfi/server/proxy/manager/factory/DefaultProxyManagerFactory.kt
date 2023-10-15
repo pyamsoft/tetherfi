@@ -51,6 +51,7 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return TcpProxyManager(
+        preferences = preferences,
         enforcer = enforcer,
         session = tcpSession,
         hostName = info.hostName,
@@ -65,6 +66,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return UdpProxyManager(
+        preferences = preferences,
         enforcer = enforcer,
         session = udpSession,
         hostName = info.hostName,

@@ -16,9 +16,11 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import io.ktor.network.sockets.ServerSocket
@@ -28,12 +30,14 @@ import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal class TcpProxyManager
 internal constructor(
+    private val preferences: ServerPreferences,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
     private val hostName: String,
@@ -59,12 +63,17 @@ internal constructor(
     }
   }
 
+  @CheckResult
+  private suspend fun getProxyAddress(): String {
+    return if (preferences.listenForProxyBindAll().first()) HOSTNAME_BIND_ALL else hostName
+  }
+
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = Dispatchers.IO) {
         val localAddress =
             getServerAddress(
-                hostName,
-                port,
+                hostName = getProxyAddress(),
+                port = port,
                 verifyPort = true,
                 verifyHostName = true,
             )
