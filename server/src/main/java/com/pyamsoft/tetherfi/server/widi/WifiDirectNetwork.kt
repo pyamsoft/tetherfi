@@ -208,6 +208,15 @@ protected constructor(
 
   @CheckResult
   private suspend fun reUseExistingConnection(channel: Channel): RunningStatus? {
+    val fakeError = appEnvironment.isBroadcastFakeError
+    if (fakeError.value) {
+      Timber.w { "DEBUG forcing Fake Broadcast Error" }
+      return RunningStatus.WiFiDirectError(
+          RunningStatus.WiFiDirectError.Reason.Unknown(-1),
+          RuntimeException("DEBUG: Force Fake Broadcast Error"),
+      )
+    }
+
     val groupInfo = withLockGetGroupInfo(channel, force = true)
     val connectionInfo = withLockGetConnectionInfo(channel, force = true)
     when (groupInfo) {
