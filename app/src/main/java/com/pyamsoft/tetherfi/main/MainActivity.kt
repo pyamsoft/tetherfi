@@ -61,12 +61,12 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix("Fix hotspot sometimes showing started before it really was.")
-                    bugfix("Fix hotspot sometimes not showing started when it actually was.")
-                    bugfix("Fix notification not showing in some cases.")
                     bugfix(
-                        "Fix status showing as healthy if the Broadcast starts up but not the proxy.")
-                    bugfix("Ensure the proxy is fully stopped when shutting down.")
+                        "In the event of a Hotspot setup error, allow showing detailed error information.")
+                    bugfix(
+                        "Fix cases where hyperlinks were not correctly routing to external applications.")
+                    change(
+                        "Add support for a tweak to bind the proxy to all networking interfaces.")
                   }
                 },
         )

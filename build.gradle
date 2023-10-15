@@ -28,18 +28,18 @@ buildscript {
     coroutines = "1.7.3"
 
     // Us
-    pydroid = "26.8.7"
+    pydroid = "26.9.0"
 
     // Leak Canary
     leakCanary = "2.12"
 
     // Dagger
-    dagger = "2.48"
+    dagger = "2.48.1"
 
     // Compose
-    compose = "1.5.2"
+    compose = "1.5.3"
     composeCompiler = "1.5.3"
-    composeMaterial = "1.5.2"
+    composeMaterial = "1.5.3"
     accompanist = "0.32.0"
 
     desugar = "2.0.3"
