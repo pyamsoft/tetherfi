@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
-import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
+import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 
 private enum class LinkContentTypes {
   FAQ_LINK
@@ -35,8 +35,6 @@ fun LazyListScope.renderLinks(
   item(
       contentType = LinkContentTypes.FAQ_LINK,
   ) {
-    val uriHandler = LocalExternalUriHandler.current
-
     val textColor = MaterialTheme.colors.onSurface
     val linkColor = MaterialTheme.colors.primary
     val faqBlurb =
@@ -87,6 +85,7 @@ fun LazyListScope.renderLinks(
         color = Color.Transparent,
         shape = MaterialTheme.shapes.medium,
     ) {
+      val uriHandler = rememberUriHandler()
       ClickableText(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text = faqBlurb,

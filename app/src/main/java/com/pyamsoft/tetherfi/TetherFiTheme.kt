@@ -39,6 +39,8 @@ import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
+import com.pyamsoft.pydroid.ui.uri.rememberExternalUriHandler
 
 @Composable
 @CheckResult
@@ -108,6 +110,7 @@ fun ComponentActivity.TetherFiTheme(
 
   val isDarkMode = theme.getSystemDarkMode()
   val hapticManager = rememberHapticManager()
+  val uriHandler = rememberExternalUriHandler()
 
   PYDroidTheme(
       colors = themeColors(self, isDarkMode),
@@ -123,6 +126,9 @@ fun ComponentActivity.TetherFiTheme(
 
         // We provide the local Activity for performance optimization
         LocalActivity provides self,
+
+        // We provide external URI handler
+        LocalExternalUriHandler provides uriHandler,
 
         // And the content, finally
         content = content,

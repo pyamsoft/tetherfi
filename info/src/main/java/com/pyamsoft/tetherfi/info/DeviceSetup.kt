@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
+import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.appendLink
@@ -297,7 +297,7 @@ internal fun LazyListScope.renderDeviceSetup(
 private fun FullConnectionInstructions(
     modifier: Modifier = Modifier,
 ) {
-  val uriHandler = LocalExternalUriHandler.current
+  val uriHandler = rememberUriHandler()
 
   val textColor =
       MaterialTheme.colors.onBackground.copy(

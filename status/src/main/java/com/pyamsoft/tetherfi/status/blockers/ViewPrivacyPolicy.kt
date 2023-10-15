@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
+import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.ui.appendLink
 
@@ -33,7 +33,7 @@ internal fun ViewPrivacyPolicy(
       )
     }
 
-    val uriHandler = LocalExternalUriHandler.current
+    val uriHandler = rememberUriHandler()
     ClickableText(
         text = text,
         style =
