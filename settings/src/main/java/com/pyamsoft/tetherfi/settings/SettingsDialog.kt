@@ -44,6 +44,8 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.ui.DialogToolbar
 
 private enum class SettingsContentTypes {
+  DEBUG_BROADCAST_ERROR,
+  DEBUG_PROXY_ERROR,
   DEBUG_GROUP_EMPTY,
   DEBUG_GROUP_GOOD,
   DEBUG_GROUP_ERROR,
@@ -150,6 +152,32 @@ private fun LazyListScope.renderExtraDebugContent(
     itemModifier: Modifier = Modifier,
     appEnvironment: AppDevEnvironment,
 ) {
+  item(
+      contentType = SettingsContentTypes.DEBUG_BROADCAST_ERROR,
+  ) {
+    val isBroadcastFakeError by appEnvironment.isBroadcastFakeError.collectAsStateWithLifecycle()
+    DebugItem(
+        modifier = itemModifier,
+        title = "Force Broadcast Error",
+        description = "Force simulate a Broadcast Error",
+        checked = isBroadcastFakeError,
+        onCheckedChange = { appEnvironment.updateBroadcast(it) },
+    )
+  }
+
+  item(
+      contentType = SettingsContentTypes.DEBUG_PROXY_ERROR,
+  ) {
+    val isProxyFakeError by appEnvironment.isProxyFakeError.collectAsStateWithLifecycle()
+    DebugItem(
+        modifier = itemModifier,
+        title = "Force Proxy Error",
+        description = "Force simulate a Proxy Error",
+        checked = isProxyFakeError,
+        onCheckedChange = { appEnvironment.updateProxy(it) },
+    )
+  }
+
   item(
       contentType = SettingsContentTypes.DEBUG_GROUP_EMPTY,
   ) {

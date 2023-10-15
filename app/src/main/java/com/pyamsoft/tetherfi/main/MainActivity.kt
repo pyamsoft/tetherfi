@@ -64,7 +64,8 @@ class MainActivity : AppCompatActivity() {
                     bugfix("Fix hotspot sometimes showing started before it really was.")
                     bugfix("Fix hotspot sometimes not showing started when it actually was.")
                     bugfix("Fix notification not showing in some cases.")
-                    bugfix("Fix status showing as healthy if the Broadcast starts up but not the proxy.")
+                    bugfix(
+                        "Fix status showing as healthy if the Broadcast starts up but not the proxy.")
                     bugfix("Ensure the proxy is fully stopped when shutting down.")
                   }
                 },

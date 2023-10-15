@@ -138,7 +138,19 @@ protected constructor(
           object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
               Timber.d { "New network created" }
-              cont.resume(RunningStatus.Running)
+
+              val fakeError = appEnvironment.isBroadcastFakeError
+              if (fakeError.value) {
+                Timber.w { "DEBUG forcing Fake Broadcast Error" }
+                cont.resume(
+                    RunningStatus.WiFiDirectError(
+                        RunningStatus.WiFiDirectError.Reason.Unknown(-1),
+                        RuntimeException("DEBUG: Force Fake Broadcast Error"),
+                    ),
+                )
+              } else {
+                cont.resume(RunningStatus.Running)
+              }
             }
 
             override fun onFailure(reason: Int) {

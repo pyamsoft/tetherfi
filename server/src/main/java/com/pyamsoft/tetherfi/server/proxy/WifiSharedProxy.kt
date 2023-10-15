@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
@@ -57,6 +58,7 @@ internal constructor(
     private val clientEraser: ClientEraser,
     private val startedClients: StartedClients,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
+    private val appEnvironment: AppDevEnvironment,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -116,6 +118,17 @@ internal constructor(
   }
 
   private fun CoroutineScope.proxyLoop(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
+    val fakeError = appEnvironment.isProxyFakeError
+    if (fakeError.value) {
+      Timber.w { "DEBUG forcing Fake Proxy Error" }
+      status.set(
+          RunningStatus.ProxyError(
+              RuntimeException("DEBUG: Force Fake Proxy Error"),
+          ),
+      )
+      return
+    }
+
     launch(context = Dispatchers.Default) {
       beginProxyLoop(
           type = SharedProxy.Type.TCP,

@@ -34,6 +34,9 @@ class AppDevEnvironment @Inject internal constructor() {
   private val isConnectionFakeConnected = MutableStateFlow(false)
   private val isConnectionFakeError = MutableStateFlow(false)
 
+  val isBroadcastFakeError = MutableStateFlow(false)
+  val isProxyFakeError = MutableStateFlow(false)
+
   @get:CheckResult
   val group =
       GroupInfo(
@@ -68,6 +71,14 @@ class AppDevEnvironment @Inject internal constructor() {
     isEmpty?.also { isConnectionFakeEmpty.value = it }
     isConnected?.also { isConnectionFakeConnected.value = it }
     isError?.also { isConnectionFakeError.value = it }
+  }
+
+  fun updateBroadcast(isError: Boolean) {
+    isBroadcastFakeError.value = isError
+  }
+
+  fun updateProxy(isError: Boolean) {
+    isProxyFakeError.value = isError
   }
 
   @Stable
