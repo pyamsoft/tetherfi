@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
@@ -157,7 +158,7 @@ internal fun RunningTiles(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also {
+      connection.cast<WiDiNetworkStatus.ConnectionInfo.Error>()?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,
@@ -195,7 +196,7 @@ internal fun RunningTiles(
         )
       }
 
-      (group as? WiDiNetworkStatus.GroupInfo.Error)?.also {
+      group.cast<WiDiNetworkStatus.GroupInfo.Error>()?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,

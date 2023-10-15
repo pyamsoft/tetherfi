@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
@@ -200,7 +201,7 @@ fun MainEntry(
   if (isShowingQRCodeDialog) {
     val group by viewModel.group.collectAsStateWithLifecycle()
 
-    (group as? WiDiNetworkStatus.GroupInfo.Connected)?.also { grp ->
+    group.cast<WiDiNetworkStatus.GroupInfo.Connected>()?.also { grp ->
       QRCodeEntry(
           ssid = grp.ssid,
           password = grp.password,

@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -100,7 +101,7 @@ internal fun StatusDialogs(
     )
   }
 
-  (group as? WiDiNetworkStatus.GroupInfo.Error)?.also { err ->
+  group.cast<WiDiNetworkStatus.GroupInfo.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingHotspotError,
     ) {
@@ -113,7 +114,7 @@ internal fun StatusDialogs(
     }
   }
 
-  (connection as? WiDiNetworkStatus.ConnectionInfo.Error)?.also { err ->
+  connection.cast<WiDiNetworkStatus.ConnectionInfo.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingNetworkError,
     ) {
@@ -126,7 +127,7 @@ internal fun StatusDialogs(
     }
   }
 
-  (wiDiStatus as? RunningStatus.Error)?.also { err ->
+  wiDiStatus.cast<RunningStatus.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingBroadcastError,
     ) {
@@ -139,7 +140,7 @@ internal fun StatusDialogs(
     }
   }
 
-  (proxyStatus as? RunningStatus.Error)?.also { err ->
+  proxyStatus.cast<RunningStatus.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingProxyError,
     ) {
