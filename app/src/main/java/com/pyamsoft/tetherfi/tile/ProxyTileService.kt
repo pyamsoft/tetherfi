@@ -28,12 +28,12 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -207,13 +207,21 @@ internal class ProxyTileService internal constructor() : TileService() {
     @JvmStatic
     fun updateTile(context: Context) {
       val appContext = context.applicationContext
-      requestListeningState(
-          appContext,
+      val component =
           ComponentName(
               appContext,
               ProxyTileService::class.java,
-          ),
-      )
+          )
+
+      try {
+        requestListeningState(
+            appContext,
+            component,
+        )
+      } catch (e: Throwable) {
+        // https://github.com/pyamsoft/tetherfi/issues/229
+        Timber.e(e) { "Error trying to update Tile state. Android OS error?" }
+      }
     }
   }
 }
