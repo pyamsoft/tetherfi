@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -28,10 +29,10 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 internal class DefaultProxyManagerFactory
 @Inject
@@ -39,7 +40,8 @@ internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
-    private val preferences: ServerPreferences,
+    private val serverPreferences: ServerPreferences,
+    private val configPreferences: ConfigPreferences,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -48,10 +50,10 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = preferences.listenForPortChanges().first()
+    val port = configPreferences.listenForPortChanges().first()
 
     return TcpProxyManager(
-        preferences = preferences,
+        preferences = serverPreferences,
         enforcer = enforcer,
         session = tcpSession,
         hostName = info.hostName,
@@ -66,7 +68,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return UdpProxyManager(
-        preferences = preferences,
+        preferences = serverPreferences,
         enforcer = enforcer,
         session = udpSession,
         hostName = info.hostName,

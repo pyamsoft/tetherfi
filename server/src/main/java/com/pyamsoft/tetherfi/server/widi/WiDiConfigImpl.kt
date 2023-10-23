@@ -20,18 +20,18 @@ import android.net.wifi.p2p.WifiP2pConfig
 import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.annotation.RequiresApi
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.ServerPreferences
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 internal class WiDiConfigImpl
 @Inject
 internal constructor(
-    private val preferences: ServerPreferences,
+    private val preferences: ConfigPreferences,
 ) : WiDiConfig {
 
   @CheckResult

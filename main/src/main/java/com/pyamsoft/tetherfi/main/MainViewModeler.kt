@@ -20,12 +20,11 @@ import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
 import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,14 +33,15 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 class MainViewModeler
 @Inject
 internal constructor(
     override val state: MutableMainViewState,
     private val network: WiDiNetworkStatus,
-    private val serverPreferences: ServerPreferences,
     private val wiDiReceiver: WiDiReceiver,
+    private val configPreferences: ConfigPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
 ) : MainViewState by state, AbstractViewModeler<MainViewState>(state) {
 
@@ -109,7 +109,7 @@ internal constructor(
     }
 
     // Port is its own thing, not part of group info
-    serverPreferences.listenForPortChanges().also { f ->
+    configPreferences.listenForPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.port.value = it } }
     }
 

@@ -27,13 +27,11 @@ import com.pyamsoft.pydroid.util.preferenceIntFlow
 import com.pyamsoft.pydroid.util.preferenceStringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +41,9 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -50,7 +51,7 @@ internal class PreferencesImpl
 internal constructor(
     private val enforcer: ThreadEnforcer,
     context: Context,
-) : ServerPreferences, ServicePreferences, InAppRatingPreferences {
+) : ServerPreferences, ServicePreferences, InAppRatingPreferences, ConfigPreferences {
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()

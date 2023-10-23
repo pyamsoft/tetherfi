@@ -23,6 +23,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -34,8 +35,6 @@ import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -46,6 +45,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
 class StatusViewModeler
 @Inject
@@ -53,6 +54,7 @@ internal constructor(
     override val state: MutableStatusViewState,
     private val notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     private val enforcer: ThreadEnforcer,
+    private val configPreferences: ConfigPreferences,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
     private val network: WiDiNetworkStatus,
@@ -302,7 +304,7 @@ internal constructor(
     }
 
     // Only pull once since after this point, the state will be driven by the input
-    serverPreferences.listenForPortChanges().also { f ->
+    configPreferences.listenForPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
         val p = f.first()
         s.port.value = if (p == 0) "" else "$p"
@@ -314,7 +316,7 @@ internal constructor(
 
     if (ServerDefaults.canUseCustomConfig()) {
       // Only pull once since after this point, the state will be driven by the input
-      serverPreferences.listenForSsidChanges().also { f ->
+      configPreferences.listenForSsidChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           s.ssid.value = f.first()
 
@@ -324,7 +326,7 @@ internal constructor(
       }
 
       // Only pull once since after this point, the state will be driven by the input
-      serverPreferences.listenForPasswordChanges().also { f ->
+      configPreferences.listenForPasswordChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           s.password.value = f.first()
 
@@ -333,7 +335,7 @@ internal constructor(
         }
       }
 
-      serverPreferences.listenForNetworkBandChanges().also { f ->
+      configPreferences.listenForNetworkBandChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           f.collect { band ->
             s.band.value = band
@@ -440,19 +442,19 @@ internal constructor(
 
   fun handleSsidChanged(ssid: String) {
     state.ssid.value = ssid
-    serverPreferences.setSsid(ssid)
+    configPreferences.setSsid(ssid)
   }
 
   fun handlePasswordChanged(password: String) {
     state.password.value = password
-    serverPreferences.setPassword(password)
+    configPreferences.setPassword(password)
   }
 
   fun handlePortChanged(port: String) {
     state.port.value = port
 
     val portValue = port.toIntOrNull()
-    serverPreferences.setPort(portValue ?: 0)
+    configPreferences.setPort(portValue ?: 0)
   }
 
   fun handleToggleProxyWakelock() {
@@ -467,7 +469,7 @@ internal constructor(
 
   fun handleChangeBand(band: ServerNetworkBand) {
     state.band.value = band
-    serverPreferences.setNetworkBand(band)
+    configPreferences.setNetworkBand(band)
   }
 
   fun handleTogglePasswordVisibility() {

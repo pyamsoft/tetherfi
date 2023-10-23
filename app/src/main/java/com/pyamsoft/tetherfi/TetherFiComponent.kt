@@ -36,6 +36,7 @@ import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
 import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServiceAppModule
@@ -51,10 +52,10 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.CoroutineScope
 import java.time.Clock
 import javax.inject.Named
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 @Component(
@@ -93,6 +94,8 @@ internal interface TetherFiComponent {
 
   @Module
   abstract class Provider {
+
+    @Binds internal abstract fun bindConfigPreferences(impl: PreferencesImpl): ConfigPreferences
 
     @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
 
