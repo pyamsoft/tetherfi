@@ -38,11 +38,7 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import java.time.LocalDateTime
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,6 +51,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 internal abstract class WifiDirectNetwork
 protected constructor(
@@ -65,6 +66,7 @@ protected constructor(
     private val appEnvironment: AppDevEnvironment,
     private val enforcer: ThreadEnforcer,
     private val clock: Clock,
+    private val register: WiDiReceiverRegister,
     status: WiDiStatus,
 ) : BaseServer(status), WiDiNetwork, WiDiNetworkStatus {
 
@@ -636,10 +638,14 @@ protected constructor(
         try {
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
-          //
-          // This will suspend until onNetworkStart proxy.start() completes,
-          // which is suspended until the proxy server loop dies
-          coroutineScope { withLockStartNetwork() }
+          coroutineScope {
+            // This will suspend until
+            launch(context = Dispatchers.Default) { register.register() }
+
+            // This will suspend until onNetworkStart proxy.start() completes,
+            // which is suspended until the proxy server loop dies
+            withLockStartNetwork()
+          }
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }

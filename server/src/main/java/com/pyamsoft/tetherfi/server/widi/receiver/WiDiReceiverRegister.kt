@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.widi.receiver
 
-interface WiDiReceiverRegister {
+internal interface WiDiReceiverRegister {
 
   suspend fun register()
 }

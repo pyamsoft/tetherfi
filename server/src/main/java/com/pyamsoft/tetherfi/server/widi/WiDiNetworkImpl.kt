@@ -27,14 +27,15 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import java.time.Clock
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WiDiNetworkImpl
@@ -43,6 +44,7 @@ internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
     @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi config: WiDiConfig,
+    register: WiDiReceiverRegister,
     enforcer: ThreadEnforcer,
     shutdownBus: EventBus<ServerShutdownEvent>,
     context: Context,
@@ -59,6 +61,7 @@ internal constructor(
         appEnvironment,
         enforcer,
         clock,
+        register,
         status,
     ) {
 
