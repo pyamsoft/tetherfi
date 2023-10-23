@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -124,7 +124,7 @@ internal fun ViewPassword(
             ),
     )
 
-    if (group is WiDiNetworkStatus.GroupInfo.Connected) {
+    if (group is BroadcastNetworkStatus.GroupInfo.Connected) {
       IconToggleButton(
           checked = isPasswordVisible,
           onCheckedChange = { newVisible ->

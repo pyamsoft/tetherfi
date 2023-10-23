@@ -28,13 +28,15 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
+import javax.inject.Inject
+import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -45,8 +47,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Named
 
 class StatusViewModeler
 @Inject
@@ -57,7 +57,7 @@ internal constructor(
     private val configPreferences: ConfigPreferences,
     private val serverPreferences: ServerPreferences,
     private val servicePreferences: ServicePreferences,
-    private val network: WiDiNetworkStatus,
+    private val networkStatus: BroadcastNetworkStatus,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
@@ -180,15 +180,15 @@ internal constructor(
     closeAllDialogs()
 
     appScope.launch(context = Dispatchers.Default) {
-      val networkStatus = network.getCurrentStatus()
-      val proxyStatus = network.getCurrentProxyStatus()
+      val broadcastStatus = networkStatus.getCurrentStatus()
+      val proxyStatus = networkStatus.getCurrentProxyStatus()
 
-      if (networkStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
+      if (broadcastStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
         // If either is in error, reset network and restart
         resetError()
       } else {
         // Otherwise just go by Wifi direct
-        when (networkStatus) {
+        when (broadcastStatus) {
           is RunningStatus.NotRunning -> {
             startProxy()
           }
@@ -196,7 +196,9 @@ internal constructor(
             stopProxy()
           }
           else -> {
-            Timber.d { "Cannot toggle while we are in the middle of an operation: $networkStatus" }
+            Timber.d {
+              "Cannot toggle while we are in the middle of an operation: $broadcastStatus"
+            }
           }
         }
       }
@@ -363,7 +365,7 @@ internal constructor(
   }
 
   private fun watchStatusUpdates(scope: CoroutineScope) {
-    network.onProxyStatusChanged().also { f ->
+    networkStatus.onProxyStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d { "Proxy Status Changed: $status" }
@@ -372,7 +374,7 @@ internal constructor(
       }
     }
 
-    network.onStatusChanged().also { f ->
+    networkStatus.onStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d { "WiDi Status Changed: $status" }

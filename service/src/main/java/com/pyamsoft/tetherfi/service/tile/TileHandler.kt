@@ -19,8 +19,8 @@ package com.pyamsoft.tetherfi.service.tile
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ class TileHandler
 @Inject
 internal constructor(
     private val enforcer: ThreadEnforcer,
-    private val network: WiDiNetworkStatus,
+    private val networkStatus: BroadcastNetworkStatus,
 ) {
 
   private fun CoroutineScope.watchStatusUpdates(
@@ -43,7 +43,7 @@ internal constructor(
     launch(context = Dispatchers.Default) {
       enforcer.assertOffMainThread()
 
-      network.onProxyStatusChanged().also { f ->
+      networkStatus.onProxyStatusChanged().also { f ->
         launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
@@ -59,7 +59,7 @@ internal constructor(
         }
       }
 
-      network.onStatusChanged().also { f ->
+      networkStatus.onStatusChanged().also { f ->
         launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
@@ -82,19 +82,19 @@ internal constructor(
 
   @CheckResult
   fun getOverallStatus(): RunningStatus {
-    val networkStatus = network.getCurrentStatus()
-    val proxyStatus = network.getCurrentProxyStatus()
+    val broadcastStatus = networkStatus.getCurrentStatus()
+    val proxyStatus = networkStatus.getCurrentProxyStatus()
 
     // If either piece has a specific error state, return it
-    if (networkStatus is RunningStatus.Error) {
-      return networkStatus
+    if (broadcastStatus is RunningStatus.Error) {
+      return broadcastStatus
     }
     if (proxyStatus is RunningStatus.Error) {
       return proxyStatus
     }
 
     // Otherwise we only care about Wifi direct
-    return networkStatus
+    return broadcastStatus
   }
 
   fun bind(

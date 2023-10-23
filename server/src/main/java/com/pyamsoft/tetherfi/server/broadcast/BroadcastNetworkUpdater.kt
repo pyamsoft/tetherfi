@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi.receiver
+package com.pyamsoft.tetherfi.server.broadcast
 
-import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
+interface BroadcastNetworkUpdater {
 
-interface WiDiReceiver {
-
-  @CheckResult fun listenNetworkEvents(): Flow<WidiNetworkEvent>
+  suspend fun updateNetworkInfo()
 }

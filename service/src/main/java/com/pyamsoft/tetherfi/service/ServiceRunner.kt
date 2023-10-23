@@ -17,11 +17,13 @@
 package com.pyamsoft.tetherfi.service
 
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.service.foreground.ForegroundLauncher
 import com.pyamsoft.tetherfi.service.foreground.ForegroundWatcher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -29,19 +31,17 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ServiceRunner
 @Inject
 internal constructor(
     private val notificationLauncher: NotificationLauncher,
-    private val wiDiReceiver: WiDiReceiver,
+    private val broadcastObserver: BroadcastObserver,
     private val foregroundWatcher: ForegroundWatcher,
     private val foregroundLauncher: ForegroundLauncher,
     private val serviceLauncher: ServiceLauncher,
-    private val networkStatus: WiDiNetworkStatus,
+    private val networkUpdater: BroadcastNetworkUpdater,
 ) {
   private val runningState = MutableStateFlow(false)
 
@@ -51,9 +51,9 @@ internal constructor(
     // Watch the Wifi Receiver for events
     // without this block, we do not properly refresh
     // CONNECTION and GROUP info and can lead to errors
-    wiDiReceiver.listenNetworkEvents().also { f ->
+    broadcastObserver.listenNetworkEvents().also { f ->
       scope.launch(context = Dispatchers.Default) {
-        f.collect { networkStatus.updateNetworkInfo() }
+        f.collect { networkUpdater.updateNetworkInfo() }
       }
     }
 

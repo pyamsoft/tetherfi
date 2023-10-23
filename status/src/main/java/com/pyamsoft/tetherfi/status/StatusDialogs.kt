@@ -10,8 +10,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
@@ -101,7 +101,7 @@ internal fun StatusDialogs(
     )
   }
 
-  group.cast<WiDiNetworkStatus.GroupInfo.Error>()?.also { err ->
+  group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingHotspotError,
     ) {
@@ -114,7 +114,7 @@ internal fun StatusDialogs(
     }
   }
 
-  connection.cast<WiDiNetworkStatus.ConnectionInfo.Error>()?.also { err ->
+  connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also { err ->
     AnimatedVisibility(
         visible = isShowingNetworkError,
     ) {

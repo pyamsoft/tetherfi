@@ -39,7 +39,7 @@ import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.ServerErrorTile
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -67,8 +67,8 @@ internal fun RunningTiles(
           connection,
           group,
       ) {
-        connection is WiDiNetworkStatus.ConnectionInfo.Connected &&
-            group is WiDiNetworkStatus.GroupInfo.Connected
+        connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
+            group is BroadcastNetworkStatus.GroupInfo.Connected
       }
 
   val hapticManager = LocalHapticManager.current
@@ -158,7 +158,7 @@ internal fun RunningTiles(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      connection.cast<WiDiNetworkStatus.ConnectionInfo.Error>()?.also {
+      connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,
@@ -189,14 +189,14 @@ internal fun RunningTiles(
         }
       }
 
-      if (connection is WiDiNetworkStatus.ConnectionInfo.Error &&
-          group is WiDiNetworkStatus.GroupInfo.Error) {
+      if (connection is BroadcastNetworkStatus.ConnectionInfo.Error &&
+          group is BroadcastNetworkStatus.GroupInfo.Error) {
         Spacer(
             modifier = Modifier.width(MaterialTheme.keylines.content),
         )
       }
 
-      group.cast<WiDiNetworkStatus.GroupInfo.Error>()?.also {
+      group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also {
         Tile(
             modifier = Modifier.weight(1F),
             color = MaterialTheme.colors.error,

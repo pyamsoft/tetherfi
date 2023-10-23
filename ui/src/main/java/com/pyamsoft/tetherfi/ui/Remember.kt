@@ -19,17 +19,17 @@ package com.pyamsoft.tetherfi.ui
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 
 @Composable
 @CheckResult
-fun rememberServerSSID(group: WiDiNetworkStatus.GroupInfo): String {
+fun rememberServerSSID(group: BroadcastNetworkStatus.GroupInfo): String {
   return remember(group) {
     when (group) {
-      is WiDiNetworkStatus.GroupInfo.Connected -> group.ssid
-      is WiDiNetworkStatus.GroupInfo.Empty -> "NO NAME"
-      is WiDiNetworkStatus.GroupInfo.Error -> "ERROR"
-      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+      is BroadcastNetworkStatus.GroupInfo.Connected -> group.ssid
+      is BroadcastNetworkStatus.GroupInfo.Empty -> "NO NAME"
+      is BroadcastNetworkStatus.GroupInfo.Error -> "ERROR"
+      is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
         throw IllegalStateException(
             "GroupInfo.Unchanged should never escape the server-module internals.")
       }
@@ -39,15 +39,15 @@ fun rememberServerSSID(group: WiDiNetworkStatus.GroupInfo): String {
 
 @Composable
 @CheckResult
-fun rememberServerRawPassword(group: WiDiNetworkStatus.GroupInfo): String {
+fun rememberServerRawPassword(group: BroadcastNetworkStatus.GroupInfo): String {
   return remember(
       group,
   ) {
     when (group) {
-      is WiDiNetworkStatus.GroupInfo.Connected -> group.password
-      is WiDiNetworkStatus.GroupInfo.Empty -> ""
-      is WiDiNetworkStatus.GroupInfo.Error -> ""
-      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+      is BroadcastNetworkStatus.GroupInfo.Connected -> group.password
+      is BroadcastNetworkStatus.GroupInfo.Empty -> ""
+      is BroadcastNetworkStatus.GroupInfo.Error -> ""
+      is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
         throw IllegalStateException(
             "GroupInfo.Unchanged should never escape the server-module internals.")
       }
@@ -58,7 +58,7 @@ fun rememberServerRawPassword(group: WiDiNetworkStatus.GroupInfo): String {
 @Composable
 @CheckResult
 fun rememberServerPassword(
-    group: WiDiNetworkStatus.GroupInfo,
+    group: BroadcastNetworkStatus.GroupInfo,
     isPasswordVisible: Boolean,
 ): String {
   return remember(
@@ -66,7 +66,7 @@ fun rememberServerPassword(
       isPasswordVisible,
   ) {
     when (group) {
-      is WiDiNetworkStatus.GroupInfo.Connected -> {
+      is BroadcastNetworkStatus.GroupInfo.Connected -> {
         val rawPassword = group.password
         // If hidden password, map each char to the password star
         return@remember if (isPasswordVisible) {
@@ -75,13 +75,13 @@ fun rememberServerPassword(
           rawPassword.map { '\u2022' }.joinToString("")
         }
       }
-      is WiDiNetworkStatus.GroupInfo.Empty -> {
+      is BroadcastNetworkStatus.GroupInfo.Empty -> {
         "NO PASSWORD"
       }
-      is WiDiNetworkStatus.GroupInfo.Error -> {
+      is BroadcastNetworkStatus.GroupInfo.Error -> {
         "ERROR"
       }
-      is WiDiNetworkStatus.GroupInfo.Unchanged -> {
+      is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
         throw IllegalStateException(
             "GroupInfo.Unchanged should never escape the server-module internals.")
       }
@@ -91,13 +91,13 @@ fun rememberServerPassword(
 
 @Composable
 @CheckResult
-fun rememberServerHostname(connection: WiDiNetworkStatus.ConnectionInfo): String {
+fun rememberServerHostname(connection: BroadcastNetworkStatus.ConnectionInfo): String {
   return remember(connection) {
     when (connection) {
-      is WiDiNetworkStatus.ConnectionInfo.Connected -> connection.hostName
-      is WiDiNetworkStatus.ConnectionInfo.Empty -> "NO HOST"
-      is WiDiNetworkStatus.ConnectionInfo.Error -> "ERROR"
-      is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
+      is BroadcastNetworkStatus.ConnectionInfo.Connected -> connection.hostName
+      is BroadcastNetworkStatus.ConnectionInfo.Empty -> "NO HOST"
+      is BroadcastNetworkStatus.ConnectionInfo.Error -> "ERROR"
+      is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
         throw IllegalStateException(
             "ConnectionInfo.Unchanged should never escape the server-module internals.")
       }

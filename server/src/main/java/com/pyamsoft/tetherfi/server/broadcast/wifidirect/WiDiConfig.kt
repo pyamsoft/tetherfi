@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi
+package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
 import android.net.wifi.p2p.WifiP2pConfig
 import androidx.annotation.CheckResult

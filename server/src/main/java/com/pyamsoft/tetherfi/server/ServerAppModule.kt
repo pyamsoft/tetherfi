@@ -47,15 +47,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
-import com.pyamsoft.tetherfi.server.widi.WiDiConfig
-import com.pyamsoft.tetherfi.server.widi.WiDiConfigImpl
-import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkImpl
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiverRegister
-import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
-import com.pyamsoft.tetherfi.server.widi.receiver.WifiDirectReceiver
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -83,24 +74,6 @@ abstract class ServerAppModule {
   @Binds
   @CheckResult
   internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
-
-  // Wifi network
-  @Binds @CheckResult internal abstract fun bindWiDiNetwork(impl: WiDiNetworkImpl): WiDiNetwork
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindWiDiNetworkStatus(impl: WiDiNetworkImpl): WiDiNetworkStatus
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
-
-  @Binds @CheckResult internal abstract fun bindWidiReceiver(impl: WifiDirectReceiver): WiDiReceiver
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WiDiReceiverRegister
 
   // Client tracking
   @Binds
@@ -165,14 +138,6 @@ abstract class ServerAppModule {
     @Named("server")
     internal fun provideServerPermissionRequester(guard: PermissionGuard): PermissionRequester {
       return PermissionRequester.create(guard.requiredPermissions.toTypedArray())
-    }
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @ServerInternalApi
-    internal fun provideWidiReceiverEventBus(): EventBus<WidiNetworkEvent> {
-      return DefaultEventBus()
     }
 
     @Provides

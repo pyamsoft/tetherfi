@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi.receiver
+package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
-internal interface WiDiReceiverRegister {
+internal interface WifiDirectRegister {
 
   suspend fun register()
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi
+package com.pyamsoft.tetherfi.server.broadcast
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Immutable
@@ -23,9 +23,7 @@ import com.pyamsoft.tetherfi.server.Server
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.flow.Flow
 
-interface WiDiNetworkStatus : Server {
-
-  suspend fun updateNetworkInfo()
+interface BroadcastNetworkStatus : Server {
 
   @CheckResult fun onGroupInfoChanged(): Flow<GroupInfo>
 

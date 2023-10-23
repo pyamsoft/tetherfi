@@ -39,6 +39,7 @@ import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
@@ -52,20 +53,19 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.CoroutineScope
 import java.time.Clock
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 @Component(
     modules =
         [
             TetherFiComponent.Provider::class,
-
-            // Other Modules
             ServerAppModule::class,
             ServiceAppModule::class,
+            WifiDirectAppModule::class,
         ],
 )
 internal interface TetherFiComponent {

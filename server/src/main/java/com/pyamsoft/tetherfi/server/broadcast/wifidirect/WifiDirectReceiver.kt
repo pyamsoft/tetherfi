@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi.receiver
+package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -27,9 +27,11 @@ import android.os.Parcelable
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,6 +44,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -52,8 +55,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val context: Context,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
-    @ServerInternalApi private val eventBus: EventBus<WidiNetworkEvent>,
-) : BroadcastReceiver(), WiDiReceiver, WiDiReceiverRegister {
+) : BroadcastReceiver(), WifiDirectRegister, BroadcastObserver {
 
   private val receiverScope by lazy {
     CoroutineScope(
@@ -61,6 +63,7 @@ internal constructor(
     )
   }
 
+  private val eventBus = DefaultEventBus<WidiNetworkEvent>()
   private val registered = MutableStateFlow(false)
 
   private suspend fun handleStateChangedAction(intent: Intent) {
@@ -102,7 +105,17 @@ internal constructor(
     eventBus.emit(WidiNetworkEvent.ThisDeviceChanged)
   }
 
-  override fun listenNetworkEvents(): Flow<WidiNetworkEvent> = eventBus
+  override fun listenNetworkEvents(): Flow<BroadcastEvent> {
+    return eventBus.map { event ->
+      when (event) {
+        is WidiNetworkEvent.ConnectionChanged ->
+            BroadcastEvent.ConnectionChanged(
+                hostName = event.hostName,
+            )
+        else -> BroadcastEvent.Other
+      }
+    }
+  }
 
   private fun unregister() {
     enforcer.assertOnMainThread()

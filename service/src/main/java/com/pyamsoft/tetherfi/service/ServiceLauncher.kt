@@ -20,9 +20,9 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
 import com.pyamsoft.tetherfi.server.proxy.ProxyStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiStatus
 import javax.inject.Inject
 
 class ServiceLauncher
@@ -30,7 +30,7 @@ class ServiceLauncher
 internal constructor(
     private val context: Context,
     private val foregroundServiceClass: Class<out Service>,
-    private val wiDiStatus: WiDiStatus,
+    private val wiDiStatus: BroadcastStatus,
     private val proxyStatus: ProxyStatus,
 ) {
 

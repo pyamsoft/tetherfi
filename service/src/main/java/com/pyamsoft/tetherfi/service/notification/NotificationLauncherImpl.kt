@@ -21,10 +21,10 @@ import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,7 +44,7 @@ internal class NotificationLauncherImpl
 internal constructor(
     @ServiceInternalApi private val notifier: Notifier,
     private val enforcer: ThreadEnforcer,
-    private val networkStatus: WiDiNetworkStatus,
+    private val networkStatus: BroadcastNetworkStatus,
     private val seenClients: SeenClients,
     private val blockedClients: BlockedClients,
 ) : NotificationLauncher {

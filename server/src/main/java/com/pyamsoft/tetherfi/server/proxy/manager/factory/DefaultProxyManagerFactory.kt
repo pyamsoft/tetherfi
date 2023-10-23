@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
@@ -28,11 +29,10 @@ import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class DefaultProxyManagerFactory
 @Inject
@@ -46,7 +46,7 @@ internal constructor(
 
   @CheckResult
   private suspend fun createTcp(
-      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
@@ -63,7 +63,7 @@ internal constructor(
 
   @CheckResult
   private fun createUdp(
-      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
@@ -77,7 +77,7 @@ internal constructor(
 
   override suspend fun create(
       type: SharedProxy.Type,
-      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
         return@withContext when (type) {

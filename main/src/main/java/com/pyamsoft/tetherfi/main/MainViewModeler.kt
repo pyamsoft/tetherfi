@@ -21,10 +21,12 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
-import com.pyamsoft.tetherfi.server.widi.receiver.WiDiReceiver
-import com.pyamsoft.tetherfi.server.widi.receiver.WidiNetworkEvent
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,20 +35,20 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 class MainViewModeler
 @Inject
 internal constructor(
     override val state: MutableMainViewState,
-    private val network: WiDiNetworkStatus,
-    private val wiDiReceiver: WiDiReceiver,
+    private val networkStatus: BroadcastNetworkStatus,
+    private val networkUpdater: BroadcastNetworkUpdater,
+    private val broadcastObserver: BroadcastObserver,
     private val configPreferences: ConfigPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
 ) : MainViewState by state, AbstractViewModeler<MainViewState>(state) {
 
   private val isNetworkCurrentlyRunning =
-      MutableStateFlow(network.getCurrentStatus() == RunningStatus.Running)
+      MutableStateFlow(networkStatus.getCurrentStatus() == RunningStatus.Running)
 
   fun watchForInAppRatingPrompt(
       scope: CoroutineScope,
@@ -72,17 +74,17 @@ internal constructor(
     val s = state
 
     // Watch group info
-    network.onGroupInfoChanged().also { f ->
+    networkStatus.onGroupInfoChanged().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.group.value = it } }
     }
 
     // Watch connection info
-    network.onConnectionInfoChanged().also { f ->
+    networkStatus.onConnectionInfoChanged().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.connection.value = it } }
     }
 
     // Watch the server status and update if it is running
-    network.onStatusChanged().also { f ->
+    networkStatus.onStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { s ->
           val wasRunning = isNetworkCurrentlyRunning.value
@@ -115,11 +117,11 @@ internal constructor(
 
     // But then once we are done editing and we start getting events from the receiver,
     // take them instead
-    wiDiReceiver.listenNetworkEvents().also { f ->
+    broadcastObserver.listenNetworkEvents().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { event ->
           when (event) {
-            is WidiNetworkEvent.ConnectionChanged -> {
+            is BroadcastEvent.ConnectionChanged -> {
               s.connection.update { info -> info.update { it.copy(hostName = event.hostName) } }
             }
             else -> {
@@ -157,7 +159,7 @@ internal constructor(
   }
 
   fun handleRefreshConnectionInfo(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Default) { network.updateNetworkInfo() }
+    scope.launch(context = Dispatchers.Default) { networkUpdater.updateNetworkInfo() }
   }
 
   fun handleOpenSettings() {
@@ -170,7 +172,7 @@ internal constructor(
 
   fun handleOpenQRCodeDialog() {
     // If the hotspot is valid, we will have this from the group
-    val isHotspotDataValid = state.group.value is WiDiNetworkStatus.GroupInfo.Connected
+    val isHotspotDataValid = state.group.value is BroadcastNetworkStatus.GroupInfo.Connected
     state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
   }
 

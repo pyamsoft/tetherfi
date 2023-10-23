@@ -14,27 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi.receiver
+package com.pyamsoft.tetherfi.server.broadcast
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
+interface BroadcastNetwork {
 
-@Stable
-@Immutable
-sealed interface WidiNetworkEvent {
-
-  data object WifiEnabled : WidiNetworkEvent
-
-  data object WifiDisabled : WidiNetworkEvent
-
-  data object PeersChanged : WidiNetworkEvent
-
-  data object ThisDeviceChanged : WidiNetworkEvent
-
-  data object DiscoveryChanged : WidiNetworkEvent
-
-  data class ConnectionChanged
-  internal constructor(
-      val hostName: String,
-  ) : WidiNetworkEvent
+  suspend fun start()
 }

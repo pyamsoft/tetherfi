@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi
+package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
 import android.net.wifi.p2p.WifiP2pConfig
 import android.os.Build
@@ -23,10 +23,10 @@ import androidx.annotation.RequiresApi
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class WiDiConfigImpl
 @Inject

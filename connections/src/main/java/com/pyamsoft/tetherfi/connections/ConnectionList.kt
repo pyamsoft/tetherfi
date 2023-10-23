@@ -10,19 +10,19 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 
 fun LazyListScope.renderList(
     modifier: Modifier = Modifier,
-    group: WiDiNetworkStatus.GroupInfo,
+    group: BroadcastNetworkStatus.GroupInfo,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
 ) {
   group.also { gi ->
-    if (gi is WiDiNetworkStatus.GroupInfo.Connected) {
+    if (gi is BroadcastNetworkStatus.GroupInfo.Connected) {
       if (clients.isEmpty()) {
         renderRunningNoClients(
             modifier = modifier,

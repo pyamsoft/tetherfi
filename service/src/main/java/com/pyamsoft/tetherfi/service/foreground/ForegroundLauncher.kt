@@ -17,7 +17,7 @@
 package com.pyamsoft.tetherfi.service.foreground
 
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.widi.WiDiNetwork
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetwork
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
 import javax.inject.Inject
@@ -32,7 +32,7 @@ class ForegroundLauncher
 @Inject
 internal constructor(
     @ServiceInternalApi private val locker: Locker,
-    private val network: WiDiNetwork,
+    private val network: BroadcastNetwork,
 ) {
 
   private suspend fun shutdown() =

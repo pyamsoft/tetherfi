@@ -43,8 +43,8 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
@@ -201,7 +201,7 @@ fun MainEntry(
   if (isShowingQRCodeDialog) {
     val group by viewModel.group.collectAsStateWithLifecycle()
 
-    group.cast<WiDiNetworkStatus.GroupInfo.Connected>()?.also { grp ->
+    group.cast<BroadcastNetworkStatus.GroupInfo.Connected>()?.also { grp ->
       QRCodeEntry(
           ssid = grp.ssid,
           password = grp.password,

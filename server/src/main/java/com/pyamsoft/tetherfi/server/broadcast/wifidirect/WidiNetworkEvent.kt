@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.widi
+package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
-import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.status.BaseStatusBroadcaster
-import javax.inject.Inject
-import javax.inject.Singleton
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 
-@Singleton
-@ServerInternalApi
-class WiDiStatus @Inject internal constructor() : BaseStatusBroadcaster()
+@Stable
+@Immutable
+sealed interface WidiNetworkEvent {
+
+  data object WifiEnabled : WidiNetworkEvent
+
+  data object WifiDisabled : WidiNetworkEvent
+
+  data object PeersChanged : WidiNetworkEvent
+
+  data object ThisDeviceChanged : WidiNetworkEvent
+
+  data object DiscoveryChanged : WidiNetworkEvent
+
+  data class ConnectionChanged
+  internal constructor(
+      val hostName: String,
+  ) : WidiNetworkEvent
+}

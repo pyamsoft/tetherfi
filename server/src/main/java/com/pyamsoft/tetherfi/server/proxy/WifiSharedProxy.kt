@@ -24,12 +24,12 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.server.widi.WiDiNetworkStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -100,7 +100,7 @@ internal constructor(
 
   private suspend fun beginProxyLoop(
       type: SharedProxy.Type,
-      info: WiDiNetworkStatus.ConnectionInfo.Connected,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
   ) {
     enforcer.assertOffMainThread()
 
@@ -117,7 +117,7 @@ internal constructor(
     }
   }
 
-  private fun CoroutineScope.proxyLoop(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
+  private fun CoroutineScope.proxyLoop(info: BroadcastNetworkStatus.ConnectionInfo.Connected) {
     val fakeError = appEnvironment.isProxyFakeError
     if (fakeError.value) {
       Timber.w { "DEBUG forcing Fake Proxy Error" }
@@ -187,7 +187,7 @@ internal constructor(
         }
   }
 
-  private suspend fun startServer(info: WiDiNetworkStatus.ConnectionInfo.Connected) {
+  private suspend fun startServer(info: BroadcastNetworkStatus.ConnectionInfo.Connected) {
     try {
       // Launch a new scope so this function won't proceed to finally block until the scope is
       // completed/cancelled
@@ -219,7 +219,7 @@ internal constructor(
     cancelAndJoin()
   }
 
-  override suspend fun start(connectionStatus: Flow<WiDiNetworkStatus.ConnectionInfo>) =
+  override suspend fun start(connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>) =
       withContext(context = Dispatchers.Default) {
         // Scope local
         val mutex = Mutex()
@@ -236,7 +236,7 @@ internal constructor(
             // Watch the connection status for valid info
             connectionStatus.distinctUntilChanged().collect { info ->
               when (info) {
-                is WiDiNetworkStatus.ConnectionInfo.Connected -> {
+                is BroadcastNetworkStatus.ConnectionInfo.Connected -> {
                   // Connected is good, we can launch
                   // This will re-launch any time the connection info changes
                   mutex.withLock {
@@ -249,7 +249,7 @@ internal constructor(
                     job = launch(context = Dispatchers.Default) { startServer(info) }
                   }
                 }
-                is WiDiNetworkStatus.ConnectionInfo.Empty -> {
+                is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
                   Timber.w { "Connection EMPTY, shut down Proxy" }
 
                   // Empty is missing the channel, bad
@@ -259,7 +259,7 @@ internal constructor(
                   }
                   shutdown()
                 }
-                is WiDiNetworkStatus.ConnectionInfo.Error -> {
+                is BroadcastNetworkStatus.ConnectionInfo.Error -> {
                   Timber.w { "Connection ERROR, shut down Proxy" }
 
                   // Error is bad, shut down the proxy
@@ -269,7 +269,7 @@ internal constructor(
                   }
                   shutdown()
                 }
-                is WiDiNetworkStatus.ConnectionInfo.Unchanged -> {
+                is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
                   // This should not happen - coding issue
                   mutex.withLock {
