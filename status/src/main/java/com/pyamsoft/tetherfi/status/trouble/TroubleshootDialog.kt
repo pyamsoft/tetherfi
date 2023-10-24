@@ -35,7 +35,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
     appName: String,
-    isWifiDirectError: Boolean,
+    isBroadcastError: Boolean,
     isProxyError: Boolean,
     onDismiss: () -> Unit,
 ) {
@@ -49,7 +49,7 @@ internal fun TroubleshootDialog(
         TroubleshootUnableToStart(
             modifier = Modifier.fillMaxWidth(),
             appName = appName,
-            isWifiDirectError = isWifiDirectError,
+            isBroadcastError = isBroadcastError,
             isProxyError = isProxyError,
         )
       },

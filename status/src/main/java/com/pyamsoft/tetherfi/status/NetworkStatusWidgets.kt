@@ -54,14 +54,14 @@ internal fun LazyListScope.renderNetworkInformation(
   item(
       contentType = StatusScreenContentTypes.NETWORK_ERROR,
   ) {
-    val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+    val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
     val showErrorHintMessage =
         remember(
-            isWifiDirectError,
+            isBroadcastError,
             isProxyError,
         ) {
-          isWifiDirectError || isProxyError
+          isBroadcastError || isProxyError
         }
 
     AnimatedVisibility(
@@ -81,7 +81,7 @@ internal fun LazyListScope.renderNetworkInformation(
         TroubleshootUnableToStart(
             modifier = Modifier.fillMaxWidth(),
             appName = appName,
-            isWifiDirectError = isWifiDirectError,
+            isBroadcastError = isBroadcastError,
             isProxyError = isProxyError,
         )
       }

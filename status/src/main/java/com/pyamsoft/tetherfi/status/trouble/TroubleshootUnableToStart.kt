@@ -15,15 +15,15 @@ import com.pyamsoft.pydroid.theme.keylines
 internal fun TroubleshootUnableToStart(
     modifier: Modifier = Modifier,
     appName: String,
-    isWifiDirectError: Boolean,
+    isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
   val errType =
       remember(
-          isWifiDirectError,
+          isBroadcastError,
           isProxyError,
       ) {
-        if (isWifiDirectError && isProxyError) {
+        if (isBroadcastError && isProxyError) {
           "with your device and configuration"
         } else if (isProxyError) {
           "with your configuration"
@@ -62,7 +62,7 @@ internal fun TroubleshootUnableToStart(
             ),
     )
 
-    if (isWifiDirectError) {
+    if (isBroadcastError) {
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
           text = "• Wi-Fi must be turned ON to start the Hotspot",

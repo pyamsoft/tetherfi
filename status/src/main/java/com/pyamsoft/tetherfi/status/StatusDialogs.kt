@@ -89,13 +89,13 @@ internal fun StatusDialogs(
   AnimatedVisibility(
       visible = isShowingSetupError,
   ) {
-    val isWifiDirectError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
+    val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
     TroubleshootDialog(
         modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
-        isWifiDirectError = isWifiDirectError,
+        isBroadcastError = isBroadcastError,
         isProxyError = isProxyError,
         onDismiss = onHideSetupError,
     )
