@@ -86,6 +86,8 @@ internal constructor(
     appContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
 
+  override val canReUseDataSourceConnection: Boolean = true
+
   @SuppressLint("MissingPermission")
   private fun createGroupQ(
       channel: Channel,

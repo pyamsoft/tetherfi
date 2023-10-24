@@ -150,7 +150,13 @@ protected constructor(
           // NOTE: If the SSID/password has changed between creating this group in the past and
           // retrieving it now, the UI will be out of sync. Do we care?
 
-          val runningStatus = reUseExistingConnection(dataSource) ?: connectDataSource(dataSource)
+          val runningStatus =
+              if (canReUseDataSourceConnection) {
+                reUseExistingConnection(dataSource) ?: connectDataSource(dataSource)
+              } else {
+                connectDataSource(dataSource)
+              }
+
           if (runningStatus is RunningStatus.Running) {
             Timber.d { "Network started" }
 
@@ -461,6 +467,9 @@ protected constructor(
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
   protected abstract suspend fun onBeforeStartingNetwork(scope: CoroutineScope)
+
+  /** If a data source connection can be re-used, we can slightly optimize */
+  protected abstract val canReUseDataSourceConnection: Boolean
 
   /** Create data source for implementation */
   @CheckResult protected abstract suspend fun createDataSource(): T?
