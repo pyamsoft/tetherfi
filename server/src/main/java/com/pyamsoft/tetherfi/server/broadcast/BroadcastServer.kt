@@ -50,14 +50,6 @@ protected constructor(
   private var proxyJob: Job? = null
   private var heldDataSource: T? = null
 
-  private suspend fun shutdownForStatus(
-      newStatus: RunningStatus,
-      clearErrorStatus: Boolean,
-  ) {
-    status.set(newStatus, clearErrorStatus)
-    shutdownBus.emit(ServerShutdownEvent)
-  }
-
   @CheckResult
   private suspend fun reUseExistingConnection(dataSource: T): RunningStatus? {
     val fakeError = appEnvironment.isBroadcastFakeError
@@ -125,8 +117,9 @@ protected constructor(
 
           if (!permissionGuard.canCreateNetwork()) {
             Timber.w { "Missing permissions for making network" }
+            val e = RuntimeException("Missing required Permissions")
             shutdownForStatus(
-                RunningStatus.NotRunning,
+                RunningStatus.HotspotError(e),
                 clearErrorStatus = false,
             )
             return@withContext
@@ -238,10 +231,7 @@ protected constructor(
 
           // If we do have a channel, mark shutting down as we clean up
           Timber.d { "Shutting down network" }
-          shutdownForStatus(
-              RunningStatus.Stopping,
-              clearErrorStatus,
-          )
+          status.set(RunningStatus.Stopping)
 
           killProxyJob()
 
@@ -387,6 +377,14 @@ protected constructor(
       return forcedDebugResult
     }
     return result
+  }
+
+  protected suspend fun shutdownForStatus(
+      newStatus: RunningStatus,
+      clearErrorStatus: Boolean,
+  ) {
+    status.set(newStatus, clearErrorStatus)
+    shutdownBus.emit(ServerShutdownEvent)
   }
 
   final override suspend fun updateNetworkInfo() =

@@ -2,17 +2,24 @@ package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
 import android.net.wifi.p2p.WifiP2pManager
 import androidx.annotation.CheckResult
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 
+@Stable
+@Immutable
 data class WiFiDirectError(
     val reason: Reason,
     override val throwable: Throwable,
 ) : RunningStatus.Error(throwable) {
 
+  @Stable
+  @Immutable
   sealed class Reason(
       open val code: Int,
       val displayReason: String,
   ) {
+
     data object P2PUnsupported : Reason(WifiP2pManager.P2P_UNSUPPORTED, "P2P Unsupported")
 
     data object NoServiceRequests :
