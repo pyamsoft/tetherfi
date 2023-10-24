@@ -83,12 +83,22 @@ private fun WatchTabSwipe(
       allTabs,
       hapticManager,
   ) {
+    // We don't need to remember and re-render off this, so it's fine here
+    // We keep track of the previous page to avoid having the device
+    // buzz when the tabs "initially mount"
+    var previousPage: MainView? = null
+
     snapshotFlow { pagerState.targetPage }
         .distinctUntilChanged()
         .mapNotNull { allTabs.getOrNull(it) }
         .collect { page ->
           Timber.d { "Page swiped: $page" }
-          withContext(context = Dispatchers.Main) { hapticManager?.actionButtonPress() }
+          // Buzz only when we are caused by a Swipe
+          // since, by default, this is mounted with NULL
+          if (previousPage != null) {
+            withContext(context = Dispatchers.Main) { hapticManager?.actionButtonPress() }
+          }
+          previousPage = page
         }
   }
 }
