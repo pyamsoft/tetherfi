@@ -55,7 +55,7 @@ internal constructor(
             }
       }
 
-  override suspend fun canCreateWiDiNetwork(): Boolean =
+  override suspend fun canCreateNetwork(): Boolean =
       withContext(context = Dispatchers.Main) {
         return@withContext requiredPermissions.all { hasPermission(it) }
       }

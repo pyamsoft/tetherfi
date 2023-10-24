@@ -7,7 +7,6 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
-import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WiFiDirectError
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -64,8 +63,7 @@ protected constructor(
     val fakeError = appEnvironment.isBroadcastFakeError
     if (fakeError.value) {
       Timber.w { "DEBUG forcing Fake Broadcast Error" }
-      return WiFiDirectError(
-          WiFiDirectError.Reason.Unknown(-1),
+      return RunningStatus.HotspotError(
           RuntimeException("DEBUG: Force Fake Broadcast Error"),
       )
     }
@@ -125,8 +123,8 @@ protected constructor(
         mutex.withLock {
           Timber.d { "START NEW NETWORK" }
 
-          if (!permissionGuard.canCreateWiDiNetwork()) {
-            Timber.w { "Missing permissions for making WiDi network" }
+          if (!permissionGuard.canCreateNetwork()) {
+            Timber.w { "Missing permissions for making network" }
             shutdownForStatus(
                 RunningStatus.NotRunning,
                 clearErrorStatus = false,
@@ -136,10 +134,10 @@ protected constructor(
 
           val dataSource = createDataSource()
           if (dataSource == null) {
-            Timber.w { "Failed to create channel, cannot initialize WiDi network" }
+            Timber.w { "Failed to create data source, cannot initialize network" }
 
             completeStop(this, clearErrorStatus = false) {
-              val e = RuntimeException("Failed to create Wi-Fi Direct Channel")
+              val e = RuntimeException("Failed to create Hotspot Data Source")
               shutdownForStatus(
                   RunningStatus.HotspotError(e),
                   clearErrorStatus = false,
@@ -233,7 +231,7 @@ protected constructor(
           Timber.d { "STOP NETWORK" }
 
           // If we do have a channel, mark shutting down as we clean up
-          Timber.d { "Shutting down wifi network" }
+          Timber.d { "Shutting down network" }
           shutdownForStatus(
               RunningStatus.Stopping,
               clearErrorStatus,
@@ -290,7 +288,7 @@ protected constructor(
   ): BroadcastNetworkStatus.GroupInfo {
     enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateWiDiNetwork()) {
+    if (!permissionGuard.canCreateNetwork()) {
       Timber.w { "Missing permissions, cannot get Group Info" }
       return BroadcastNetworkStatus.GroupInfo.Empty
     }
@@ -354,7 +352,7 @@ protected constructor(
   ): BroadcastNetworkStatus.ConnectionInfo {
     enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateWiDiNetwork()) {
+    if (!permissionGuard.canCreateNetwork()) {
       Timber.w { "Missing permissions, cannot get Connection Info" }
       return BroadcastNetworkStatus.ConnectionInfo.Empty
     }

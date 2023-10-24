@@ -17,7 +17,7 @@ internal constructor(
       withContext(context = Dispatchers.Default) {
         val blockers = mutableSetOf<HotspotStartBlocker>()
 
-        if (!permission.canCreateWiDiNetwork()) {
+        if (!permission.canCreateNetwork()) {
           blockers.add(HotspotStartBlocker.PERMISSION)
         }
 
