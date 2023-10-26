@@ -56,7 +56,7 @@ plugins {
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id("org.gradle.android.cache-fix") version "2.8.1" apply false
+  id("org.gradle.android.cache-fix") version "3.0" apply false
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
