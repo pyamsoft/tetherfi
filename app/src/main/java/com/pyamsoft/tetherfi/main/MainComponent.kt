@@ -24,8 +24,8 @@ import com.pyamsoft.tetherfi.qr.QRCodeComponent
 import com.pyamsoft.tetherfi.status.StatusComponent
 import dagger.Subcomponent
 
-@ActivityScope
 @Subcomponent
+@ActivityScope
 internal interface MainComponent {
 
   @CheckResult fun plusStatus(): StatusComponent.Factory

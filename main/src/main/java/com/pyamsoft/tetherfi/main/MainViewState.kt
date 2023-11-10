@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.Stable
+import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
@@ -30,6 +31,7 @@ interface MainViewState : ServerViewState {
 }
 
 @Stable
+@ActivityScope
 class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val group =
       MutableStateFlow<BroadcastNetworkStatus.GroupInfo>(BroadcastNetworkStatus.GroupInfo.Empty)
