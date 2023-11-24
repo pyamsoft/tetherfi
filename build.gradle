@@ -80,7 +80,7 @@ plugins {
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
-  id("com.osacky.doctor") version "0.9.0" apply true
+  id("com.osacky.doctor") version "0.9.1" apply true
 }
 
 subprojects {
