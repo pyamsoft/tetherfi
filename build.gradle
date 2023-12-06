@@ -38,7 +38,7 @@ buildscript {
 
     // Compose
     compose = "1.5.4"
-    composeCompiler = "1.5.4"
+    composeCompiler = "1.5.5"
     composeMaterial = "1.5.4"
     accompanist = "0.32.0"
 
