@@ -387,7 +387,7 @@ protected constructor(
     return result
   }
 
-  protected suspend fun shutdownForStatus(
+  private suspend fun shutdownForStatus(
       newStatus: RunningStatus,
       clearErrorStatus: Boolean,
   ) {
@@ -471,10 +471,13 @@ protected constructor(
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
   /** If a data source connection can be re-used, we can slightly optimize */
+  @Deprecated("Remove from API surface, it's WifiDirect specific")
   protected abstract val canReUseDataSourceConnection: Boolean
 
   /** Create data source for implementation */
-  @CheckResult protected abstract suspend fun createDataSource(): T?
+  @Deprecated("Remove from API surface, it's WifiDirect specific")
+  @CheckResult
+  protected abstract suspend fun createDataSource(): T?
 
   /** Connect data source for implementation */
   @CheckResult protected abstract suspend fun connectDataSource(dataSource: T): RunningStatus
