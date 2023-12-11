@@ -301,8 +301,10 @@ internal constructor(
     }
 
     fun cancel() {
-      Timber.d { "Stopping timer flow $timerPeriod" }
-      job?.cancel()
+      job?.also {
+        Timber.d { "Stopping timer flow $timerPeriod" }
+        it.cancel()
+      }
       job = null
     }
   }
