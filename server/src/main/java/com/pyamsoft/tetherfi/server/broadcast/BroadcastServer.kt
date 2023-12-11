@@ -50,6 +50,14 @@ protected constructor(
   private var proxyJob: Job? = null
   private var heldDataSource: T? = null
 
+  /**
+   * This is implementation specific to the WifiDirect impl.
+   *
+   * Bring this into the WifiDirect impl, and simplify the setup API to
+   * remove canReuse boolean and createDataSource
+   *
+   * Just use connectDataSource and disconnectDataSource
+   */
   @CheckResult
   private suspend fun reUseExistingConnection(dataSource: T): RunningStatus? {
     val fakeError = appEnvironment.isBroadcastFakeError
