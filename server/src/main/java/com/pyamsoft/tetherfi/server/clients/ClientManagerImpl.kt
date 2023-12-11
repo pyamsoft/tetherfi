@@ -54,7 +54,7 @@ internal constructor(
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val serverPreferences: ServerPreferences,
     enforcer: ThreadEnforcer,
-) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser, StartedClients {
+) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser, StartedClients, ClientEditor {
 
   private val blockedClients = MutableStateFlow<Collection<TetherClient>>(mutableSetOf())
   private val seenClients = MutableStateFlow<List<TetherClient>>(mutableListOf())
@@ -74,30 +74,18 @@ internal constructor(
       )
 
   @CheckResult
-  private fun isMatchingClient(c1: TetherClient, c2: TetherClient): Boolean {
-    when (c1) {
-      is TetherClient.IpAddress -> {
-        if (c2 is TetherClient.IpAddress) {
-          return c1.ip == c2.ip
-        }
-
-        return false
-      }
-      is TetherClient.HostName -> {
-        if (c2 is TetherClient.HostName) {
-          return c1.hostname == c2.hostname
-        }
-
-        return false
-      }
-    }
-  }
-
-  @CheckResult
   private fun markLastSeenNow(client: TetherClient): TetherClient {
     return when (client) {
       is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
       is TetherClient.HostName -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+    }
+  }
+
+  @CheckResult
+  private fun editNickName(client: TetherClient, nickName: String): TetherClient {
+    return when (client) {
+      is TetherClient.IpAddress -> client.copy(nickName = nickName)
+      is TetherClient.HostName -> client.copy(nickName = nickName)
     }
   }
 
@@ -135,7 +123,7 @@ internal constructor(
       set.filter { bc ->
             // If this blocked client is still found in the "new client" list, keep it,
             // otherwise filter it out
-            val stillAlive = newClients.firstOrNull { nc -> isMatchingClient(bc, nc) }
+            val stillAlive = newClients.firstOrNull { bc.matches(it) }
             return@filter stillAlive != null
           }
           .toSet()
@@ -195,7 +183,7 @@ internal constructor(
 
   override fun block(client: TetherClient) {
     blockedClients.update { set ->
-      val existing = set.firstOrNull { isMatchingClient(it, client) }
+      val existing = set.firstOrNull { it.matches(client) }
 
       return@update set.run {
         if (existing == null) {
@@ -209,7 +197,7 @@ internal constructor(
 
   override fun unblock(client: TetherClient) {
     blockedClients.update { clients ->
-      val existing = clients.firstOrNull { isMatchingClient(it, client) }
+      val existing = clients.firstOrNull { it.matches(client) }
 
       return@update clients.run {
         if (existing == null) {
@@ -223,14 +211,14 @@ internal constructor(
 
   override fun isBlocked(client: TetherClient): Boolean {
     val blocked = blockedClients.value
-    return blocked.firstOrNull { isMatchingClient(it, client) } != null
+    return blocked.firstOrNull { it.matches(client) } != null
   }
 
   override suspend fun seen(client: TetherClient) =
       withContext(context = Dispatchers.Default) {
         val clients =
             seenClients.updateAndGet { list ->
-              val existing = list.firstOrNull { isMatchingClient(it, client) }
+              val existing = list.firstOrNull { it.matches(client) }
 
               if (existing == null) {
                 return@updateAndGet (list + client).also { onNewClientSeen(client) }
@@ -247,6 +235,23 @@ internal constructor(
 
         onClientsUpdated(clients)
       }
+
+  override fun updateNickName(client: TetherClient, nickName: String) {
+    seenClients.update { list ->
+      val existing = list.firstOrNull { it.matches(client) }
+      if (existing == null) {
+        return@update list
+      } else {
+        return@update list.map { c ->
+          if (c == existing) {
+            return@map editNickName(c, nickName)
+          } else {
+            return@map c
+          }
+        }
+      }
+    }
+  }
 
   override fun clear() {
     Timber.d { "Clear client tracker" }

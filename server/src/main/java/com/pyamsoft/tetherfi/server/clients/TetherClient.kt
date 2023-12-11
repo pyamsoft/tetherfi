@@ -24,21 +24,47 @@ import java.time.LocalDateTime
 @Stable
 @Immutable
 sealed class TetherClient(
+    open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
 ) {
+
+  @CheckResult
+  fun matches(o: TetherClient): Boolean {
+    when (this) {
+      is IpAddress -> {
+        if (o is IpAddress) {
+          return ip == o.ip
+        }
+
+        return false
+      }
+      is HostName -> {
+        if (o is HostName) {
+          return hostname == o.hostname
+        }
+
+        return false
+      }
+    }
+  }
+
   data class IpAddress(
       val ip: String,
+      override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
   ) :
       TetherClient(
+          nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
       )
 
   data class HostName(
       val hostname: String,
+      override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
   ) :
       TetherClient(
+          nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
       )
 }

@@ -100,11 +100,13 @@ internal constructor(
       TetherClient.IpAddress(
           ip = hostNameOrIp,
           mostRecentlySeen = LocalDateTime.now(clock),
+          nickName = "",
       )
     } else {
       TetherClient.HostName(
           hostname = hostNameOrIp,
           mostRecentlySeen = LocalDateTime.now(clock),
+          nickName = "",
       )
     }
   }
