@@ -163,15 +163,19 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.watchForNoClients() {
+    // Stop old
+    noClientCheck.cancel()
+
+    // Start new if needed
     if (isShutdownWithNoClientsEnabled()) {
+      Timber.d { "Watch client count and shutdown if none" }
+
       noClientCheck.start(
           scope = this,
           initialDelay = NO_CLIENTS_TIMER_PERIOD,
       ) {
         shutdownWithNoClients()
       }
-    } else {
-      noClientCheck.cancel()
     }
   }
 
@@ -234,6 +238,8 @@ internal constructor(
       }
 
   override fun clear() {
+    Timber.d { "Clear client tracker" }
+
     seenClients.value = emptyList()
     blockedClients.value = emptySet()
 
