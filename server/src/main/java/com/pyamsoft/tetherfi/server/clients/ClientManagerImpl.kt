@@ -163,6 +163,13 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.watchForNoClients() {
+    // Remember when we started watching
+    //
+    // We do this weird check because in development I noticed when starting the server
+    // once a random ShutdownWithNoClients was published during startup, which caused
+    // the app to break since Broadcast started but Proxy never started
+    val startedAt = LocalDateTime.now(clock)
+
     // Stop old
     noClientCheck.cancel()
 
@@ -173,8 +180,12 @@ internal constructor(
       noClientCheck.start(
           scope = this,
           initialDelay = NO_CLIENTS_TIMER_PERIOD,
-      ) {
-        shutdownWithNoClients()
+      ) { cutoff ->
+        if (startedAt >= cutoff) {
+          Timber.w { "Shutdown check received but client started AFTER cutoff - invalid" }
+        } else {
+          shutdownWithNoClients()
+        }
       }
     }
   }
