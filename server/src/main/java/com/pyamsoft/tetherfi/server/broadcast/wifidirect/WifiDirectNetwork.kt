@@ -52,7 +52,6 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 @Singleton
@@ -85,8 +84,6 @@ internal constructor(
   private val wifiP2PManager by lazy {
     appContext.getSystemService<WifiP2pManager>().requireNotNull()
   }
-
-  override val canReUseDataSourceConnection: Boolean = true
 
   @SuppressLint("MissingPermission")
   private fun createGroupQ(
@@ -166,7 +163,8 @@ internal constructor(
     }
   }
 
-  override suspend fun createDataSource(): Channel? {
+  @CheckResult
+  private fun createChannel(): Channel? {
     enforcer.assertOffMainThread()
 
     Timber.d { "Creating WifiP2PManager Channel" }
@@ -189,7 +187,7 @@ internal constructor(
   }
 
   @SuppressLint("MissingPermission")
-  override suspend fun connectDataSource(dataSource: Channel): RunningStatus {
+  private suspend fun connectChannel(channel: Channel) {
     enforcer.assertOffMainThread()
 
     Timber.d { "Creating new wifi p2p group" }
@@ -204,14 +202,9 @@ internal constructor(
               val fakeError = appEnvironment.isBroadcastFakeError
               if (fakeError.value) {
                 Timber.w { "DEBUG forcing Fake Broadcast Error" }
-                cont.resume(
-                    WiFiDirectError(
-                        WiFiDirectError.Reason.Unknown(-1),
-                        RuntimeException("DEBUG: Force Fake Broadcast Error"),
-                    ),
-                )
+                cont.resumeWithException(RuntimeException("DEBUG: Force Fake Broadcast Error"))
               } else {
-                cont.resume(RunningStatus.Running)
+                cont.resume(Unit)
               }
             }
 
@@ -219,35 +212,80 @@ internal constructor(
               val r = WiFiDirectError.Reason.parseReason(reason)
               val e = RuntimeException("Broadcast Error: ${r.displayReason}")
               Timber.e(e) { "Unable to create Wifi Direct Group" }
-              cont.resume(WiFiDirectError(r, e))
+              cont.resumeWithException(e)
             }
           }
 
       if (conf != null) {
-        createGroupQ(dataSource, conf, listener)
+        createGroupQ(channel, conf, listener)
       } else {
         wifiP2PManager.createGroup(
-            dataSource,
+            channel,
             listener,
         )
       }
     }
   }
 
-  override suspend fun disconnectDataSource(dataSource: Channel) {
+  @CheckResult
+  private suspend fun attemptReUseConnection(channel: Channel): Boolean {
+    // Sometimes, if the system has not closed down the Wifi group (because an old version of the
+    // app made a group and a new one was then installed before the group was shut down) we can
+    // re-use the existing group info.
+    //
+    // This is generally a speed win and so we take it.
+    //
+    // NOTE: This can in rare cases lead to the UI being out of sync, as the existing group was
+    //       created with OLD name/password. The UI could have been changed and then started again.
+    val result =
+        withLockUpdateNetworkInfo(
+            source = channel,
+            force = true,
+            onlyAcceptWhenAllConnected = true,
+        )
+
+    // We expect both connections to be true for this to succeed
+    return result.connection && result.group
+  }
+
+  override suspend fun withLockStartBroadcast(): Channel {
+    val channel = createChannel()
+    if (channel == null) {
+      Timber.w { "Failed to create a Wi-Fi direct channel" }
+      throw RuntimeException("Unable to create Wi-Fi Direct Channel")
+    }
+
+    try {
+      Timber.d { "Attempt open connection with channel" }
+      if (attemptReUseConnection(channel)) {
+        Timber.d { "Existing Wi-Fi group connection was re-used!" }
+      } else {
+        Timber.d { "Cannot re-use Wi-Fi group connection, make new one" }
+        connectChannel(channel)
+        Timber.d { "New Wi-Fi group connection created!" }
+      }
+    } catch (e: Throwable) {
+      Timber.e(e) { "Failed to connect Wi-Fi direct group" }
+      throw e
+    }
+
+    return channel
+  }
+
+  override suspend fun withLockStopBroadcast(source: Channel) {
     // This may fail if WiFi is off, but that's fine since if WiFi is off,
     // the system has already cleaned us up.
-    removeGroup(dataSource)
+    removeGroup(source)
 
     // Close the wifi channel now that we are done with it
     Timber.d { "Close WiFiP2PManager channel" }
-    closeSilent(dataSource)
+    closeSilent(source)
   }
 
   override suspend fun resolveCurrentConnectionInfo(
-      dataSource: Channel
+      source: Channel
   ): BroadcastNetworkStatus.ConnectionInfo {
-    val info = resolveConnectionInfo(dataSource)
+    val info = resolveConnectionInfo(source)
     val host = info?.groupOwnerAddress
     return if (host == null) {
       BroadcastNetworkStatus.ConnectionInfo.Error(
@@ -260,10 +298,8 @@ internal constructor(
     }
   }
 
-  override suspend fun resolveCurrentGroupInfo(
-      dataSource: Channel
-  ): BroadcastNetworkStatus.GroupInfo {
-    val group = resolveCurrentGroup(dataSource)
+  override suspend fun resolveCurrentGroupInfo(source: Channel): BroadcastNetworkStatus.GroupInfo {
+    val group = resolveCurrentGroup(source)
     return if (group == null) {
       BroadcastNetworkStatus.GroupInfo.Error(
           error = IllegalStateException("WiFi Direct did not return Group Info"),
@@ -279,23 +315,20 @@ internal constructor(
   override fun CoroutineScope.onNetworkStarted(
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
   ) {
-    // Once the proxy is marked "starting", then the Wifi-Direct side is done
-    onProxyStatusChanged()
-        .filter { it is RunningStatus.Starting }
-        .also { f ->
-          launch(context = Dispatchers.Default) {
-            f.collect {
-              Timber.d { "Wifi Direct is fully set up!" }
-              status.set(RunningStatus.Running)
-            }
-          }
-        }
+    // Need to mark the network as running so that the Proxy network can start
+    Timber.d { "Wifi Direct is fully set up!" }
+    status.set(RunningStatus.Running)
 
-    launch(context = Dispatchers.Default) { register.register() }
+    launch(context = Dispatchers.Default) {
+      register.register {
+        Timber.d { "WiFi Direct Broadcast Receiver Registered" }
+        Timber.d { "Now start everything else" }
 
-    launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
+        launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
 
-    launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
+        launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
+      }
+    }
   }
 
   override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {}

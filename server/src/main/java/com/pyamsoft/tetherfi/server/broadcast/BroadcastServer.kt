@@ -35,6 +35,11 @@ protected constructor(
     status: BroadcastStatus,
 ) : BaseServer(status), BroadcastNetwork, BroadcastNetworkStatus, BroadcastNetworkUpdater {
 
+  data class UpdateResult(
+      val group: Boolean,
+      val connection: Boolean,
+  )
+
   // On some devices, refreshing channel info too frequently leads to errors
   private val groupInfoChannel =
       MutableStateFlow<BroadcastNetworkStatus.GroupInfo>(BroadcastNetworkStatus.GroupInfo.Empty)
@@ -48,65 +53,9 @@ protected constructor(
 
   private val mutex = Mutex()
   private var proxyJob: Job? = null
-  private var heldDataSource: T? = null
+  private var heldSource: T? = null
 
-  /**
-   * This is implementation specific to the WifiDirect impl.
-   *
-   * Bring this into the WifiDirect impl, and simplify the setup API to remove canReuse boolean and
-   * createDataSource
-   *
-   * Just use connectDataSource and disconnectDataSource
-   */
-  @CheckResult
-  private suspend fun reUseExistingConnection(dataSource: T): RunningStatus? {
-    val fakeError = appEnvironment.isBroadcastFakeError
-    if (fakeError.value) {
-      Timber.w { "DEBUG forcing Fake Broadcast Error" }
-      return RunningStatus.HotspotError(
-          RuntimeException("DEBUG: Force Fake Broadcast Error"),
-      )
-    }
-
-    val groupInfo = withLockGetGroupInfo(dataSource, force = true)
-    val connectionInfo = withLockGetConnectionInfo(dataSource, force = true)
-    when (groupInfo) {
-      is BroadcastNetworkStatus.GroupInfo.Connected -> {
-        when (connectionInfo) {
-          is BroadcastNetworkStatus.ConnectionInfo.Connected -> {
-            Timber.d { "Re-use existing connection: ${groupInfo.ssid} $connectionInfo" }
-            groupInfoChannel.value = groupInfo
-            connectionInfoChannel.value = connectionInfo
-            return RunningStatus.Running
-          }
-          is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
-            Timber.w { "Connection is EMPTY, cannot re-use" }
-            return null
-          }
-          is BroadcastNetworkStatus.ConnectionInfo.Error -> {
-            Timber.w { "Connection is ERROR, cannot re-use" }
-            return null
-          }
-          is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
-            throw IllegalStateException("Connection.UNCHANGED should not be reached here!")
-          }
-        }
-      }
-      is BroadcastNetworkStatus.GroupInfo.Empty -> {
-        Timber.w { "Group is EMPTY, cannot re-use" }
-        return null
-      }
-      is BroadcastNetworkStatus.GroupInfo.Error -> {
-        Timber.w { "Group is ERROR, cannot re-use" }
-        return null
-      }
-      is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
-        throw IllegalStateException("Group.UNCHANGED should not be reached here!")
-      }
-    }
-  }
-
-  private suspend fun withLockStartNetwork() =
+  private suspend fun startNetwork() =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
@@ -119,63 +68,36 @@ protected constructor(
         // Kill the old proxy
         killProxyJob()
 
-        var launchProxy: RunningStatus? = null
+        Timber.d { "START NEW NETWORK" }
+
+        if (!permissionGuard.canCreateNetwork()) {
+          Timber.w { "Missing permissions for making network" }
+          val e = RuntimeException("Missing required Permissions")
+          shutdownForStatus(
+              RunningStatus.HotspotError(e),
+              clearErrorStatus = false,
+          )
+          return@withContext
+        }
+
+        var launchProxy = false
         mutex.withLock {
-          Timber.d { "START NEW NETWORK" }
-
-          if (!permissionGuard.canCreateNetwork()) {
-            Timber.w { "Missing permissions for making network" }
-            val e = RuntimeException("Missing required Permissions")
-            shutdownForStatus(
-                RunningStatus.HotspotError(e),
-                clearErrorStatus = false,
-            )
-            return@withContext
-          }
-
-          val dataSource = createDataSource()
-          if (dataSource == null) {
-            Timber.w { "Failed to create data source, cannot initialize network" }
-
-            completeStop(this, clearErrorStatus = false) {
-              val e = RuntimeException("Failed to create Hotspot Data Source")
-              shutdownForStatus(
-                  RunningStatus.HotspotError(e),
-                  clearErrorStatus = false,
-              )
-            }
-            return@withContext
-          }
-
-          // Re-use the existing group if we can
-          // NOTE: If the SSID/password has changed between creating this group in the past and
-          // retrieving it now, the UI will be out of sync. Do we care?
-
-          val runningStatus =
-              if (canReUseDataSourceConnection) {
-                reUseExistingConnection(dataSource) ?: connectDataSource(dataSource)
-              } else {
-                connectDataSource(dataSource)
-              }
-
-          if (runningStatus is RunningStatus.Running) {
-            Timber.d { "Network started" }
+          try {
+            Timber.d { "Starting broadcast network" }
+            val source = withLockStartBroadcast()
 
             // Only store the channel if it successfully "finished" creating.
-            Timber.d { "Store data source: $dataSource" }
-            heldDataSource = dataSource
+            Timber.d { "Network started, store data source: $source" }
+            heldSource = source
 
-            launchProxy = runningStatus
-          } else {
-            Timber.w { "Group failed creation, stop network" }
-
-            // Remove whatever was created (should be a no-op if everyone follows API correctly)
-            shutdownWifiNetwork(dataSource)
+            launchProxy = true
+          } catch (e: Throwable) {
+            Timber.w { "Error during broadcast startup, stop network" }
 
             completeStop(this, clearErrorStatus = false) {
-              Timber.w { "Stopping network after Group failed to create" }
+              Timber.w { "Stopping network after startup failed" }
               shutdownForStatus(
-                  runningStatus,
+                  RunningStatus.HotspotError(e),
                   clearErrorStatus = false,
               )
             }
@@ -186,7 +108,7 @@ protected constructor(
         // rest of the lock
 
         // Do this outside of the lock, since this will run "forever"
-        launchProxy?.also {
+        if (launchProxy) {
           val newProxyJob =
               launch(context = Dispatchers.IO) { onNetworkStarted(connectionInfoChannel) }
           Timber.d { "Track new proxy job!" }
@@ -212,14 +134,14 @@ protected constructor(
     onStopped()
   }
 
-  private suspend fun shutdownWifiNetwork(dataSource: T) {
+  private suspend fun shutdownWifiNetwork(source: T) {
     enforcer.assertOffMainThread()
 
-    Timber.d { "Close data source" }
-    disconnectDataSource(dataSource)
+    Timber.d { "Stop broadcast server source" }
+    withLockStopBroadcast(source)
 
     // Clear out so nobody else can use a dead channel
-    heldDataSource = null
+    heldSource = null
   }
 
   private suspend fun killProxyJob() {
@@ -230,7 +152,7 @@ protected constructor(
     proxyJob = null
   }
 
-  private suspend fun withLockStopNetwork(clearErrorStatus: Boolean) =
+  private suspend fun stopNetwork(clearErrorStatus: Boolean) =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
@@ -245,7 +167,7 @@ protected constructor(
 
           // If we have no channel, we haven't started yet. Make sure we are clean, but this
           // is basically a no-op
-          heldDataSource?.also { shutdownWifiNetwork(it) }
+          heldSource?.also { shutdownWifiNetwork(it) }
 
           completeStop(this, clearErrorStatus) {
             shutdownForStatus(
@@ -287,18 +209,18 @@ protected constructor(
 
   @CheckResult
   private suspend fun withLockGetGroupInfo(
-      dataSource: T?,
+      source: T?,
       force: Boolean
   ): BroadcastNetworkStatus.GroupInfo {
     enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateNetwork()) {
-      Timber.w { "Missing permissions, cannot get Group Info" }
+    if (source == null) {
+      Timber.w { "Cannot get group info without Wifi source" }
       return BroadcastNetworkStatus.GroupInfo.Empty
     }
 
-    if (dataSource == null) {
-      Timber.w { "Cannot get group info without Wifi channel" }
+    if (!permissionGuard.canCreateNetwork()) {
+      Timber.w { "Missing permissions, cannot get Group Info" }
       return BroadcastNetworkStatus.GroupInfo.Empty
     }
 
@@ -309,7 +231,7 @@ protected constructor(
       }
     }
 
-    val result = resolveCurrentGroupInfo(dataSource)
+    val result = resolveCurrentGroupInfo(source)
     if (result is BroadcastNetworkStatus.GroupInfo.Connected) {
       // Save success time
       lastGroupRefreshTime = now
@@ -351,18 +273,18 @@ protected constructor(
 
   @CheckResult
   private suspend fun withLockGetConnectionInfo(
-      dataSource: T?,
+      source: T?,
       force: Boolean
   ): BroadcastNetworkStatus.ConnectionInfo {
     enforcer.assertOffMainThread()
 
-    if (!permissionGuard.canCreateNetwork()) {
-      Timber.w { "Missing permissions, cannot get Connection Info" }
+    if (source == null) {
+      Timber.w { "Cannot get connection info without Wifi source" }
       return BroadcastNetworkStatus.ConnectionInfo.Empty
     }
 
-    if (dataSource == null) {
-      Timber.w { "Cannot get connection info without Wifi channel" }
+    if (!permissionGuard.canCreateNetwork()) {
+      Timber.w { "Missing permissions, cannot get Connection Info" }
       return BroadcastNetworkStatus.ConnectionInfo.Empty
     }
 
@@ -373,7 +295,7 @@ protected constructor(
       }
     }
 
-    val result = resolveCurrentConnectionInfo(dataSource)
+    val result = resolveCurrentConnectionInfo(source)
     if (result is BroadcastNetworkStatus.ConnectionInfo.Connected) {
       // Save success time
       lastConnectionRefreshTime = now
@@ -395,29 +317,80 @@ protected constructor(
     shutdownBus.emit(ServerShutdownEvent)
   }
 
-  final override suspend fun updateNetworkInfo() =
+  /**
+   * Attempt to update network info for Group and Connection
+   *
+   * At the point this function is run, we already claim the lock
+   */
+  @CheckResult
+  protected suspend fun withLockUpdateNetworkInfo(
+      source: T?,
+      // Force rechecking instead of allowing UNCHANGED to be returned because of minimum time
+      // between requests
+      force: Boolean,
+      // For re-using connections when possible, ALL network data must be available and valid
+      onlyAcceptWhenAllConnected: Boolean,
+  ): UpdateResult =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
-        mutex.withLock {
-          val dataSource = heldDataSource
+        val groupInfo = withLockGetGroupInfo(source, force = force)
+        val connectionInfo = withLockGetConnectionInfo(source, force = force)
 
-          val groupInfo = withLockGetGroupInfo(dataSource, force = false)
-          if (groupInfo != BroadcastNetworkStatus.GroupInfo.Unchanged) {
-            Timber.d { "WiFi Direct Group Info: $groupInfo" }
+        val acceptGroup: Boolean
+        val acceptConnection: Boolean
+        if (onlyAcceptWhenAllConnected) {
+          acceptGroup = groupInfo is BroadcastNetworkStatus.GroupInfo.Connected
+          acceptConnection = connectionInfo is BroadcastNetworkStatus.ConnectionInfo.Connected
+        } else {
+          acceptGroup = groupInfo != BroadcastNetworkStatus.GroupInfo.Unchanged
+          acceptConnection = connectionInfo != BroadcastNetworkStatus.ConnectionInfo.Unchanged
+        }
+
+        if (onlyAcceptWhenAllConnected) {
+          if (acceptGroup && acceptConnection) {
+            Timber.d { "Network info update accepted: GRP=$groupInfo CON=$connectionInfo" }
+            groupInfoChannel.value = groupInfo
+            connectionInfoChannel.value = connectionInfo
+          }
+        } else {
+          if (acceptGroup) {
+            Timber.d { "Network update Group=$groupInfo" }
             groupInfoChannel.value = groupInfo
           } else {
-            Timber.w { "Last Group Info request is still fresh, unchanged" }
+            Timber.w { "Network update group not accepted: $groupInfo" }
           }
 
-          val connectionInfo = withLockGetConnectionInfo(dataSource, force = false)
-          if (connectionInfo != BroadcastNetworkStatus.ConnectionInfo.Unchanged) {
-            Timber.d { "WiFi Direct Connection Info: $connectionInfo" }
+          if (acceptConnection) {
+            Timber.d { "Network update Connection=$connectionInfo" }
             connectionInfoChannel.value = connectionInfo
           } else {
-            Timber.w { "Last Connection Info request is still fresh, unchanged" }
+            Timber.w { "Network update connection not accepted: $groupInfo" }
           }
         }
+
+        return@withContext UpdateResult(
+            group = acceptGroup,
+            connection = acceptConnection,
+        )
+      }
+
+  final override suspend fun updateNetworkInfo() =
+      withContext(context = Dispatchers.Default) {
+        mutex.withLock {
+          val source = heldSource
+
+          Timber.d { "Attempt update network info with source $source" }
+
+          withLockUpdateNetworkInfo(
+              source = source,
+              force = false,
+              onlyAcceptWhenAllConnected = true,
+          )
+        }
+
+        // No return
+        return@withContext
       }
 
   final override suspend fun start() =
@@ -426,17 +399,17 @@ protected constructor(
 
         if (status.get() is RunningStatus.Error) {
           Timber.w { "Reset network from error state" }
-          withLockStopNetwork(clearErrorStatus = true)
+          stopNetwork(clearErrorStatus = true)
         }
 
-        Timber.d { "Starting Wi-Fi Direct Network..." }
+        Timber.d { "Starting Wifi Network..." }
         try {
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           coroutineScope {
             // This will suspend until onNetworkStart proxy.start() completes,
             // which is suspended until the proxy server loop dies
-            withLockStartNetwork()
+            startNetwork()
           }
         } catch (e: Throwable) {
           e.ifNotCancellation {
@@ -448,8 +421,8 @@ protected constructor(
           }
         } finally {
           withContext(context = NonCancellable) {
-            Timber.d { "Stopping Wi-Fi Direct Network..." }
-            withLockStopNetwork(clearErrorStatus = false)
+            Timber.d { "Stopping Wifi Network..." }
+            stopNetwork(clearErrorStatus = false)
           }
         }
       }
@@ -470,30 +443,29 @@ protected constructor(
   /** Side effects ran from this function should have their own launch {} */
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
-  /** If a data source connection can be re-used, we can slightly optimize */
-  @Deprecated("Remove from API surface, it's WifiDirect specific")
-  protected abstract val canReUseDataSourceConnection: Boolean
+  /**
+   * Connect data source for implementation
+   *
+   * At the point this function is run, we already claim the lock
+   */
+  @CheckResult protected abstract suspend fun withLockStartBroadcast(): T
 
-  /** Create data source for implementation */
-  @Deprecated("Remove from API surface, it's WifiDirect specific")
-  @CheckResult
-  protected abstract suspend fun createDataSource(): T?
-
-  /** Connect data source for implementation */
-  @CheckResult protected abstract suspend fun connectDataSource(dataSource: T): RunningStatus
-
-  /** Connect data source for implementation */
-  protected abstract suspend fun disconnectDataSource(dataSource: T)
+  /**
+   * Connect data source for implementation
+   *
+   * At the point this function is run, we already claim the lock
+   */
+  protected abstract suspend fun withLockStopBroadcast(source: T)
 
   /** Resolve group info for implementation */
   @CheckResult
   protected abstract suspend fun resolveCurrentGroupInfo(
-      dataSource: T
+      source: T
   ): BroadcastNetworkStatus.GroupInfo
 
   /** Resolve connection info for implementation */
   @CheckResult
   protected abstract suspend fun resolveCurrentConnectionInfo(
-      dataSource: T
+      source: T
   ): BroadcastNetworkStatus.ConnectionInfo
 }
