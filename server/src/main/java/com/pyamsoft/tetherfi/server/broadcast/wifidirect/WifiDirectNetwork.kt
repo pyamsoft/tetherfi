@@ -234,13 +234,6 @@ internal constructor(
     }
   }
 
-  override suspend fun onBeforeStartingNetwork(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Default) {
-      // This will suspend forever
-      register.register()
-    }
-  }
-
   override suspend fun disconnectDataSource(dataSource: Channel) {
     // This may fail if WiFi is off, but that's fine since if WiFi is off,
     // the system has already cleaned us up.
@@ -297,6 +290,8 @@ internal constructor(
             }
           }
         }
+
+    launch(context = Dispatchers.Default) { register.register() }
 
     launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
 

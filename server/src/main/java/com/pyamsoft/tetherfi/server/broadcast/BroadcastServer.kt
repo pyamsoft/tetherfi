@@ -53,8 +53,8 @@ protected constructor(
   /**
    * This is implementation specific to the WifiDirect impl.
    *
-   * Bring this into the WifiDirect impl, and simplify the setup API to
-   * remove canReuse boolean and createDataSource
+   * Bring this into the WifiDirect impl, and simplify the setup API to remove canReuse boolean and
+   * createDataSource
    *
    * Just use connectDataSource and disconnectDataSource
    */
@@ -434,8 +434,6 @@ protected constructor(
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           coroutineScope {
-            onBeforeStartingNetwork(scope = this)
-
             // This will suspend until onNetworkStart proxy.start() completes,
             // which is suspended until the proxy server loop dies
             withLockStartNetwork()
@@ -471,8 +469,6 @@ protected constructor(
 
   /** Side effects ran from this function should have their own launch {} */
   protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
-
-  protected abstract suspend fun onBeforeStartingNetwork(scope: CoroutineScope)
 
   /** If a data source connection can be re-used, we can slightly optimize */
   protected abstract val canReUseDataSourceConnection: Boolean
