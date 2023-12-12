@@ -62,11 +62,11 @@ class MainActivity : AppCompatActivity() {
 
                   override val changelog = buildChangeLog {
                     bugfix(
-                        "In the event of a Hotspot setup error, allow showing detailed error information.")
+                        "Fix a rare race that on Hotspot startup that caused it to hang forever. Symptoms were: Broadcast Status showed Running but Proxy Status never entered Starting or Running.")
                     bugfix(
-                        "Fix cases where hyperlinks were not correctly routing to external applications.")
-                    change(
-                        "Add support for a tweak to bind the proxy to all networking interfaces.")
+                        "Guard against an error that was crashing certain devices using the Quick Tile.")
+                    bugfix(
+                        "Better performance and try to work around certain Android system bugs that used to require rebooting the device.")
                   }
                 },
         )
