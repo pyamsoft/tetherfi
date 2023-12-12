@@ -91,6 +91,13 @@ protected constructor(
             heldSource = source
 
             launchProxy = true
+
+            // Make sure the network is up-to-date before starting the rest of the proxy
+            withLockUpdateNetworkInfo(
+                source = source,
+                force = true,
+                onlyAcceptWhenAllConnected = false,
+            )
           } catch (e: Throwable) {
             Timber.w { "Error during broadcast startup, stop network" }
 
@@ -109,9 +116,6 @@ protected constructor(
 
         // Do this outside of the lock, since this will run "forever"
         if (launchProxy) {
-          // Make sure the network is up-to-date before starting the rest of the proxy
-          updateNetworkInfo()
-
           val newProxyJob =
               launch(context = Dispatchers.IO) { onNetworkStarted(connectionInfoChannel) }
           Timber.d { "Track new proxy job!" }
