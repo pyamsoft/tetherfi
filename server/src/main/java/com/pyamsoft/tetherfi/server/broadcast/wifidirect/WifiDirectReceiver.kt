@@ -124,7 +124,7 @@ internal constructor(
     context.unregisterReceiver(this)
   }
 
-  override suspend fun register(onRegistered: () -> Unit) {
+  override suspend fun register() {
     val self = this
 
     withContext(context = Dispatchers.Default) {
@@ -141,9 +141,6 @@ internal constructor(
                   ContextCompat.RECEIVER_NOT_EXPORTED,
               )
             }
-
-            // Publish that we are registered
-            onRegistered()
 
             // And suspend until we are done
             awaitCancellation()

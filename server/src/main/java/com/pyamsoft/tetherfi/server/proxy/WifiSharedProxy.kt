@@ -271,12 +271,6 @@ internal constructor(
                 }
                 is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
-                  // This should not happen - coding issue
-                  mutex.withLock {
-                    job?.stopProxyLoop()
-                    job = null
-                  }
-                  shutdown()
                   throw AssertionError(
                       "GroupInfo.Unchanged should never escape the server-module internals.",
                   )

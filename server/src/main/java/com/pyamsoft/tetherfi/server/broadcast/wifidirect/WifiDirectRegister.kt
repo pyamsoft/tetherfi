@@ -18,5 +18,5 @@ package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 
 internal interface WifiDirectRegister {
 
-  suspend fun register(onRegistered: () -> Unit)
+  suspend fun register()
 }

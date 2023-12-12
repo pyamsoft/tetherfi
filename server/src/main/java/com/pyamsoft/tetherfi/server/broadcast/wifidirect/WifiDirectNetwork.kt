@@ -319,16 +319,11 @@ internal constructor(
     Timber.d { "Wifi Direct is fully set up!" }
     status.set(RunningStatus.Running)
 
-    launch(context = Dispatchers.Default) {
-      register.register {
-        Timber.d { "WiFi Direct Broadcast Receiver Registered" }
-        Timber.d { "Now start everything else" }
+    launch(context = Dispatchers.Default) { register.register() }
 
-        launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
+    launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
 
-        launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
-      }
-    }
+    launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
   }
 
   override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {}
