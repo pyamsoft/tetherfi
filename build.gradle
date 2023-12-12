@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 34
 
     // Kotlin
-    kotlin = "1.9.20"
+    kotlin = "1.9.21"
     coroutines = "1.7.3"
 
     // Us
@@ -38,7 +38,7 @@ buildscript {
 
     // Compose
     compose = "1.5.4"
-    composeCompiler = "1.5.5"
+    composeCompiler = "1.5.6"
     composeMaterial = "1.5.4"
     accompanist = "0.32.0"
 
@@ -76,7 +76,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-1.0.14" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-1.0.15" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
