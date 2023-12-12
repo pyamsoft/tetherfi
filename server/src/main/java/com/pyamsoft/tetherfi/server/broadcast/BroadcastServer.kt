@@ -12,12 +12,14 @@ import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import java.time.Clock
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -54,6 +56,22 @@ protected constructor(
   private val mutex = Mutex()
   private var proxyJob: Job? = null
   private var heldSource: T? = null
+
+  private suspend fun withLockInitializeNetwork(source: T) =
+      withContext(context = Dispatchers.Default) {
+        enforcer.assertOffMainThread()
+
+        // Make sure the network is up-to-date before starting the rest of the proxy
+        // Need to delay slightly or else connection info does not resolve correctly
+        delay(INITIALIZATION_DELAY)
+
+        // Using the lock we already have, force check for updated info
+        withLockUpdateNetworkInfo(
+            source = source,
+            force = true,
+            onlyAcceptWhenAllConnected = false,
+        )
+      }
 
   private suspend fun startNetwork() =
       withContext(context = Dispatchers.Default) {
@@ -92,12 +110,7 @@ protected constructor(
 
             launchProxy = true
 
-            // Make sure the network is up-to-date before starting the rest of the proxy
-            withLockUpdateNetworkInfo(
-                source = source,
-                force = true,
-                onlyAcceptWhenAllConnected = false,
-            )
+            withLockInitializeNetwork(source = source)
           } catch (e: Throwable) {
             Timber.w { "Error during broadcast startup, stop network" }
 
@@ -477,6 +490,11 @@ protected constructor(
   ): BroadcastNetworkStatus.ConnectionInfo
 
   companion object {
+    
+    /** Initialization needs to be delayed slightly or Connection info fails to resolve */
+    private val INITIALIZATION_DELAY = 750.milliseconds
+
+    /** Don't allow refresh unless forced within this window */
     private const val REFRESH_DEBOUNCE = 3L
   }
 }
