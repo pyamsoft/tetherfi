@@ -233,7 +233,7 @@ protected constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
-      if (lastGroupRefreshTime.plusSeconds(5L) >= now) {
+      if (lastGroupRefreshTime.plusSeconds(REFRESH_DEBOUNCE) >= now) {
         return BroadcastNetworkStatus.GroupInfo.Unchanged
       }
     }
@@ -297,7 +297,7 @@ protected constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
-      if (lastConnectionRefreshTime.plusSeconds(10L) > now) {
+      if (lastConnectionRefreshTime.plusSeconds(REFRESH_DEBOUNCE) > now) {
         return BroadcastNetworkStatus.ConnectionInfo.Unchanged
       }
     }
@@ -475,4 +475,8 @@ protected constructor(
   protected abstract suspend fun resolveCurrentConnectionInfo(
       source: T
   ): BroadcastNetworkStatus.ConnectionInfo
+
+  companion object {
+    private const val REFRESH_DEBOUNCE = 3L
+  }
 }
