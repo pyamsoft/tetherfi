@@ -35,9 +35,7 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 @OptIn(ExperimentalFoundationApi::class)
 fun MainScreen(
     modifier: Modifier = Modifier,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: ServerViewState,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -70,9 +68,7 @@ fun MainScreen(
 
       MainContent(
           modifier = Modifier.fillMaxWidth().weight(1F).padding(pv),
-          tileServiceClass = tileServiceClass,
           appName = appName,
-          appIcon = appIcon,
           pagerState = pagerState,
           state = state,
           allTabs = allTabs,

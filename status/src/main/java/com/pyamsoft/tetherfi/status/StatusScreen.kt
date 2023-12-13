@@ -65,9 +65,8 @@ private val staticHotspotError =
 @Composable
 fun StatusScreen(
     modifier: Modifier = Modifier,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
+
     state: StatusViewState,
     serverViewState: ServerViewState,
 
@@ -259,9 +258,7 @@ fun StatusScreen(
       }
       StatusViewState.LoadingState.DONE -> {
         renderLoadedContent(
-            tileServiceClass = tileServiceClass,
             appName = appName,
-            appIcon = appIcon,
             state = state,
             serverViewState = serverViewState,
             isEditable = isEditable,
@@ -376,9 +373,7 @@ private fun PreviewStatusScreen(
             band.value = ServerNetworkBand.LEGACY
           },
       serverViewState = TestServerViewState(),
-      tileServiceClass = TileService::class.java,
       appName = "TEST",
-      appIcon = 0,
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
       onToggleKeepWakeLock = {},

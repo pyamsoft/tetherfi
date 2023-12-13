@@ -25,9 +25,7 @@ internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
     serverViewState: ServerViewState,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
 
     // Running
     isEditable: Boolean,
@@ -118,9 +116,7 @@ internal fun LazyListScope.renderNetworkInformation(
   renderBattery(
       itemModifier = itemModifier,
       isEditable = isEditable,
-      tileServiceClass = tileServiceClass,
       appName = appName,
-      appIcon = appIcon,
       state = state,
       onDisableBatteryOptimizations = onDisableBatteryOptimizations,
   )

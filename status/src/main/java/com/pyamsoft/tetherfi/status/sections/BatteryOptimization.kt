@@ -36,9 +36,7 @@ import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 internal fun LazyListScope.renderBattery(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: StatusViewState,
 
     // Battery optimization
@@ -65,18 +63,6 @@ internal fun LazyListScope.renderBattery(
         appName = appName,
         state = state,
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
-    )
-  }
-
-  item(
-      contentType = StatusScreenContentTypes.BATTERY_ADD_TILE,
-  ) {
-    AddTheTile(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        isEditable = isEditable,
-        tileServiceClass = tileServiceClass,
-        appName = appName,
-        appIcon = appIcon,
     )
   }
 }
