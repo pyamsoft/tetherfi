@@ -41,6 +41,14 @@ internal constructor(
       lazy(LazyThreadSafetyMode.NONE) {
         // Always require these WiFi permissions
         ALWAYS_PERMISSIONS +
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+              listOf(
+                  // For service notifications
+                  android.Manifest.permission.POST_NOTIFICATIONS,
+              )
+            } else {
+              emptyList()
+            } +
             // On API < 33, we require location permission
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
               listOf(
