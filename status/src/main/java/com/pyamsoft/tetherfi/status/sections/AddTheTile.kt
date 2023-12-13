@@ -229,7 +229,7 @@ internal fun AddTheTile(
       Text(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text =
-              "The Android OS can potentially slow down network performance when " +
+              "The Operating System can potentially slow down network performance when " +
                   "$appName is not the currently Active app on screen. This slow down" +
                   " can sometimes be mitigated by adding the $appName Tile to the " +
                   "Quick Settings Panel.",
