@@ -142,7 +142,6 @@ private fun MountHooks(
 @OptIn(ExperimentalFoundationApi::class)
 fun MainEntry(
     modifier: Modifier = Modifier,
-
     tileServiceClass: Class<out TileService>,
     appName: String,
     @DrawableRes appIcon: Int,

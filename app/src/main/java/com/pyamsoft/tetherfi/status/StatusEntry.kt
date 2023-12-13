@@ -144,11 +144,9 @@ private fun MountHooks(
 @Composable
 fun StatusEntry(
     modifier: Modifier = Modifier,
-
     tileServiceClass: Class<out TileService>,
     appName: String,
     @DrawableRes appIcon: Int,
-
     serverViewState: ServerViewState,
 
     // Actions

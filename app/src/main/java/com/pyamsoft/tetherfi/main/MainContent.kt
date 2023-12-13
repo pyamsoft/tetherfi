@@ -36,11 +36,9 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 @OptIn(ExperimentalFoundationApi::class)
 fun MainContent(
     modifier: Modifier = Modifier,
-
     tileServiceClass: Class<out TileService>,
     appName: String,
     @DrawableRes appIcon: Int,
-
     pagerState: PagerState,
     state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,
