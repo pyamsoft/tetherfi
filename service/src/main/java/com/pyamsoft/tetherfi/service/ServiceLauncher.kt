@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.ContextCompat
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
 import com.pyamsoft.tetherfi.server.proxy.ProxyStatus
@@ -40,7 +41,7 @@ internal constructor(
   /** Start the service */
   fun startForeground() {
     Timber.d { "Start Foreground Service!" }
-    context.startService(foregroundService)
+    ContextCompat.startForegroundService(context, foregroundService)
   }
 
   /** Stop the service */

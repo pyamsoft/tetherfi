@@ -152,11 +152,11 @@ internal constructor(
     }
   }
 
-  private fun stop() {
+  private fun stop(service: Service) {
     enforcer.assertOnMainThread()
 
     Timber.d { "Stop foreground notification" }
-    notifier.cancel(NOTIFICATION_ID)
+    notifier.stopForeground(service, NOTIFICATION_ID)
   }
 
   override suspend fun update() =
@@ -211,7 +211,7 @@ internal constructor(
           } finally {
             withContext(context = NonCancellable) {
               if (showing.compareAndSet(expect = true, update = false)) {
-                withContext(context = Dispatchers.Main) { stop() }
+                withContext(context = Dispatchers.Main) { stop(service) }
               }
             }
           }
