@@ -69,8 +69,7 @@ class MainActivity : AppCompatActivity() {
                         "Better performance and try to work around certain Android system bugs that used to require rebooting the device.")
                     bugfix(
                         "Change the TileService mode to allow the system to bind it instead. Should improve performance as theorized in Issue #250.")
-                    change(
-                        "New Operating Settings instruction which stresses the importance of enabling the Quick Tile for performance improvements.")
+                    change("Run the Proxy as a ForegroundService")
                   }
                 },
         )
