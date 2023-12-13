@@ -326,7 +326,10 @@ internal constructor(
   }
 
   companion object {
-    private val OLD_CLIENT_TIMER_PERIOD = 2.minutes
+    /** Purge old or inactive clients after 5 minutes of no activity */
+    private val OLD_CLIENT_TIMER_PERIOD = 5.minutes
+
+    /** Shut down the hotspot after 10 minutes of absolutely zero client activity */
     private val NO_CLIENTS_TIMER_PERIOD = 10.minutes
   }
 }

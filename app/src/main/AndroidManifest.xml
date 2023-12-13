@@ -51,10 +51,18 @@
           android:name="android.service.quicksettings.action.QS_TILE" />
       </intent-filter>
 
-      <!-- Mark Tile active -->
+      <!-- Mark Tile active
+
+      Tile's make an application a candidate for Foreground starting
+      We mark this as NOT active so that the system binds to us and treats us as foreground!
+
+      https://github.com/pyamsoft/tetherfi/issues/250
+
       <meta-data
         android:name="android.service.quicksettings.ACTIVE_TILE"
         android:value="true" />
+
+      -->
 
       <!-- Tile can be toggled -->
       <meta-data

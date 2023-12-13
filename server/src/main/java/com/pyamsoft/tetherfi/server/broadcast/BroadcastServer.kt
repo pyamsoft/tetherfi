@@ -490,7 +490,7 @@ protected constructor(
   ): BroadcastNetworkStatus.ConnectionInfo
 
   companion object {
-    
+
     /** Initialization needs to be delayed slightly or Connection info fails to resolve */
     private val INITIALIZATION_DELAY = 750.milliseconds
 
