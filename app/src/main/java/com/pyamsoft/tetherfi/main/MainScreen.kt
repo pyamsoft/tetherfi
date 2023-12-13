@@ -16,8 +16,6 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

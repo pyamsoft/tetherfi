@@ -17,8 +17,6 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +64,6 @@ private val staticHotspotError =
 fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
-
     state: StatusViewState,
     serverViewState: ServerViewState,
 

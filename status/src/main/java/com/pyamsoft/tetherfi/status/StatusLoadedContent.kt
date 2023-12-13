@@ -1,7 +1,5 @@
 package com.pyamsoft.tetherfi.status
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +22,6 @@ import com.pyamsoft.tetherfi.ui.renderLinks
 
 internal fun LazyListScope.renderLoadedContent(
     appName: String,
-
     state: StatusViewState,
     serverViewState: ServerViewState,
     isEditable: Boolean,

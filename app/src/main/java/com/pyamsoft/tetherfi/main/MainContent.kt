@@ -16,8 +16,6 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
@@ -37,7 +35,6 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 fun MainContent(
     modifier: Modifier = Modifier,
     appName: String,
-
     pagerState: PagerState,
     state: ServerViewState,
     allTabs: SnapshotStateList<MainView>,

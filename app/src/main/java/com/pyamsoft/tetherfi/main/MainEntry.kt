@@ -16,9 +16,7 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.service.quicksettings.TileService
 import androidx.activity.ComponentActivity
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState

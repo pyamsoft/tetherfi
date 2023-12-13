@@ -17,9 +17,7 @@
 package com.pyamsoft.tetherfi.status
 
 import android.provider.Settings
-import android.service.quicksettings.TileService
 import androidx.activity.ComponentActivity
-import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -145,7 +143,6 @@ private fun MountHooks(
 fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
-
     serverViewState: ServerViewState,
 
     // Actions

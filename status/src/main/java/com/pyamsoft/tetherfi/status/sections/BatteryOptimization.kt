@@ -16,8 +16,6 @@
 
 package com.pyamsoft.tetherfi.status.sections
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
