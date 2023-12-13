@@ -107,6 +107,7 @@ internal constructor(
         .setPriority(NotificationCompat.PRIORITY_LOW)
         .setContentIntent(getActivityPendingIntent())
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
+        .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
   }
 
   @CheckResult

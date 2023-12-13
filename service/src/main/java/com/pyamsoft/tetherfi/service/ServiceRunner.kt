@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service
 
+import android.app.Service
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
@@ -45,7 +46,7 @@ internal constructor(
 ) {
   private val runningState = MutableStateFlow(false)
 
-  private fun CoroutineScope.startProxy() {
+  private fun CoroutineScope.startProxy(service: Service) {
     val scope = this
 
     // Watch the Wifi Receiver for events
@@ -58,14 +59,18 @@ internal constructor(
     }
 
     // Start notification first for Android O immediately
-    scope.launch(context = Dispatchers.Default) { notificationLauncher.start() }
+    scope.launch(context = Dispatchers.Default) {
+      notificationLauncher.startForeground(
+          service = service,
+      )
+    }
 
     // Prepare proxy on create
     scope.launch(context = Dispatchers.Default) {
       foregroundWatcher.bind(
           onRefreshNotification = {
             Timber.d { "Refresh event received, start notification again" }
-            notificationLauncher.start()
+            notificationLauncher.update()
           },
           onShutdownService = {
             Timber.d { "Shutdown event received!" }
@@ -82,12 +87,12 @@ internal constructor(
   }
 
   /** Start the proxy */
-  suspend fun start() =
+  suspend fun start(service: Service) =
       withContext(context = Dispatchers.Default) {
         if (runningState.compareAndSet(expect = false, update = true)) {
           try {
             Timber.d { "Starting runner!" }
-            coroutineScope { startProxy() }
+            coroutineScope { startProxy(service = service) }
           } finally {
             withContext(context = NonCancellable) {
               if (runningState.compareAndSet(expect = true, update = false)) {

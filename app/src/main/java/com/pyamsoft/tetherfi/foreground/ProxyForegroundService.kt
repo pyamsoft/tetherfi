@@ -51,7 +51,11 @@ internal class ProxyForegroundService internal constructor() : Service() {
   }
 
   private fun startRunner() {
-    ensureScope().launch(context = Dispatchers.Default) { runner.requireNotNull().start() }
+    val self = this
+
+    ensureScope().launch(context = Dispatchers.Default) {
+      runner.requireNotNull().start(service = self)
+    }
   }
 
   override fun onBind(intent: Intent?): IBinder? {

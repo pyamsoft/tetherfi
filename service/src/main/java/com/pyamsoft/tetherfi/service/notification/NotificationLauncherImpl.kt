@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service.notification
 
+import android.app.Service
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
@@ -158,7 +159,28 @@ internal constructor(
     notifier.cancel(NOTIFICATION_ID)
   }
 
-  override suspend fun start() =
+  override suspend fun update() =
+      withContext(context = Dispatchers.Default) {
+        if (!showing.value) {
+          Timber.w { "Cannot update notification since not showing" }
+          return@withContext
+        }
+
+        val data = DEFAULT_DATA
+
+        // Initialize with blank data first
+        notifier
+            .show(
+                id = NOTIFICATION_ID,
+                channelInfo = CHANNEL_INFO,
+                notification = data,
+            )
+            .also { Timber.d { "Update notification: $it: $data" } }
+
+        return@withContext
+      }
+
+  override suspend fun startForeground(service: Service) =
       withContext(context = Dispatchers.Default) {
         val scope = this
 
@@ -171,7 +193,8 @@ internal constructor(
 
                 // Initialize with blank data first
                 notifier
-                    .show(
+                    .startForeground(
+                        service = service,
                         id = NOTIFICATION_ID,
                         channelInfo = CHANNEL_INFO,
                         notification = data,
