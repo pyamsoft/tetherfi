@@ -1,5 +1,7 @@
 package com.pyamsoft.tetherfi.status
 
+import android.service.quicksettings.TileService
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +23,9 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 
 internal fun LazyListScope.renderLoadedContent(
+    tileServiceClass: Class<out TileService>,
     appName: String,
+    @DrawableRes appIcon: Int,
     state: StatusViewState,
     serverViewState: ServerViewState,
     isEditable: Boolean,
@@ -65,7 +69,9 @@ internal fun LazyListScope.renderLoadedContent(
   renderNetworkInformation(
       itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
       isEditable = isEditable,
+      tileServiceClass = tileServiceClass,
       appName = appName,
+      appIcon = appIcon,
       state = state,
       serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,

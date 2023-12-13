@@ -1,5 +1,7 @@
 package com.pyamsoft.tetherfi.status
 
+import android.service.quicksettings.TileService
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -23,7 +25,9 @@ internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
     serverViewState: ServerViewState,
+    tileServiceClass: Class<out TileService>,
     appName: String,
+    @DrawableRes appIcon: Int,
 
     // Running
     isEditable: Boolean,
@@ -114,7 +118,9 @@ internal fun LazyListScope.renderNetworkInformation(
   renderBattery(
       itemModifier = itemModifier,
       isEditable = isEditable,
+      tileServiceClass = tileServiceClass,
       appName = appName,
+      appIcon = appIcon,
       state = state,
       onDisableBatteryOptimizations = onDisableBatteryOptimizations,
   )

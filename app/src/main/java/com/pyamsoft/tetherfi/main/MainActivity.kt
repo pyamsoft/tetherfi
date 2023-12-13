@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
                         "Guard against an error that was crashing certain devices using the Quick Tile.")
                     bugfix(
                         "Better performance and try to work around certain Android system bugs that used to require rebooting the device.")
+                    bugfix(
+                        "Change the TileService mode to allow the system to bind it instead. Should improve performance as theorized in Issue #250.")
                   }
                 },
         )
@@ -132,6 +134,8 @@ class MainActivity : AppCompatActivity() {
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            appIcon = R.mipmap.ic_launcher_foreground,
+            tileServiceClass = ProxyTileService::class.java,
             onShowInAppRating = { handleShowInAppRating() },
             onUpdateTile = { ProxyTileService.updateTile(this) },
             onLaunchIntent = { safeOpenSettingsIntent(it) },

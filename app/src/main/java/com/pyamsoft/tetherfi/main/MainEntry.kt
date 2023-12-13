@@ -16,7 +16,9 @@
 
 package com.pyamsoft.tetherfi.main
 
+import android.service.quicksettings.TileService
 import androidx.activity.ComponentActivity
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
@@ -140,7 +142,10 @@ private fun MountHooks(
 @OptIn(ExperimentalFoundationApi::class)
 fun MainEntry(
     modifier: Modifier = Modifier,
+
+    tileServiceClass: Class<out TileService>,
     appName: String,
+    @DrawableRes appIcon: Int,
 
     // Action
     onShowInAppRating: () -> Unit,
@@ -181,7 +186,9 @@ fun MainEntry(
 
   MainScreen(
       modifier = modifier,
+      tileServiceClass = tileServiceClass,
       appName = appName,
+      appIcon = appIcon,
       state = viewModel,
       pagerState = pagerState,
       allTabs = allTabs,

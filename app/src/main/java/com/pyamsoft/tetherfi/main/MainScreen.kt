@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.main
 
+import android.service.quicksettings.TileService
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +35,11 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 @OptIn(ExperimentalFoundationApi::class)
 fun MainScreen(
     modifier: Modifier = Modifier,
+
+    tileServiceClass: Class<out TileService>,
     appName: String,
+    @DrawableRes appIcon: Int,
+
     state: ServerViewState,
     pagerState: PagerState,
     allTabs: SnapshotStateList<MainView>,
@@ -66,7 +72,9 @@ fun MainScreen(
 
       MainContent(
           modifier = Modifier.fillMaxWidth().weight(1F).padding(pv),
+          tileServiceClass = tileServiceClass,
           appName = appName,
+          appIcon = appIcon,
           pagerState = pagerState,
           state = state,
           allTabs = allTabs,
