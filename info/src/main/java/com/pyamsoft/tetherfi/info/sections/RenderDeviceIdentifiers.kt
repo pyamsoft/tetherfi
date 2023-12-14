@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.info
+package com.pyamsoft.tetherfi.info.sections
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row

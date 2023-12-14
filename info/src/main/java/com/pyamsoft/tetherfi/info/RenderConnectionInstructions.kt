@@ -25,6 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.info.sections.renderAppSetup
+import com.pyamsoft.tetherfi.info.sections.renderConnectionComplete
+import com.pyamsoft.tetherfi.info.sections.renderDeviceIdentifiers
+import com.pyamsoft.tetherfi.info.sections.renderDeviceSetup
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 
