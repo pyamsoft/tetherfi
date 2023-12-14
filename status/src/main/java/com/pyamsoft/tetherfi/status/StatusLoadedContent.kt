@@ -3,22 +3,21 @@ package com.pyamsoft.tetherfi.status
 import android.service.quicksettings.TileService
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.status.sections.renderNotificationSettings
-import com.pyamsoft.tetherfi.status.sections.renderPerformance
-import com.pyamsoft.tetherfi.status.sections.renderTweaks
-import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
+import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
+import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
+import com.pyamsoft.tetherfi.status.sections.notifications.renderNotificationSettings
+import com.pyamsoft.tetherfi.status.sections.performance.renderPerformance
+import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 
@@ -75,9 +74,7 @@ internal fun LazyListScope.renderLoadedContent(
   renderNetworkInformation(
       itemModifier = itemModifier,
       isEditable = isEditable,
-      tileServiceClass = tileServiceClass,
       appName = appName,
-      appIcon = appIcon,
       state = state,
       serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,
@@ -85,26 +82,49 @@ internal fun LazyListScope.renderLoadedContent(
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
       onPortChanged = onPortChanged,
-      onSelectBand = onSelectBand,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onShowNetworkError = onShowNetworkError,
       onShowHotspotError = onShowHotspotError,
-      onDisableBatteryOptimizations = onOpenBatterySettings,
       onJumpToHowTo = onJumpToHowTo,
+  )
+
+  renderOperatingSettings(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      tileServiceClass = tileServiceClass,
+      appName = appName,
+      appIcon = appIcon,
+      state = state,
+      onDisableBatteryOptimizations = onOpenBatterySettings,
   )
 
   item(
       contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
-        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
+    )
+  }
+
+  renderBroadcastFrequency(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      state = state,
+      onSelectBand = onSelectBand,
+  )
+
+  item(
+      contentType = StatusLoadedContentTypes.SPACER,
+  ) {
+    Spacer(
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
     )
   }
 
   renderPerformance(
-      itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+      itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -116,12 +136,12 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
-        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
     )
   }
 
   renderTweaks(
-      itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+      itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -134,13 +154,13 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
-        modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
     )
   }
 
   if (showNotificationSettings) {
     renderNotificationSettings(
-        itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        itemModifier = itemModifier,
         state = state,
         isEditable = isEditable,
         onRequest = onRequestNotificationPermission,
@@ -150,13 +170,13 @@ internal fun LazyListScope.renderLoadedContent(
         contentType = StatusLoadedContentTypes.SPACER,
     ) {
       Spacer(
-          modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.content),
+          modifier = itemModifier.height(MaterialTheme.keylines.content),
       )
     }
   }
 
   renderLinks(
-      modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+      modifier = itemModifier,
       appName = appName,
   )
 
@@ -164,7 +184,8 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusLoadedContentTypes.BOTTOM_SPACER,
   ) {
     Spacer(
-        modifier = Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
+        modifier =
+            itemModifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
     )
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.status.common
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.MaterialTheme

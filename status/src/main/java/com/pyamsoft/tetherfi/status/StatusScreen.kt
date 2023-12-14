@@ -19,22 +19,12 @@ package com.pyamsoft.tetherfi.status
 import android.os.Build
 import android.service.quicksettings.TileService
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Button
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,13 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
-import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
@@ -171,16 +158,6 @@ fun StatusScreen(
             hotspotStatus is RunningStatus.Error
       }
 
-  val buttonText =
-      remember(hotspotStatus) {
-        when (hotspotStatus) {
-          is RunningStatus.Error -> "$appName Hotspot Error"
-          is RunningStatus.NotRunning -> "Start $appName Hotspot"
-          is RunningStatus.Running -> "Stop $appName Hotspot"
-          else -> "$appName is thinking..."
-        }
-      }
-
   val isEditable =
       remember(hotspotStatus) {
         when (hotspotStatus) {
@@ -197,8 +174,6 @@ fun StatusScreen(
   val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
   LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
 
-  val hapticManager = LocalHapticManager.current
-
   LazyColumn(
       modifier = modifier,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
@@ -207,23 +182,14 @@ fun StatusScreen(
     item(
         contentType = StatusScreenContentTypes.BUTTON,
     ) {
-      Button(
+      HotspotStarter(
           modifier =
               Modifier.width(LANDSCAPE_MAX_WIDTH).padding(top = MaterialTheme.keylines.content),
-          enabled = isButtonEnabled,
-          onClick = {
-            hapticManager?.actionButtonPress()
-            onToggleProxy()
-          },
-      ) {
-        Text(
-            text = buttonText,
-            style =
-                MaterialTheme.typography.body1.copy(
-                    fontWeight = FontWeight.W700,
-                ),
-        )
-      }
+          isButtonEnabled = isButtonEnabled,
+          hotspotStatus = hotspotStatus,
+          appName = appName,
+          onToggleProxy = onToggleProxy,
+      )
     }
 
     renderPYDroidExtras(
@@ -233,10 +199,10 @@ fun StatusScreen(
     item(
         contentType = StatusScreenContentTypes.STATUS,
     ) {
-      StatusCard(
+      HotspotStatus(
           modifier =
               Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH)
-                  .padding(vertical = MaterialTheme.keylines.content),
+                  .padding(vertical = MaterialTheme.keylines.content * 2),
           wiDiStatus = wiDiStatus,
           proxyStatus = proxyStatus,
           hotspotStatus = hotspotStatus,
@@ -251,16 +217,11 @@ fun StatusScreen(
         item(
             contentType = StatusScreenContentTypes.LOADING,
         ) {
-          Box(
+          StatusLoading(
               modifier =
                   Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH)
                       .padding(MaterialTheme.keylines.content),
-              contentAlignment = Alignment.Center,
-          ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(120.dp),
-            )
-          }
+          )
         }
       }
       StatusViewState.LoadingState.DONE -> {
@@ -298,6 +259,7 @@ fun StatusScreen(
   }
 
   StatusDialogs(
+      dialogModifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
       state = state,
       serverViewState = serverViewState,
       appName = appName,
@@ -310,58 +272,6 @@ fun StatusScreen(
       onHideProxyError = onHideProxyError,
       onHideBroadcastError = onHideBroadcastError,
   )
-}
-
-@Composable
-private fun StatusCard(
-    modifier: Modifier = Modifier,
-    wiDiStatus: RunningStatus,
-    proxyStatus: RunningStatus,
-    hotspotStatus: RunningStatus,
-    onShowBroadcastError: () -> Unit,
-    onShowProxyError: () -> Unit,
-) {
-  Card(
-      modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-      elevation = CardDefaults.Elevation,
-  ) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-    ) {
-      Row(
-          modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceEvenly,
-      ) {
-        DisplayStatus(
-            modifier = Modifier.weight(1F, fill = false),
-            title = "Broadcast Status:",
-            status = wiDiStatus,
-            size = StatusSize.SMALL,
-            onClickShowError = onShowBroadcastError,
-        )
-
-        DisplayStatus(
-            modifier = Modifier.weight(1F, fill = false),
-            title = "Proxy Status:",
-            status = proxyStatus,
-            size = StatusSize.SMALL,
-            onClickShowError = onShowProxyError,
-        )
-      }
-
-      Box(
-          modifier = Modifier.fillMaxWidth(),
-          contentAlignment = Alignment.Center,
-      ) {
-        DisplayStatus(
-            title = "Hotspot Status:",
-            status = hotspotStatus,
-            size = StatusSize.NORMAL,
-        )
-      }
-    }
-  }
 }
 
 @Composable

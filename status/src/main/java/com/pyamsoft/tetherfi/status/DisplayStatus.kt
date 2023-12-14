@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.status.common.StatusItem
 
 internal enum class StatusSize {
   SMALL,

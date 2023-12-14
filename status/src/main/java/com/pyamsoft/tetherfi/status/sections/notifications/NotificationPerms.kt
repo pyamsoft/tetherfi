@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.notifications
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

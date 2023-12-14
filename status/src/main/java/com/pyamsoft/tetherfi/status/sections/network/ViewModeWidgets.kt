@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.status.sections.network
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,6 +39,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.status.common.StatusItem
+import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.Visibility

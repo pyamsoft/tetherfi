@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.tweaks
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -24,43 +24,43 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class PerformanceOptimizationContentTypes {
+private enum class BehaviorTweaksContentTypes {
   LABEL,
-  WAKELOCKS,
+  TWEAKS,
 }
 
-internal fun LazyListScope.renderPerformance(
+internal fun LazyListScope.renderTweaks(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,
-
-    // Wake lock
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
+    onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
+    onToggleBindProxyAll: () -> Unit,
 ) {
   item(
-      contentType = PerformanceOptimizationContentTypes.LABEL,
+      contentType = BehaviorTweaksContentTypes.LABEL,
   ) {
     Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Performance Settings",
+        text = "Tweaks",
     )
   }
 
   item(
-      contentType = PerformanceOptimizationContentTypes.WAKELOCKS,
+      contentType = BehaviorTweaksContentTypes.TWEAKS,
   ) {
-    Wakelocks(
+    TweakCard(
         modifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
         state = state,
-        onToggleKeepWakeLock = onToggleKeepWakeLock,
-        onToggleKeepWifiLock = onToggleKeepWifiLock,
+        onToggleIgnoreVpn = onToggleIgnoreVpn,
+        onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
+        onToggleBindProxyAll = onToggleBindProxyAll,
     )
   }
 }

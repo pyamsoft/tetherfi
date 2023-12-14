@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.operating
 
 import android.app.StatusBarManager
 import android.content.ComponentName

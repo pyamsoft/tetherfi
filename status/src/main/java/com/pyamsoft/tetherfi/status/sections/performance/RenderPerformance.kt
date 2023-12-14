@@ -14,69 +14,53 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.performance
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class OperatingSettingsContentTypes {
+private enum class PerformanceOptimizationContentTypes {
   LABEL,
-  BATTERY_OPTIMIZATION,
-  ADD_TILE,
+  WAKELOCKS,
 }
 
-internal fun LazyListScope.renderBattery(
+internal fun LazyListScope.renderPerformance(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: StatusViewState,
 
-    // Battery optimization
-    onDisableBatteryOptimizations: () -> Unit,
+    // Wake lock
+    onToggleKeepWakeLock: () -> Unit,
+    onToggleKeepWifiLock: () -> Unit,
 ) {
   item(
-      contentType = OperatingSettingsContentTypes.LABEL,
+      contentType = PerformanceOptimizationContentTypes.LABEL,
   ) {
     Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Operating Settings",
+        text = "Performance Settings",
     )
   }
 
   item(
-      contentType = OperatingSettingsContentTypes.BATTERY_OPTIMIZATION,
+      contentType = PerformanceOptimizationContentTypes.WAKELOCKS,
   ) {
-    BatteryOptimization(
+    Wakelocks(
         modifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
         state = state,
-        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+        onToggleKeepWakeLock = onToggleKeepWakeLock,
+        onToggleKeepWifiLock = onToggleKeepWifiLock,
     )
-  }
-
-  if (FeatureFlags.IS_TILE_UI_ENABLED) {
-    item(contentType = OperatingSettingsContentTypes.ADD_TILE) {
-      AddTheTile(
-          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-          isEditable = isEditable,
-          tileServiceClass = tileServiceClass,
-          appName = appName,
-          appIcon = appIcon,
-      )
-    }
   }
 }

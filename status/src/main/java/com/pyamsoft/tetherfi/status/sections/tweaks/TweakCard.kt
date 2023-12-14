@@ -14,87 +14,70 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.tweaks
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Card
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.status.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
 @Composable
-internal fun Wakelocks(
+internal fun TweakCard(
     modifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,
     state: StatusViewState,
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
+    onToggleIgnoreVpn: () -> Unit,
+    onToggleShutdownWithNoClients: () -> Unit,
+    onToggleBindProxyAll: () -> Unit,
 ) {
-  val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
-  val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
+  val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
+  val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
+  val isBindProxyAll by state.isBindProxyAll.collectAsStateWithLifecycle()
 
-  val wakeLockColor by
-      rememberCheckableColor(
-          label = "CPU Lock",
-          condition = keepWakeLock,
-          selectedColor = MaterialTheme.colors.primary,
-      )
-  val wifiLockColor by
-      rememberCheckableColor(
-          label = "Wi-Fi Lock",
-          condition = keepWifiLock,
-          selectedColor = MaterialTheme.colors.primary,
-      )
-
-  val checkboxState =
-      remember(
-          keepWakeLock,
-          keepWifiLock,
-      ) {
-        if (!keepWakeLock && !keepWifiLock) {
-          ToggleableState.Off
-        } else if (keepWakeLock && keepWifiLock) {
-          ToggleableState.On
-        } else {
-          ToggleableState.Indeterminate
-        }
-      }
-
-  val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
-  val cardColor by
-      rememberCheckableColor(
-          label = "Wake Locks",
-          condition = isChecked,
-          selectedColor = MaterialTheme.colors.primary,
-      )
   val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
   val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+  val ignoreVpnColor by
+      rememberCheckableColor(
+          label = "Ignore VPN",
+          condition = isIgnoreVpn,
+          selectedColor = MaterialTheme.colors.primary,
+      )
+
+  val shutdownNoClientsColor by
+      rememberCheckableColor(
+          label = "Shutdown No Clients",
+          condition = isShutdownWithNoClients,
+          selectedColor = MaterialTheme.colors.primary,
+      )
+
+  val bindProxyAllColor by
+      rememberCheckableColor(
+          label = "Bind Proxy to All Interfaces",
+          condition = isBindProxyAll,
+          selectedColor = MaterialTheme.colors.primary,
+      )
 
   Card(
       modifier =
           modifier.border(
               width = 2.dp,
-              color = cardColor.copy(alpha = mediumAlpha),
+              color = MaterialTheme.colors.primary.copy(alpha = mediumAlpha),
               shape = MaterialTheme.shapes.medium,
           ),
       elevation = CardDefaults.Elevation,
@@ -102,27 +85,15 @@ internal fun Wakelocks(
     Column(
         modifier = Modifier.fillMaxWidth(),
     ) {
-      Row(
+      Text(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        Text(
-            modifier = Modifier.weight(1F),
-            text = "Wake Locks",
-            style =
-                MaterialTheme.typography.h6.copy(
-                    fontWeight = FontWeight.W700,
-                    color = cardColor.copy(alpha = highAlpha),
-                ),
-        )
-
-        TriStateCheckbox(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-            enabled = isEditable,
-            state = checkboxState,
-            onClick = null,
-        )
-      }
+          text = "Behavior Tweaks",
+          style =
+              MaterialTheme.typography.h6.copy(
+                  fontWeight = FontWeight.W700,
+                  color = MaterialTheme.colors.primary.copy(alpha = highAlpha),
+              ),
+      )
 
       Text(
           modifier =
@@ -130,9 +101,9 @@ internal fun Wakelocks(
                   .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content * 2),
           text =
-              """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
+              """Tweaks change how $appName performs in various ways
                   |
-                  |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
+                  |All of these options are completely optional and do not impact network or hotspot performance in any way."""
                   .trimMargin(),
           style =
               MaterialTheme.typography.caption.copy(
@@ -144,24 +115,43 @@ internal fun Wakelocks(
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
-          color = wifiLockColor,
-          checked = keepWifiLock,
-          title = "Keep WiFi Awake",
+          color = ignoreVpnColor,
+          checked = isIgnoreVpn,
+          title = "Avoid VPN Blocker Dialog",
           description =
-              "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
-          onClick = onToggleKeepWifiLock,
+              """When starting, $appName sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.
+                  |
+                  |If you KNOW your VPN app works fine with $appName, turn this option on to avoid the blocking dialog."""
+                  .trimMargin(),
+          onClick = onToggleIgnoreVpn,
       )
 
       ToggleSwitch(
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
-          color = wakeLockColor,
-          checked = keepWakeLock,
-          title = "Keep CPU Awake",
+          color = shutdownNoClientsColor,
+          checked = isShutdownWithNoClients,
+          title = "Stop Hotspot With No Clients",
           description =
-              "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
-          onClick = onToggleKeepWakeLock,
+              """If the $appName hotspot has been running for 10 minutes without serving any client devices, shut it down.
+                  |
+                  |Automatically shutting down the hotspot when it is not being used can save battery."""
+                  .trimMargin(),
+          onClick = onToggleShutdownWithNoClients,
+      )
+
+      ToggleSwitch(
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = bindProxyAllColor,
+          checked = isBindProxyAll,
+          title = "Bind Proxy to All Interfaces",
+          description =
+              """If $appName has problems launching the Proxy but no problems with the Broadcast, you can try this tweak to have the hotspot bind to all interfaces, which might avoid the problem."""
+                  .trimMargin(),
+          onClick = onToggleBindProxyAll,
       )
     }
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections
+package com.pyamsoft.tetherfi.status.sections.notifications
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -24,43 +24,37 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class BehaviorTweaksContentTypes {
+private enum class OptionalNotificationContentTypes {
   LABEL,
-  TWEAKS,
+  CHECK,
 }
 
-internal fun LazyListScope.renderTweaks(
+internal fun LazyListScope.renderNotificationSettings(
     itemModifier: Modifier = Modifier,
-    isEditable: Boolean,
-    appName: String,
     state: StatusViewState,
-    onToggleIgnoreVpn: () -> Unit,
-    onToggleShutdownWithNoClients: () -> Unit,
-    onToggleBindProxyAll: () -> Unit,
+    isEditable: Boolean,
+    onRequest: () -> Unit,
 ) {
   item(
-      contentType = BehaviorTweaksContentTypes.LABEL,
+      contentType = OptionalNotificationContentTypes.LABEL,
   ) {
     Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Tweaks",
+        text = "Notifications",
     )
   }
 
   item(
-      contentType = BehaviorTweaksContentTypes.TWEAKS,
+      contentType = OptionalNotificationContentTypes.CHECK,
   ) {
-    TweakCard(
+    NotificationPerms(
         modifier = itemModifier,
-        isEditable = isEditable,
-        appName = appName,
         state = state,
-        onToggleIgnoreVpn = onToggleIgnoreVpn,
-        onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-        onToggleBindProxyAll = onToggleBindProxyAll,
+        isEditable = isEditable,
+        onRequest = onRequest,
     )
   }
 }

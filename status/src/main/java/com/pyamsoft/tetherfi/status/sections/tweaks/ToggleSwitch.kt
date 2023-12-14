@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.status.sections.tweaks
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

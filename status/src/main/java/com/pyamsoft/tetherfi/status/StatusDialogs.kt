@@ -1,7 +1,6 @@
 package com.pyamsoft.tetherfi.status
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -9,19 +8,19 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.status.trouble.TroubleshootDialog
-import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 internal fun StatusDialogs(
+    dialogModifier: Modifier = Modifier,
+
     state: StatusViewState,
     serverViewState: ServerViewState,
     appName: String,
@@ -64,7 +63,7 @@ internal fun StatusDialogs(
           visible = blocker == HotspotStartBlocker.PERMISSION,
       ) {
         PermissionBlocker(
-            modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+            modifier = dialogModifier,
             appName = appName,
             onDismiss = { onDismissBlocker(blocker) },
             onOpenPermissionSettings = onOpenPermissionSettings,
@@ -78,7 +77,7 @@ internal fun StatusDialogs(
           visible = blocker == HotspotStartBlocker.VPN,
       ) {
         VpnBlocker(
-            modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+            modifier = dialogModifier,
             appName = appName,
             onDismiss = { onDismissBlocker(blocker) },
         )
@@ -93,7 +92,7 @@ internal fun StatusDialogs(
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
     TroubleshootDialog(
-        modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+        modifier = dialogModifier,
         appName = appName,
         isBroadcastError = isBroadcastError,
         isProxyError = isProxyError,
@@ -106,7 +105,7 @@ internal fun StatusDialogs(
         visible = isShowingHotspotError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          modifier = dialogModifier,
           title = "Hotspot Initialization Error",
           error = err.error,
           onDismiss = onHideHotspotError,
@@ -119,7 +118,7 @@ internal fun StatusDialogs(
         visible = isShowingNetworkError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          modifier = dialogModifier,
           title = "Network Initialization Error",
           error = err.error,
           onDismiss = onHideNetworkError,
@@ -132,7 +131,7 @@ internal fun StatusDialogs(
         visible = isShowingBroadcastError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          modifier = dialogModifier,
           title = "Broadcast Initialization Error",
           error = err.throwable,
           onDismiss = onHideBroadcastError,
@@ -145,7 +144,7 @@ internal fun StatusDialogs(
         visible = isShowingProxyError,
     ) {
       ServerErrorDialog(
-          modifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+          modifier = dialogModifier,
           title = "Proxy Initialization Error",
           error = err.throwable,
           onDismiss = onHideProxyError,
