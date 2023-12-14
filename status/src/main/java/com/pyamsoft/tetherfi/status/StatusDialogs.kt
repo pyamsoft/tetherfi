@@ -20,7 +20,6 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 @Composable
 internal fun StatusDialogs(
     dialogModifier: Modifier = Modifier,
-
     state: StatusViewState,
     serverViewState: ServerViewState,
     appName: String,

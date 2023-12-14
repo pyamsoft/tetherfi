@@ -14,8 +14,8 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
-import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.status.sections.notifications.renderNotificationSettings
+import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.status.sections.performance.renderPerformance
 import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.ServerViewState
