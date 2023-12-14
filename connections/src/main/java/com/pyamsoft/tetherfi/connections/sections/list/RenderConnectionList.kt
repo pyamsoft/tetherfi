@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.connections
+package com.pyamsoft.tetherfi.connections.sections.list
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -14,7 +14,14 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 
-fun LazyListScope.renderList(
+private enum class RenderConnectionListContentTypes {
+  EMPTY,
+  HEADER,
+  CLIENT,
+  START,
+}
+
+internal fun LazyListScope.renderConnectionList(
     modifier: Modifier = Modifier,
     group: BroadcastNetworkStatus.GroupInfo,
     clients: SnapshotStateList<TetherClient>,
@@ -47,7 +54,7 @@ private fun LazyListScope.renderRunningNoClients(
     modifier: Modifier = Modifier,
 ) {
   item(
-      contentType = ConnectionScreenContentTypes.EMPTY,
+      contentType = RenderConnectionListContentTypes.EMPTY,
   ) {
     Text(
         modifier =
@@ -68,7 +75,7 @@ private fun LazyListScope.renderRunningWithClients(
     onToggleBlock: (TetherClient) -> Unit,
 ) {
   item(
-      contentType = ConnectionScreenContentTypes.HEADER,
+      contentType = RenderConnectionListContentTypes.HEADER,
   ) {
     Text(
         modifier =
@@ -91,7 +98,7 @@ private fun LazyListScope.renderRunningWithClients(
   items(
       items = clients,
       key = { it.key() },
-      contentType = { ConnectionScreenContentTypes.CLIENT },
+      contentType = { RenderConnectionListContentTypes.CLIENT },
   ) { client ->
     ConnectionItem(
         modifier = modifier,
@@ -104,7 +111,7 @@ private fun LazyListScope.renderRunningWithClients(
 
 private fun LazyListScope.renderNotRunning(modifier: Modifier = Modifier) {
   item(
-      contentType = ConnectionScreenContentTypes.START,
+      contentType = RenderConnectionListContentTypes.START,
   ) {
     Text(
         modifier =

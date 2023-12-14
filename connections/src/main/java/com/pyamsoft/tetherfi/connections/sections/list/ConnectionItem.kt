@@ -1,4 +1,4 @@
-package com.pyamsoft.tetherfi.connections
+package com.pyamsoft.tetherfi.connections.sections.list
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

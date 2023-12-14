@@ -19,26 +19,27 @@ package com.pyamsoft.tetherfi.connections
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
+import com.pyamsoft.tetherfi.connections.sections.list.renderConnectionList
+import com.pyamsoft.tetherfi.connections.sections.renderExcuse
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+
+private enum class ConnectionScreenContentTypes {
+  BOTTOM_SPACER,
+}
 
 @Composable
 fun ConnectionScreen(
@@ -61,7 +62,7 @@ fun ConnectionScreen(
         modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
     )
 
-    renderList(
+    renderConnectionList(
         modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         group = group,
         clients = clients,
@@ -85,44 +86,5 @@ fun ConnectionScreen(
           modifier = Modifier.navigationBarsPadding(),
       )
     }
-  }
-}
-
-private fun LazyListScope.renderExcuse(
-    modifier: Modifier = Modifier,
-) {
-  item(
-      contentType = ConnectionScreenContentTypes.SORRY,
-  ) {
-    Text(
-        modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-        text =
-            "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
-        style =
-            MaterialTheme.typography.body2.copy(
-                color =
-                    MaterialTheme.colors.onBackground.copy(
-                        alpha = ContentAlpha.disabled,
-                    ),
-            ),
-        textAlign = TextAlign.Center,
-    )
-  }
-
-  item(
-      contentType = ConnectionScreenContentTypes.SORRY_EXTRA,
-  ) {
-    Text(
-        modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-        text = "A more friendly solution is being actively investigated.",
-        style =
-            MaterialTheme.typography.body2.copy(
-                color =
-                    MaterialTheme.colors.onBackground.copy(
-                        alpha = ContentAlpha.disabled,
-                    ),
-            ),
-        textAlign = TextAlign.Center,
-    )
   }
 }
