@@ -21,6 +21,20 @@ import com.pyamsoft.tetherfi.status.sections.renderBattery
 import com.pyamsoft.tetherfi.status.trouble.TroubleshootUnableToStart
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
+private enum class NetworkStatusWidgetsContentTypes {
+  SPACER,
+  NETWORK_ERROR,
+  EDIT_SSID,
+  EDIT_PASSWD,
+  EDIT_PORT,
+  VIEW_HOWTO,
+  VIEW_SSID,
+  VIEW_PASSWD,
+  VIEW_PROXY,
+  TILES,
+  BANDS,
+}
+
 internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
@@ -56,7 +70,7 @@ internal fun LazyListScope.renderNetworkInformation(
     onJumpToHowTo: () -> Unit,
 ) {
   item(
-      contentType = StatusScreenContentTypes.NETWORK_ERROR,
+      contentType = NetworkStatusWidgetsContentTypes.NETWORK_ERROR,
   ) {
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
@@ -126,7 +140,7 @@ internal fun LazyListScope.renderNetworkInformation(
   )
 
   item(
-      contentType = StatusScreenContentTypes.SPACER,
+      contentType = NetworkStatusWidgetsContentTypes.SPACER,
   ) {
     Spacer(
         modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
@@ -134,7 +148,7 @@ internal fun LazyListScope.renderNetworkInformation(
   }
 
   item(
-      contentType = StatusScreenContentTypes.BANDS,
+      contentType = NetworkStatusWidgetsContentTypes.BANDS,
   ) {
     NetworkBands(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
@@ -157,7 +171,7 @@ private fun LazyListScope.renderRunningItems(
     onJumpToHowTo: () -> Unit,
 ) {
   item(
-      contentType = StatusScreenContentTypes.VIEW_HOWTO,
+      contentType = NetworkStatusWidgetsContentTypes.VIEW_HOWTO,
   ) {
     ViewInstructions(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.content * 2),
@@ -166,7 +180,7 @@ private fun LazyListScope.renderRunningItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.VIEW_SSID,
+      contentType = NetworkStatusWidgetsContentTypes.VIEW_SSID,
   ) {
     ViewSsid(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -175,7 +189,7 @@ private fun LazyListScope.renderRunningItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.VIEW_PASSWD,
+      contentType = NetworkStatusWidgetsContentTypes.VIEW_PASSWD,
   ) {
     ViewPassword(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -186,7 +200,7 @@ private fun LazyListScope.renderRunningItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.VIEW_PROXY,
+      contentType = NetworkStatusWidgetsContentTypes.VIEW_PROXY,
   ) {
     ViewProxy(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -195,7 +209,7 @@ private fun LazyListScope.renderRunningItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.TILES,
+      contentType = NetworkStatusWidgetsContentTypes.TILES,
   ) {
     RunningTiles(
         modifier = modifier,
@@ -217,7 +231,7 @@ private fun LazyListScope.renderEditableItems(
     onTogglePasswordVisibility: () -> Unit,
 ) {
   item(
-      contentType = StatusScreenContentTypes.EDIT_SSID,
+      contentType = NetworkStatusWidgetsContentTypes.EDIT_SSID,
   ) {
     EditSsid(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -227,7 +241,7 @@ private fun LazyListScope.renderEditableItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.EDIT_PASSWD,
+      contentType = NetworkStatusWidgetsContentTypes.EDIT_PASSWD,
   ) {
     EditPassword(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
@@ -238,7 +252,7 @@ private fun LazyListScope.renderEditableItems(
   }
 
   item(
-      contentType = StatusScreenContentTypes.EDIT_PORT,
+      contentType = NetworkStatusWidgetsContentTypes.EDIT_PORT,
   ) {
     EditPort(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),

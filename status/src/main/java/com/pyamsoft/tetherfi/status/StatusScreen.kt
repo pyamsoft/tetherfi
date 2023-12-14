@@ -57,6 +57,12 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
+private enum class StatusScreenContentTypes {
+  BUTTON,
+  STATUS,
+  LOADING,
+}
+
 private val staticHotspotError =
     RunningStatus.HotspotError(
         RuntimeException("Unable to start Hotspot"),

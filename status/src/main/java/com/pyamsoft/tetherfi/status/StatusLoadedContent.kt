@@ -22,6 +22,11 @@ import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 
+private enum class StatusLoadedContentTypes {
+  SPACER,
+  BOTTOM_SPACER,
+}
+
 internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
     tileServiceClass: Class<out TileService>,
@@ -91,7 +96,7 @@ internal fun LazyListScope.renderLoadedContent(
   )
 
   item(
-      contentType = StatusScreenContentTypes.SPACER,
+      contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
         modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
@@ -108,7 +113,7 @@ internal fun LazyListScope.renderLoadedContent(
   )
 
   item(
-      contentType = StatusScreenContentTypes.SPACER,
+      contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
         modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
@@ -126,7 +131,7 @@ internal fun LazyListScope.renderLoadedContent(
   )
 
   item(
-      contentType = StatusScreenContentTypes.SPACER,
+      contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
         modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.baseline),
@@ -142,7 +147,7 @@ internal fun LazyListScope.renderLoadedContent(
     )
 
     item(
-        contentType = StatusScreenContentTypes.SPACER,
+        contentType = StatusLoadedContentTypes.SPACER,
     ) {
       Spacer(
           modifier = Modifier.fillMaxWidth().height(MaterialTheme.keylines.content),
@@ -156,7 +161,7 @@ internal fun LazyListScope.renderLoadedContent(
   )
 
   item(
-      contentType = StatusScreenContentTypes.BOTTOM_SPACER,
+      contentType = StatusLoadedContentTypes.BOTTOM_SPACER,
   ) {
     Spacer(
         modifier = Modifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),

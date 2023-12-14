@@ -26,37 +26,31 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
 @Composable
-internal fun BatteryOptimization(
+internal fun NotificationPerms(
     modifier: Modifier = Modifier,
-    isEditable: Boolean,
-    appName: String,
     state: StatusViewState,
-    onDisableBatteryOptimizations: () -> Unit,
+    isEditable: Boolean,
+    onRequest: () -> Unit,
 ) {
+  val hasPermission by state.hasNotificationPermission.collectAsStateWithLifecycle()
   val hapticManager = LocalHapticManager.current
-  val isBatteryOptimizationDisabled by
-      state.isBatteryOptimizationsIgnored.collectAsStateWithLifecycle()
 
-  val canEdit =
-      remember(isEditable, isBatteryOptimizationDisabled) {
-        isEditable && !isBatteryOptimizationDisabled
-      }
+  val canEdit = remember(isEditable, hasPermission) { isEditable && !hasPermission }
 
   CheckableCard(
       modifier = modifier,
       isEditable = canEdit,
-      condition = isBatteryOptimizationDisabled,
-      title = "Always Alive",
+      condition = hasPermission,
+      title = "Show Hotspot Notification",
       description =
-          """This will allow the $appName Hotspot to continue running even if the app is closed.
+          """Keep the Hotspot alive on newer Android versions.
             |
-            |This will significantly enhance your experience and network performance.
-            |(recommended)"""
+            |Without a notification, the Hotspot may be stopped randomly."""
               .trimMargin(),
       onClick = {
-        if (!isBatteryOptimizationDisabled) {
-          hapticManager?.confirmButtonPress()
-          onDisableBatteryOptimizations()
+        if (!hasPermission) {
+          hapticManager?.actionButtonPress()
+          onRequest()
         }
       },
   )

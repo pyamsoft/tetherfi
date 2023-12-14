@@ -16,45 +16,67 @@
 
 package com.pyamsoft.tetherfi.status.sections
 
+import android.service.quicksettings.TileService
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class OptionalNotificationContentTypes {
+private enum class OperatingSettingsContentTypes {
   LABEL,
-  CHECK,
+  BATTERY_OPTIMIZATION,
+  ADD_TILE,
 }
 
-internal fun LazyListScope.renderNotificationSettings(
+internal fun LazyListScope.renderBattery(
     itemModifier: Modifier = Modifier,
-    state: StatusViewState,
     isEditable: Boolean,
-    onRequest: () -> Unit,
+    tileServiceClass: Class<out TileService>,
+    appName: String,
+    @DrawableRes appIcon: Int,
+    state: StatusViewState,
+
+    // Battery optimization
+    onDisableBatteryOptimizations: () -> Unit,
 ) {
   item(
-      contentType = OptionalNotificationContentTypes.LABEL,
+      contentType = OperatingSettingsContentTypes.LABEL,
   ) {
     Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Notifications",
+        text = "Operating Settings",
     )
   }
 
   item(
-      contentType = OptionalNotificationContentTypes.CHECK,
+      contentType = OperatingSettingsContentTypes.BATTERY_OPTIMIZATION,
   ) {
-    NotificationPerms(
+    BatteryOptimization(
         modifier = itemModifier,
-        state = state,
         isEditable = isEditable,
-        onRequest = onRequest,
+        appName = appName,
+        state = state,
+        onDisableBatteryOptimizations = onDisableBatteryOptimizations,
     )
+  }
+
+  if (FeatureFlags.IS_TILE_UI_ENABLED) {
+    item(contentType = OperatingSettingsContentTypes.ADD_TILE) {
+      AddTheTile(
+          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          tileServiceClass = tileServiceClass,
+          appName = appName,
+          appIcon = appIcon,
+      )
+    }
   }
 }
