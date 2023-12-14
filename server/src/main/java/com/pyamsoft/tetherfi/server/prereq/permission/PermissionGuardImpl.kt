@@ -40,27 +40,7 @@ internal constructor(
   override val requiredPermissions: List<String> by
       lazy(LazyThreadSafetyMode.NONE) {
         // Always require these WiFi permissions
-        ALWAYS_PERMISSIONS +
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-              listOf(
-                  // For service notifications
-                  android.Manifest.permission.POST_NOTIFICATIONS,
-              )
-            } else {
-              emptyList()
-            } +
-            // On API < 33, we require location permission
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-              listOf(
-                  android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                  android.Manifest.permission.ACCESS_FINE_LOCATION,
-              )
-            } else {
-              // On API >= 33, we can use the new NEARBY_WIFI_DEVICES permission
-              listOf(
-                  android.Manifest.permission.NEARBY_WIFI_DEVICES,
-              )
-            }
+        ALWAYS_PERMISSIONS + WIFI_NEARBY_PERMISSIONS
       }
 
   override suspend fun canCreateNetwork(): Boolean =
@@ -76,5 +56,19 @@ internal constructor(
             android.Manifest.permission.ACCESS_WIFI_STATE,
             android.Manifest.permission.CHANGE_WIFI_STATE,
         )
+
+    private val WIFI_NEARBY_PERMISSIONS =
+        // On API < 33, we require location permission
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+          listOf(
+              android.Manifest.permission.ACCESS_COARSE_LOCATION,
+              android.Manifest.permission.ACCESS_FINE_LOCATION,
+          )
+        } else {
+          // On API >= 33, we can use the new NEARBY_WIFI_DEVICES permission
+          listOf(
+              android.Manifest.permission.NEARBY_WIFI_DEVICES,
+          )
+        }
   }
 }
