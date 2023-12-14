@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.ui.qr
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,15 +32,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.isUnspecified
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
 
 private enum class QRCodeScreenContentTypes {
@@ -53,9 +57,15 @@ fun QRCodeScreen(
     state: QRCodeViewState,
     imageLoader: ImageLoader,
 ) {
-  val qrCode by state.qrCode.collectAsStateWithLifecycle()
-  val (qrCodeSize, setQrCodeSize) = remember { mutableStateOf(Dp.Unspecified) }
   val density = LocalDensity.current
+  val contentDp = MaterialTheme.keylines.content
+  val qrCode by state.qrCode.collectAsStateWithLifecycle()
+
+  val (qrCodeSize, setQrCodeSize) = remember { mutableStateOf(Dp.Unspecified) }
+
+  // QR Code needs a "quiet zone" in dark mode
+  // https://github.com/pyamsoft/tetherfi/issues/251
+  val (quietZoneSize, setQuietZoneSize) = remember { mutableStateOf(Dp.Unspecified) }
 
   LazyColumn(
       modifier = modifier,
@@ -79,18 +89,50 @@ fun QRCodeScreen(
               modifier =
                   Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content).onSizeChanged {
                       size ->
-                    val width = density.run { size.width.toDp() }
+                    val w = size.width
+                    val width = density.run { w.toDp() }
+
                     setQrCodeSize(width)
+
+                    // QR Code needs a "quiet zone" in dark mode
+                    // https://github.com/pyamsoft/tetherfi/issues/251
+                    if (w > 0) {
+                      val quietZoneSize = (1.0F / w.toFloat() * 8).toInt()
+                      val quietZoneDp = density.run { quietZoneSize.toDp() }
+                      if (quietZoneDp >= contentDp) {
+                        setQuietZoneSize(quietZoneDp)
+                      } else {
+                        setQuietZoneSize(contentDp)
+                      }
+                    }
                   },
               contentAlignment = Alignment.Center,
           ) {
-            AsyncImage(
-                modifier = Modifier.size(qrCodeSize),
-                model = code,
-                imageLoader = imageLoader,
-                contentDescription = "QR Code",
-                contentScale = ContentScale.FillBounds,
-            )
+            // QR Code needs a "quiet zone" in dark mode
+            // https://github.com/pyamsoft/tetherfi/issues/251
+
+            // padding modifier can't handle unspecified
+            val quietPadding =
+                remember(quietZoneSize) {
+                  if (quietZoneSize.isUnspecified) {
+                    ZeroSize
+                  } else {
+                    quietZoneSize
+                  }
+                }
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth().background(color = Color.White).padding(quietPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+              AsyncImage(
+                  modifier = Modifier.size(qrCodeSize),
+                  model = code,
+                  imageLoader = imageLoader,
+                  contentDescription = "QR Code",
+                  contentScale = ContentScale.FillBounds,
+              )
+            }
           }
         }
       }
