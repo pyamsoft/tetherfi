@@ -27,7 +27,11 @@
     android:usesCleartextTraffic="true"
   >
 
-    <!-- Compose Handles config changes https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/ -->
+    <!--
+      Compose Handles config changes
+
+      https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
+    -->
     <activity
       android:name=".main.MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -52,7 +56,11 @@
       </intent-filter>
     </activity>
 
-    <!-- Must run as a ConnectedDevice ForegroundService https://github.com/pyamsoft/tetherfi/issues/250 -->
+    <!--
+      Must run as a ConnectedDevice ForegroundService
+
+      https://github.com/pyamsoft/tetherfi/issues/250
+    -->
     <service
       android:name=".foreground.ProxyForegroundService"
       android:enabled="true"
@@ -60,7 +68,9 @@
       android:foregroundServiceType="connectedDevice"
     />
 
-    <!-- https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice -->
+    <!--
+      https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice
+    -->
     <service
       android:name=".tile.ProxyTileService"
       android:enabled="true"
@@ -73,11 +83,17 @@
         <action android:name="android.service.quicksettings.action.QS_TILE" />
       </intent-filter>
 
-      <!-- Mark Tile active Tile's make an application a candidate for Foreground
+      <!--
+        Mark Tile active Tile's make an application a candidate for Foreground
         starting We mark this as NOT active so that the system binds to us and treats
-        us as foreground! https://github.com/pyamsoft/tetherfi/issues/250 <meta-data
+        us as foreground!
+
+        https://github.com/pyamsoft/tetherfi/issues/250
+
+        <meta-data
         android:name="android.service.quicksettings.ACTIVE_TILE" android:value="true"
-        /> -->
+        />
+        -->
 
       <!-- Tile can be toggled -->
       <meta-data
@@ -86,7 +102,11 @@
       />
     </service>
 
-    <!-- Compose Handles config changes https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/ -->
+    <!--
+      Compose Handles config changes
+
+      https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
+    -->
     <activity
       android:name=".tile.ProxyTileActivity"
       android:clearTaskOnLaunch="true"
