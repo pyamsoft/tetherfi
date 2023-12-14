@@ -11,8 +11,7 @@ import javax.inject.Named
 
 class QuickTileAddButtonInjector : ComposableInjector() {
 
-  @JvmField @Inject
-  internal var tileStatus: TileStatus? = null
+  @JvmField @Inject internal var tileStatus: TileStatus? = null
 
   @Inject
   @JvmField
@@ -20,8 +19,7 @@ class QuickTileAddButtonInjector : ComposableInjector() {
   @Named("app_icon_foreground")
   internal var appIconForegroundRes: Int = 0
 
-  @JvmField @Inject
-  internal var tileServiceClass: Class<out TileService>? = null
+  @JvmField @Inject internal var tileServiceClass: Class<out TileService>? = null
 
   override fun onInject(activity: ComponentActivity) {
     StatusObjectGraph.retrieve(activity).inject(this)

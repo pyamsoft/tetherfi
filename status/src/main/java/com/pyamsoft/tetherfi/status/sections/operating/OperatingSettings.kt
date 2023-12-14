@@ -16,18 +16,14 @@
 
 package com.pyamsoft.tetherfi.status.sections.operating
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.tetherfi.core.FeatureFlags
-import com.pyamsoft.tetherfi.status.StatusObjectGraph
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
-import javax.inject.Inject
 
 private enum class OperatingSettingsContentTypes {
   LABEL,
