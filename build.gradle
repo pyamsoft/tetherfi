@@ -161,7 +161,10 @@ allprojects {
     }
     format "xml", {
       target("src/**/*.xml")
-      eclipseWtp("xml")
+      prettier([
+        "prettier"            : "latest",
+        "@prettier/plugin-xml": "latest",
+      ])
 
       trimTrailingWhitespace()
       endWithNewline()

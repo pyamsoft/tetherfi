@@ -8,3 +8,8 @@
 .cxx
 local.properties
 .idea
+
+# Prettier
+node_modules
+package-lock.json
+package.json
