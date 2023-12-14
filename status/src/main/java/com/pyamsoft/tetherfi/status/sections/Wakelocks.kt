@@ -54,115 +54,115 @@ internal fun Wakelocks(
   val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
 
   val wakeLockColor by
-  rememberCheckableColor(
-      label = "CPU Lock",
-      condition = keepWakeLock,
-      selectedColor = MaterialTheme.colors.primary,
-  )
+      rememberCheckableColor(
+          label = "CPU Lock",
+          condition = keepWakeLock,
+          selectedColor = MaterialTheme.colors.primary,
+      )
   val wifiLockColor by
-  rememberCheckableColor(
-      label = "Wi-Fi Lock",
-      condition = keepWifiLock,
-      selectedColor = MaterialTheme.colors.primary,
-  )
+      rememberCheckableColor(
+          label = "Wi-Fi Lock",
+          condition = keepWifiLock,
+          selectedColor = MaterialTheme.colors.primary,
+      )
 
   val checkboxState =
       remember(
           keepWakeLock,
           keepWifiLock,
       ) {
-          if (!keepWakeLock && !keepWifiLock) {
-              ToggleableState.Off
-          } else if (keepWakeLock && keepWifiLock) {
-              ToggleableState.On
-          } else {
-              ToggleableState.Indeterminate
-          }
+        if (!keepWakeLock && !keepWifiLock) {
+          ToggleableState.Off
+        } else if (keepWakeLock && keepWifiLock) {
+          ToggleableState.On
+        } else {
+          ToggleableState.Indeterminate
+        }
       }
 
   val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
   val cardColor by
-  rememberCheckableColor(
-      label = "Wake Locks",
-      condition = isChecked,
-      selectedColor = MaterialTheme.colors.primary,
-  )
+      rememberCheckableColor(
+          label = "Wake Locks",
+          condition = isChecked,
+          selectedColor = MaterialTheme.colors.primary,
+      )
   val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
   val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Card(
-        modifier =
-        modifier.border(
-            width = 2.dp,
-            color = cardColor.copy(alpha = mediumAlpha),
-            shape = MaterialTheme.shapes.medium,
-        ),
-        elevation = CardDefaults.Elevation,
+  Card(
+      modifier =
+          modifier.border(
+              width = 2.dp,
+              color = cardColor.copy(alpha = mediumAlpha),
+              shape = MaterialTheme.shapes.medium,
+          ),
+      elevation = CardDefaults.Elevation,
+  ) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Row(
-                modifier = Modifier.padding(MaterialTheme.keylines.content),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    modifier = Modifier.weight(1F),
-                    text = "Wake Locks",
-                    style =
-                    MaterialTheme.typography.h6.copy(
-                        fontWeight = FontWeight.W700,
-                        color = cardColor.copy(alpha = highAlpha),
-                    ),
-                )
+      Row(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text(
+            modifier = Modifier.weight(1F),
+            text = "Wake Locks",
+            style =
+                MaterialTheme.typography.h6.copy(
+                    fontWeight = FontWeight.W700,
+                    color = cardColor.copy(alpha = highAlpha),
+                ),
+        )
 
-                TriStateCheckbox(
-                    modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-                    enabled = isEditable,
-                    state = checkboxState,
-                    onClick = null,
-                )
-            }
+        TriStateCheckbox(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+            enabled = isEditable,
+            state = checkboxState,
+            onClick = null,
+        )
+      }
 
-            Text(
-                modifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = MaterialTheme.keylines.content)
-                    .padding(bottom = MaterialTheme.keylines.content * 2),
-                text =
-                """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
+      Text(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .padding(horizontal = MaterialTheme.keylines.content)
+                  .padding(bottom = MaterialTheme.keylines.content * 2),
+          text =
+              """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
                   |
                   |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
-                    .trimMargin(),
-                style =
-                MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
-                ),
-            )
+                  .trimMargin(),
+          style =
+              MaterialTheme.typography.caption.copy(
+                  color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
+              ),
+      )
 
-            ToggleSwitch(
-                highAlpha = highAlpha,
-                mediumAlpha = mediumAlpha,
-                isEditable = isEditable,
-                color = wifiLockColor,
-                checked = keepWifiLock,
-                title = "Keep WiFi Awake",
-                description =
-                "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
-                onClick = onToggleKeepWifiLock,
-            )
+      ToggleSwitch(
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = wifiLockColor,
+          checked = keepWifiLock,
+          title = "Keep WiFi Awake",
+          description =
+              "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
+          onClick = onToggleKeepWifiLock,
+      )
 
-            ToggleSwitch(
-                highAlpha = highAlpha,
-                mediumAlpha = mediumAlpha,
-                isEditable = isEditable,
-                color = wakeLockColor,
-                checked = keepWakeLock,
-                title = "Keep CPU Awake",
-                description =
-                "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
-                onClick = onToggleKeepWakeLock,
-            )
-        }
+      ToggleSwitch(
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = wakeLockColor,
+          checked = keepWakeLock,
+          title = "Keep CPU Awake",
+          description =
+              "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
+          onClick = onToggleKeepWakeLock,
+      )
     }
+  }
 }

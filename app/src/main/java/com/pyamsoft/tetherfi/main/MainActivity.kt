@@ -62,14 +62,9 @@ class MainActivity : AppCompatActivity() {
 
                   override val changelog = buildChangeLog {
                     bugfix(
-                        "Fix a rare race that on Hotspot startup that caused it to hang forever. Symptoms were: Broadcast Status showed Running but Proxy Status never entered Starting or Running.")
-                    bugfix(
-                        "Guard against an error that was crashing certain devices using the Quick Tile.")
-                    bugfix(
-                        "Better performance and try to work around certain Android system bugs that used to require rebooting the device.")
-                    bugfix(
-                        "Change the TileService mode to allow the system to bind it instead. Should improve performance as theorized in Issue #250.")
-                    change("Run the Proxy as a ForegroundService")
+                        "Fix the QR code reader not being able to 'see' correctly in dark mode. Issue #251")
+                    change(
+                        "Support assigning a custom name to a connected Client device in the Connections tab.")
                   }
                 },
         )
