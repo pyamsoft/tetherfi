@@ -26,6 +26,7 @@ import com.pyamsoft.pydroid.ui.installPYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.core.TERMS_CONDITIONS_URL
+import com.pyamsoft.tetherfi.status.StatusObjectGraph
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,11 @@ class TetherFi : Application() {
     )
   }
 
+  private fun installObjectGraph(component: TetherFiComponent) {
+    ObjectGraph.ApplicationScope.install(this, component)
+    StatusObjectGraph.install(this, component)
+  }
+
   private fun installComponent(
       scope: CoroutineScope,
       moduleProvider: ModuleProvider,
@@ -64,7 +70,8 @@ class TetherFi : Application() {
                 theming = mods.theming(),
                 enforcer = mods.enforcer(),
             )
-    ObjectGraph.ApplicationScope.install(this, component)
+
+    installObjectGraph(component)
   }
 
   override fun onCreate() {

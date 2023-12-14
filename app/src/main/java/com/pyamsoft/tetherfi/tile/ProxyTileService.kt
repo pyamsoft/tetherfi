@@ -39,6 +39,7 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   @Inject @JvmField internal var tileHandler: TileHandler? = null
   @Inject @JvmField internal var tileActivityLauncher: ProxyTileActivityLauncher? = null
+  @Inject @JvmField internal var tileStatus: TileStatus? = null
 
   private var scope: CoroutineScope? = null
 
@@ -166,6 +167,11 @@ internal class ProxyTileService internal constructor() : TileService() {
   }
 
   override fun onStartListening() {
+    Timber.d { "Tile starts listening!" }
+
+    // Mark tile alive
+    tileStatus?.markAlive()
+
     withHandler { handler ->
       when (val status = handler.getOverallStatus()) {
         is RunningStatus.Error -> handleNetworkErrorState(status)
@@ -177,8 +183,31 @@ internal class ProxyTileService internal constructor() : TileService() {
     }
   }
 
+  override fun onTileAdded() {
+    super.onTileAdded()
+
+    Timber.d { "Tile added!" }
+
+    // Mark tile alive
+    tileStatus?.markAlive()
+  }
+
+  override fun onTileRemoved() {
+    super.onTileRemoved()
+
+    Timber.d { "Tile removed!" }
+
+    // Mark tile destroyed
+    tileStatus?.markDead()
+  }
+
   override fun onCreate() {
     super.onCreate()
+
+    Timber.d { "Tile created!" }
+
+    // Mark tile alive
+    tileStatus?.markAlive()
 
     withHandler { handler ->
       handler.bind(
@@ -195,11 +224,15 @@ internal class ProxyTileService internal constructor() : TileService() {
   override fun onDestroy() {
     super.onDestroy()
 
+    Timber.d { "Tile destroyed!" }
+
     // Cancel everything because this scope is dead
     scope?.cancel()
 
     scope = null
     tileHandler = null
+    tileActivityLauncher = null
+    tileStatus = null
   }
 
   companion object {

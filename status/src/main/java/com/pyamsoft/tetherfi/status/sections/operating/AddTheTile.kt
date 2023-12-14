@@ -16,110 +16,26 @@
 
 package com.pyamsoft.tetherfi.status.sections.operating
 
-import android.app.StatusBarManager
-import android.content.ComponentName
-import android.graphics.drawable.Icon
-import android.os.Build
-import android.service.quicksettings.TileService
-import androidx.annotation.CheckResult
-import androidx.annotation.DrawableRes
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.content.getSystemService
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
-import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.ui.appendLink
-import java.util.concurrent.Executors
-
-@Composable
-@CheckResult
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
-private fun rememberTileClickHandler(
-    tileServiceClass: Class<out TileService>,
-    appName: String,
-    @DrawableRes appIcon: Int,
-): State<() -> Unit> {
-  val context = LocalContext.current
-  val appContext = remember(context) { context.applicationContext }
-  val statusBarManager =
-      remember(appContext) { appContext.getSystemService<StatusBarManager>().requireNotNull() }
-  val componentName =
-      remember(appContext) {
-        ComponentName(
-            appContext.packageName,
-            tileServiceClass.name,
-        )
-      }
-  val icon = remember(appContext) { Icon.createWithResource(context, appIcon) }
-  return rememberUpdatedState {
-    statusBarManager.requestAddTileService(
-        componentName,
-        appName,
-        icon,
-        Executors.newSingleThreadExecutor(),
-    ) { code ->
-      Timber.d { "Tile Add Result Code: $code" }
-    }
-  }
-}
-
-@Composable
-private fun QuickTileAddButton(
-    modifier: Modifier = Modifier,
-    tileServiceClass: Class<out TileService>,
-    appName: String,
-    @DrawableRes appIcon: Int,
-    isEditable: Boolean,
-) {
-  // If we can, show the quick button
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    val hapticManager = LocalHapticManager.current
-
-    val handleClick by
-        rememberTileClickHandler(
-            tileServiceClass = tileServiceClass,
-            appName = appName,
-            appIcon = appIcon,
-        )
-
-    Button(
-        modifier = modifier,
-        enabled = isEditable,
-        onClick = {
-          hapticManager?.confirmButtonPress()
-          handleClick()
-        },
-    ) {
-      Text(
-          text = "Add the Tile",
-      )
-    }
-  }
-}
 
 @Composable
 private fun BugReportLink(
@@ -192,9 +108,7 @@ private fun BugReportLink(
 internal fun AddTheTile(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
 ) {
   val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
   val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
@@ -269,9 +183,7 @@ internal fun AddTheTile(
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           isEditable = isEditable,
-          tileServiceClass = tileServiceClass,
           appName = appName,
-          appIcon = appIcon,
       )
 
       BugReportLink(

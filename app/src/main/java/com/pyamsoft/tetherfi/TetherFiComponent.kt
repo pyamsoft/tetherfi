@@ -31,6 +31,7 @@ import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.pydroid.util.PermissionRequester
+import com.pyamsoft.tetherfi.core.CoreAppModule
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
 import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
@@ -42,12 +43,14 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
+import com.pyamsoft.tetherfi.status.PartialStatusAppComponent
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.tile.ProxyTileServiceComponent
+import com.pyamsoft.tetherfi.tile.TileAppModule
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
@@ -66,9 +69,11 @@ import kotlinx.coroutines.CoroutineScope
             ServerAppModule::class,
             ServiceAppModule::class,
             WifiDirectAppModule::class,
+            TileAppModule::class,
+            CoreAppModule::class,
         ],
 )
-internal interface TetherFiComponent {
+internal interface TetherFiComponent : PartialStatusAppComponent {
 
   @CheckResult fun plusMain(): MainComponent.Factory
 
@@ -125,6 +130,13 @@ internal interface TetherFiComponent {
 
       @Provides
       @JvmStatic
+      @Named("version")
+      internal fun provideVersion(): Int {
+        return BuildConfig.VERSION_CODE
+      }
+
+      @Provides
+      @JvmStatic
       @Named("tile_activity")
       internal fun provideProxyTileActivityClass(): Class<out Activity> {
         return ProxyTileActivity::class.java
@@ -142,6 +154,20 @@ internal interface TetherFiComponent {
       @Named("app_name")
       internal fun provideAppNameRes(): Int {
         return R.string.app_name
+      }
+
+      @Provides
+      @JvmStatic
+      @Named("app_icon")
+      internal fun provideAppIconRes(): Int {
+        return R.mipmap.ic_launcher
+      }
+
+      @Provides
+      @JvmStatic
+      @Named("app_icon_foreground")
+      internal fun provideAppIconForegroundRes(): Int {
+        return R.mipmap.ic_launcher_foreground
       }
 
       @Provides

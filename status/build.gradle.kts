@@ -53,11 +53,14 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
+  implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
+
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 
   implementation(project(":core"))
   implementation(project(":server"))
   implementation(project(":service"))
+  implementation(project(":tile"))
   implementation(project(":ui"))
 }

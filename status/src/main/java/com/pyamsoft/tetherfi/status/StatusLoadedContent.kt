@@ -1,7 +1,5 @@
 package com.pyamsoft.tetherfi.status
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -10,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
@@ -28,9 +27,8 @@ private enum class StatusLoadedContentTypes {
 
 internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
-    tileServiceClass: Class<out TileService>,
+    featureFlags: FeatureFlags,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: StatusViewState,
     serverViewState: ServerViewState,
     isEditable: Boolean,
@@ -93,10 +91,9 @@ internal fun LazyListScope.renderLoadedContent(
   renderOperatingSettings(
       itemModifier = itemModifier,
       isEditable = isEditable,
-      tileServiceClass = tileServiceClass,
       appName = appName,
-      appIcon = appIcon,
       state = state,
+      featureFlags = featureFlags,
       onDisableBatteryOptimizations = onOpenBatterySettings,
   )
 

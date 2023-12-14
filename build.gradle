@@ -41,6 +41,7 @@ buildscript {
     composeCompiler = "1.5.6"
     composeMaterial = "1.5.4"
     accompanist = "0.32.0"
+    composeActivity = "1.8.2"
 
     desugar = "2.0.4"
 

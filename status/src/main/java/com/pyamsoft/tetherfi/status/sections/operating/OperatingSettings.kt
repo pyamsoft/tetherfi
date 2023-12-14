@@ -16,16 +16,18 @@
 
 package com.pyamsoft.tetherfi.status.sections.operating
 
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.status.StatusObjectGraph
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
+import javax.inject.Inject
 
 private enum class OperatingSettingsContentTypes {
   LABEL,
@@ -36,10 +38,9 @@ private enum class OperatingSettingsContentTypes {
 internal fun LazyListScope.renderOperatingSettings(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
-    tileServiceClass: Class<out TileService>,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: StatusViewState,
+    featureFlags: FeatureFlags,
 
     // Battery optimization
     onDisableBatteryOptimizations: () -> Unit,
@@ -68,14 +69,12 @@ internal fun LazyListScope.renderOperatingSettings(
     )
   }
 
-  if (FeatureFlags.IS_TILE_UI_ENABLED) {
+  if (featureFlags.isTileUiEnabled) {
     item(contentType = OperatingSettingsContentTypes.ADD_TILE) {
       AddTheTile(
           modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
           isEditable = isEditable,
-          tileServiceClass = tileServiceClass,
           appName = appName,
-          appIcon = appIcon,
       )
     }
   }

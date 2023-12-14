@@ -130,8 +130,6 @@ class MainActivity : AppCompatActivity() {
         MainEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
-            tileServiceClass = ProxyTileService::class.java,
-            appIcon = R.mipmap.ic_launcher_foreground,
             onShowInAppRating = { handleShowInAppRating() },
             onUpdateTile = { ProxyTileService.updateTile(this) },
             onLaunchIntent = { safeOpenSettingsIntent(it) },

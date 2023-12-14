@@ -17,8 +17,6 @@
 package com.pyamsoft.tetherfi.status
 
 import android.os.Build
-import android.service.quicksettings.TileService
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -36,6 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
+import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.TestFeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
@@ -58,9 +58,8 @@ private val staticHotspotError =
 @Composable
 fun StatusScreen(
     modifier: Modifier = Modifier,
-    tileServiceClass: Class<out TileService>,
+    featureFlags: FeatureFlags,
     appName: String,
-    @DrawableRes appIcon: Int,
     state: StatusViewState,
     serverViewState: ServerViewState,
 
@@ -227,9 +226,7 @@ fun StatusScreen(
       StatusViewState.LoadingState.DONE -> {
         renderLoadedContent(
             itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
-            tileServiceClass = tileServiceClass,
             appName = appName,
-            appIcon = appIcon,
             state = state,
             serverViewState = serverViewState,
             isEditable = isEditable,
@@ -253,6 +250,7 @@ fun StatusScreen(
             onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onToggleBindProxyAll = onToggleBindProxyAll,
             onJumpToHowTo = onJumpToHowTo,
+            featureFlags = featureFlags,
         )
       }
     }
@@ -292,10 +290,9 @@ private fun PreviewStatusScreen(
             this.port.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
+      featureFlags = TestFeatureFlags,
       serverViewState = TestServerViewState(),
-      tileServiceClass = TileService::class.java,
       appName = "TEST",
-      appIcon = 0,
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
       onToggleKeepWakeLock = {},
