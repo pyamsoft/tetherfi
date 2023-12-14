@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.status.sections
 
+import android.service.quicksettings.TileService
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.status.StatusScreenContentTypes
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
@@ -34,7 +37,9 @@ import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 internal fun LazyListScope.renderBattery(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
+    tileServiceClass: Class<out TileService>,
     appName: String,
+    @DrawableRes appIcon: Int,
     state: StatusViewState,
 
     // Battery optimization
@@ -62,6 +67,20 @@ internal fun LazyListScope.renderBattery(
         state = state,
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
     )
+  }
+
+  if (FeatureFlags.IS_TILE_UI_ENABLED) {
+    item(
+        contentType = StatusScreenContentTypes.BATTERY_ADD_TILE,
+    ) {
+      AddTheTile(
+          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          tileServiceClass = tileServiceClass,
+          appName = appName,
+          appIcon = appIcon,
+      )
+    }
   }
 }
 
