@@ -159,16 +159,5 @@ allprojects {
       endWithNewline()
       indentWithSpaces(2)
     }
-    format "xml", {
-      target("src/**/*.xml")
-      prettier([
-        "prettier"            : "latest",
-        "@prettier/plugin-xml": "latest",
-      ])
-
-      trimTrailingWhitespace()
-      endWithNewline()
-      indentWithSpaces(2)
-    }
   }
 }
