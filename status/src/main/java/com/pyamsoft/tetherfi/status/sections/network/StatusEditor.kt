@@ -39,30 +39,25 @@ internal fun StatusEditor(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
-  val textStyle = LocalTextStyle.current
+    val textStyle = LocalTextStyle.current
 
-  Column(
-      modifier = modifier,
-  ) {
     TextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         enabled = enabled,
         keyboardOptions = keyboardOptions,
         value = value,
-        textStyle =
-            textStyle.copy(
-                fontFamily = FontFamily.Monospace,
-            ),
+        textStyle = textStyle.copy(
+            fontFamily = FontFamily.Monospace,
+        ),
         visualTransformation = visualTransformation,
         onValueChange = onChange,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         singleLine = true,
         label = {
-          Text(
-              text = title,
-          )
+            Text(
+                text = title,
+            )
         },
     )
-  }
 }

@@ -57,46 +57,46 @@ internal fun ViewProxy(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-  val connection by serverViewState.connection.collectAsStateWithLifecycle()
-  val ipAddress = rememberServerHostname(connection)
+    val connection by serverViewState.connection.collectAsStateWithLifecycle()
+    val ipAddress = rememberServerHostname(connection)
 
-  val portNumber by serverViewState.port.collectAsStateWithLifecycle()
-  val port =
-      remember(
-          portNumber,
-      ) {
-        if (portNumber in 1024..65000) "$portNumber" else "INVALID PORT"
-      }
+    val portNumber by serverViewState.port.collectAsStateWithLifecycle()
+    val port =
+        remember(
+            portNumber,
+        ) {
+            if (portNumber in 1024..65000) "$portNumber" else "INVALID PORT"
+        }
 
-  Row(
-      modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
-  ) {
-    StatusItem(
-        modifier = Modifier.weight(1F, fill = false),
-        title = "PROXY URL/HOSTNAME",
-        value = ipAddress,
-        valueStyle =
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        StatusItem(
+            modifier = Modifier.weight(1F, fill = false),
+            title = "PROXY URL/HOSTNAME",
+            value = ipAddress,
+            valueStyle =
             MaterialTheme.typography.h6.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
-    )
+        )
 
-    Spacer(
-        modifier = Modifier.width(MaterialTheme.keylines.content),
-    )
+        Spacer(
+            modifier = Modifier.width(MaterialTheme.keylines.content),
+        )
 
-    StatusItem(
-        title = "PROXY PORT",
-        value = port,
-        valueStyle =
+        StatusItem(
+            title = "PROXY PORT",
+            value = port,
+            valueStyle =
             MaterialTheme.typography.h6.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
-    )
-  }
+        )
+    }
 }
 
 @Composable
@@ -106,47 +106,47 @@ internal fun ViewPassword(
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
 ) {
-  val hapticManager = LocalHapticManager.current
-  val group by serverViewState.group.collectAsStateWithLifecycle()
-  val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
-  val password = rememberServerPassword(group, isPasswordVisible)
+    val hapticManager = LocalHapticManager.current
+    val group by serverViewState.group.collectAsStateWithLifecycle()
+    val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
+    val password = rememberServerPassword(group, isPasswordVisible)
 
-  Row(
-      modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
-  ) {
-    StatusItem(
-        modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-        title = "HOTSPOT PASSWORD",
-        value = password,
-        valueStyle =
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        StatusItem(
+            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+            title = "HOTSPOT PASSWORD",
+            value = password,
+            valueStyle =
             MaterialTheme.typography.h6.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
-    )
-
-    if (group is BroadcastNetworkStatus.GroupInfo.Connected) {
-      IconToggleButton(
-          checked = isPasswordVisible,
-          onCheckedChange = { newVisible ->
-            if (newVisible) {
-              hapticManager?.toggleOn()
-            } else {
-              hapticManager?.toggleOff()
-            }
-            onTogglePasswordVisibility()
-          },
-      ) {
-        Icon(
-            imageVector =
-                if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-            contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
-            tint = MaterialTheme.colors.primary,
         )
-      }
+
+        if (group is BroadcastNetworkStatus.GroupInfo.Connected) {
+            IconToggleButton(
+                checked = isPasswordVisible,
+                onCheckedChange = { newVisible ->
+                    if (newVisible) {
+                        hapticManager?.toggleOn()
+                    } else {
+                        hapticManager?.toggleOff()
+                    }
+                    onTogglePasswordVisibility()
+                },
+            ) {
+                Icon(
+                    imageVector =
+                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
+                    tint = MaterialTheme.colors.primary,
+                )
+            }
+        }
     }
-  }
 }
 
 @Composable
@@ -154,24 +154,19 @@ internal fun ViewSsid(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-  val group by serverViewState.group.collectAsStateWithLifecycle()
-  val ssid = rememberServerSSID(group)
+    val group by serverViewState.group.collectAsStateWithLifecycle()
+    val ssid = rememberServerSSID(group)
 
-  Row(
-      modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
-  ) {
     StatusItem(
-        modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+        modifier = modifier.padding(end = MaterialTheme.keylines.content),
         title = "HOTSPOT NAME",
         value = ssid,
         valueStyle =
-            MaterialTheme.typography.h6.copy(
-                fontWeight = FontWeight.W400,
-                fontFamily = FontFamily.Monospace,
-            ),
+        MaterialTheme.typography.h6.copy(
+            fontWeight = FontWeight.W400,
+            fontFamily = FontFamily.Monospace,
+        ),
     )
-  }
 }
 
 @Composable
@@ -179,38 +174,38 @@ internal fun ViewInstructions(
     modifier: Modifier = Modifier,
     onJumpToHowTo: () -> Unit,
 ) {
-  val text = buildAnnotatedString {
-    appendLine("Confused on what to do next?")
-    append("View the ")
+    val text = buildAnnotatedString {
+        appendLine("Confused on what to do next?")
+        append("View the ")
 
-    appendLink(
-        tag = SETUP_TAG,
-        linkColor = MaterialTheme.colors.primary,
-        text = SETUP_TEXT,
-        url = SETUP_TAG,
+        appendLink(
+            tag = SETUP_TAG,
+            linkColor = MaterialTheme.colors.primary,
+            text = SETUP_TEXT,
+            url = SETUP_TAG,
+        )
+    }
+
+    ClickableText(
+        modifier = modifier,
+        style =
+        MaterialTheme.typography.body2.copy(
+            color =
+            MaterialTheme.colors.onBackground.copy(
+                alpha = ContentAlpha.medium,
+            ),
+            textAlign = TextAlign.Center,
+        ),
+        text = text,
+        onClick = { start ->
+            text
+                .getStringAnnotations(
+                    tag = SETUP_TAG,
+                    start = start,
+                    end = start + SETUP_TAG.length,
+                )
+                .firstOrNull()
+                ?.also { onJumpToHowTo() }
+        },
     )
-  }
-
-  ClickableText(
-      modifier = modifier,
-      style =
-          MaterialTheme.typography.body2.copy(
-              color =
-                  MaterialTheme.colors.onBackground.copy(
-                      alpha = ContentAlpha.medium,
-                  ),
-              textAlign = TextAlign.Center,
-          ),
-      text = text,
-      onClick = { start ->
-        text
-            .getStringAnnotations(
-                tag = SETUP_TAG,
-                start = start,
-                end = start + SETUP_TAG.length,
-            )
-            .firstOrNull()
-            ?.also { onJumpToHowTo() }
-      },
-  )
 }
