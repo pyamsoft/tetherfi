@@ -45,15 +45,12 @@ import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 
 private enum class StatusScreenContentTypes {
-  BUTTON,
-  STATUS,
-  LOADING,
+    BUTTON, LOADING,
 }
 
-private val staticHotspotError =
-    RunningStatus.HotspotError(
-        RuntimeException("Unable to start Hotspot"),
-    )
+private val staticHotspotError = RunningStatus.HotspotError(
+    RuntimeException("Unable to start Hotspot"),
+)
 
 @Composable
 fun StatusScreen(
@@ -114,162 +111,154 @@ fun StatusScreen(
     // Jump links
     onJumpToHowTo: () -> Unit,
 ) {
-  val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
-  val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
+    val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
+    val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
 
-  val hotspotStatus =
-      remember(
-          wiDiStatus,
-          proxyStatus,
-      ) {
+    val hotspotStatus = remember(
+        wiDiStatus,
+        proxyStatus,
+    ) {
         if (wiDiStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
-          return@remember staticHotspotError
+            return@remember staticHotspotError
         }
 
         // If either is starting, mark us starting
         if (wiDiStatus is RunningStatus.Starting || proxyStatus is RunningStatus.Starting) {
-          return@remember RunningStatus.Starting
+            return@remember RunningStatus.Starting
         }
 
         // If the wifi direct broadcast is up, but the proxy is not up yet, mark starting
         if (wiDiStatus is RunningStatus.Running && proxyStatus !is RunningStatus.Running) {
-          return@remember RunningStatus.Starting
+            return@remember RunningStatus.Starting
         }
 
         // If either is stopping, mark us stopping
         if (wiDiStatus is RunningStatus.Stopping || proxyStatus is RunningStatus.Stopping) {
-          return@remember RunningStatus.Stopping
+            return@remember RunningStatus.Stopping
         }
 
         if (wiDiStatus is RunningStatus.Running) {
-          // If the Wifi Direct is running, watch the proxy status
-          return@remember proxyStatus
+            // If the Wifi Direct is running, watch the proxy status
+            return@remember proxyStatus
         } else {
-          // Otherwise fallback to wiDi status
-          return@remember wiDiStatus
+            // Otherwise fallback to wiDi status
+            return@remember wiDiStatus
         }
-      }
+    }
 
-  val isButtonEnabled =
-      remember(hotspotStatus) {
-        hotspotStatus is RunningStatus.Running ||
-            hotspotStatus is RunningStatus.NotRunning ||
-            hotspotStatus is RunningStatus.Error
-      }
+    val isButtonEnabled = remember(hotspotStatus) {
+        hotspotStatus is RunningStatus.Running || hotspotStatus is RunningStatus.NotRunning || hotspotStatus is RunningStatus.Error
+    }
 
-  val isEditable =
-      remember(hotspotStatus) {
+    val isEditable = remember(hotspotStatus) {
         when (hotspotStatus) {
-          is RunningStatus.Running,
-          is RunningStatus.Starting,
-          is RunningStatus.Stopping -> false
-          else -> true
+            is RunningStatus.Running, is RunningStatus.Starting, is RunningStatus.Stopping -> false
+
+            else -> true
         }
-      }
-
-  val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
-  val loadingState by state.loadingState.collectAsStateWithLifecycle()
-
-  val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
-  LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
-
-  LazyColumn(
-      modifier = modifier,
-      contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
-      horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    item(
-        contentType = StatusScreenContentTypes.BUTTON,
-    ) {
-      HotspotStarter(
-          modifier =
-              Modifier.width(LANDSCAPE_MAX_WIDTH).padding(top = MaterialTheme.keylines.content),
-          isButtonEnabled = isButtonEnabled,
-          hotspotStatus = hotspotStatus,
-          appName = appName,
-          onToggleProxy = onToggleProxy,
-      )
     }
 
-    renderPYDroidExtras(
-        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-    )
+    val showNotificationSettings =
+        remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
+    val loadingState by state.loadingState.collectAsStateWithLifecycle()
 
-    item(
-        contentType = StatusScreenContentTypes.STATUS,
+    val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
+    LaunchedEffect(hotspotStatus) { handleStatusUpdated(hotspotStatus) }
+
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      HotspotStatus(
-          modifier =
-              Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH)
-                  .padding(vertical = MaterialTheme.keylines.content * 2),
-          wiDiStatus = wiDiStatus,
-          proxyStatus = proxyStatus,
-          hotspotStatus = hotspotStatus,
-          onShowBroadcastError = onShowBroadcastError,
-          onShowProxyError = onShowProxyError,
-      )
-    }
-
-    when (loadingState) {
-      StatusViewState.LoadingState.NONE,
-      StatusViewState.LoadingState.LOADING -> {
         item(
-            contentType = StatusScreenContentTypes.LOADING,
+            contentType = StatusScreenContentTypes.BUTTON,
         ) {
-          StatusLoading(
-              modifier =
-                  Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH)
-                      .padding(MaterialTheme.keylines.content),
-          )
+            HotspotStarter(
+                modifier = Modifier
+                    .width(LANDSCAPE_MAX_WIDTH)
+                    .padding(top = MaterialTheme.keylines.content),
+                isButtonEnabled = isButtonEnabled,
+                hotspotStatus = hotspotStatus,
+                appName = appName,
+                onToggleProxy = onToggleProxy,
+            )
         }
-      }
-      StatusViewState.LoadingState.DONE -> {
-        renderLoadedContent(
-            itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
-            appName = appName,
-            state = state,
-            serverViewState = serverViewState,
-            isEditable = isEditable,
+
+        renderPYDroidExtras(
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        )
+
+        renderHotspotStatus(
+            itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
             wiDiStatus = wiDiStatus,
             proxyStatus = proxyStatus,
-            showNotificationSettings = showNotificationSettings,
-            onSsidChanged = onSsidChanged,
-            onPasswordChanged = onPasswordChanged,
-            onPortChanged = onPortChanged,
-            onOpenBatterySettings = onOpenBatterySettings,
-            onSelectBand = onSelectBand,
-            onRequestNotificationPermission = onRequestNotificationPermission,
-            onTogglePasswordVisibility = onTogglePasswordVisibility,
-            onShowQRCode = onShowQRCode,
-            onRefreshConnection = onRefreshConnection,
-            onToggleKeepWakeLock = onToggleKeepWakeLock,
-            onToggleKeepWifiLock = onToggleKeepWifiLock,
-            onShowHotspotError = onShowHotspotError,
-            onShowNetworkError = onShowNetworkError,
-            onToggleIgnoreVpn = onToggleIgnoreVpn,
-            onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-            onToggleBindProxyAll = onToggleBindProxyAll,
-            onJumpToHowTo = onJumpToHowTo,
-            featureFlags = featureFlags,
+            hotspotStatus = hotspotStatus,
+            onShowBroadcastError = onShowBroadcastError,
+            onShowProxyError = onShowProxyError,
         )
-      }
-    }
-  }
 
-  StatusDialogs(
-      dialogModifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
-      state = state,
-      serverViewState = serverViewState,
-      appName = appName,
-      onDismissBlocker = onDismissBlocker,
-      onOpenPermissionSettings = onOpenPermissionSettings,
-      onRequestPermissions = onRequestPermissions,
-      onHideNetworkError = onHideNetworkError,
-      onHideHotspotError = onHideHotspotError,
-      onHideSetupError = onHideSetupError,
-      onHideProxyError = onHideProxyError,
-      onHideBroadcastError = onHideBroadcastError,
-  )
+        when (loadingState) {
+            StatusViewState.LoadingState.NONE, StatusViewState.LoadingState.LOADING -> {
+                item(
+                    contentType = StatusScreenContentTypes.LOADING,
+                ) {
+                    StatusLoading(
+                        modifier = Modifier
+                            .widthIn(max = LANDSCAPE_MAX_WIDTH)
+                            .padding(MaterialTheme.keylines.content),
+                    )
+                }
+            }
+
+            StatusViewState.LoadingState.DONE -> {
+                renderLoadedContent(
+                    itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+                    appName = appName,
+                    state = state,
+                    serverViewState = serverViewState,
+                    isEditable = isEditable,
+                    wiDiStatus = wiDiStatus,
+                    proxyStatus = proxyStatus,
+                    showNotificationSettings = showNotificationSettings,
+                    onSsidChanged = onSsidChanged,
+                    onPasswordChanged = onPasswordChanged,
+                    onPortChanged = onPortChanged,
+                    onOpenBatterySettings = onOpenBatterySettings,
+                    onSelectBand = onSelectBand,
+                    onRequestNotificationPermission = onRequestNotificationPermission,
+                    onTogglePasswordVisibility = onTogglePasswordVisibility,
+                    onShowQRCode = onShowQRCode,
+                    onRefreshConnection = onRefreshConnection,
+                    onToggleKeepWakeLock = onToggleKeepWakeLock,
+                    onToggleKeepWifiLock = onToggleKeepWifiLock,
+                    onShowHotspotError = onShowHotspotError,
+                    onShowNetworkError = onShowNetworkError,
+                    onToggleIgnoreVpn = onToggleIgnoreVpn,
+                    onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
+                    onToggleBindProxyAll = onToggleBindProxyAll,
+                    onJumpToHowTo = onJumpToHowTo,
+                    featureFlags = featureFlags,
+                )
+            }
+        }
+    }
+
+    StatusDialogs(
+        dialogModifier = Modifier
+            .fillUpToPortraitHeight()
+            .widthIn(max = LANDSCAPE_MAX_WIDTH),
+        state = state,
+        serverViewState = serverViewState,
+        appName = appName,
+        onDismissBlocker = onDismissBlocker,
+        onOpenPermissionSettings = onOpenPermissionSettings,
+        onRequestPermissions = onRequestPermissions,
+        onHideNetworkError = onHideNetworkError,
+        onHideHotspotError = onHideHotspotError,
+        onHideSetupError = onHideSetupError,
+        onHideProxyError = onHideProxyError,
+        onHideBroadcastError = onHideBroadcastError,
+    )
 }
 
 @Composable
@@ -279,100 +268,98 @@ private fun PreviewStatusScreen(
     password: String = "MyPassword",
     port: Int = 8228,
 ) {
-  StatusScreen(
-      state =
-          MutableStatusViewState().apply {
-            loadingState.value =
-                if (isLoading) StatusViewState.LoadingState.LOADING
-                else StatusViewState.LoadingState.DONE
+    StatusScreen(
+        state = MutableStatusViewState().apply {
+            loadingState.value = if (isLoading) StatusViewState.LoadingState.LOADING
+            else StatusViewState.LoadingState.DONE
             this.ssid.value = ssid
             this.password.value = password
             this.port.value = "$port"
             band.value = ServerNetworkBand.LEGACY
-          },
-      featureFlags = TestFeatureFlags,
-      serverViewState = TestServerViewState(),
-      appName = "TEST",
-      onStatusUpdated = {},
-      onRequestNotificationPermission = {},
-      onToggleKeepWakeLock = {},
-      onSelectBand = {},
-      onDismissBlocker = {},
-      onOpenBatterySettings = {},
-      onOpenPermissionSettings = {},
-      onPasswordChanged = {},
-      onPortChanged = {},
-      onRequestPermissions = {},
-      onSsidChanged = {},
-      onToggleProxy = {},
-      onTogglePasswordVisibility = {},
-      onShowQRCode = {},
-      onRefreshConnection = {},
-      onToggleKeepWifiLock = {},
-      onHideHotspotError = {},
-      onShowHotspotError = {},
-      onShowNetworkError = {},
-      onHideNetworkError = {},
-      onHideSetupError = {},
-      onToggleIgnoreVpn = {},
-      onToggleShutdownWithNoClients = {},
-      onToggleBindProxyAll = {},
-      onJumpToHowTo = {},
-      onShowBroadcastError = {},
-      onHideBroadcastError = {},
-      onShowProxyError = {},
-      onHideProxyError = {},
-  )
+        },
+        featureFlags = TestFeatureFlags,
+        serverViewState = TestServerViewState(),
+        appName = "TEST",
+        onStatusUpdated = {},
+        onRequestNotificationPermission = {},
+        onToggleKeepWakeLock = {},
+        onSelectBand = {},
+        onDismissBlocker = {},
+        onOpenBatterySettings = {},
+        onOpenPermissionSettings = {},
+        onPasswordChanged = {},
+        onPortChanged = {},
+        onRequestPermissions = {},
+        onSsidChanged = {},
+        onToggleProxy = {},
+        onTogglePasswordVisibility = {},
+        onShowQRCode = {},
+        onRefreshConnection = {},
+        onToggleKeepWifiLock = {},
+        onHideHotspotError = {},
+        onShowHotspotError = {},
+        onShowNetworkError = {},
+        onHideNetworkError = {},
+        onHideSetupError = {},
+        onToggleIgnoreVpn = {},
+        onToggleShutdownWithNoClients = {},
+        onToggleBindProxyAll = {},
+        onJumpToHowTo = {},
+        onShowBroadcastError = {},
+        onHideBroadcastError = {},
+        onShowProxyError = {},
+        onHideProxyError = {},
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenLoading() {
-  PreviewStatusScreen(
-      isLoading = true,
-  )
+    PreviewStatusScreen(
+        isLoading = true,
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditing() {
-  PreviewStatusScreen(
-      isLoading = false,
-  )
+    PreviewStatusScreen(
+        isLoading = false,
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadSsid() {
-  PreviewStatusScreen(
-      isLoading = false,
-      ssid = "nope",
-  )
+    PreviewStatusScreen(
+        isLoading = false,
+        ssid = "nope",
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPassword() {
-  PreviewStatusScreen(
-      isLoading = false,
-      password = "nope",
-  )
+    PreviewStatusScreen(
+        isLoading = false,
+        password = "nope",
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPort1() {
-  PreviewStatusScreen(
-      isLoading = false,
-      port = 1,
-  )
+    PreviewStatusScreen(
+        isLoading = false,
+        port = 1,
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewStatusScreenEditingBadPort2() {
-  PreviewStatusScreen(
-      isLoading = false,
-      port = 1_000_000,
-  )
+    PreviewStatusScreen(
+        isLoading = false,
+        port = 1_000_000,
+    )
 }
