@@ -16,8 +16,8 @@ import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 
 private enum class RenderHotspotStatusContentTypes {
-    COMPONENT_STATUS,
-    HOTSPOT_STATUS
+  COMPONENT_STATUS,
+  HOTSPOT_STATUS
 }
 
 internal fun LazyListScope.renderHotspotStatus(
@@ -28,68 +28,64 @@ internal fun LazyListScope.renderHotspotStatus(
     onShowBroadcastError: () -> Unit,
     onShowProxyError: () -> Unit,
 ) {
-    item(contentType = RenderHotspotStatusContentTypes.COMPONENT_STATUS) {
-        Surface(
-            modifier = itemModifier
-                .fillMaxWidth()
-                .padding(top = MaterialTheme.keylines.content * 2),
-            elevation = DialogDefaults.Elevation,
-            shape =
+  item(
+      contentType = RenderHotspotStatusContentTypes.COMPONENT_STATUS,
+  ) {
+    Surface(
+        modifier = itemModifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content * 2),
+        elevation = DialogDefaults.Elevation,
+        shape =
             MaterialTheme.shapes.medium.copy(
                 bottomStart = ZeroCornerSize,
                 bottomEnd = ZeroCornerSize,
             ),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = MaterialTheme.keylines.content),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                DisplayStatus(
-                    modifier = Modifier.weight(1F, fill = false),
-                    title = "Broadcast Status:",
-                    status = wiDiStatus,
-                    size = StatusSize.SMALL,
-                    onClickShowError = onShowBroadcastError,
-                )
+    ) {
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceEvenly,
+      ) {
+        DisplayStatus(
+            modifier = Modifier.weight(1F, fill = false),
+            title = "Broadcast Status:",
+            status = wiDiStatus,
+            size = StatusSize.SMALL,
+            onClickShowError = onShowBroadcastError,
+        )
 
-                DisplayStatus(
-                    modifier = Modifier.weight(1F, fill = false),
-                    title = "Proxy Status:",
-                    status = proxyStatus,
-                    size = StatusSize.SMALL,
-                    onClickShowError = onShowProxyError,
-                )
-            }
-        }
+        DisplayStatus(
+            modifier = Modifier.weight(1F, fill = false),
+            title = "Proxy Status:",
+            status = proxyStatus,
+            size = StatusSize.SMALL,
+            onClickShowError = onShowProxyError,
+        )
+      }
     }
+  }
 
-    item(contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS) {
-        Surface(
-            modifier = itemModifier
-                .fillMaxWidth()
-                .padding(bottom = MaterialTheme.keylines.content * 2),
-            elevation = DialogDefaults.Elevation,
-            shape =
+  item(
+      contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS,
+  ) {
+    Surface(
+        modifier = itemModifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content * 2),
+        elevation = DialogDefaults.Elevation,
+        shape =
             MaterialTheme.shapes.medium.copy(
                 topStart = ZeroCornerSize,
                 topEnd = ZeroCornerSize,
             ),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = MaterialTheme.keylines.content),
-                contentAlignment = Alignment.Center,
-            ) {
-                DisplayStatus(
-                    title = "Hotspot Status:",
-                    status = hotspotStatus,
-                    size = StatusSize.NORMAL,
-                )
-            }
-        }
+    ) {
+      Box(
+          modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
+          contentAlignment = Alignment.Center,
+      ) {
+        DisplayStatus(
+            title = "Hotspot Status:",
+            status = hotspotStatus,
+            size = StatusSize.NORMAL,
+        )
+      }
     }
+  }
 }
