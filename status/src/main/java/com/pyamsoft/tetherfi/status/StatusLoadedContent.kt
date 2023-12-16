@@ -15,7 +15,7 @@ import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
 import com.pyamsoft.tetherfi.status.sections.notifications.renderNotificationSettings
 import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
-import com.pyamsoft.tetherfi.status.sections.performance.renderPerformance
+import com.pyamsoft.tetherfi.status.sections.performance.renderPerformanceSettings
 import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
@@ -120,7 +120,7 @@ internal fun LazyListScope.renderLoadedContent(
     )
   }
 
-  renderPerformance(
+  renderPerformanceSettings(
       itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,

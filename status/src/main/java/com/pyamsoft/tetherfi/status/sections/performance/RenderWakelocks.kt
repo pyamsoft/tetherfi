@@ -16,24 +16,22 @@
 
 package com.pyamsoft.tetherfi.status.sections.performance
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TriStateCheckbox
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
@@ -41,69 +39,58 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tweaks.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
-@Composable
-internal fun Wakelocks(
-    modifier: Modifier = Modifier,
+private enum class RenderWakelocksContentTypes {
+  LABEL,
+  EXPLAIN,
+  WIFI_LOCK,
+  WAKE_LOCK,
+}
+
+internal fun LazyListScope.renderWakelocks(
+    itemModifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,
     state: StatusViewState,
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
 ) {
-  val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
-  val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
+  item(contentType = RenderWakelocksContentTypes.LABEL) {
+    val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
+    val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
 
-  val wakeLockColor by
-      rememberCheckableColor(
-          label = "CPU Lock",
-          condition = keepWakeLock,
-          selectedColor = MaterialTheme.colors.primary,
-      )
-  val wifiLockColor by
-      rememberCheckableColor(
-          label = "Wi-Fi Lock",
-          condition = keepWifiLock,
-          selectedColor = MaterialTheme.colors.primary,
-      )
-
-  val checkboxState =
-      remember(
-          keepWakeLock,
-          keepWifiLock,
-      ) {
-        if (!keepWakeLock && !keepWifiLock) {
-          ToggleableState.Off
-        } else if (keepWakeLock && keepWifiLock) {
-          ToggleableState.On
-        } else {
-          ToggleableState.Indeterminate
+    val checkboxState =
+        remember(
+            keepWakeLock,
+            keepWifiLock,
+        ) {
+          if (!keepWakeLock && !keepWifiLock) {
+            ToggleableState.Off
+          } else if (keepWakeLock && keepWifiLock) {
+            ToggleableState.On
+          } else {
+            ToggleableState.Indeterminate
+          }
         }
-      }
 
-  val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
-  val cardColor by
-      rememberCheckableColor(
-          label = "Wake Locks",
-          condition = isChecked,
-          selectedColor = MaterialTheme.colors.primary,
-      )
-  val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-  val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
+    val cardColor by
+        rememberCheckableColor(
+            label = "Wake Locks",
+            condition = isChecked,
+            selectedColor = MaterialTheme.colors.primary,
+        )
+    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
-  Card(
-      modifier =
-          modifier.border(
-              width = 2.dp,
-              color = cardColor.copy(alpha = mediumAlpha),
-              shape = MaterialTheme.shapes.medium,
-          ),
-      elevation = CardDefaults.Elevation,
-  ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
+    Surface(
+        elevation = CardDefaults.Elevation,
+        shape =
+            MaterialTheme.shapes.medium.copy(
+                bottomStart = ZeroCornerSize,
+                bottomEnd = ZeroCornerSize,
+            ),
     ) {
       Row(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          modifier = itemModifier.padding(MaterialTheme.keylines.content),
           verticalAlignment = Alignment.CenterVertically,
       ) {
         Text(
@@ -123,10 +110,19 @@ internal fun Wakelocks(
             onClick = null,
         )
       }
+    }
+  }
 
+  item(contentType = RenderWakelocksContentTypes.EXPLAIN) {
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    Surface(
+        elevation = CardDefaults.Elevation,
+    ) {
       Text(
           modifier =
-              Modifier.fillMaxWidth()
+              itemModifier
+                  .fillMaxWidth()
                   .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content * 2),
           text =
@@ -139,8 +135,26 @@ internal fun Wakelocks(
                   color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
               ),
       )
+    }
+  }
 
+  item(contentType = RenderWakelocksContentTypes.WIFI_LOCK) {
+    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
+    val wifiLockColor by
+        rememberCheckableColor(
+            label = "Wi-Fi Lock",
+            condition = keepWifiLock,
+            selectedColor = MaterialTheme.colors.primary,
+        )
+
+    Surface(
+        elevation = CardDefaults.Elevation,
+    ) {
       ToggleSwitch(
+          modifier = itemModifier,
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
@@ -151,8 +165,31 @@ internal fun Wakelocks(
               "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
           onClick = onToggleKeepWifiLock,
       )
+    }
+  }
 
+  item(contentType = RenderWakelocksContentTypes.WAKE_LOCK) {
+    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
+    val wakeLockColor by
+        rememberCheckableColor(
+            label = "CPU Lock",
+            condition = keepWakeLock,
+            selectedColor = MaterialTheme.colors.primary,
+        )
+
+    Surface(
+        elevation = CardDefaults.Elevation,
+        shape =
+            MaterialTheme.shapes.medium.copy(
+                topStart = ZeroCornerSize,
+                topEnd = ZeroCornerSize,
+            ),
+    ) {
       ToggleSwitch(
+          modifier = itemModifier,
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,

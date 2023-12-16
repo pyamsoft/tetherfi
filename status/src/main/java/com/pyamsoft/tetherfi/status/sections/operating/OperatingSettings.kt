@@ -28,7 +28,6 @@ import com.pyamsoft.tetherfi.ui.Label
 private enum class OperatingSettingsContentTypes {
   LABEL,
   BATTERY_OPTIMIZATION,
-  ADD_TILE,
 }
 
 internal fun LazyListScope.renderOperatingSettings(
@@ -66,12 +65,10 @@ internal fun LazyListScope.renderOperatingSettings(
   }
 
   if (featureFlags.isTileUiEnabled) {
-    item(contentType = OperatingSettingsContentTypes.ADD_TILE) {
-      AddTheTile(
-          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-          isEditable = isEditable,
-          appName = appName,
-      )
-    }
+    renderAddTheTile(
+        itemModifier = itemModifier,
+        isEditable = isEditable,
+        appName = appName,
+    )
   }
 }

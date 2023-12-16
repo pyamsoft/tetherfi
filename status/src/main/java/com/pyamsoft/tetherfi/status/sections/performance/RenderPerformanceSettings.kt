@@ -24,12 +24,11 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class PerformanceOptimizationContentTypes {
+private enum class PerformanceSettingsContentTypes {
   LABEL,
-  WAKELOCKS,
 }
 
-internal fun LazyListScope.renderPerformance(
+internal fun LazyListScope.renderPerformanceSettings(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
@@ -40,7 +39,7 @@ internal fun LazyListScope.renderPerformance(
     onToggleKeepWifiLock: () -> Unit,
 ) {
   item(
-      contentType = PerformanceOptimizationContentTypes.LABEL,
+      contentType = PerformanceSettingsContentTypes.LABEL,
   ) {
     Label(
         modifier =
@@ -51,16 +50,12 @@ internal fun LazyListScope.renderPerformance(
     )
   }
 
-  item(
-      contentType = PerformanceOptimizationContentTypes.WAKELOCKS,
-  ) {
-    Wakelocks(
-        modifier = itemModifier,
-        isEditable = isEditable,
-        appName = appName,
-        state = state,
-        onToggleKeepWakeLock = onToggleKeepWakeLock,
-        onToggleKeepWifiLock = onToggleKeepWifiLock,
-    )
-  }
+  renderWakelocks(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      onToggleKeepWakeLock = onToggleKeepWakeLock,
+      onToggleKeepWifiLock = onToggleKeepWifiLock,
+  )
 }
