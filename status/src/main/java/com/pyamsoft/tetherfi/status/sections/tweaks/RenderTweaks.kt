@@ -25,8 +25,7 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
 private enum class BehaviorTweaksContentTypes {
-  LABEL,
-  TWEAKS,
+    LABEL,
 }
 
 internal fun LazyListScope.renderTweaks(
@@ -38,23 +37,20 @@ internal fun LazyListScope.renderTweaks(
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleBindProxyAll: () -> Unit,
 ) {
-  item(
-      contentType = BehaviorTweaksContentTypes.LABEL,
-  ) {
-    Label(
-        modifier =
+    item(
+        contentType = BehaviorTweaksContentTypes.LABEL,
+    ) {
+        Label(
+            modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Tweaks",
-    )
-  }
+            text = "Tweaks",
+        )
+    }
 
-  item(
-      contentType = BehaviorTweaksContentTypes.TWEAKS,
-  ) {
-    TweakCard(
-        modifier = itemModifier,
+    renderTweakCard(
+        itemModifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
         state = state,
@@ -62,5 +58,4 @@ internal fun LazyListScope.renderTweaks(
         onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
         onToggleBindProxyAll = onToggleBindProxyAll,
     )
-  }
 }
