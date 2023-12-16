@@ -45,8 +45,8 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import kotlinx.coroutines.delay
 
 private enum class ServerErrorDialogContentTypes {
-    TITLE,
-    TRACE,
+  TITLE,
+  TRACE,
 }
 
 @Composable
@@ -54,44 +54,44 @@ fun ServerErrorTile(
     onShowError: () -> Unit,
     content: IconButtonContent,
 ) {
-    /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
-    val (showContent, setShowContent) = remember { mutableStateOf(false) }
-    val handleShowContent by rememberUpdatedState { setShowContent(true) }
+  /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
+  val (showContent, setShowContent) = remember { mutableStateOf(false) }
+  val handleShowContent by rememberUpdatedState { setShowContent(true) }
 
-    val hapticManager = LocalHapticManager.current
+  val hapticManager = LocalHapticManager.current
 
-    val handleClick by rememberUpdatedState {
-        hapticManager?.actionButtonPress()
-        onShowError()
+  val handleClick by rememberUpdatedState {
+    hapticManager?.actionButtonPress()
+    onShowError()
+  }
+
+  LaunchedEffect(showContent) {
+    if (!showContent) {
+      // Wait a little bit in case the network is just starting up normally
+      delay(1000L)
+
+      // Mark the content as shown
+      handleShowContent()
     }
+  }
 
-    LaunchedEffect(showContent) {
-        if (!showContent) {
-            // Wait a little bit in case the network is just starting up normally
-            delay(1000L)
-
-            // Mark the content as shown
-            handleShowContent()
-        }
-    }
-
-    AnimatedVisibility(
-        visible = showContent,
+  AnimatedVisibility(
+      visible = showContent,
+  ) {
+    content(
+        Modifier.clickable { handleClick() },
     ) {
-        content(
-            Modifier.clickable { handleClick() },
-        ) {
-            IconButton(
-                onClick = { handleClick() },
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Warning,
-                    contentDescription = "Something went wrong",
-                    tint = MaterialTheme.colors.error,
-                )
-            }
-        }
+      IconButton(
+          onClick = { handleClick() },
+      ) {
+        Icon(
+            imageVector = Icons.Filled.Warning,
+            contentDescription = "Something went wrong",
+            tint = MaterialTheme.colors.error,
+        )
+      }
     }
+  }
 }
 
 @Composable
@@ -101,58 +101,56 @@ fun ServerErrorDialog(
     error: Throwable,
     onDismiss: () -> Unit,
 ) {
-    Dialog(
-        properties = rememberDialogProperties(),
-        onDismissRequest = { onDismiss() },
+  Dialog(
+      properties = rememberDialogProperties(),
+      onDismissRequest = { onDismiss() },
+  ) {
+    Column(
+        modifier = modifier.padding(MaterialTheme.keylines.content),
     ) {
-        Column(
-            modifier = modifier.padding(MaterialTheme.keylines.content),
-        ) {
-            DialogToolbar(
-                modifier = Modifier.fillMaxWidth(),
-                onClose = onDismiss,
-                title = {
-                    Text(
-                        text = "Hotspot Error",
-                    )
-                },
+      DialogToolbar(
+          modifier = Modifier.fillMaxWidth(),
+          onClose = onDismiss,
+          title = {
+            Text(
+                text = "Hotspot Error",
             )
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1F),
-                shape =
-                MaterialTheme.shapes.medium.copy(
-                    topStart = ZeroCornerSize,
-                    topEnd = ZeroCornerSize,
-                ),
-            ) {
-                LazyColumn {
-                    item(
-                        contentType = ServerErrorDialogContentTypes.TITLE,
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(MaterialTheme.keylines.content),
-                            text = title,
-                            style = MaterialTheme.typography.h6,
-                        )
-                    }
+          },
+      )
+      Surface(
+          modifier = Modifier.fillMaxWidth().weight(1F),
+          shape =
+              MaterialTheme.shapes.medium.copy(
+                  topStart = ZeroCornerSize,
+                  topEnd = ZeroCornerSize,
+              ),
+      ) {
+        LazyColumn {
+          item(
+              contentType = ServerErrorDialogContentTypes.TITLE,
+          ) {
+            Text(
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = title,
+                style = MaterialTheme.typography.h6,
+            )
+          }
 
-                    item(
-                        contentType = ServerErrorDialogContentTypes.TRACE,
-                    ) {
-                        val trace = remember(error) { error.stackTraceToString() }
-                        Text(
-                            modifier = Modifier.padding(MaterialTheme.keylines.content),
-                            text = trace,
-                            style =
-                            MaterialTheme.typography.caption.copy(
-                                fontFamily = FontFamily.Monospace,
-                            ),
-                        )
-                    }
-                }
-            }
+          item(
+              contentType = ServerErrorDialogContentTypes.TRACE,
+          ) {
+            val trace = remember(error) { error.stackTraceToString() }
+            Text(
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = trace,
+                style =
+                    MaterialTheme.typography.caption.copy(
+                        fontFamily = FontFamily.Monospace,
+                    ),
+            )
+          }
         }
+      }
     }
+  }
 }

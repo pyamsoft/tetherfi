@@ -17,19 +17,19 @@ internal fun StatusTile(
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    Card(
-        modifier =
-        modifier.border(
-            width = 2.dp,
-            color =
-            color.copy(
-                alpha = if (enabled) ContentAlpha.medium else ContentAlpha.disabled,
-            ),
-            shape = MaterialTheme.shapes.medium,
-        ),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.Elevation,
-    ) {
-        content()
-    }
+  Card(
+      modifier =
+          modifier.border(
+              width = 2.dp,
+              color =
+                  color.copy(
+                      alpha = if (enabled) ContentAlpha.medium else ContentAlpha.disabled,
+                  ),
+              shape = MaterialTheme.shapes.medium,
+          ),
+      shape = MaterialTheme.shapes.medium,
+      elevation = CardDefaults.Elevation,
+  ) {
+    content()
+  }
 }

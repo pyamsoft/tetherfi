@@ -81,7 +81,6 @@ fun CheckableCard(
     /** Hack to make two different cards the same size based on their content */
     extraHeight: Dp = ZeroSize,
 ) {
-
   CheckableCard(
       modifier = modifier,
       isEditable = isEditable,

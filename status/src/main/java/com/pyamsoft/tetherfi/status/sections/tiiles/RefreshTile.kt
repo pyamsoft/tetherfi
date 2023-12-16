@@ -35,40 +35,38 @@ internal fun RefreshTile(
     modifier: Modifier = Modifier,
     onRefreshConnection: () -> Unit,
 ) {
-    val hapticManager = LocalHapticManager.current
+  val hapticManager = LocalHapticManager.current
 
-    StatusTile(
-        modifier = modifier,
-    ) {
-        AttemptRefreshButton(
-            onClick = {
-                hapticManager?.actionButtonPress()
-                onRefreshConnection()
-            },
-        ) { modifier, iconButton ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(modifier),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val color = LocalContentColor.current
+  StatusTile(
+      modifier = modifier,
+  ) {
+    AttemptRefreshButton(
+        onClick = {
+          hapticManager?.actionButtonPress()
+          onRefreshConnection()
+        },
+    ) { modifier, iconButton ->
+      Row(
+          modifier = Modifier.fillMaxWidth().then(modifier),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        val color = LocalContentColor.current
 
-                iconButton()
+        iconButton()
 
-                Text(
-                    text = "Refresh Hotspot",
-                    style =
-                    MaterialTheme.typography.caption.copy(
-                        color =
+        Text(
+            text = "Refresh Hotspot",
+            style =
+                MaterialTheme.typography.caption.copy(
+                    color =
                         color.copy(
                             alpha = ContentAlpha.medium,
                         ),
-                    ),
-                )
-            }
-        }
+                ),
+        )
+      }
     }
+  }
 }
 
 @Composable
@@ -77,54 +75,54 @@ private fun AttemptRefreshButton(
     onClick: () -> Unit,
     content: IconButtonContent,
 ) {
-    val (fakeSpin, setFakeSpin) = remember { mutableStateOf(false) }
+  val (fakeSpin, setFakeSpin) = remember { mutableStateOf(false) }
 
-    val handleResetFakeSpin by rememberUpdatedState { setFakeSpin(false) }
+  val handleResetFakeSpin by rememberUpdatedState { setFakeSpin(false) }
 
-    val handleClick by rememberUpdatedState {
-        setFakeSpin(true)
-        onClick()
+  val handleClick by rememberUpdatedState {
+    setFakeSpin(true)
+    onClick()
+  }
+
+  LaunchedEffect(fakeSpin) {
+    if (fakeSpin) {
+      delay(1000L)
+      handleResetFakeSpin()
     }
+  }
 
-    LaunchedEffect(fakeSpin) {
-        if (fakeSpin) {
-            delay(1000L)
-            handleResetFakeSpin()
-        }
-    }
-
-    content(
-        Modifier.clickable { handleClick() },
+  content(
+      Modifier.clickable { handleClick() },
+  ) {
+    IconButton(
+        modifier = modifier,
+        onClick = { handleClick() },
     ) {
-        IconButton(
-            modifier = modifier,
-            onClick = { handleClick() },
-        ) {
-            val angle by
-            rememberInfiniteTransition(
-                label = "Refresh",
-            )
-                .animateFloat(
-                    label = "Refresh Spin",
-                    initialValue = 0F,
-                    targetValue = 360F,
-                    animationSpec =
-                    infiniteRepeatable(
-                        animation =
-                        tween(
-                            durationMillis = 500,
-                            easing = LinearEasing,
-                        ),
-                        repeatMode = RepeatMode.Restart,
-                    ),
-                )
+      val angle by
+          rememberInfiniteTransition(
+                  label = "Refresh",
+              )
+              .animateFloat(
+                  label = "Refresh Spin",
+                  initialValue = 0F,
+                  targetValue = 360F,
+                  animationSpec =
+                      infiniteRepeatable(
+                          animation =
+                              tween(
+                                  durationMillis = 500,
+                                  easing = LinearEasing,
+                              ),
+                          repeatMode = RepeatMode.Restart,
+                      ),
+              )
 
-            Icon(
-                modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
-                imageVector = Icons.Filled.Refresh,
-                contentDescription = "Refresh",
-                tint = MaterialTheme.colors.primary,
-            )
-        }
+      Icon(
+          modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
+          imageVector = Icons.Filled.Refresh,
+          contentDescription = "Refresh",
+          tint = MaterialTheme.colors.primary,
+      )
     }
+  }
 }

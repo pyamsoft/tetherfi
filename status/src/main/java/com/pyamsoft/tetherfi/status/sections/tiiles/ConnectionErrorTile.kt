@@ -19,36 +19,34 @@ internal fun ConnectionErrorTile(
     connection: BroadcastNetworkStatus.ConnectionInfo,
     onShowConnectionError: () -> Unit,
 ) {
-    connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also {
-        StatusTile(
-            modifier = modifier,
-            color = MaterialTheme.colors.error,
+  connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also {
+    StatusTile(
+        modifier = modifier,
+        color = MaterialTheme.colors.error,
+    ) {
+      ServerErrorTile(
+          onShowError = onShowConnectionError,
+      ) { modifier, iconButton ->
+        Row(
+            modifier = Modifier.fillMaxWidth().then(modifier),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            ServerErrorTile(
-                onShowError = onShowConnectionError,
-            ) { modifier, iconButton ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .then(modifier),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val color = LocalContentColor.current
+          val color = LocalContentColor.current
 
-                    iconButton()
+          iconButton()
 
-                    Text(
-                        text = "Network Error",
-                        style =
-                        MaterialTheme.typography.caption.copy(
-                            color =
-                            color.copy(
-                                alpha = ContentAlpha.medium,
-                            ),
-                        ),
-                    )
-                }
-            }
+          Text(
+              text = "Network Error",
+              style =
+                  MaterialTheme.typography.caption.copy(
+                      color =
+                          color.copy(
+                              alpha = ContentAlpha.medium,
+                          ),
+                  ),
+          )
         }
+      }
     }
+  }
 }

@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 typealias IconButtonContent =
-        @Composable
-            (
-            Modifier,
-            @Composable () -> Unit,
-        ) -> Unit
+    @Composable
+    (
+        Modifier,
+        @Composable () -> Unit,
+    ) -> Unit

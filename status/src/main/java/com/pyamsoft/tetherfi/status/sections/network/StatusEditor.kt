@@ -16,8 +16,6 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
@@ -39,25 +37,26 @@ internal fun StatusEditor(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
-    val textStyle = LocalTextStyle.current
+  val textStyle = LocalTextStyle.current
 
-    TextField(
-        modifier = modifier,
-        enabled = enabled,
-        keyboardOptions = keyboardOptions,
-        value = value,
-        textStyle = textStyle.copy(
-            fontFamily = FontFamily.Monospace,
-        ),
-        visualTransformation = visualTransformation,
-        onValueChange = onChange,
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
-        singleLine = true,
-        label = {
-            Text(
-                text = title,
-            )
-        },
-    )
+  TextField(
+      modifier = modifier,
+      enabled = enabled,
+      keyboardOptions = keyboardOptions,
+      value = value,
+      textStyle =
+          textStyle.copy(
+              fontFamily = FontFamily.Monospace,
+          ),
+      visualTransformation = visualTransformation,
+      onValueChange = onChange,
+      leadingIcon = leadingIcon,
+      trailingIcon = trailingIcon,
+      singleLine = true,
+      label = {
+        Text(
+            text = title,
+        )
+      },
+  )
 }

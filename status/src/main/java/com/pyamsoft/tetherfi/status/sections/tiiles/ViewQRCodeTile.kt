@@ -18,54 +18,53 @@ import com.pyamsoft.tetherfi.ui.icons.QrCode
 
 @Composable
 internal fun ViewQRCodeTile(
-    modifier: Modifier = Modifier, isQREnabled: Boolean,
+    modifier: Modifier = Modifier,
+    isQREnabled: Boolean,
     onShowQRCode: () -> Unit,
 ) {
-    val hapticManager = LocalHapticManager.current
+  val hapticManager = LocalHapticManager.current
 
-    StatusTile(
-        modifier = modifier,
-        enabled = isQREnabled,
+  StatusTile(
+      modifier = modifier,
+      enabled = isQREnabled,
+  ) {
+    Row(
+        modifier =
+            Modifier.fillMaxWidth().clickable(enabled = isQREnabled) {
+              hapticManager?.actionButtonPress()
+              onShowQRCode()
+            },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = isQREnabled) {
-                    hapticManager?.actionButtonPress()
-                    onShowQRCode()
-                },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val color = LocalContentColor.current
+      val color = LocalContentColor.current
 
-            IconButton(
-                onClick = {
-                    hapticManager?.actionButtonPress()
-                    onShowQRCode()
-                },
-                enabled = isQREnabled,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.QrCode,
-                    contentDescription = "QR Code",
-                    tint =
-                    MaterialTheme.colors.primary.copy(
-                        alpha = if (isQREnabled) ContentAlpha.high else ContentAlpha.disabled,
-                    ),
-                )
-            }
-
-            Text(
-                text = "View QR Code",
-                style =
-                MaterialTheme.typography.caption.copy(
-                    color =
-                    color.copy(
-                        alpha =
-                        if (isQREnabled) ContentAlpha.medium else ContentAlpha.disabled,
-                    ),
+      IconButton(
+          onClick = {
+            hapticManager?.actionButtonPress()
+            onShowQRCode()
+          },
+          enabled = isQREnabled,
+      ) {
+        Icon(
+            imageVector = Icons.Filled.QrCode,
+            contentDescription = "QR Code",
+            tint =
+                MaterialTheme.colors.primary.copy(
+                    alpha = if (isQREnabled) ContentAlpha.high else ContentAlpha.disabled,
                 ),
-            )
-        }
+        )
+      }
+
+      Text(
+          text = "View QR Code",
+          style =
+              MaterialTheme.typography.caption.copy(
+                  color =
+                      color.copy(
+                          alpha = if (isQREnabled) ContentAlpha.medium else ContentAlpha.disabled,
+                      ),
+              ),
+      )
     }
+  }
 }

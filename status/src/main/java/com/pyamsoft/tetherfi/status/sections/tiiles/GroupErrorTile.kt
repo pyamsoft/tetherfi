@@ -19,36 +19,34 @@ internal fun GroupErrorTile(
     group: BroadcastNetworkStatus.GroupInfo,
     onShowGroupError: () -> Unit,
 ) {
-    group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also {
-        StatusTile(
-            modifier = modifier,
-            color = MaterialTheme.colors.error,
+  group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also {
+    StatusTile(
+        modifier = modifier,
+        color = MaterialTheme.colors.error,
+    ) {
+      ServerErrorTile(
+          onShowError = onShowGroupError,
+      ) { modifier, iconButton ->
+        Row(
+            modifier = Modifier.fillMaxWidth().then(modifier),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            ServerErrorTile(
-                onShowError = onShowGroupError,
-            ) { modifier, iconButton ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .then(modifier),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    val color = LocalContentColor.current
+          val color = LocalContentColor.current
 
-                    iconButton()
+          iconButton()
 
-                    Text(
-                        text = "Hotspot Error",
-                        style =
-                        MaterialTheme.typography.caption.copy(
-                            color =
-                            color.copy(
-                                alpha = ContentAlpha.medium,
-                            ),
-                        ),
-                    )
-                }
-            }
+          Text(
+              text = "Hotspot Error",
+              style =
+                  MaterialTheme.typography.caption.copy(
+                      color =
+                          color.copy(
+                              alpha = ContentAlpha.medium,
+                          ),
+                  ),
+          )
         }
+      }
     }
+  }
 }
