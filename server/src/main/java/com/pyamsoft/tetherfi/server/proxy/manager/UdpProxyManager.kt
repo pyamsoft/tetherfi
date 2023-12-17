@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
@@ -28,7 +29,6 @@ import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -40,7 +40,11 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<UdpProxyData>,
     private val hostName: String,
-) : BaseProxyManager<BoundDatagramSocket>() {
+    serverDispatcher: ServerDispatcher,
+) :
+    BaseProxyManager<BoundDatagramSocket>(
+        serverDispatcher = serverDispatcher,
+    ) {
 
   private suspend fun runSession(
       scope: CoroutineScope,
@@ -51,6 +55,7 @@ internal constructor(
     try {
       session.exchange(
           scope = scope,
+          serverDispatcher = serverDispatcher,
           data =
               UdpProxyData(
                   datagram = datagram,
@@ -67,7 +72,7 @@ internal constructor(
   }
 
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = serverDispatcher.primary) {
         val localAddress =
             getServerAddress(
                 hostName = getProxyAddress(),
@@ -80,7 +85,7 @@ internal constructor(
       }
 
   override suspend fun runServer(server: BoundDatagramSocket) =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = serverDispatcher.primary) {
         Timber.d { "Awaiting UDP connections on ${server.localAddress}" }
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
@@ -90,7 +95,7 @@ internal constructor(
 
           if (isActive || server.isClosed) {
             // Run this server loop off thread so we can handle multiple connections at once.
-            launch(context = Dispatchers.IO) { runSession(this, datagram) }
+            launch(context = serverDispatcher.primary) { runSession(this, datagram) }
           } else {
             // Immediately drop the connection
             Timber.w { "Server is closed, immediately drop connection" }

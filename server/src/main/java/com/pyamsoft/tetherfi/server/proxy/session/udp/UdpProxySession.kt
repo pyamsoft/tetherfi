@@ -18,10 +18,10 @@ package com.pyamsoft.tetherfi.server.proxy.session.udp
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class UdpProxySession
@@ -32,9 +32,12 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
       data: UdpProxyData,
   ) =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = serverDispatcher.primary) {
+        enforcer.assertOffMainThread()
+
         val datagram = data.datagram
         Timber.d { "Process UDP proxy data: ${datagram.address} ${datagram.packet}" }
       }

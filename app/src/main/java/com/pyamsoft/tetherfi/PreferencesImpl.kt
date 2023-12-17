@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
@@ -67,6 +68,20 @@ internal constructor(
     )
   }
 
+  private fun setPreference(block: SharedPreferences.Editor.() -> Unit) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+      preferences.edit { block() }
+    }
+  }
+
+  private fun updatePreference(block: SharedPreferences.() -> Unit) {
+    scope.launch {
+      enforcer.assertOffMainThread()
+      preferences.block()
+    }
+  }
+
   @CheckResult
   private fun isInAppRatingAlreadyShown(): Boolean {
     enforcer.assertOffMainThread()
@@ -90,36 +105,18 @@ internal constructor(
   override fun listenForWakeLockChanges(): Flow<Boolean> =
       preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
 
-  override fun setWakeLock(keep: Boolean) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putBoolean(WAKE_LOCK, keep) }
-    }
-  }
+  override fun setWakeLock(keep: Boolean) = setPreference { putBoolean(WAKE_LOCK, keep) }
 
   override fun listenForWiFiLockChanges(): Flow<Boolean> =
       preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
 
-  override fun setWiFiLock(keep: Boolean) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putBoolean(WIFI_LOCK, keep) }
-    }
-  }
+  override fun setWiFiLock(keep: Boolean) = setPreference { putBoolean(WIFI_LOCK, keep) }
 
   override fun listenForSsidChanges(): Flow<String> =
       preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setSsid(ssid: String) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putString(SSID, ssid) }
-    }
-  }
+  override fun setSsid(ssid: String) = setPreference { putString(SSID, ssid) }
 
   override fun listenForPasswordChanges(): Flow<String> =
       preferenceStringFlow(PASSWORD, fallbackPassword) {
@@ -132,74 +129,46 @@ internal constructor(
           }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setPassword(password: String) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.updatePassword(password)
-    }
+  override fun setPassword(password: String) = setPreference {
+    preferences.updatePassword(password)
   }
 
   override fun listenForPortChanges(): Flow<Int> =
       preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setPort(port: Int) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putInt(PORT, port) }
-    }
-  }
+  override fun setPort(port: Int) = setPreference { putInt(PORT, port) }
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setNetworkBand(band: ServerNetworkBand) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putString(NETWORK_BAND, band.name) }
-    }
+  override fun setNetworkBand(band: ServerNetworkBand) = setPreference {
+    putString(NETWORK_BAND, band.name)
   }
 
   override fun listenForStartIgnoreVpn(): Flow<Boolean> =
       preferenceBooleanFlow(START_IGNORE_VPN, false) { preferences }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setStartIgnoreVpn(ignore: Boolean) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putBoolean(START_IGNORE_VPN, ignore) }
-    }
+  override fun setStartIgnoreVpn(ignore: Boolean) = setPreference {
+    putBoolean(START_IGNORE_VPN, ignore)
   }
 
   override fun listenForShutdownWithNoClients(): Flow<Boolean> =
       preferenceBooleanFlow(SHUTDOWN_NO_CLIENTS, false) { preferences }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setShutdownWithNoClients(shutdown: Boolean) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putBoolean(SHUTDOWN_NO_CLIENTS, shutdown) }
-    }
+  override fun setShutdownWithNoClients(shutdown: Boolean) = setPreference {
+    putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
   override fun listenForProxyBindAll(): Flow<Boolean> =
       preferenceBooleanFlow(PROXY_BIND_ALL, false) { preferences }
           .flowOn(context = Dispatchers.Default)
 
-  override fun setProxyBindAll(bind: Boolean) {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { putBoolean(PROXY_BIND_ALL, bind) }
-    }
-  }
+  override fun setProxyBindAll(bind: Boolean) = setPreference { putBoolean(PROXY_BIND_ALL, bind) }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -211,13 +180,15 @@ internal constructor(
             enforcer.assertOffMainThread()
 
             Timber.d {
-              "In app rating check: ${mapOf(
+              "In app rating check: ${
+                mapOf(
                     "lastVersion" to lastVersionShown,
                     "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
                     "hotspotUsed" to hotspotUsed,
                     "devicesConnected" to devicesConnected,
                     "appOpened" to appOpened,
-                )}"
+                )
+            }"
             }
 
             if (lastVersionShown.isInAppRatingAlreadyShown()) {
@@ -244,37 +215,35 @@ internal constructor(
           // Need this or we run on the main thread
           .flowOn(context = Dispatchers.Default)
 
-  override fun markHotspotUsed() {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      if (!isInAppRatingAlreadyShown()) {
-        // Not atomic because shared prefs are lame
-        preferences.updateInt(IN_APP_HOTSPOT_USED, 0) { it + 1 }
-      }
+  override fun markHotspotUsed() = updatePreference {
+    if (!isInAppRatingAlreadyShown()) {
+      // Not atomic because shared prefs are lame
+      updateInt(IN_APP_HOTSPOT_USED, 0) { it + 1 }
     }
   }
 
-  override fun markAppOpened() {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      if (!isInAppRatingAlreadyShown()) {
-        // Not atomic because shared prefs are lame
-        preferences.updateInt(IN_APP_APP_OPENED, 0) { it + 1 }
-      }
+  override fun markAppOpened() = updatePreference {
+    if (!isInAppRatingAlreadyShown()) {
+      // Not atomic because shared prefs are lame
+      updateInt(IN_APP_APP_OPENED, 0) { it + 1 }
     }
   }
 
-  override fun markDeviceConnected() {
-    scope.launch {
-      enforcer.assertOffMainThread()
-
-      if (!isInAppRatingAlreadyShown()) {
-        // Not atomic because shared prefs are lame
-        preferences.updateInt(IN_APP_DEVICES_CONNECTED, 0) { it + 1 }
-      }
+  override fun markDeviceConnected() = updatePreference {
+    if (!isInAppRatingAlreadyShown()) {
+      // Not atomic because shared prefs are lame
+      updateInt(IN_APP_DEVICES_CONNECTED, 0) { it + 1 }
     }
+  }
+
+  override fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit> =
+      preferenceIntFlow(SERVER_LIMITS, ServerPerformanceLimit.Defaults.BOUND_48.coroutineLimit) {
+            preferences
+          }
+          .map { ServerPerformanceLimit.create(it) }
+
+  override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) = setPreference {
+    putInt(SERVER_LIMITS, limit.coroutineLimit)
   }
 
   private fun SharedPreferences.updateInt(key: String, defaultValue: Int, update: (Int) -> Int) {
@@ -331,5 +300,7 @@ internal constructor(
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
     private const val PROXY_BIND_ALL = "key_proxy_bind_all_1"
+
+    private const val SERVER_LIMITS = "key_server_perf_limit_1"
   }
 }

@@ -22,6 +22,7 @@ import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
@@ -37,6 +38,7 @@ import kotlinx.coroutines.withContext
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
+    @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
@@ -47,6 +49,7 @@ internal constructor(
   @CheckResult
   private suspend fun createTcp(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      dispatcher: ServerDispatcher,
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
@@ -58,12 +61,14 @@ internal constructor(
         session = tcpSession,
         hostName = info.hostName,
         port = port,
+        serverDispatcher = dispatcher,
     )
   }
 
   @CheckResult
   private fun createUdp(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      dispatcher: ServerDispatcher,
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
@@ -72,6 +77,7 @@ internal constructor(
         enforcer = enforcer,
         session = udpSession,
         hostName = info.hostName,
+        serverDispatcher = dispatcher,
     )
   }
 
@@ -80,9 +86,19 @@ internal constructor(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
+        val dispatcher = serverDispatcherFactory.resolve()
+
         return@withContext when (type) {
-          SharedProxy.Type.TCP -> createTcp(info)
-          SharedProxy.Type.UDP -> createUdp(info)
+          SharedProxy.Type.TCP ->
+              createTcp(
+                  info = info,
+                  dispatcher = dispatcher,
+              )
+          SharedProxy.Type.UDP ->
+              createUdp(
+                  info = info,
+                  dispatcher = dispatcher,
+              )
         }
       }
 }

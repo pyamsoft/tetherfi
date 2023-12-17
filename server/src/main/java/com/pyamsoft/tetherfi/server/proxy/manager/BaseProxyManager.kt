@@ -18,16 +18,19 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
-internal abstract class BaseProxyManager<S : ASocket> protected constructor() : ProxyManager {
+internal abstract class BaseProxyManager<S : ASocket>
+protected constructor(
+    protected val serverDispatcher: ServerDispatcher,
+) : ProxyManager {
 
   @CheckResult
   protected fun getServerAddress(
@@ -69,8 +72,8 @@ internal abstract class BaseProxyManager<S : ASocket> protected constructor() : 
   override suspend fun loop(
       onOpened: () -> Unit,
   ) =
-      withContext(context = Dispatchers.IO) {
-        return@withContext usingSocket { socket ->
+      withContext(context = serverDispatcher.primary) {
+        return@withContext usingSocket(serverDispatcher.primary) { socket ->
           val server = openServer(builder = socket)
           try {
             onOpened()

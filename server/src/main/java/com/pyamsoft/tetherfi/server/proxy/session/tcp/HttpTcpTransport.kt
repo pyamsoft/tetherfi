@@ -7,6 +7,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.utils.io.ByteReadChannel
@@ -16,7 +17,6 @@ import io.ktor.utils.io.writeFully
 import java.net.URI
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -268,6 +268,7 @@ internal constructor(
 
   override suspend fun exchangeInternet(
       scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
@@ -292,7 +293,7 @@ internal constructor(
 
       // Exchange data until completed
       val job =
-          scope.launch(context = Dispatchers.IO) {
+          scope.launch(context = serverDispatcher.primary) {
             // Send data from the internet back to the proxy in a different thread
             talk(
                 input = internetInput,

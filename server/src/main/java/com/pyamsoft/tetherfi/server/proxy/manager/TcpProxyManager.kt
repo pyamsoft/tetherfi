@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import io.ktor.network.sockets.ServerSocket
@@ -28,7 +29,6 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
@@ -42,7 +42,11 @@ internal constructor(
     private val session: ProxySession<TcpProxyData>,
     private val hostName: String,
     private val port: Int,
-) : BaseProxyManager<ServerSocket>() {
+    serverDispatcher: ServerDispatcher
+) :
+    BaseProxyManager<ServerSocket>(
+        serverDispatcher = serverDispatcher,
+    ) {
 
   private suspend fun runSession(
       scope: CoroutineScope,
@@ -53,6 +57,7 @@ internal constructor(
     try {
       session.exchange(
           scope = scope,
+          serverDispatcher = serverDispatcher,
           data =
               TcpProxyData(
                   connection = connection,
@@ -69,7 +74,7 @@ internal constructor(
   }
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = serverDispatcher.primary) {
         val localAddress =
             getServerAddress(
                 hostName = getProxyAddress(),
@@ -82,7 +87,7 @@ internal constructor(
       }
 
   override suspend fun runServer(server: ServerSocket) =
-      withContext(context = Dispatchers.IO) {
+      withContext(context = serverDispatcher.primary) {
         Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
@@ -91,7 +96,7 @@ internal constructor(
           val connection = server.accept()
 
           // Run this server loop off thread so we can handle multiple connections at once.
-          launch(context = Dispatchers.IO) {
+          launch(context = serverDispatcher.primary) {
             try {
               runSession(this, connection)
             } finally {

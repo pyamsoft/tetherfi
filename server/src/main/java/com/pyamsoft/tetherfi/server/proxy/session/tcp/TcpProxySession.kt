@@ -25,6 +25,7 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.usingSocket
 import io.ktor.network.sockets.InetSocketAddress
@@ -39,7 +40,6 @@ import java.time.Clock
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,10 +59,14 @@ internal constructor(
    * Given the initial proxy request, connect to the Internet from our device via the connected
    * socket
    */
-  private suspend inline fun <T> connectToInternet(request: ProxyRequest, block: (Socket) -> T): T {
+  private suspend inline fun <T> connectToInternet(
+      serverDispatcher: ServerDispatcher,
+      request: ProxyRequest,
+      block: (Socket) -> T
+  ): T {
     enforcer.assertOffMainThread()
 
-    return usingSocket { rawSocket ->
+    return usingSocket(serverDispatcher.primary) { rawSocket ->
       // We dont actually use the socket tls() method here since we are not a TLS server
       // We do the CONNECT based workaround to handle HTTPS connections
       val remote =
@@ -81,7 +85,9 @@ internal constructor(
           //
           // By using Dispatchers.IO we ensure this block runs on its own pooled thread
           // instead, so even if this blocks it will not resource starve others.
-          withContext(context = Dispatchers.IO) { socket.dispose() }
+          //
+          // Update: 12/17/2023 - use our own server dispatcher
+          withContext(context = serverDispatcher.primary) { socket.dispose() }
         }
       }
     }
@@ -116,7 +122,10 @@ internal constructor(
     return blockedClients.isBlocked(client)
   }
 
-  private fun CoroutineScope.handleClientRequestSideEffects(client: TetherClient) {
+  private fun CoroutineScope.handleClientRequestSideEffects(
+      serverDispatcher: ServerDispatcher,
+      client: TetherClient
+  ) {
     enforcer.assertOffMainThread()
 
     // Mark all client connections as seen
@@ -129,10 +138,11 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch(context = Dispatchers.IO) { seenClients.seen(client) }
+    launch(context = serverDispatcher.sideEffect) { seenClients.seen(client) }
   }
 
   private suspend fun CoroutineScope.proxyToInternet(
+      serverDispatcher: ServerDispatcher,
       handler: RequestHandler,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -144,7 +154,10 @@ internal constructor(
 
     // Given the request, connect to the Web
     try {
-      connectToInternet(request) { internet ->
+      connectToInternet(
+          serverDispatcher = serverDispatcher,
+          request = request,
+      ) { internet ->
         val internetInput = internet.openReadChannel()
         val internetOutput = internet.openWriteChannel(autoFlush = true)
 
@@ -152,6 +165,7 @@ internal constructor(
           // Communicate between the web connection we've made and back to our client device
           transport.exchangeInternet(
               scope = this,
+              serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
               internetInput = internetInput,
@@ -172,6 +186,7 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       client: TetherClient
@@ -180,7 +195,12 @@ internal constructor(
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
     // we just "spin up" another thread and forget about it performance wise.
-    scope.launch(context = Dispatchers.IO) { handleClientRequestSideEffects(client) }
+    scope.launch(context = serverDispatcher.primary) {
+      handleClientRequestSideEffects(
+          serverDispatcher = serverDispatcher,
+          client = client,
+      )
+    }
 
     // If the client is blocked we do not process any inpue
     if (isBlockedClient(client)) {
@@ -210,6 +230,7 @@ internal constructor(
 
     // And then we go to the web!
     scope.proxyToInternet(
+        serverDispatcher = serverDispatcher,
         handler = handler,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -218,10 +239,10 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
       data: TcpProxyData,
   ) =
-      withContext(context = Dispatchers.IO) {
-        /** The Proxy is our device */
+      withContext(context = serverDispatcher.primary) {
         /** The Proxy is our device */
         val connection = data.connection
         val proxyInput = connection.openReadChannel()
@@ -238,9 +259,10 @@ internal constructor(
 
           handleClientRequest(
               scope = this,
-              client = client,
+              serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
+              client = client,
           )
         } catch (e: Throwable) {
           e.ifNotCancellation {

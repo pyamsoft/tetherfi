@@ -36,4 +36,8 @@ interface ConfigPreferences {
   @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
 
   fun setNetworkBand(band: ServerNetworkBand)
+
+  @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
+
+  fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
 }
