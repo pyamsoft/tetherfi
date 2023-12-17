@@ -38,7 +38,6 @@ import kotlinx.coroutines.withContext
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
-    @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
@@ -84,20 +83,19 @@ internal constructor(
   override suspend fun create(
       type: SharedProxy.Type,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      serverDispatcher: ServerDispatcher,
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
-        val dispatcher = serverDispatcherFactory.resolve()
-
         return@withContext when (type) {
           SharedProxy.Type.TCP ->
               createTcp(
                   info = info,
-                  dispatcher = dispatcher,
+                  dispatcher = serverDispatcher,
               )
           SharedProxy.Type.UDP ->
               createUdp(
                   info = info,
-                  dispatcher = dispatcher,
+                  dispatcher = serverDispatcher,
               )
         }
       }

@@ -5,6 +5,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 
 interface ServerDispatcher {
 
+  val isPrimaryBound: Boolean
+
   /** Dispatcher for Primary effects, usually very performant */
   val primary: CoroutineDispatcher
 

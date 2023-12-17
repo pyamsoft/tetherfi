@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 
 internal interface ProxyManager {
@@ -32,6 +33,7 @@ internal interface ProxyManager {
     suspend fun create(
         type: SharedProxy.Type,
         info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        serverDispatcher: ServerDispatcher,
     ): ProxyManager
   }
 }

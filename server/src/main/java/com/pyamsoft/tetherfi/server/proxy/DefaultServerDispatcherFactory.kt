@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 
 @Singleton
 class DefaultServerDispatcherFactory
@@ -20,7 +19,7 @@ internal constructor(
     preferences: ConfigPreferences,
 ) : ServerDispatcher.Factory {
 
-  private val flow by lazy { preferences.listenForPerformanceLimits().map { it.toDispatcher() } }
+  private val flow by lazy { preferences.listenForPerformanceLimits() }
 
   // TODO: Scale?
   private val sideEffect by lazy { Executors.newFixedThreadPool(4).asCoroutineDispatcher() }
@@ -43,8 +42,11 @@ internal constructor(
       }
 
   override suspend fun resolve(): ServerDispatcher {
+    val primaryLimit = flow.first()
     return DefaultServerDispatchers(
-        primary = flow.first(),
+        isPrimaryBound =
+            primaryLimit is ServerPerformanceLimit.LimitUnbound || primaryLimit.coroutineLimit <= 0,
+        primary = primaryLimit.toDispatcher(),
         sideEffect = sideEffect,
     )
   }
@@ -52,5 +54,6 @@ internal constructor(
   private data class DefaultServerDispatchers(
       override val primary: CoroutineDispatcher,
       override val sideEffect: CoroutineDispatcher,
+      override val isPrimaryBound: Boolean,
   ) : ServerDispatcher
 }
