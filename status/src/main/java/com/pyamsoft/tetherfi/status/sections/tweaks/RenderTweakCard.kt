@@ -30,12 +30,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.util.bottomBorder
+import com.pyamsoft.pydroid.ui.util.sideBorders
+import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.BetterSurface
-import com.pyamsoft.tetherfi.ui.bottomBorder
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
-import com.pyamsoft.tetherfi.ui.sideBorders
-import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderTweakCardContentTypes {
   LABEL,

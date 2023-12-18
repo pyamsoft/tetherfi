@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
+import com.pyamsoft.pydroid.ui.util.bottomBorder
+import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.BetterSurface
-import com.pyamsoft.tetherfi.ui.bottomBorder
-import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderHotspotStatusContentTypes {
   COMPONENT_STATUS,
