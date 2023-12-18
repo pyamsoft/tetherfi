@@ -31,8 +31,13 @@ internal constructor(
 
     // Used cached pool so we recycle
     return Executors.newCachedThreadPool { task ->
-          // Use daemon threads
-          Thread(task).apply { isDaemon = true }
+          Thread(task).apply {
+            // Daemonize threads so JVM can exit
+            isDaemon = true
+
+            // Low priority
+            priority = Thread.MIN_PRIORITY
+          }
         }
         .asCoroutineDispatcher()
         .run {
