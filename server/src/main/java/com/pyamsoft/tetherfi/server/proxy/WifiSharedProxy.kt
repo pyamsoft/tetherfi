@@ -296,8 +296,11 @@ internal constructor(
                     reset(serverDispatcher = dispatcher)
                     dispatcher = null
 
-                    // Hold onto the job here so we can cancel it if we need to
+                    // Hold the dispatcher to cancel it later
                     val serverDispatcher = serverDispatcherFactory.resolve()
+                    dispatcher = serverDispatcher
+
+                    // Hold onto the job here so we can cancel it if we need to
                     job =
                         launch(context = Dispatchers.Default) {
                           startServer(
@@ -305,7 +308,6 @@ internal constructor(
                               serverDispatcher = serverDispatcher,
                           )
                         }
-                    dispatcher = serverDispatcher
                   }
                 }
                 is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
