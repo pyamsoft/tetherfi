@@ -13,7 +13,6 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
-import com.pyamsoft.tetherfi.status.sections.notifications.renderNotificationSettings
 import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.status.sections.performance.renderPerformanceSettings
 import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
@@ -95,6 +94,7 @@ internal fun LazyListScope.renderLoadedContent(
       state = state,
       featureFlags = featureFlags,
       onDisableBatteryOptimizations = onOpenBatterySettings,
+      onNotificationPermissionRequest = onRequestNotificationPermission,
   )
 
   item(
@@ -122,6 +122,7 @@ internal fun LazyListScope.renderLoadedContent(
 
   renderPerformanceSettings(
       itemModifier = itemModifier,
+      featureFlags = featureFlags,
       isEditable = isEditable,
       appName = appName,
       state = state,
@@ -153,23 +154,6 @@ internal fun LazyListScope.renderLoadedContent(
     Spacer(
         modifier = itemModifier.height(MaterialTheme.keylines.baseline),
     )
-  }
-
-  if (showNotificationSettings) {
-    renderNotificationSettings(
-        itemModifier = itemModifier,
-        state = state,
-        isEditable = isEditable,
-        onRequest = onRequestNotificationPermission,
-    )
-
-    item(
-        contentType = StatusLoadedContentTypes.SPACER,
-    ) {
-      Spacer(
-          modifier = itemModifier.height(MaterialTheme.keylines.content),
-      )
-    }
   }
 
   renderLinks(

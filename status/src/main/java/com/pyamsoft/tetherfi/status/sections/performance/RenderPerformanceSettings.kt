@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
@@ -30,6 +31,7 @@ private enum class PerformanceSettingsContentTypes {
 
 internal fun LazyListScope.renderPerformanceSettings(
     itemModifier: Modifier = Modifier,
+    featureFlags: FeatureFlags,
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,
@@ -58,4 +60,13 @@ internal fun LazyListScope.renderPerformanceSettings(
       onToggleKeepWakeLock = onToggleKeepWakeLock,
       onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
+
+  if (featureFlags.isThreadPerformanceEnabled) {
+    renderThreads(
+        itemModifier = itemModifier,
+        isEditable = isEditable,
+        appName = appName,
+        state = state,
+    )
+  }
 }

@@ -255,7 +255,7 @@ internal fun LazyListScope.renderAddTheTile(
     ) {
       QuickTileAddButton(
           modifier =
-              Modifier.fillMaxWidth()
+              itemModifier.fillMaxWidth()
                   .padding(bottom = MaterialTheme.keylines.baseline)
                   .padding(horizontal = MaterialTheme.keylines.content),
           isEditable = isEditable,
@@ -288,7 +288,7 @@ internal fun LazyListScope.renderAddTheTile(
     ) {
       BugReportLink(
           modifier =
-              Modifier.fillMaxWidth()
+              itemModifier.fillMaxWidth()
                   .padding(bottom = MaterialTheme.keylines.content)
                   .padding(horizontal = MaterialTheme.keylines.content),
           isEditable = isEditable,

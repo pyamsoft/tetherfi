@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.ui.Label
 private enum class OperatingSettingsContentTypes {
   LABEL,
   BATTERY_OPTIMIZATION,
+  NOTIFICATIONS,
 }
 
 internal fun LazyListScope.renderOperatingSettings(
@@ -39,6 +40,9 @@ internal fun LazyListScope.renderOperatingSettings(
 
     // Battery optimization
     onDisableBatteryOptimizations: () -> Unit,
+
+    // Notifications
+    onNotificationPermissionRequest: () -> Unit,
 ) {
   item(
       contentType = OperatingSettingsContentTypes.LABEL,
@@ -61,6 +65,17 @@ internal fun LazyListScope.renderOperatingSettings(
         appName = appName,
         state = state,
         onDisableBatteryOptimizations = onDisableBatteryOptimizations,
+    )
+  }
+
+  item(
+      contentType = OperatingSettingsContentTypes.NOTIFICATIONS,
+  ) {
+    NotificationPerms(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        state = state,
+        isEditable = isEditable,
+        onRequest = onNotificationPermissionRequest,
     )
   }
 
