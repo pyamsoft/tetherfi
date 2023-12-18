@@ -8,7 +8,7 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.first
 
@@ -21,39 +21,60 @@ internal constructor(
 
   private val flow by lazy { preferences.listenForPerformanceLimits() }
 
-  // TODO: Scale?
-  private val sideEffect by lazy { Executors.newFixedThreadPool(4).asCoroutineDispatcher() }
+  /** Make a new thread dispatcher using Daemon threads */
+  @CheckResult
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private fun newThreadDispatcher(nThreads: Int): CoroutineDispatcher {
+    val isUnlimited = nThreads <= 0
+    val logThreads = if (isUnlimited) "UNLIMITED" else nThreads
+    Timber.d { "Create new executor CoroutineDispatcher n=(${logThreads})" }
+
+    // Used cached pool so we recycle
+    return Executors.newCachedThreadPool { task ->
+          // Use daemon threads
+          Thread(task).apply { isDaemon = true }
+        }
+        .asCoroutineDispatcher()
+        .run {
+          if (isUnlimited) {
+            // Unlimited, run free!!
+            this
+          } else {
+            // And limit concurrency
+            limitedParallelism(parallelism = nThreads)
+          }
+        }
+  }
 
   @CheckResult
   private fun ServerPerformanceLimit.toDispatcher(): CoroutineDispatcher =
-      when (this) {
-        is ServerPerformanceLimit.LimitUnbound -> {
-          Timber.d { "Create new Unbound ServerDispatcher" }
-
-          // return
-          Dispatchers.IO
-        }
-        else -> {
-          Timber.d { "Create new bound=(${coroutineLimit}) ServerDispatcher" }
-
-          // return
-          Executors.newFixedThreadPool(coroutineLimit).asCoroutineDispatcher()
-        }
-      }
+      newThreadDispatcher(
+          nThreads = coroutineLimit,
+      )
 
   override suspend fun resolve(): ServerDispatcher {
     val primaryLimit = flow.first()
+
+    val halfCpu = ServerPerformanceLimit.Defaults.BOUND_N_CPU.coroutineLimit / 4
+    val sideEffectThreads = 2.coerceAtLeast(halfCpu)
+
+    val isPrimaryUnbound = primaryLimit.coroutineLimit <= 0
+
     return DefaultServerDispatchers(
-        isPrimaryBound =
-            primaryLimit is ServerPerformanceLimit.LimitUnbound || primaryLimit.coroutineLimit <= 0,
+        isPrimaryUnbound = isPrimaryUnbound,
         primary = primaryLimit.toDispatcher(),
-        sideEffect = sideEffect,
+
+        // TODO: Scale somehow based on primary? or just keep as half_cpu OR 4
+        sideEffect =
+            newThreadDispatcher(
+                nThreads = sideEffectThreads,
+            ),
     )
   }
 
   private data class DefaultServerDispatchers(
       override val primary: CoroutineDispatcher,
       override val sideEffect: CoroutineDispatcher,
-      override val isPrimaryBound: Boolean,
+      override val isPrimaryUnbound: Boolean,
   ) : ServerDispatcher
 }

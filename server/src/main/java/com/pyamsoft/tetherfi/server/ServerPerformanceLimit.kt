@@ -9,16 +9,12 @@ sealed interface ServerPerformanceLimit {
   enum class Defaults(
       val coroutineLimit: Int,
   ) {
-    UNBOUND(0),
-    BOUND_12(12),
-    BOUND_24(24),
-    BOUND_48(48),
-    BOUND_64(64),
-    BOUND_100(100),
-  }
-
-  data object LimitUnbound : ServerPerformanceLimit {
-    override val coroutineLimit = 0
+    UNBOUND(coroutineLimit = 0),
+    BOUND_N_CPU(coroutineLimit = Runtime.getRuntime().availableProcessors()),
+    BOUND_2N_CPU(coroutineLimit = 2 * BOUND_N_CPU.coroutineLimit),
+    BOUND_3N_CPU(coroutineLimit = 3 * BOUND_N_CPU.coroutineLimit),
+    BOUND_4N_CPU(coroutineLimit = 4 * BOUND_N_CPU.coroutineLimit),
+    BOUND_5N_CPU(coroutineLimit = 5 * BOUND_N_CPU.coroutineLimit)
   }
 
   data class BoundLimit(
@@ -30,9 +26,6 @@ sealed interface ServerPerformanceLimit {
     @JvmStatic
     @CheckResult
     fun create(limit: Int): ServerPerformanceLimit {
-      if (limit <= 0) {
-        return LimitUnbound
-      }
       return BoundLimit(limit)
     }
   }

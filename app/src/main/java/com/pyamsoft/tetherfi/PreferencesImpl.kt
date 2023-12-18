@@ -237,7 +237,10 @@ internal constructor(
   }
 
   override fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit> =
-      preferenceIntFlow(SERVER_LIMITS, ServerPerformanceLimit.Defaults.BOUND_48.coroutineLimit) {
+      preferenceIntFlow(
+              SERVER_LIMITS,
+              ServerPerformanceLimit.Defaults.BOUND_3N_CPU.coroutineLimit,
+          ) {
             preferences
           }
           .map { ServerPerformanceLimit.create(it) }
