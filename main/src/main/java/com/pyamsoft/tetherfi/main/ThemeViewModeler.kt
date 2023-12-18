@@ -30,6 +30,11 @@ internal constructor(
     private val theming: Theming,
 ) : ThemeViewState by state, AbstractViewModeler<ThemeViewState>(state) {
 
+  private fun handleSyncDarkTheme(configuration: Configuration) {
+    val isDark = theming.isDarkTheme(configuration)
+    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+  }
+
   override fun registerSaveState(
       registry: SaveableStateRegistry
   ): List<SaveableStateRegistry.Entry> =
@@ -50,11 +55,6 @@ internal constructor(
 
   fun handleSyncDarkTheme(activity: Activity) {
     handleSyncDarkTheme(activity.resources.configuration)
-  }
-
-  fun handleSyncDarkTheme(configuration: Configuration) {
-    val isDark = theming.isDarkTheme(configuration)
-    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
   }
 
   companion object {

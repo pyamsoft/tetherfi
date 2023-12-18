@@ -76,7 +76,7 @@ class ProxyTileActivity : AppCompatActivity() {
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
-    viewModel.requireNotNull().handleSyncDarkTheme(newConfig)
+    viewModel.requireNotNull().handleSyncDarkTheme(this)
   }
 
   override fun onDestroy() {
