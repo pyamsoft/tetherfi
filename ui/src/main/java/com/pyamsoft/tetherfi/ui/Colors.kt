@@ -19,10 +19,18 @@ package com.pyamsoft.tetherfi.ui
 import androidx.annotation.CheckResult
 import androidx.compose.material.LocalElevationOverlay
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
+/**
+ * TODO Move into pydroid
+ *
+ * Copied out of [Surface] and exposed to public callers
+ *
+ * Defaults color to Surface color
+ */
 @Composable
 @CheckResult
 fun surfaceColorAtElevation(

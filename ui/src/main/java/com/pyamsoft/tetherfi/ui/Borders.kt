@@ -14,6 +14,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 
 /**
+ * TODO Move into pydroid
+ *
  * Lifted and modified from
  *
  * https://stackoverflow.com/questions/74740835/how-to-draw-border-around-the-lazycolumn-items-in-android-compose
