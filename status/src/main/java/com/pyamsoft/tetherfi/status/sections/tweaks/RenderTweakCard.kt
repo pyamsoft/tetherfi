@@ -22,16 +22,20 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.ui.BetterSurface
+import com.pyamsoft.tetherfi.ui.bottomBorder
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
+import com.pyamsoft.tetherfi.ui.sideBorders
+import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderTweakCardContentTypes {
   LABEL,
@@ -50,10 +54,22 @@ internal fun LazyListScope.renderTweakCard(
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleBindProxyAll: () -> Unit,
 ) {
-  item(contentType = RenderTweakCardContentTypes.LABEL) {
+  item(
+      contentType = RenderTweakCardContentTypes.LABEL,
+  ) {
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(
+    BetterSurface(
+        modifier =
+            Modifier.topBorder(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+                cornerRadius = MaterialTheme.keylines.content,
+            ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
@@ -73,10 +89,22 @@ internal fun LazyListScope.renderTweakCard(
     }
   }
 
-  item(contentType = RenderTweakCardContentTypes.EXPLAIN) {
+  item(
+      contentType = RenderTweakCardContentTypes.EXPLAIN,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(elevation = CardDefaults.Elevation) {
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       Text(
           modifier =
               itemModifier
@@ -96,7 +124,9 @@ internal fun LazyListScope.renderTweakCard(
     }
   }
 
-  item(contentType = RenderTweakCardContentTypes.IGNORE_VPN) {
+  item(
+      contentType = RenderTweakCardContentTypes.IGNORE_VPN,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
@@ -108,7 +138,17 @@ internal fun LazyListScope.renderTweakCard(
             selectedColor = MaterialTheme.colors.primary,
         )
 
-    Surface(elevation = CardDefaults.Elevation) {
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       ToggleSwitch(
           modifier = itemModifier,
           highAlpha = highAlpha,
@@ -127,7 +167,9 @@ internal fun LazyListScope.renderTweakCard(
     }
   }
 
-  item(contentType = RenderTweakCardContentTypes.KILL_ON_IDLE) {
+  item(
+      contentType = RenderTweakCardContentTypes.KILL_ON_IDLE,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
@@ -139,7 +181,17 @@ internal fun LazyListScope.renderTweakCard(
             selectedColor = MaterialTheme.colors.primary,
         )
 
-    Surface(elevation = CardDefaults.Elevation) {
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       ToggleSwitch(
           modifier = itemModifier,
           highAlpha = highAlpha,
@@ -158,7 +210,9 @@ internal fun LazyListScope.renderTweakCard(
     }
   }
 
-  item(contentType = RenderTweakCardContentTypes.BIND_ALL) {
+  item(
+      contentType = RenderTweakCardContentTypes.BIND_ALL,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
@@ -170,7 +224,16 @@ internal fun LazyListScope.renderTweakCard(
             selectedColor = MaterialTheme.colors.primary,
         )
 
-    Surface(
+    BetterSurface(
+        modifier =
+            Modifier.bottomBorder(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+                cornerRadius = MaterialTheme.keylines.content,
+            ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(

@@ -2,6 +2,7 @@ package com.pyamsoft.tetherfi.ui.checkable
 
 import androidx.annotation.CheckResult
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -32,6 +32,7 @@ import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
+import com.pyamsoft.tetherfi.ui.BetterSurface
 
 @Composable
 @CheckResult
@@ -118,13 +119,14 @@ private fun CheckableCard(
         if (condition) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked
       }
 
-  Card(
-      modifier =
-          modifier.border(
+  BetterSurface(
+      modifier = modifier,
+      border =
+          BorderStroke(
               width = 2.dp,
               color = color.copy(alpha = alphas.secondary),
-              shape = MaterialTheme.shapes.medium,
           ),
+      shape = MaterialTheme.shapes.medium,
       elevation = CardDefaults.Elevation,
   ) {
     Column(

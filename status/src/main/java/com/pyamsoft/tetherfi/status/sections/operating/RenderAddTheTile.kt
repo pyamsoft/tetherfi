@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,10 +30,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
+import com.pyamsoft.tetherfi.ui.BetterSurface
 import com.pyamsoft.tetherfi.ui.appendLink
+import com.pyamsoft.tetherfi.ui.bottomBorder
+import com.pyamsoft.tetherfi.ui.sideBorders
+import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderAddTheTileContentTypes {
   LABEL,
@@ -116,11 +120,23 @@ internal fun LazyListScope.renderAddTheTile(
     isEditable: Boolean,
     appName: String,
 ) {
-  item(contentType = RenderAddTheTileContentTypes.LABEL) {
+  item(
+      contentType = RenderAddTheTileContentTypes.LABEL,
+  ) {
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(
-        modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+    BetterSurface(
+        modifier =
+            Modifier.padding(top = MaterialTheme.keylines.content)
+                .topBorder(
+                    strokeWidth = 2.dp,
+                    color =
+                        MaterialTheme.colors.primary.copy(
+                            alpha = mediumAlpha,
+                        ),
+                    cornerRadius = MaterialTheme.keylines.content,
+                ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
@@ -146,10 +162,22 @@ internal fun LazyListScope.renderAddTheTile(
     }
   }
 
-  item(contentType = RenderAddTheTileContentTypes.EXPLAIN) {
+  item(
+      contentType = RenderAddTheTileContentTypes.EXPLAIN,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(elevation = CardDefaults.Elevation) {
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       Text(
           modifier = itemModifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text =
@@ -168,10 +196,22 @@ internal fun LazyListScope.renderAddTheTile(
     }
   }
 
-  item(contentType = RenderAddTheTileContentTypes.INSTRUCTION) {
+  item(
+      contentType = RenderAddTheTileContentTypes.INSTRUCTION,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(elevation = CardDefaults.Elevation) {
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       Text(
           modifier =
               itemModifier
@@ -197,8 +237,22 @@ internal fun LazyListScope.renderAddTheTile(
     }
   }
 
-  item(contentType = RenderAddTheTileContentTypes.BUTTON) {
-    Surface(elevation = CardDefaults.Elevation) {
+  item(
+      contentType = RenderAddTheTileContentTypes.BUTTON,
+  ) {
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
       QuickTileAddButton(
           modifier =
               Modifier.fillMaxWidth()
@@ -210,8 +264,21 @@ internal fun LazyListScope.renderAddTheTile(
     }
   }
 
-  item(contentType = RenderAddTheTileContentTypes.LINK) {
-    Surface(
+  item(
+      contentType = RenderAddTheTileContentTypes.LINK,
+  ) {
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    BetterSurface(
+        modifier =
+            Modifier.bottomBorder(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+                cornerRadius = MaterialTheme.keylines.content,
+            ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(

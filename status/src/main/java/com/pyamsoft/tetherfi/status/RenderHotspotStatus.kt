@@ -7,13 +7,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.BetterSurface
+import com.pyamsoft.tetherfi.ui.bottomBorder
+import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderHotspotStatusContentTypes {
   COMPONENT_STATUS,
@@ -31,8 +35,19 @@ internal fun LazyListScope.renderHotspotStatus(
   item(
       contentType = RenderHotspotStatusContentTypes.COMPONENT_STATUS,
   ) {
-    Surface(
-        modifier = itemModifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content * 2),
+    BetterSurface(
+        modifier =
+            itemModifier
+                .fillMaxWidth()
+                .padding(top = MaterialTheme.keylines.content * 2)
+                .topBorder(
+                    strokeWidth = 4.dp,
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.disabled,
+                        ),
+                    cornerRadius = MaterialTheme.keylines.content,
+                ),
         elevation = DialogDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
@@ -67,8 +82,19 @@ internal fun LazyListScope.renderHotspotStatus(
   item(
       contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS,
   ) {
-    Surface(
-        modifier = itemModifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content * 2),
+    BetterSurface(
+        modifier =
+            itemModifier
+                .fillMaxWidth()
+                .padding(bottom = MaterialTheme.keylines.content * 2)
+                .bottomBorder(
+                    strokeWidth = 4.dp,
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.disabled,
+                        ),
+                    cornerRadius = MaterialTheme.keylines.content,
+                ),
         elevation = DialogDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(

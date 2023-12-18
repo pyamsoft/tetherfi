@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status.sections.broadcast
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -70,7 +71,7 @@ internal fun NetworkBands(
           val isSelected = remember(b, band) { b == band }
           val heightMatcher = generator.generateFor(b)
 
-          CheckableCard(
+          Box(
               modifier =
                   Modifier.weight(1F)
                       .then(heightMatcher.onSizeChangedModifier)
@@ -79,16 +80,20 @@ internal fun NetworkBands(
                               if (index < bands.lastIndex) MaterialTheme.keylines.content
                               else ZeroSize,
                       ),
-              isEditable = isEditable,
-              condition = isSelected,
-              title = b.displayName,
-              description = b.description,
-              extraHeight = heightMatcher.extraHeight,
-              onClick = {
-                hapticManager?.toggleOn()
-                onSelectBand(b)
-              },
-          )
+          ) {
+            CheckableCard(
+                modifier = Modifier.fillMaxWidth(),
+                isEditable = isEditable,
+                condition = isSelected,
+                title = b.displayName,
+                description = b.description,
+                extraHeight = heightMatcher.extraHeight,
+                onClick = {
+                  hapticManager?.toggleOn()
+                  onSelectBand(b)
+                },
+            )
+          }
         }
       }
     } else {

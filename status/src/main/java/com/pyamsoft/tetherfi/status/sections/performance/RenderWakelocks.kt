@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TriStateCheckbox
 import androidx.compose.runtime.getValue
@@ -32,12 +31,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tweaks.ToggleSwitch
+import com.pyamsoft.tetherfi.ui.BetterSurface
+import com.pyamsoft.tetherfi.ui.bottomBorder
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
+import com.pyamsoft.tetherfi.ui.sideBorders
+import com.pyamsoft.tetherfi.ui.topBorder
 
 private enum class RenderWakelocksContentTypes {
   LABEL,
@@ -54,7 +58,9 @@ internal fun LazyListScope.renderWakelocks(
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
 ) {
-  item(contentType = RenderWakelocksContentTypes.LABEL) {
+  item(
+      contentType = RenderWakelocksContentTypes.LABEL,
+  ) {
     val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
     val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
 
@@ -79,9 +85,20 @@ internal fun LazyListScope.renderWakelocks(
             condition = isChecked,
             selectedColor = MaterialTheme.colors.primary,
         )
-    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
-    Surface(
+    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+
+    BetterSurface(
+        modifier =
+            Modifier.topBorder(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+                cornerRadius = MaterialTheme.keylines.content,
+            ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
@@ -113,10 +130,20 @@ internal fun LazyListScope.renderWakelocks(
     }
   }
 
-  item(contentType = RenderWakelocksContentTypes.EXPLAIN) {
+  item(
+      contentType = RenderWakelocksContentTypes.EXPLAIN,
+  ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
-    Surface(
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
         elevation = CardDefaults.Elevation,
     ) {
       Text(
@@ -138,7 +165,9 @@ internal fun LazyListScope.renderWakelocks(
     }
   }
 
-  item(contentType = RenderWakelocksContentTypes.WIFI_LOCK) {
+  item(
+      contentType = RenderWakelocksContentTypes.WIFI_LOCK,
+  ) {
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
@@ -150,7 +179,15 @@ internal fun LazyListScope.renderWakelocks(
             selectedColor = MaterialTheme.colors.primary,
         )
 
-    Surface(
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
         elevation = CardDefaults.Elevation,
     ) {
       ToggleSwitch(
@@ -168,7 +205,9 @@ internal fun LazyListScope.renderWakelocks(
     }
   }
 
-  item(contentType = RenderWakelocksContentTypes.WAKE_LOCK) {
+  item(
+      contentType = RenderWakelocksContentTypes.WAKE_LOCK,
+  ) {
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
 
@@ -180,7 +219,16 @@ internal fun LazyListScope.renderWakelocks(
             selectedColor = MaterialTheme.colors.primary,
         )
 
-    Surface(
+    BetterSurface(
+        modifier =
+            Modifier.bottomBorder(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+                cornerRadius = MaterialTheme.keylines.content,
+            ),
         elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(

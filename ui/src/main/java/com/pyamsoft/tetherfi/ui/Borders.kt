@@ -1,9 +1,11 @@
 package com.pyamsoft.tetherfi.ui
 
 import androidx.annotation.CheckResult
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -11,127 +13,313 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 
+/**
+ * Lifted and modified from
+ *
+ * https://stackoverflow.com/questions/74740835/how-to-draw-border-around-the-lazycolumn-items-in-android-compose
+ *
+ * Changes:
+ * - Code style and formatting
+ * - Remember for px calculations from density
+ * - Stroke width was drawing "half size", double up
+ * - drawWithContent instead of drawBehind to apply the border "over" content, like how it would in
+ *   Surface
+ */
+@Composable
 @CheckResult
-fun Modifier.topBorder(strokeWidth: Dp, color: Color, cornerRadiusDp: Dp) =
-    composed(
-        factory = {
-          val density = LocalDensity.current
-          val strokeWidthPx = density.run { strokeWidth.toPx() }
-          val cornerRadiusPx = density.run { cornerRadiusDp.toPx() }
-
-          Modifier.drawBehind {
-            val width = size.width
-            val height = size.height
-
-            drawLine(
-                color = color,
-                start = Offset(x = 0f, y = height),
-                end = Offset(x = 0f, y = cornerRadiusPx),
-                strokeWidth = strokeWidthPx)
-
-            drawArc(
-                color = color,
-                startAngle = 180f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset.Zero,
-                size = Size(cornerRadiusPx * 2, cornerRadiusPx * 2),
-                style = Stroke(width = strokeWidthPx))
-
-            drawLine(
-                color = color,
-                start = Offset(x = cornerRadiusPx, y = 0f),
-                end = Offset(x = width - cornerRadiusPx, y = 0f),
-                strokeWidth = strokeWidthPx)
-
-            drawArc(
-                color = color,
-                startAngle = 270f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(x = width - cornerRadiusPx * 2, y = 0f),
-                size = Size(cornerRadiusPx * 2, cornerRadiusPx * 2),
-                style = Stroke(width = strokeWidthPx))
-
-            drawLine(
-                color = color,
-                start = Offset(x = width, y = height),
-                end = Offset(x = width, y = cornerRadiusPx),
-                strokeWidth = strokeWidthPx)
-          }
-        })
+private fun rememberPx(dp: Dp): Float {
+  val density = LocalDensity.current
+  return remember(
+      density,
+      dp,
+  ) {
+    density.run { dp.toPx() }
+  }
+}
 
 @CheckResult
-fun Modifier.bottomBorder(strokeWidth: Dp, color: Color, cornerRadiusDp: Dp) =
-    composed(
-        factory = {
-          val density = LocalDensity.current
-          val strokeWidthPx = density.run { strokeWidth.toPx() }
-          val cornerRadiusPx = density.run { cornerRadiusDp.toPx() }
+fun Modifier.topBorder(
+    strokeWidth: Dp,
+    color: Color,
+    cornerRadius: Dp,
+): Modifier {
+  return composed(
+      factory = {
+        val strokeWidthPx = rememberPx(strokeWidth)
+        val cornerRadiusPx = rememberPx(cornerRadius)
 
-          Modifier.drawBehind {
-            val width = size.width
-            val height = size.height
+        drawWithContent {
+          val width = size.width
+          val height = size.height
 
-            drawLine(
-                color = color,
-                start = Offset(x = 0f, y = 0f),
-                end = Offset(x = 0f, y = height - cornerRadiusPx),
-                strokeWidth = strokeWidthPx)
+          drawContent()
 
-            drawArc(
-                color = color,
-                startAngle = 90f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(x = 0f, y = height - cornerRadiusPx * 2),
-                size = Size(cornerRadiusPx * 2, cornerRadiusPx * 2),
-                style = Stroke(width = strokeWidthPx))
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = 0f,
+                      y = height,
+                  ),
+              end =
+                  Offset(
+                      x = 0f,
+                      y = cornerRadiusPx,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
 
-            drawLine(
-                color = color,
-                start = Offset(x = cornerRadiusPx, y = height),
-                end = Offset(x = width - cornerRadiusPx, y = height),
-                strokeWidth = strokeWidthPx)
+          drawArc(
+              color = color,
+              startAngle = 180F,
+              sweepAngle = 90F,
+              useCenter = false,
+              topLeft = Offset.Zero,
+              size =
+                  Size(
+                      cornerRadiusPx * 2,
+                      cornerRadiusPx * 2,
+                  ),
+              style =
+                  Stroke(
+                      width = strokeWidthPx,
+                  ),
+          )
 
-            drawArc(
-                color = color,
-                startAngle = 0f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(x = width - cornerRadiusPx * 2, y = height - cornerRadiusPx * 2),
-                size = Size(cornerRadiusPx * 2, cornerRadiusPx * 2),
-                style = Stroke(width = strokeWidthPx))
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = cornerRadiusPx,
+                      y = 0F,
+                  ),
+              end =
+                  Offset(
+                      x = width - cornerRadiusPx,
+                      y = 0F,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
 
-            drawLine(
-                color = color,
-                start = Offset(x = width, y = 0f),
-                end = Offset(x = width, y = height - cornerRadiusPx),
-                strokeWidth = strokeWidthPx)
-          }
-        })
+          drawArc(
+              color = color,
+              startAngle = 270F,
+              sweepAngle = 90F,
+              useCenter = false,
+              topLeft =
+                  Offset(
+                      x = width - cornerRadiusPx * 2,
+                      y = 0F,
+                  ),
+              size =
+                  Size(
+                      cornerRadiusPx * 2,
+                      cornerRadiusPx * 2,
+                  ),
+              style =
+                  Stroke(
+                      width = strokeWidthPx,
+                  ),
+          )
+
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = width,
+                      y = height,
+                  ),
+              end =
+                  Offset(
+                      x = width,
+                      y = cornerRadiusPx,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+        }
+      },
+  )
+}
 
 @CheckResult
-fun Modifier.sideBorder(strokeWidth: Dp, color: Color) =
-    composed(
-        factory = {
-          val density = LocalDensity.current
-          val strokeWidthPx = density.run { strokeWidth.toPx() }
+fun Modifier.bottomBorder(
+    strokeWidth: Dp,
+    color: Color,
+    cornerRadius: Dp,
+): Modifier {
+  // For some reason the stroke width is too thin, about half as much, double it up
 
-          Modifier.drawBehind {
-            val width = size.width
-            val height = size.height
+  return composed(
+      factory = {
+        val strokeWidthPx = rememberPx(strokeWidth)
+        val cornerRadiusPx = rememberPx(cornerRadius)
 
-            drawLine(
-                color = color,
-                start = Offset(x = 0f, y = 0f),
-                end = Offset(x = 0f, y = height),
-                strokeWidth = strokeWidthPx)
+        drawWithContent {
+          val width = size.width
+          val height = size.height
 
-            drawLine(
-                color = color,
-                start = Offset(x = width, y = 0f),
-                end = Offset(x = width, y = height),
-                strokeWidth = strokeWidthPx)
-          }
-        })
+          drawContent()
+
+          drawLine(
+              color = color,
+              start = Offset.Zero,
+              end =
+                  Offset(
+                      x = 0F,
+                      y = height - cornerRadiusPx,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+
+          drawArc(
+              color = color,
+              startAngle = 90F,
+              sweepAngle = 90F,
+              useCenter = false,
+              topLeft =
+                  Offset(
+                      x = 0F,
+                      y = height - cornerRadiusPx * 2,
+                  ),
+              size =
+                  Size(
+                      cornerRadiusPx * 2,
+                      cornerRadiusPx * 2,
+                  ),
+              style =
+                  Stroke(
+                      width = strokeWidthPx,
+                  ),
+          )
+
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = cornerRadiusPx,
+                      y = height,
+                  ),
+              end =
+                  Offset(
+                      x = width - cornerRadiusPx,
+                      y = height,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+
+          drawArc(
+              color = color,
+              startAngle = 0F,
+              sweepAngle = 90F,
+              useCenter = false,
+              topLeft =
+                  Offset(
+                      x = width - cornerRadiusPx * 2,
+                      y = height - cornerRadiusPx * 2,
+                  ),
+              size =
+                  Size(
+                      cornerRadiusPx * 2,
+                      cornerRadiusPx * 2,
+                  ),
+              style =
+                  Stroke(
+                      width = strokeWidthPx,
+                  ),
+          )
+
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = width,
+                      y = 0f,
+                  ),
+              end =
+                  Offset(
+                      x = width,
+                      y = height - cornerRadiusPx,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+        }
+      },
+  )
+}
+
+@CheckResult
+fun Modifier.sideBorders(
+    strokeWidth: Dp,
+    color: Color,
+) =
+    this.rightBorder(
+            strokeWidth = strokeWidth,
+            color = color,
+        )
+        .leftBorder(
+            strokeWidth = strokeWidth,
+            color = color,
+        )
+
+@CheckResult
+fun Modifier.leftBorder(
+    strokeWidth: Dp,
+    color: Color,
+): Modifier {
+  return composed(
+      factory = {
+        val strokeWidthPx = rememberPx(strokeWidth)
+
+        drawWithContent {
+          val height = size.height
+
+          drawContent()
+
+          drawLine(
+              color = color,
+              start = Offset.Zero,
+              end =
+                  Offset(
+                      x = 0F,
+                      y = height,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+        }
+      },
+  )
+}
+
+@CheckResult
+fun Modifier.rightBorder(
+    strokeWidth: Dp,
+    color: Color,
+): Modifier {
+  return composed(
+      factory = {
+        val strokeWidthPx = rememberPx(strokeWidth)
+
+        drawWithContent {
+          val width = size.width
+          val height = size.height
+
+          drawContent()
+
+          drawLine(
+              color = color,
+              start =
+                  Offset(
+                      x = width,
+                      y = 0f,
+                  ),
+              end =
+                  Offset(
+                      x = width,
+                      y = height,
+                  ),
+              strokeWidth = strokeWidthPx,
+          )
+        }
+      },
+  )
+}
