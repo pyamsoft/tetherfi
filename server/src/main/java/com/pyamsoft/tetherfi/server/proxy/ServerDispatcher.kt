@@ -15,6 +15,6 @@ interface ServerDispatcher {
 
   interface Factory {
 
-    @CheckResult suspend fun resolve(): ServerDispatcher
+    @CheckResult suspend fun create(): ServerDispatcher
   }
 }

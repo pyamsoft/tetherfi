@@ -297,7 +297,7 @@ internal constructor(
                     dispatcher = null
 
                     // Hold the dispatcher to cancel it later
-                    val serverDispatcher = serverDispatcherFactory.resolve()
+                    val serverDispatcher = serverDispatcherFactory.create()
                     dispatcher = serverDispatcher
 
                     // Hold onto the job here so we can cancel it if we need to
