@@ -32,8 +32,10 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
@@ -172,16 +174,25 @@ internal constructor(
     resetState()
   }
 
+  private fun CoroutineDispatcher.shutdown() {
+    val self = this
+    if (self is ExecutorCoroutineDispatcher) {
+      self.close()
+    } else {
+      self.cancel()
+    }
+  }
+
   private fun stopDispatcher(serverDispatcher: ServerDispatcher) {
     if (serverDispatcher.isPrimaryUnbound) {
       Timber.w { "Can't close an unbounded Primary Dispatcher" }
     } else {
       Timber.d { "Shutdown Primary Dispatcher" }
-      serverDispatcher.primary.cancel()
+      serverDispatcher.primary.shutdown()
     }
 
     Timber.d { "Shutdown SideEffect Dispatcher" }
-    serverDispatcher.sideEffect.cancel()
+    serverDispatcher.sideEffect.shutdown()
   }
 
   private suspend fun shutdown(serverDispatcher: ServerDispatcher?) =
