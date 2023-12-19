@@ -42,7 +42,11 @@ internal fun TroubleshootDialog(
   val hapticManager = LocalHapticManager.current
 
   AlertDialog(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
+      modifier =
+          modifier
+              // Top already has padding for some reason?
+              .padding(horizontal = MaterialTheme.keylines.content)
+              .padding(bottom = MaterialTheme.keylines.content),
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
       text = {

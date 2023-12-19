@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.ExternalUriPortal
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.widget.BillingUpsellWidget
 import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
@@ -78,7 +78,7 @@ fun LazyListScope.renderPYDroidExtras(
     ShowChangeLogWidget(
         modifier = modifier.padding(top = MaterialTheme.keylines.content),
         dialogModifier =
-            Modifier.fillUpToPortraitHeight()
+            Modifier.fillUpToPortraitSize()
                 .widthIn(
                     max = LANDSCAPE_MAX_WIDTH,
                 ),
@@ -91,7 +91,7 @@ fun LazyListScope.renderPYDroidExtras(
     BillingUpsellWidget(
         modifier = modifier.padding(top = MaterialTheme.keylines.content),
         dialogModifier =
-            Modifier.fillUpToPortraitHeight()
+            Modifier.fillUpToPortraitSize()
                 .widthIn(
                     max = LANDSCAPE_MAX_WIDTH,
                 ),

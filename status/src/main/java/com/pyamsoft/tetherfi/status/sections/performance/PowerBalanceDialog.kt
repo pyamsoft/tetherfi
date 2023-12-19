@@ -204,7 +204,7 @@ internal fun PowerBalanceDialog(
       onDismissRequest = onHidePowerBalance,
   ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
         elevation = DialogDefaults.Elevation,
         shape = MaterialTheme.shapes.medium,
     ) {

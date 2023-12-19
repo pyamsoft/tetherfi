@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.TestFeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
@@ -257,7 +257,7 @@ fun StatusScreen(
   }
 
   StatusDialogs(
-      dialogModifier = Modifier.fillUpToPortraitHeight().widthIn(max = LANDSCAPE_MAX_WIDTH),
+      dialogModifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
       state = state,
       serverViewState = serverViewState,
       appName = appName,

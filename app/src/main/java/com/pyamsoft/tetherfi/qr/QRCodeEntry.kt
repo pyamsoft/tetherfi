@@ -20,6 +20,7 @@ import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.MaterialTheme
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.ImageLoader
+import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
@@ -116,7 +118,12 @@ fun QRCodeEntry(
     val qrCodeSize = rememberQRCodeWidth()
 
     Column(
-        modifier = modifier.width(qrCodeSize),
+        modifier =
+            modifier
+                // Top already has padding for some reason?
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content)
+                .width(qrCodeSize),
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),

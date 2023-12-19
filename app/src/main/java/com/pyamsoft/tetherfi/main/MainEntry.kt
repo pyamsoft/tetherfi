@@ -37,7 +37,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
+import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -198,7 +198,7 @@ fun MainEntry(
   if (isSettingsOpen) {
     SettingsDialog(
         modifier =
-            Modifier.fillUpToPortraitHeight()
+            Modifier.fillUpToPortraitSize()
                 .widthIn(
                     max = LANDSCAPE_MAX_WIDTH,
                 ),
@@ -213,6 +213,10 @@ fun MainEntry(
 
     group.cast<BroadcastNetworkStatus.GroupInfo.Connected>()?.also { grp ->
       QRCodeEntry(
+          Modifier.fillUpToPortraitSize()
+              .widthIn(
+                  max = LANDSCAPE_MAX_WIDTH,
+              ),
           ssid = grp.ssid,
           password = grp.password,
           onDismiss = { viewModel.handleCloseQRCodeDialog() },
