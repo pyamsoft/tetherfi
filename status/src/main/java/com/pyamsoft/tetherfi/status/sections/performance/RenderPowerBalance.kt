@@ -179,6 +179,7 @@ internal fun LazyListScope.renderPowerBalance(
                   .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content),
           onClick = onShowPowerBalance,
+          enabled = isEditable,
       ) {
         Text(
             text = "Adjust Power Balance",
