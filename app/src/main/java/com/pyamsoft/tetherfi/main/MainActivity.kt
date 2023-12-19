@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
                     bugfix(
                         "Fix the QR code reader not being able to 'see' correctly in dark mode. Issue #251")
                     bugfix("Fix notification status getting reset when restarting the app")
+                    bugfix("Fix theme getting overwritten on orientation change")
                     change("Improve scrolling performance on the Hotspot page")
                     change(
                         "Improve hotspot performance by using unique resources instead of sharing with UI resources.")
