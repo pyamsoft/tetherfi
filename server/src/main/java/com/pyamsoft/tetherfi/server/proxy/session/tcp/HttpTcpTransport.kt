@@ -251,13 +251,14 @@ internal constructor(
 
       val urlData = getUrlAndPort(methodData.url)
       return ProxyRequest(
-          url = methodData.url,
-          host = urlData.hostName,
-          method = methodData.method,
-          port = urlData.port,
-          version = methodData.version,
-          raw = line,
-      )
+              url = methodData.url,
+              host = urlData.hostName,
+              method = methodData.method,
+              port = urlData.port,
+              version = methodData.version,
+              raw = line,
+          )
+          .also { Timber.d { "Proxy Request: $it" } }
     } catch (e: Throwable) {
       e.ifNotCancellation {
         Timber.e(e) { "Unable to parse request: $line" }
