@@ -69,8 +69,11 @@ class MainActivity : AppCompatActivity() {
                         "Improve hotspot performance by using unique resources instead of sharing with UI resources.")
                     change(
                         "Allow for configuring Hotspot performance to favor network speed versus battery life.")
-                    change(
-                        "Support assigning a custom name to a connected Client device in the Connections tab.")
+
+                    // NEXT
+                    //                    change(
+                    //                        "Support assigning a custom name to a connected Client
+                    // device in the Connections tab.")
                   }
                 },
         )
