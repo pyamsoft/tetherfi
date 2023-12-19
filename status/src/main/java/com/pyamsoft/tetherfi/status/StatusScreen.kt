@@ -37,6 +37,7 @@ import com.pyamsoft.pydroid.ui.util.fillUpToPortraitHeight
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.TestFeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -112,6 +113,11 @@ fun StatusScreen(
 
     // Jump links
     onJumpToHowTo: () -> Unit,
+
+    // Power Balance
+    onShowPowerBalance: () -> Unit,
+    onHidePowerBalance: () -> Unit,
+    onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
@@ -244,6 +250,7 @@ fun StatusScreen(
             onToggleBindProxyAll = onToggleBindProxyAll,
             onJumpToHowTo = onJumpToHowTo,
             featureFlags = featureFlags,
+            onShowPowerBalance = onShowPowerBalance,
         )
       }
     }
@@ -262,6 +269,8 @@ fun StatusScreen(
       onHideSetupError = onHideSetupError,
       onHideProxyError = onHideProxyError,
       onHideBroadcastError = onHideBroadcastError,
+      onHidePowerBalance = onHidePowerBalance,
+      onUpdatePowerBalance = onUpdatePowerBalance,
   )
 }
 
@@ -315,6 +324,9 @@ private fun PreviewStatusScreen(
       onHideBroadcastError = {},
       onShowProxyError = {},
       onHideProxyError = {},
+      onUpdatePowerBalance = {},
+      onHidePowerBalance = {},
+      onShowPowerBalance = {},
   )
 }
 

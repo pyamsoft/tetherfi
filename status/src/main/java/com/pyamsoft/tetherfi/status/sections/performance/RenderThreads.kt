@@ -51,6 +51,7 @@ internal fun LazyListScope.renderThreads(
     appName: String,
     isEditable: Boolean,
     state: StatusViewState,
+    onShowPowerBalance: () -> Unit,
 ) {
   item(
       contentType = RenderThreadsContentTypes.LABEL,
@@ -103,7 +104,7 @@ internal fun LazyListScope.renderThreads(
     ) {
       Text(
           modifier = itemModifier.padding(MaterialTheme.keylines.content),
-          text = "Thread Performance",
+          text = "Expert: Power Balance",
           style =
               MaterialTheme.typography.h6.copy(
                   fontWeight = FontWeight.W700,
@@ -136,7 +137,12 @@ internal fun LazyListScope.renderThreads(
                   .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content * 2),
           text =
-              """Adjust the Thread Pool constraints for $appName in the future here!"""
+              """This is for Advanced Users.
+                  |
+                  |You can adjust the performance and resource usage of the $appName Hotspot, which will adjust the number of virtual Threads allocated to the Hotspot Network.
+                  |
+                  |More Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.
+              """
                   .trimMargin(),
           style =
               MaterialTheme.typography.caption.copy(
@@ -169,10 +175,10 @@ internal fun LazyListScope.renderThreads(
                   .fillMaxWidth()
                   .padding(horizontal = MaterialTheme.keylines.content)
                   .padding(bottom = MaterialTheme.keylines.content),
-          onClick = { /* TODO */},
+          onClick = onShowPowerBalance,
       ) {
         Text(
-            text = "Adjust Thread Pool",
+            text = "Adjust Power Balance",
         )
       }
     }

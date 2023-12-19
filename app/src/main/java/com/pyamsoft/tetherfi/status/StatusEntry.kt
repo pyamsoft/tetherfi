@@ -199,8 +199,8 @@ fun StatusEntry(
         }
       },
       onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
-      onToggleKeepWakeLock = { viewModel.handleToggleProxyWakelock() },
-      onToggleKeepWifiLock = { viewModel.handleToggleProxyWifilock() },
+      onToggleKeepWakeLock = { viewModel.handleToggleProxyWakeLock() },
+      onToggleKeepWifiLock = { viewModel.handleToggleProxyWifiLock() },
       onSelectBand = { viewModel.handleChangeBand(it) },
       onRequestNotificationPermission = {
         scope.launch(context = Dispatchers.Default) {
@@ -222,5 +222,8 @@ fun StatusEntry(
       onHideProxyError = { viewModel.handleCloseProxyError() },
       onShowBroadcastError = { viewModel.handleOpenBroadcastError() },
       onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
+      onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
+      onHidePowerBalance = { viewModel.handleClosePowerBalance() },
+      onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
   )
 }

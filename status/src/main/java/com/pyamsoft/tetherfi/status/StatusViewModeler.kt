@@ -26,6 +26,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -75,6 +76,7 @@ internal constructor(
       var ignoreVpn: Boolean,
       var shutdownWithNoClients: Boolean,
       var proxyBind: Boolean,
+      var powerBalance: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
@@ -86,7 +88,8 @@ internal constructor(
         config.proxyBind &&
         config.ssid &&
         config.password &&
-        config.band) {
+        config.band &&
+        config.powerBalance) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
@@ -154,9 +157,18 @@ internal constructor(
         registry
             .registerProvider(KEY_SHOW_SETUP_ERROR) { state.isShowingSetupError.value }
             .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_POWER_BALANCE) { state.isShowingPowerBalance.value }
+            .also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
+    registry
+        .consumeRestored(KEY_SHOW_POWER_BALANCE)
+        ?.let { it as Boolean }
+        ?.also { state.isShowingPowerBalance.value = it }
+
     registry
         .consumeRestored(KEY_SHOW_NETWORK_ERROR)
         ?.let { it as Boolean }
@@ -225,6 +237,7 @@ internal constructor(
             ignoreVpn = false,
             shutdownWithNoClients = false,
             proxyBind = false,
+            powerBalance = false,
         )
 
     // Start loading
@@ -299,6 +312,21 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.proxyBind = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest power balance value
+    configPreferences.listenForPerformanceLimits().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { balance ->
+          s.powerBalance.value = balance
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.powerBalance = true
             markPreferencesLoaded(config)
           }
         }
@@ -459,12 +487,12 @@ internal constructor(
     configPreferences.setPort(portValue ?: 0)
   }
 
-  fun handleToggleProxyWakelock() {
+  fun handleToggleProxyWakeLock() {
     val newVal = state.keepWakeLock.updateAndGet { !it }
     servicePreferences.setWakeLock(newVal)
   }
 
-  fun handleToggleProxyWifilock() {
+  fun handleToggleProxyWifiLock() {
     val newVal = state.keepWifiLock.updateAndGet { !it }
     servicePreferences.setWiFiLock(newVal)
   }
@@ -510,6 +538,14 @@ internal constructor(
     state.isShowingProxyError.value = false
   }
 
+  fun handleOpenPowerBalance() {
+    state.isShowingPowerBalance.value = true
+  }
+
+  fun handleClosePowerBalance() {
+    state.isShowingPowerBalance.value = false
+  }
+
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
     serverPreferences.setStartIgnoreVpn(newVal)
@@ -525,9 +561,16 @@ internal constructor(
     serverPreferences.setProxyBindAll(newVal)
   }
 
+  fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
+    val newVal = state.powerBalance.updateAndGet { limit }
+    configPreferences.setServerPerformanceLimit(newVal)
+  }
+
   companion object {
     private const val KEY_SHOW_SETUP_ERROR = "key_show_setup_error"
     private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
     private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
+
+    private const val KEY_SHOW_POWER_BALANCE = "key_show_power_balance"
   }
 }

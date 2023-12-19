@@ -7,8 +7,8 @@ sealed interface ServerPerformanceLimit {
   val coroutineLimit: Int
 
   enum class Defaults(
-      val coroutineLimit: Int,
-  ) {
+      override val coroutineLimit: Int,
+  ) : ServerPerformanceLimit {
     UNBOUND(coroutineLimit = 0),
     BOUND_N_CPU(coroutineLimit = Runtime.getRuntime().availableProcessors()),
     BOUND_2N_CPU(coroutineLimit = 2 * BOUND_N_CPU.coroutineLimit),

@@ -67,6 +67,9 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Jump links
     onJumpToHowTo: () -> Unit,
+
+    // Power Balance
+    onShowPowerBalance: () -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = itemModifier,
@@ -93,6 +96,7 @@ internal fun LazyListScope.renderLoadedContent(
       appName = appName,
       state = state,
       featureFlags = featureFlags,
+      showNotificationSettings = showNotificationSettings,
       onDisableBatteryOptimizations = onOpenBatterySettings,
       onNotificationPermissionRequest = onRequestNotificationPermission,
   )
@@ -128,6 +132,7 @@ internal fun LazyListScope.renderLoadedContent(
       state = state,
       onToggleKeepWakeLock = onToggleKeepWakeLock,
       onToggleKeepWifiLock = onToggleKeepWifiLock,
+      onShowPowerBalance = onShowPowerBalance,
   )
 
   item(

@@ -1,6 +1,6 @@
 package com.pyamsoft.tetherfi.core
 
-import org.jetbrains.annotations.VisibleForTesting
+import androidx.annotation.VisibleForTesting
 
 @VisibleForTesting
 object TestFeatureFlags : FeatureFlags {

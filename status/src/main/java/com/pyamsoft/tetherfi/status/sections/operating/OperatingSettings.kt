@@ -42,6 +42,7 @@ internal fun LazyListScope.renderOperatingSettings(
     onDisableBatteryOptimizations: () -> Unit,
 
     // Notifications
+    showNotificationSettings: Boolean,
     onNotificationPermissionRequest: () -> Unit,
 ) {
   item(
@@ -68,15 +69,17 @@ internal fun LazyListScope.renderOperatingSettings(
     )
   }
 
-  item(
-      contentType = OperatingSettingsContentTypes.NOTIFICATIONS,
-  ) {
-    NotificationPerms(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        state = state,
-        isEditable = isEditable,
-        onRequest = onNotificationPermissionRequest,
-    )
+  if (showNotificationSettings) {
+    item(
+        contentType = OperatingSettingsContentTypes.NOTIFICATIONS,
+    ) {
+      NotificationPerms(
+          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+          state = state,
+          isEditable = isEditable,
+          onRequest = onNotificationPermissionRequest,
+      )
+    }
   }
 
   if (featureFlags.isTileUiEnabled) {

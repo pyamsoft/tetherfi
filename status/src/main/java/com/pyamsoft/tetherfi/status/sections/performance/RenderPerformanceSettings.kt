@@ -39,6 +39,9 @@ internal fun LazyListScope.renderPerformanceSettings(
     // Wake lock
     onToggleKeepWakeLock: () -> Unit,
     onToggleKeepWifiLock: () -> Unit,
+
+    // Power Balance
+    onShowPowerBalance: () -> Unit,
 ) {
   item(
       contentType = PerformanceSettingsContentTypes.LABEL,
@@ -67,6 +70,7 @@ internal fun LazyListScope.renderPerformanceSettings(
         isEditable = isEditable,
         appName = appName,
         state = state,
+        onShowPowerBalance = onShowPowerBalance,
     )
   }
 }
