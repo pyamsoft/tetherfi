@@ -46,7 +46,7 @@ private enum class RenderThreadsContentTypes {
   ADJUST,
 }
 
-internal fun LazyListScope.renderThreads(
+internal fun LazyListScope.renderPowerBalance(
     itemModifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,

@@ -65,7 +65,7 @@ internal fun LazyListScope.renderPerformanceSettings(
   )
 
   if (featureFlags.isThreadPerformanceEnabled) {
-    renderThreads(
+    renderPowerBalance(
         itemModifier = itemModifier,
         isEditable = isEditable,
         appName = appName,
