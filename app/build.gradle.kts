@@ -1,4 +1,3 @@
-import java.util.Properties
 
 /*
  * Copyright 2021 Peter Kenji Yamanaka
@@ -15,6 +14,8 @@ import java.util.Properties
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import java.util.Properties
 
 plugins {
   id("com.android.application")
