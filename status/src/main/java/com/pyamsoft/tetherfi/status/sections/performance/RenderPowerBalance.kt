@@ -139,7 +139,7 @@ internal fun LazyListScope.renderPowerBalance(
           text =
               """This is for Advanced Users.
                   |
-                  |You can adjust the performance and resource usage of the $appName Hotspot, which will adjust the number of virtual Threads allocated to the Hotspot Network.
+                  |You can adjust the performance and resource usage of the $appName Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.
                   |
                   |More Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.
               """
