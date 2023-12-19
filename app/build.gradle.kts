@@ -1,3 +1,5 @@
+import java.util.Properties
+
 /*
  * Copyright 2021 Peter Kenji Yamanaka
  *
@@ -56,10 +58,17 @@ android {
       storePassword = "android"
     }
     create("release") {
-      storeFile = file(project.findProperty("BUNDLE_STORE_FILE")?.toString() ?: "CANNOT BUILD")
-      keyAlias = project.findProperty("BUNDLE_KEY_ALIAS")?.toString() ?: "CANNOT BUILD"
-      keyPassword = project.findProperty("BUNDLE_KEY_PASSWD")?.toString() ?: "CANNOT BUILD"
-      storePassword = project.findProperty("BUNDLE_STORE_PASSWD")?.toString() ?: "CANNOT BUILD"
+      // For some reason with Gradle 8.5 and AGP 8.2.0 we need to load local.properties manually?
+      // https://stackoverflow.com/questions/21999829/how-do-i-read-properties-defined-in-local-properties-in-build-gradle
+      //
+      // Be sure to close the file after!
+      val properties =
+          rootProject.file("local.properties").reader().use { r -> Properties().apply { load(r) } }
+
+      storeFile = file(properties.getProperty("BUNDLE_STORE_FILE")?.toString() ?: "CANNOT BUILD")
+      keyAlias = properties.getProperty("BUNDLE_KEY_ALIAS")?.toString() ?: "CANNOT BUILD"
+      keyPassword = properties.getProperty("BUNDLE_KEY_PASSWD")?.toString() ?: "CANNOT BUILD"
+      storePassword = properties.getProperty("BUNDLE_STORE_PASSWD")?.toString() ?: "CANNOT BUILD"
     }
   }
 
