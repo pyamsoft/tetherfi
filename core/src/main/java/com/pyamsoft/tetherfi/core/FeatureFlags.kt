@@ -30,7 +30,4 @@ interface FeatureFlags {
    * https://developer.android.com/guide/components/activities/background-starts
    */
   val isTileUiEnabled: Boolean
-
-  /** Configure Thread Pool UI on status screen */
-  val isThreadPerformanceEnabled: Boolean
 }

@@ -28,6 +28,4 @@ internal constructor(
 ) : FeatureFlags {
 
   override val isTileUiEnabled = debug
-
-  override val isThreadPerformanceEnabled = debug
 }

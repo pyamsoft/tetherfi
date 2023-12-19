@@ -64,13 +64,11 @@ internal fun LazyListScope.renderPerformanceSettings(
       onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
 
-  if (featureFlags.isThreadPerformanceEnabled) {
-    renderPowerBalance(
-        itemModifier = itemModifier,
-        isEditable = isEditable,
-        appName = appName,
-        state = state,
-        onShowPowerBalance = onShowPowerBalance,
-    )
-  }
+  renderPowerBalance(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      onShowPowerBalance = onShowPowerBalance,
+  )
 }
