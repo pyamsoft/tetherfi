@@ -31,7 +31,6 @@ private enum class PerformanceSettingsContentTypes {
 
 internal fun LazyListScope.renderPerformanceSettings(
     itemModifier: Modifier = Modifier,
-    featureFlags: FeatureFlags,
     isEditable: Boolean,
     appName: String,
     state: StatusViewState,

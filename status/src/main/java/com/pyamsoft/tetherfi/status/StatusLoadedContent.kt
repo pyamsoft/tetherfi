@@ -126,7 +126,6 @@ internal fun LazyListScope.renderLoadedContent(
 
   renderPerformanceSettings(
       itemModifier = itemModifier,
-      featureFlags = featureFlags,
       isEditable = isEditable,
       appName = appName,
       state = state,
