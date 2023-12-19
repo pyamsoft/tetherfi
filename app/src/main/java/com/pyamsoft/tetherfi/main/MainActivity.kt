@@ -63,6 +63,10 @@ class MainActivity : AppCompatActivity() {
                   override val changelog = buildChangeLog {
                     bugfix(
                         "Fix the QR code reader not being able to 'see' correctly in dark mode. Issue #251")
+                    bugfix("Fix notification status getting reset when restarting the app")
+                    change("Improve scrolling performance on the Hotspot page")
+                    change(
+                        "Allow for configuring Hotspot performance to favor network speed versus battery life.")
                     change(
                         "Support assigning a custom name to a connected Client device in the Connections tab.")
                   }
