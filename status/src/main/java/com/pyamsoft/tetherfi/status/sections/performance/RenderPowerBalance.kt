@@ -146,7 +146,10 @@ internal fun LazyListScope.renderPowerBalance(
                   .trimMargin(),
           style =
               MaterialTheme.typography.caption.copy(
-                  color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
+                  color =
+                      MaterialTheme.colors.onSurface.copy(
+                          alpha = mediumAlpha,
+                      ),
               ),
       )
     }

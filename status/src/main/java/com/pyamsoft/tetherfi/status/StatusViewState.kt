@@ -94,7 +94,8 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val keepWakeLock = MutableStateFlow(false)
   override val keepWifiLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
-  override val powerBalance = MutableStateFlow<ServerPerformanceLimit>(ServerPerformanceLimit.Defaults.BOUND_N_CPU)
+  override val powerBalance =
+      MutableStateFlow<ServerPerformanceLimit>(ServerPerformanceLimit.Defaults.BOUND_N_CPU)
 
   override val isShowingSetupError = MutableStateFlow(false)
   override val isShowingNetworkError = MutableStateFlow(false)
