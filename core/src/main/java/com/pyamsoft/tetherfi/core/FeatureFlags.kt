@@ -31,8 +31,6 @@ interface FeatureFlags {
    */
   val isTileUiEnabled: Boolean
 
-  /**
-   * Configure Thread Pool UI on status screen
-   */
+  /** Configure Thread Pool UI on status screen */
   val isThreadPerformanceEnabled: Boolean
 }

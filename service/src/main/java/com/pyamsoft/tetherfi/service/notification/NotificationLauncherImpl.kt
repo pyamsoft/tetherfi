@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
@@ -52,6 +53,10 @@ internal constructor(
 
   private val showing = MutableStateFlow(false)
 
+  private val clientCount = MutableStateFlow(0)
+  private val blockCount = MutableStateFlow(0)
+  private val runningStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+
   private suspend fun onStatusUpdated(
       status: RunningStatus,
       clientCount: Int,
@@ -80,23 +85,27 @@ internal constructor(
     }
   }
 
+  @CheckResult
+  private fun <T> MutableStateFlow<T>.compareCurrent(update: T): Boolean {
+    val current = this.value
+    if (current != update) {
+      this.value = update
+      return true
+    }
+
+    return false
+  }
+
+  private suspend fun updateNotification() {
+    onStatusUpdated(
+        status = runningStatus.value,
+        clientCount = clientCount.value,
+        blockCount = blockCount.value,
+    )
+  }
+
   private fun CoroutineScope.watchNotification() {
     val scope = this
-
-    // These are updated in line
-    var clientCount = 0
-    var blockCount = 0
-    var runningStatus: RunningStatus = RunningStatus.NotRunning
-
-    // Private scoped is kind of a hack but here we are
-    // I just don't want to declare globals outside of this scope as they are unreliable
-    suspend fun updateNotification() {
-      onStatusUpdated(
-          status = runningStatus,
-          clientCount = clientCount,
-          blockCount = blockCount,
-      )
-    }
 
     // Supervisor job will cancel all children
     scope.launch {
@@ -108,8 +117,7 @@ internal constructor(
           enforcer.assertOffMainThread()
 
           f.collect { s ->
-            if (runningStatus != s) {
-              runningStatus = s
+            if (runningStatus.compareCurrent(s)) {
               updateNotification()
             }
           }
@@ -125,8 +133,7 @@ internal constructor(
               enforcer.assertOffMainThread()
 
               f.collect { c ->
-                if (clientCount != c) {
-                  clientCount = c
+                if (clientCount.compareCurrent(c)) {
                   updateNotification()
                 }
               }
@@ -142,8 +149,7 @@ internal constructor(
               enforcer.assertOffMainThread()
 
               f.collect { b ->
-                if (blockCount != b) {
-                  blockCount = b
+                if (blockCount.compareCurrent(b)) {
                   updateNotification()
                 }
               }
@@ -152,11 +158,19 @@ internal constructor(
     }
   }
 
+  private fun reset() {
+    clientCount.value = 0
+    blockCount.value = 0
+    runningStatus.value = RunningStatus.NotRunning
+  }
+
   private fun stop(service: Service) {
     enforcer.assertOnMainThread()
 
     Timber.d { "Stop foreground notification" }
     notifier.stopForeground(service, NOTIFICATION_ID)
+
+    reset()
   }
 
   override suspend fun update() =
@@ -166,18 +180,7 @@ internal constructor(
           return@withContext
         }
 
-        val data = DEFAULT_DATA
-
-        // Initialize with blank data first
-        notifier
-            .show(
-                id = NOTIFICATION_ID,
-                channelInfo = CHANNEL_INFO,
-                notification = data,
-            )
-            .also { Timber.d { "Update notification: $it: $data" } }
-
-        return@withContext
+        updateNotification()
       }
 
   override suspend fun startForeground(service: Service) =
@@ -188,6 +191,8 @@ internal constructor(
           try {
             // Hold this here until the coroutine is cancelled
             coroutineScope {
+              reset()
+
               withContext(context = Dispatchers.Main) {
                 val data = DEFAULT_DATA
 
