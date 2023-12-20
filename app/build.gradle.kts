@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2021 Peter Kenji Yamanaka
  *

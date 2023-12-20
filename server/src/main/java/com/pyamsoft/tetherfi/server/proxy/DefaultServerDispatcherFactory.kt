@@ -8,8 +8,10 @@ import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 
 @Singleton
@@ -73,5 +75,23 @@ internal constructor(
   private data class DefaultServerDispatchers(
       override val primary: CoroutineDispatcher,
       override val sideEffect: CoroutineDispatcher,
-  ) : ServerDispatcher
+  ) : ServerDispatcher {
+
+    private fun CoroutineDispatcher.shutdown() {
+      val self = this
+      if (self is ExecutorCoroutineDispatcher) {
+        self.close()
+      } else {
+        self.cancel()
+      }
+    }
+
+    override fun shutdown() {
+      Timber.d { "Shutdown Primary Dispatcher" }
+      primary.shutdown()
+
+      Timber.d { "Shutdown SideEffect Dispatcher" }
+      sideEffect.shutdown()
+    }
+  }
 }

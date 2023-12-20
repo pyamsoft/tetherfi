@@ -32,13 +32,10 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -95,12 +92,11 @@ internal constructor(
   private suspend fun handleServerLoopError(
       e: Throwable,
       type: SharedProxy.Type,
-      serverDispatcher: ServerDispatcher,
   ) {
     e.ifNotCancellation {
       Timber.e(e) { "Error running server loop: ${type.name}" }
 
-      reset(serverDispatcher = serverDispatcher)
+      reset()
       status.set(RunningStatus.ProxyError(e))
       shutdownBus.emit(ServerShutdownEvent)
     }
@@ -126,7 +122,6 @@ internal constructor(
       handleServerLoopError(
           e = e,
           type = type,
-          serverDispatcher = serverDispatcher,
       )
     }
   }
@@ -166,32 +161,14 @@ internal constructor(
     }
   }
 
-  private fun reset(serverDispatcher: ServerDispatcher?) {
+  private fun reset() {
     enforcer.assertOffMainThread()
 
-    serverDispatcher?.also { stopDispatcher(it) }
     clientEraser.clear()
     resetState()
   }
 
-  private fun CoroutineDispatcher.shutdown() {
-    val self = this
-    if (self is ExecutorCoroutineDispatcher) {
-      self.close()
-    } else {
-      self.cancel()
-    }
-  }
-
-  private fun stopDispatcher(serverDispatcher: ServerDispatcher) {
-    Timber.d { "Shutdown Primary Dispatcher" }
-    serverDispatcher.primary.shutdown()
-
-    Timber.d { "Shutdown SideEffect Dispatcher" }
-    serverDispatcher.sideEffect.shutdown()
-  }
-
-  private suspend fun shutdown(serverDispatcher: ServerDispatcher?) =
+  private suspend fun broadcastProxyStop() =
       withContext(context = NonCancellable) {
         enforcer.assertOffMainThread()
 
@@ -200,7 +177,7 @@ internal constructor(
           status.set(RunningStatus.Stopping)
         }
 
-        reset(serverDispatcher = serverDispatcher)
+        reset()
         status.set(RunningStatus.NotRunning)
       }
 
@@ -265,11 +242,13 @@ internal constructor(
   }
 
   override suspend fun start(connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>) =
-      withContext(context = Dispatchers.Default) {
+      withContext(context = Dispatchers.IO) {
         // Scope local
         val mutex = Mutex()
         var job: Job? = null
-        var dispatcher: ServerDispatcher? = null
+
+        // Create the server dispatcher here that future proxy bits will use
+        val serverDispatcher = serverDispatcherFactory.create()
 
         // Watch the connection status
         try {
@@ -285,16 +264,13 @@ internal constructor(
                 is BroadcastNetworkStatus.ConnectionInfo.Connected -> {
                   // Connected is good, we can launch
                   // This will re-launch any time the connection info changes
+
                   mutex.withLock {
                     job?.stopProxyLoop()
                     job = null
 
-                    reset(serverDispatcher = dispatcher)
-                    dispatcher = null
-
-                    // Hold the dispatcher to cancel it later
-                    val serverDispatcher = serverDispatcherFactory.create()
-                    dispatcher = serverDispatcher
+                    // Reset old
+                    reset()
 
                     // Hold onto the job here so we can cancel it if we need to
                     job =
@@ -314,8 +290,7 @@ internal constructor(
                     job?.stopProxyLoop()
                     job = null
                   }
-                  shutdown(serverDispatcher = dispatcher)
-                  dispatcher = null
+                  broadcastProxyStop()
                 }
                 is BroadcastNetworkStatus.ConnectionInfo.Error -> {
                   Timber.w { "Connection ERROR, shut down Proxy" }
@@ -325,8 +300,7 @@ internal constructor(
                     job?.stopProxyLoop()
                     job = null
                   }
-                  shutdown(serverDispatcher = dispatcher)
-                  dispatcher = null
+                  broadcastProxyStop()
                 }
                 is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
@@ -340,13 +314,17 @@ internal constructor(
         } finally {
           withContext(context = NonCancellable) {
             Timber.d { "Shutting down proxy..." }
+
+            // Kill proxy job
             mutex.withLock {
               job?.stopProxyLoop()
               job = null
             }
+            // Stop dispatcher looper
+            serverDispatcher.shutdown()
 
-            shutdown(serverDispatcher = dispatcher)
-            dispatcher = null
+            // Broadcast server shutdown
+            broadcastProxyStop()
 
             Timber.d { "Proxy Server is Done!" }
           }

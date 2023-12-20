@@ -11,6 +11,9 @@ interface ServerDispatcher {
   /** Side effect dispatcher, allocated fewer threads */
   val sideEffect: CoroutineDispatcher
 
+  /** Shutdown dispatchers */
+  fun shutdown()
+
   interface Factory {
 
     @CheckResult suspend fun create(): ServerDispatcher
