@@ -63,7 +63,6 @@ internal constructor(
     val dispatcher = newThreadDispatcher()
 
     return DefaultServerDispatchers(
-        isPrimaryUnbound = primaryLimit.coroutineLimit <= 0,
         primary = dispatcher.limitDispatcher(nThreads = primaryLimit.coroutineLimit),
 
         // TODO: Scale somehow based on primary? or just keep as half_cpu OR 4
@@ -74,6 +73,5 @@ internal constructor(
   private data class DefaultServerDispatchers(
       override val primary: CoroutineDispatcher,
       override val sideEffect: CoroutineDispatcher,
-      override val isPrimaryUnbound: Boolean,
   ) : ServerDispatcher
 }

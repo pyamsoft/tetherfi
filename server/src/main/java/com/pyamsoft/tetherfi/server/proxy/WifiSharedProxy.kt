@@ -184,12 +184,8 @@ internal constructor(
   }
 
   private fun stopDispatcher(serverDispatcher: ServerDispatcher) {
-    if (serverDispatcher.isPrimaryUnbound) {
-      Timber.w { "Can't close an unbounded Primary Dispatcher" }
-    } else {
-      Timber.d { "Shutdown Primary Dispatcher" }
-      serverDispatcher.primary.shutdown()
-    }
+    Timber.d { "Shutdown Primary Dispatcher" }
+    serverDispatcher.primary.shutdown()
 
     Timber.d { "Shutdown SideEffect Dispatcher" }
     serverDispatcher.sideEffect.shutdown()
