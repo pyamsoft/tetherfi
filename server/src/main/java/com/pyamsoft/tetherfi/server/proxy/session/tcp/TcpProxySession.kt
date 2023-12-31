@@ -27,7 +27,8 @@ import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.usingSocket
+import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
+import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.openReadChannel
@@ -66,7 +67,9 @@ internal constructor(
   ): T {
     enforcer.assertOffMainThread()
 
-    return usingSocket(serverDispatcher.primary) { rawSocket ->
+    return usingSocketBuilder(serverDispatcher.primary) { builder ->
+      tagSocket()
+
       // We dont actually use the socket tls() method here since we are not a TLS server
       // We do the CONNECT based workaround to handle HTTPS connections
       val remote =
@@ -75,7 +78,7 @@ internal constructor(
               port = request.port,
           )
 
-      val socket = rawSocket.tcp().connect(remoteAddress = remote)
+      val socket = builder.tcp().connect(remoteAddress = remote)
       try {
         block(socket)
       } finally {

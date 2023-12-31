@@ -23,6 +23,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
@@ -73,6 +74,9 @@ internal constructor(
 
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = serverDispatcher.primary) {
+        // Tag sockets for Android O strict mode
+        tagSocket()
+
         val localAddress =
             getServerAddress(
                 hostName = getProxyAddress(),

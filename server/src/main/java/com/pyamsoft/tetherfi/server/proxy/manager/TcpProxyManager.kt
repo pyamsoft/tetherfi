@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
+import android.net.TrafficStats
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
@@ -23,6 +24,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
@@ -75,6 +77,9 @@ internal constructor(
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = serverDispatcher.primary) {
+        // Tag sockets for Android O strict mode
+        tagSocket()
+
         val localAddress =
             getServerAddress(
                 hostName = getProxyAddress(),

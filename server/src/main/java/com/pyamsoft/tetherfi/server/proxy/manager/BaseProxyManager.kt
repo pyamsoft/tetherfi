@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
-import com.pyamsoft.tetherfi.server.proxy.usingSocket
+import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
@@ -73,8 +73,8 @@ protected constructor(
       onOpened: () -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
-        return@withContext usingSocket(serverDispatcher.primary) { socket ->
-          val server = openServer(builder = socket)
+        return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
+          val server = openServer(builder = builder)
           try {
             onOpened()
             runServer(server)
