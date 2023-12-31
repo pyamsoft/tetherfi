@@ -97,8 +97,8 @@ fun QRCodeScreen(
                     // QR Code needs a "quiet zone" in dark mode
                     // https://github.com/pyamsoft/tetherfi/issues/251
                     if (w > 0) {
-                      val quietZoneSize = (1.0F / w.toFloat() * 8).toInt()
-                      val quietZoneDp = density.run { quietZoneSize.toDp() }
+                      val qz = (1.0F / w.toFloat() * 8).toInt()
+                      val quietZoneDp = density.run { qz.toDp() }
                       if (quietZoneDp >= contentDp) {
                         setQuietZoneSize(quietZoneDp)
                       } else {
