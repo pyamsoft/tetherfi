@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.core
 
+import androidx.annotation.CheckResult
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -27,5 +28,18 @@ internal constructor(
     @Named("debug") private val debug: Boolean,
 ) : FeatureFlags {
 
-  override val isTileUiEnabled = debug
+  override val isUdpProxyEnabled = flag { debug }
+
+  override val isTileUiEnabled = flag { debug }
+
+  companion object {
+
+    /** Set this false to turn off all feature flags */
+    private const val IS_FEATURE_FLAGS_ENABLED = true
+
+    @CheckResult
+    private inline fun flag(block: () -> Boolean): Boolean {
+      return IS_FEATURE_FLAGS_ENABLED && block()
+    }
+  }
 }

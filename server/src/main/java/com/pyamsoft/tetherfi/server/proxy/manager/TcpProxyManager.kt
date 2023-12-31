@@ -83,7 +83,13 @@ internal constructor(
                 verifyHostName = true,
             )
         Timber.d { "Bind TCP server to local address: $localAddress" }
-        return@withContext builder.tcp().bind(localAddress = localAddress)
+        return@withContext builder
+            .tcp()
+            .configure {
+              reuseAddress = true
+              reusePort = true
+            }
+            .bind(localAddress = localAddress)
       }
 
   override suspend fun runServer(server: ServerSocket) =

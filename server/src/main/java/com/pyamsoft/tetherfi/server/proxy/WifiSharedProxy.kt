@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
@@ -55,6 +56,7 @@ internal class WifiSharedProxy
 internal constructor(
     @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
     @ServerInternalApi private val factory: ProxyManager.Factory,
+    private val featureFlags: FeatureFlags,
     private val enforcer: ThreadEnforcer,
     private val clientEraser: ClientEraser,
     private val startedClients: StartedClients,
@@ -149,8 +151,7 @@ internal constructor(
       )
     }
 
-    // TODO: UDP support
-    if (FLAG_ENABLE_UDP) {
+    if (featureFlags.isUdpProxyEnabled) {
       launch(context = Dispatchers.Default) {
         beginProxyLoop(
             type = SharedProxy.Type.UDP,
@@ -184,7 +185,7 @@ internal constructor(
   private fun CoroutineScope.watchServerReadyStatus() {
     // When all proxy bits declare they are ready, the proxy status is "ready"
     overallState
-        .map { it.isReady() }
+        .map { it.isReady(featureFlags) }
         .filter { it }
         .also { f ->
           launch(context = Dispatchers.Default) {
@@ -337,16 +338,12 @@ internal constructor(
   ) {
 
     @CheckResult
-    fun isReady(): Boolean {
+    fun isReady(featureFlags: FeatureFlags): Boolean {
       if (!tcp) {
         return false
       }
 
-      return if (FLAG_ENABLE_UDP) udp else true
+      return if (featureFlags.isUdpProxyEnabled) udp else true
     }
-  }
-
-  companion object {
-    private const val FLAG_ENABLE_UDP = false
   }
 }

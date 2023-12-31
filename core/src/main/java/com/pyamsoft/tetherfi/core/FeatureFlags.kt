@@ -19,6 +19,13 @@ package com.pyamsoft.tetherfi.core
 interface FeatureFlags {
 
   /**
+   * Support proxy for UDP
+   *
+   * UDP support is currently incomplete so this is flagged off in all non-dev builds
+   */
+  val isUdpProxyEnabled: Boolean
+
+  /**
    * Tile UI on Status Screen
    *
    * If we don't get FGS from Google, the TileService may be able to keep our app at a "foreground

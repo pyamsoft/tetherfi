@@ -81,7 +81,13 @@ internal constructor(
                 verifyHostName = true,
             )
         Timber.d { "Bind UDP server to local address: $localAddress" }
-        return@withContext builder.udp().bind(localAddress = localAddress)
+        return@withContext builder
+            .udp()
+            .configure {
+              reuseAddress = true
+              reusePort = true
+            }
+            .bind(localAddress = localAddress)
       }
 
   override suspend fun runServer(server: BoundDatagramSocket) =
