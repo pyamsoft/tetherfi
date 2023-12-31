@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import android.net.TrafficStats
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
