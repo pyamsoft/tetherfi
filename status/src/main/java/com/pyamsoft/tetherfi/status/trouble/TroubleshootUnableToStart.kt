@@ -106,6 +106,12 @@ internal fun TroubleshootUnableToStart(
           text = "• The Hotspot port number must be between 1025 and 65000",
           style = MaterialTheme.typography.body1,
       )
+
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = "• Try enabling the \"Stubborn Proxy\" tweak to see if this helps",
+            style = MaterialTheme.typography.body1,
+        )
     }
   }
 }

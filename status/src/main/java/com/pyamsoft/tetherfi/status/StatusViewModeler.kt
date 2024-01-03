@@ -76,6 +76,7 @@ internal constructor(
       var ignoreVpn: Boolean,
       var shutdownWithNoClients: Boolean,
       var proxyBind: Boolean,
+      var proxyYolo: Boolean,
       var powerBalance: Boolean,
   )
 
@@ -85,10 +86,11 @@ internal constructor(
         config.wakeLock &&
         config.ignoreVpn &&
         config.shutdownWithNoClients &&
-        config.proxyBind &&
         config.ssid &&
         config.password &&
         config.band &&
+        config.proxyBind &&
+        config.proxyYolo &&
         config.powerBalance) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
@@ -237,6 +239,7 @@ internal constructor(
             ignoreVpn = false,
             shutdownWithNoClients = false,
             proxyBind = false,
+            proxyYolo = false,
             powerBalance = false,
         )
 
@@ -307,11 +310,26 @@ internal constructor(
     serverPreferences.listenForProxyBindAll().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { bind ->
-          s.isBindProxyAll.value = bind
+          s.isProxyBindAll.value = bind
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.proxyBind = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest proxy yolo value
+    serverPreferences.listenProxyYolo().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { yolo ->
+          s.isProxyYolo.value = yolo
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.proxyYolo = true
             markPreferencesLoaded(config)
           }
         }
@@ -556,9 +574,14 @@ internal constructor(
     serverPreferences.setShutdownWithNoClients(newVal)
   }
 
-  fun handleToggleBindProxyAll() {
-    val newVal = state.isBindProxyAll.updateAndGet { !it }
+  fun handleToggleProxyBindAll() {
+    val newVal = state.isProxyBindAll.updateAndGet { !it }
     serverPreferences.setProxyBindAll(newVal)
+  }
+
+  fun handleToggleProxyYolo() {
+    val newVal = state.isProxyYolo.updateAndGet { !it }
+    serverPreferences.setProxyYolo(newVal)
   }
 
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {

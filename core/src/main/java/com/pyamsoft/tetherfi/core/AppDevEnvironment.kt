@@ -36,6 +36,7 @@ class AppDevEnvironment @Inject internal constructor() {
 
   val isBroadcastFakeError = MutableStateFlow(false)
   val isProxyFakeError = MutableStateFlow(false)
+  val isYoloError = MutableStateFlow(false)
 
   @get:CheckResult
   val group =
@@ -79,6 +80,10 @@ class AppDevEnvironment @Inject internal constructor() {
 
   fun updateProxy(isError: Boolean) {
     isProxyFakeError.value = isError
+  }
+
+  fun updateYolo(isError: Boolean) {
+    isYoloError.value = isError
   }
 
   @Stable

@@ -42,7 +42,8 @@ private enum class RenderTweakCardContentTypes {
   EXPLAIN,
   IGNORE_VPN,
   KILL_ON_IDLE,
-  BIND_ALL
+  PROXY_BIND_ALL,
+  PROXY_YOLO,
 }
 
 internal fun LazyListScope.renderTweakCard(
@@ -52,7 +53,8 @@ internal fun LazyListScope.renderTweakCard(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleBindProxyAll: () -> Unit,
+    onToggleProxyBindAll: () -> Unit,
+    onToggleProxyYolo: () -> Unit,
 ) {
   item(
       contentType = RenderTweakCardContentTypes.LABEL,
@@ -211,16 +213,57 @@ internal fun LazyListScope.renderTweakCard(
   }
 
   item(
-      contentType = RenderTweakCardContentTypes.BIND_ALL,
+      contentType = RenderTweakCardContentTypes.PROXY_BIND_ALL,
   ) {
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
-    val isBindProxyAll by state.isBindProxyAll.collectAsStateWithLifecycle()
-    val bindProxyAllColor by
+    val isProxyBindAll by state.isProxyBindAll.collectAsStateWithLifecycle()
+    val proxyBindAllColor by
         rememberCheckableColor(
             label = "Bind Proxy to All Interfaces",
-            condition = isBindProxyAll,
+            condition = isProxyBindAll,
+            selectedColor = MaterialTheme.colors.primary,
+        )
+
+    BetterSurface(
+        modifier =
+            Modifier.sideBorders(
+                strokeWidth = 2.dp,
+                color =
+                    MaterialTheme.colors.primary.copy(
+                        alpha = mediumAlpha,
+                    ),
+            ),
+        elevation = CardDefaults.Elevation,
+    ) {
+      ToggleSwitch(
+          modifier = itemModifier,
+          highAlpha = highAlpha,
+          mediumAlpha = mediumAlpha,
+          isEditable = isEditable,
+          color = proxyBindAllColor,
+          checked = isProxyBindAll,
+          title = "Bind Proxy to All Interfaces",
+          description =
+              """If $appName has problems launching the Proxy but no problems with the Broadcast, you can try this tweak to have the hotspot bind to all interfaces, which might avoid the problem."""
+                  .trimMargin(),
+          onClick = onToggleProxyBindAll,
+      )
+    }
+  }
+
+  item(
+      contentType = RenderTweakCardContentTypes.PROXY_YOLO,
+  ) {
+    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
+
+    val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
+    val proxyYoloColor by
+        rememberCheckableColor(
+            label = "Stubborn Proxy",
+            condition = isProxyYolo,
             selectedColor = MaterialTheme.colors.primary,
         )
 
@@ -246,13 +289,15 @@ internal fun LazyListScope.renderTweakCard(
           highAlpha = highAlpha,
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
-          color = bindProxyAllColor,
-          checked = isBindProxyAll,
-          title = "Bind Proxy to All Interfaces",
+          color = proxyYoloColor,
+          checked = isProxyYolo,
+          title = "Stubborn Proxy",
           description =
-              """If $appName has problems launching the Proxy but no problems with the Broadcast, you can try this tweak to have the hotspot bind to all interfaces, which might avoid the problem."""
+              """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
+                    |
+                    |Enabling this option lets $appName ignore these errors and constantly keep trying. Yolo."""
                   .trimMargin(),
-          onClick = onToggleBindProxyAll,
+          onClick = onToggleProxyYolo,
       )
     }
   }

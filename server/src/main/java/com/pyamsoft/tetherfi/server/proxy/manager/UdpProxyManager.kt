@@ -41,6 +41,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<UdpProxyData>,
     private val hostName: String,
+    private val port: Int,
     serverDispatcher: ServerDispatcher,
 ) :
     BaseProxyManager<BoundDatagramSocket>(
@@ -80,7 +81,7 @@ internal constructor(
         val localAddress =
             getServerAddress(
                 hostName = getProxyAddress(),
-                port = 0,
+                port = port,
                 verifyPort = false,
                 verifyHostName = true,
             )

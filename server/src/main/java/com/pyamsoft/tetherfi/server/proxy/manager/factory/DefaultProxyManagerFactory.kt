@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -43,6 +44,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val serverPreferences: ServerPreferences,
     private val configPreferences: ConfigPreferences,
+    private val appEnvironment: AppDevEnvironment,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -61,21 +63,25 @@ internal constructor(
         hostName = info.hostName,
         port = port,
         serverDispatcher = dispatcher,
+        appEnvironment = appEnvironment,
     )
   }
 
   @CheckResult
-  private fun createUdp(
+  private suspend fun createUdp(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       dispatcher: ServerDispatcher,
   ): ProxyManager {
     enforcer.assertOffMainThread()
+
+    val port = configPreferences.listenForPortChanges().first()
 
     return UdpProxyManager(
         preferences = serverPreferences,
         enforcer = enforcer,
         session = udpSession,
         hostName = info.hostName,
+        port = port,
         serverDispatcher = dispatcher,
     )
   }

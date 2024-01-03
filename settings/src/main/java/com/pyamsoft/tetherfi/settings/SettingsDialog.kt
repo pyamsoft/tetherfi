@@ -44,6 +44,7 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.ui.DialogToolbar
 
 private enum class SettingsContentTypes {
+  DEBUG_YOLO_ERROR,
   DEBUG_BROADCAST_ERROR,
   DEBUG_PROXY_ERROR,
   DEBUG_GROUP_EMPTY,
@@ -152,6 +153,19 @@ private fun LazyListScope.renderExtraDebugContent(
     itemModifier: Modifier = Modifier,
     appEnvironment: AppDevEnvironment,
 ) {
+  item(
+      contentType = SettingsContentTypes.DEBUG_YOLO_ERROR,
+  ) {
+    val isYoloError by appEnvironment.isYoloError.collectAsStateWithLifecycle()
+    DebugItem(
+        modifier = itemModifier,
+        title = "Force TCP Server Error (for Stubborn Proxy)",
+        description = "Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)",
+        checked = isYoloError,
+        onCheckedChange = { appEnvironment.updateYolo(it) },
+    )
+  }
+
   item(
       contentType = SettingsContentTypes.DEBUG_BROADCAST_ERROR,
   ) {

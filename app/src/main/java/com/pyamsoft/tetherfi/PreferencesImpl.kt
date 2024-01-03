@@ -64,7 +64,7 @@ internal constructor(
 
   private val scope by lazy {
     CoroutineScope(
-        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
+        context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name),
     )
   }
 
@@ -103,18 +103,18 @@ internal constructor(
   }
 
   override fun listenForWakeLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
+      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
   override fun setWakeLock(keep: Boolean) = setPreference { putBoolean(WAKE_LOCK, keep) }
 
   override fun listenForWiFiLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.Default)
+      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
 
   override fun setWiFiLock(keep: Boolean) = setPreference { putBoolean(WIFI_LOCK, keep) }
 
   override fun listenForSsidChanges(): Flow<String> =
       preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun setSsid(ssid: String) = setPreference { putString(SSID, ssid) }
 
@@ -127,22 +127,21 @@ internal constructor(
               }
             }
           }
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun setPassword(password: String) = setPreference {
     preferences.updatePassword(password)
   }
 
   override fun listenForPortChanges(): Flow<Int> =
-      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }
-          .flowOn(context = Dispatchers.Default)
+      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }.flowOn(context = Dispatchers.IO)
 
   override fun setPort(port: Int) = setPreference { putInt(PORT, port) }
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun setNetworkBand(band: ServerNetworkBand) = setPreference {
     putString(NETWORK_BAND, band.name)
@@ -150,7 +149,7 @@ internal constructor(
 
   override fun listenForStartIgnoreVpn(): Flow<Boolean> =
       preferenceBooleanFlow(START_IGNORE_VPN, false) { preferences }
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun setStartIgnoreVpn(ignore: Boolean) = setPreference {
     putBoolean(START_IGNORE_VPN, ignore)
@@ -158,17 +157,21 @@ internal constructor(
 
   override fun listenForShutdownWithNoClients(): Flow<Boolean> =
       preferenceBooleanFlow(SHUTDOWN_NO_CLIENTS, false) { preferences }
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun setShutdownWithNoClients(shutdown: Boolean) = setPreference {
     putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
   override fun listenForProxyBindAll(): Flow<Boolean> =
-      preferenceBooleanFlow(PROXY_BIND_ALL, false) { preferences }
-          .flowOn(context = Dispatchers.Default)
+      preferenceBooleanFlow(PROXY_BIND_ALL, false) { preferences }.flowOn(context = Dispatchers.IO)
 
   override fun setProxyBindAll(bind: Boolean) = setPreference { putBoolean(PROXY_BIND_ALL, bind) }
+
+  override fun listenProxyYolo(): Flow<Boolean> =
+      preferenceBooleanFlow(PROXY_YOLO_MODE, false) { preferences }.flowOn(context = Dispatchers.IO)
+
+  override fun setProxyYolo(yolo: Boolean) = setPreference { putBoolean(PROXY_YOLO_MODE, yolo) }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -213,7 +216,7 @@ internal constructor(
             }
           }
           // Need this or we run on the main thread
-          .flowOn(context = Dispatchers.Default)
+          .flowOn(context = Dispatchers.IO)
 
   override fun markHotspotUsed() = updatePreference {
     if (!isInAppRatingAlreadyShown()) {
@@ -303,6 +306,7 @@ internal constructor(
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
     private const val PROXY_BIND_ALL = "key_proxy_bind_all_1"
+    private const val PROXY_YOLO_MODE = "key_proxy_yolo_mode_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
   }

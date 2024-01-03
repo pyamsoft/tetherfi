@@ -35,7 +35,8 @@ internal fun LazyListScope.renderTweaks(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleBindProxyAll: () -> Unit,
+    onToggleProxyBindAll: () -> Unit,
+    onToggleProxyYolo: () -> Unit,
 ) {
   item(
       contentType = BehaviorTweaksContentTypes.LABEL,
@@ -56,6 +57,7 @@ internal fun LazyListScope.renderTweaks(
       state = state,
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-      onToggleBindProxyAll = onToggleBindProxyAll,
+      onToggleProxyBindAll = onToggleProxyBindAll,
+      onToggleProxyYolo = onToggleProxyYolo,
   )
 }

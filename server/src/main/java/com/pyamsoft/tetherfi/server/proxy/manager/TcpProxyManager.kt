@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
@@ -29,8 +30,11 @@ import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
+import java.io.IOException
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -38,6 +42,7 @@ import kotlinx.coroutines.withContext
 
 internal class TcpProxyManager
 internal constructor(
+    private val appEnvironment: AppDevEnvironment,
     private val preferences: ServerPreferences,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
@@ -96,6 +101,40 @@ internal constructor(
             .bind(localAddress = localAddress)
       }
 
+  @CheckResult
+  private suspend fun CoroutineScope.ensureAcceptedConnection(server: ServerSocket): Socket {
+    while (isActive && !server.isClosed) {
+      try {
+        if (appEnvironment.isYoloError.first()) {
+          Timber.w { "In YOLO mode, we simulate an IOException after 3 seconds of waiting" }
+          delay(3.seconds)
+          throw IOException("YOLO Mode Test Error!")
+        }
+
+        // This can fail with an IOException
+        // No idea why (Java things)
+        // but KTOR seems to fix this by just "ignoring" the problem and trying again
+        // so that's what we do in YOLO mode
+        // https://github.com/ktorio/ktor/commit/634ffb3e6ae07e2979af16a42ce274aca1407cf9
+        return server.accept()
+      } catch (e: IOException) {
+        Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
+        // If we are in Yolo mode, just continue
+        if (preferences.listenProxyYolo().first()) {
+          Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!" }
+          continue
+        } else {
+          // Otherwise, we treat this error as a no-no
+          Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
+          throw e
+        }
+      }
+    }
+
+    // How did you get here?
+    throw IllegalStateException("TCP Proxy failed to grab a socket correctly")
+  }
+
   override suspend fun runServer(server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
         Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
@@ -103,7 +142,7 @@ internal constructor(
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (isActive && !server.isClosed) {
           // We must close the connection in the launch{} after exchange is over
-          val connection = server.accept()
+          val connection = ensureAcceptedConnection(server)
 
           // Run this server loop off thread so we can handle multiple connections at once.
           launch(context = serverDispatcher.primary) {
