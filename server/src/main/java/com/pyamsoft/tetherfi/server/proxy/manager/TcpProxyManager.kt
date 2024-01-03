@@ -107,6 +107,31 @@ internal constructor(
             .bind(localAddress = localAddress)
       }
 
+  private suspend fun prepareToTryAgainOrThrow(e: IOException) {
+    Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
+    // If we are in Yolo mode, just continue
+    val canTryAgain =
+        preferences.listenProxyYolo().first() &&
+            proxyFailCount.value < PROXY_ACCEPT_TOO_MANY_FAILURES
+    if (canTryAgain) {
+      proxyFailCount.update { it + 1 }
+      Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!" }
+    } else {
+      // Get and reset
+      val oldFailCount = proxyFailCount.getAndUpdate { 0 }
+      if (oldFailCount >= PROXY_ACCEPT_TOO_MANY_FAILURES) {
+
+        // Otherwise, we treat this error as a no-no
+        Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(" }
+        throw IOException("Too many failed connection attempts.", e)
+      } else {
+        // Otherwise, we treat this error as a no-no
+        Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
+        throw e
+      }
+    }
+  }
+
   @CheckResult
   private suspend fun CoroutineScope.ensureAcceptedConnection(server: ServerSocket): Socket {
     while (isActive && !server.isClosed) {
@@ -127,29 +152,11 @@ internal constructor(
           proxyFailCount.value = 0
         }
       } catch (e: IOException) {
-        Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
-        // If we are in Yolo mode, just continue
-        val canTryAgain =
-            preferences.listenProxyYolo().first() &&
-                proxyFailCount.value < PROXY_ACCEPT_TOO_MANY_FAILURES
-        if (canTryAgain) {
-          proxyFailCount.update { it + 1 }
-          Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!" }
-          continue
-        } else {
-          // Get and reset
-          val oldFailCount = proxyFailCount.getAndUpdate { 0 }
-          if (oldFailCount >= PROXY_ACCEPT_TOO_MANY_FAILURES) {
-
-            // Otherwise, we treat this error as a no-no
-            Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(" }
-            throw IOException("Too many failed connection attempts.", e)
-          } else {
-            // Otherwise, we treat this error as a no-no
-            Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
-            throw e
-          }
-        }
+        // If we are in YOLO mode and under the fail count limit, we can swallow the error and
+        // try to accept again.
+        //
+        // Otherwise this function will throw, which will break out of the loop and stop the server
+        prepareToTryAgainOrThrow(e)
       }
     }
 
