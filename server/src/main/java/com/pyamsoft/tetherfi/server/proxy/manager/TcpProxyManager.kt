@@ -35,7 +35,10 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,6 +56,9 @@ internal constructor(
     BaseProxyManager<ServerSocket>(
         serverDispatcher = serverDispatcher,
     ) {
+
+  /** Keep track of how many times we fail to claim a socket in a row. */
+  private val proxyFailCount = MutableStateFlow(0)
 
   private suspend fun runSession(
       scope: CoroutineScope,
@@ -116,17 +122,33 @@ internal constructor(
         // but KTOR seems to fix this by just "ignoring" the problem and trying again
         // so that's what we do in YOLO mode
         // https://github.com/ktorio/ktor/commit/634ffb3e6ae07e2979af16a42ce274aca1407cf9
-        return server.accept()
+        return server.accept().also {
+          // We got a socket, yay!
+          proxyFailCount.value = 0
+        }
       } catch (e: IOException) {
         Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
         // If we are in Yolo mode, just continue
-        if (preferences.listenProxyYolo().first()) {
+        val canTryAgain =
+            preferences.listenProxyYolo().first() &&
+                proxyFailCount.value < PROXY_ACCEPT_TOO_MANY_FAILURES
+        if (canTryAgain) {
+          proxyFailCount.update { it + 1 }
           Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!" }
           continue
         } else {
-          // Otherwise, we treat this error as a no-no
-          Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
-          throw e
+          // Get and reset
+          val oldFailCount = proxyFailCount.getAndUpdate { 0 }
+          if (oldFailCount >= PROXY_ACCEPT_TOO_MANY_FAILURES) {
+
+            // Otherwise, we treat this error as a no-no
+            Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(" }
+            throw IOException("Too many failed connection attempts.", e)
+          } else {
+            // Otherwise, we treat this error as a no-no
+            Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
+            throw e
+          }
         }
       }
     }
@@ -154,4 +176,10 @@ internal constructor(
           }
         }
       }
+
+  companion object {
+
+    /** If we fail to claim a socket this many times in a row, just assume we are dead. */
+    private const val PROXY_ACCEPT_TOO_MANY_FAILURES = 10
+  }
 }
