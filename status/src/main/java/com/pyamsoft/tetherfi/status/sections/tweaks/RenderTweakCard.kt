@@ -295,7 +295,7 @@ internal fun LazyListScope.renderTweakCard(
           description =
               """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
                     |
-                    |Enabling this option lets $appName ignore these errors and constantly keep trying. Yolo."""
+                    |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode."""
                   .trimMargin(),
           onClick = onToggleProxyYolo,
       )
