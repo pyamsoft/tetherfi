@@ -160,7 +160,8 @@ private fun LazyListScope.renderExtraDebugContent(
     DebugItem(
         modifier = itemModifier,
         title = "Force TCP Server Error (for Stubborn Proxy)",
-        description = "Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)",
+        description =
+            "Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)",
         checked = isYoloError,
         onCheckedChange = { appEnvironment.updateYolo(it) },
     )
