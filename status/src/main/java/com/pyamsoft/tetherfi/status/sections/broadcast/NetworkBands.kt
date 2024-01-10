@@ -61,7 +61,7 @@ internal fun NetworkBands(
         text = "Broadcast Frequency",
     )
     if (canUseCustomConfig) {
-      val bands = remember { ServerNetworkBand.values() }
+      val bands = remember { ServerNetworkBand.entries }
       val bandIterator = remember(bands) { bands.withIndex() }
       val generator = rememberHeightMatcherGenerator<ServerNetworkBand>()
 

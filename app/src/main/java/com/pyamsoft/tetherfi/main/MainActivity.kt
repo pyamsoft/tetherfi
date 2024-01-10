@@ -39,6 +39,7 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
@@ -132,7 +133,9 @@ class MainActivity : AppCompatActivity() {
       TetherFiTheme(
           theme = theme,
       ) {
-        SystemBars()
+        SystemBars(
+            isDarkMode = theme.getSystemDarkMode(),
+        )
         InstallPYDroidExtras(
             modifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,

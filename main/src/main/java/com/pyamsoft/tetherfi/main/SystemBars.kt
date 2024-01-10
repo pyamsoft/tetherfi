@@ -16,19 +16,41 @@
 
 package com.pyamsoft.tetherfi.main
 
+import android.graphics.Color
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowInsetsControllerCompat
 
 @Composable
-fun SystemBars() {
-  val controller = rememberSystemUiController()
-  SideEffect {
-    controller.setSystemBarsColor(
-        color = Color.Transparent,
-        darkIcons = true,
-        isNavigationBarContrastEnforced = false,
+fun ComponentActivity.SystemBars(
+    isDarkMode: Boolean,
+) {
+  val view = LocalView.current
+  val w = window
+  val controller =
+      remember(
+          w,
+          view,
+      ) {
+        WindowInsetsControllerCompat(w, view)
+      }
+  LaunchedEffect(
+      isDarkMode,
+      controller,
+  ) {
+    val style =
+        if (isDarkMode) SystemBarStyle.dark(Color.TRANSPARENT)
+        else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+    enableEdgeToEdge(
+        statusBarStyle = style,
+        navigationBarStyle = style,
     )
+    controller.isAppearanceLightStatusBars = isDarkMode
+    controller.isAppearanceLightNavigationBars = isDarkMode
   }
 }

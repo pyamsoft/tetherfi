@@ -53,6 +53,8 @@ dependencies {
 
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
+  implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
+
   implementation(
       "com.google.accompanist:accompanist-pager-indicators:${rootProject.extra["accompanist"]}")
   implementation(

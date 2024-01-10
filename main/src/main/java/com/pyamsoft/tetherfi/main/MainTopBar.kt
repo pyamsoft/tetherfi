@@ -54,7 +54,7 @@ import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 @Composable
 @CheckResult
 fun rememberAllTabs(): SnapshotStateList<MainView> {
-  return remember { MainView.values().toList().toMutableStateList() }
+  return remember { MainView.entries.toMutableStateList() }
 }
 
 // Needs ExperimentalPagerApi even for new function (even though the annotation is deprecated)

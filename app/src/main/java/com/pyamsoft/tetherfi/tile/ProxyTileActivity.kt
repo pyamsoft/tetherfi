@@ -30,6 +30,7 @@ import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
+import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.main.SystemBars
 import com.pyamsoft.tetherfi.main.ThemeViewModeler
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -54,11 +55,12 @@ class ProxyTileActivity : AppCompatActivity() {
 
       SaveStateDisposableEffect(vm)
 
-      SystemBars()
-
       TetherFiTheme(
           theme = theme,
       ) {
+        SystemBars(
+            isDarkMode = theme.getSystemDarkMode(),
+        )
         ProxyTileEntry(
             modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
