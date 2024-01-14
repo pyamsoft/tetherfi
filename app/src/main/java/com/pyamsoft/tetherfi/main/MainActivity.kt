@@ -62,15 +62,10 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix(
-                        "Fix the QR code reader not being able to 'see' correctly in dark mode. Issue #251")
-                    bugfix("Fix notification status getting reset when restarting the app")
-                    bugfix("Fix theme getting overwritten on orientation change")
-                    change("Improve scrolling performance on the Hotspot page")
-                    change(
-                        "Improve hotspot performance by using unique resources instead of sharing with UI resources.")
-                    change(
-                        "Allow for configuring Hotspot performance to favor network speed versus battery life.")
+                    bugfix("Fix unbounded connection pools never closing")
+                    bugfix("Track 'Invalid Argument' Proxy errors and notify the user")
+                    change("Added: 'Stubborn Proxy' mode, which attempts to work-around Proxy 'Invalid Argument' launch errors.")
+                    change("Internal: Move away from deprecated Accompanist method for Edge-to-Edge screen support.")
 
                     // NEXT
                     //                    change(
