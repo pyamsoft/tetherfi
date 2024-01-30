@@ -64,8 +64,10 @@ class MainActivity : AppCompatActivity() {
                   override val changelog = buildChangeLog {
                     bugfix("Fix unbounded connection pools never closing")
                     bugfix("Track 'Invalid Argument' Proxy errors and notify the user")
-                    change("Added: 'Stubborn Proxy' mode, which attempts to work-around Proxy 'Invalid Argument' launch errors.")
-                    change("Internal: Move away from deprecated Accompanist method for Edge-to-Edge screen support.")
+                    change(
+                        "Added: 'Stubborn Proxy' mode, which attempts to work-around Proxy 'Invalid Argument' launch errors.")
+                    change(
+                        "Internal: Move away from deprecated Accompanist method for Edge-to-Edge screen support.")
 
                     // NEXT
                     //                    change(
