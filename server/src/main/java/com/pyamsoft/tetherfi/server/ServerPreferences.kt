@@ -30,10 +30,6 @@ interface ServerPreferences {
 
   fun setShutdownWithNoClients(shutdown: Boolean)
 
-  @CheckResult fun listenForProxyBindAll(): Flow<Boolean>
-
-  fun setProxyBindAll(bind: Boolean)
-
   @CheckResult fun listenProxyYolo(): Flow<Boolean>
 
   fun setProxyYolo(yolo: Boolean)

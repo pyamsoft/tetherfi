@@ -77,7 +77,6 @@ internal constructor(
     val port = configPreferences.listenForPortChanges().first()
 
     return UdpProxyManager(
-        preferences = serverPreferences,
         enforcer = enforcer,
         session = udpSession,
         hostName = info.hostName,

@@ -87,9 +87,4 @@ protected constructor(
   protected abstract suspend fun runServer(server: S)
 
   @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
-
-  companion object {
-    /** The zero address binds to "all" interfaces */
-    const val HOSTNAME_BIND_ALL = "0.0.0.0"
-  }
 }

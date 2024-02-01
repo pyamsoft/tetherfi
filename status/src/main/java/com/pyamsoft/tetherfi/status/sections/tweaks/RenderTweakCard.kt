@@ -53,7 +53,6 @@ internal fun LazyListScope.renderTweakCard(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleProxyBindAll: () -> Unit,
     onToggleProxyYolo: () -> Unit,
 ) {
   item(
@@ -218,11 +217,10 @@ internal fun LazyListScope.renderTweakCard(
     val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
     val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
 
-    val isProxyBindAll by state.isProxyBindAll.collectAsStateWithLifecycle()
     val proxyBindAllColor by
         rememberCheckableColor(
             label = "Bind Proxy to All Interfaces",
-            condition = isProxyBindAll,
+            condition = false,
             selectedColor = MaterialTheme.colors.primary,
         )
 
@@ -243,12 +241,15 @@ internal fun LazyListScope.renderTweakCard(
           mediumAlpha = mediumAlpha,
           isEditable = isEditable,
           color = proxyBindAllColor,
-          checked = isProxyBindAll,
+          checked = false,
           title = "Bind Proxy to All Interfaces",
           description =
-              """If $appName has problems launching the Proxy but no problems with the Broadcast, you can try this tweak to have the hotspot bind to all interfaces, which might avoid the problem."""
+              """This Tweak is no longer supported - the default Hotspot configuration is MORE performant and MORE reliable.
+                    |
+                    |This Tweak will be removed in a future update.
+                """
                   .trimMargin(),
-          onClick = onToggleProxyBindAll,
+          onClick = {},
       )
     }
   }
@@ -295,7 +296,9 @@ internal fun LazyListScope.renderTweakCard(
           description =
               """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
                     |
-                    |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode."""
+                    |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode.
+                    |
+                    |This option will be made Default in a future version."""
                   .trimMargin(),
           onClick = onToggleProxyYolo,
       )

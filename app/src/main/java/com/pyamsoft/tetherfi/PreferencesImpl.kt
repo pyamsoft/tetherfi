@@ -163,11 +163,6 @@ internal constructor(
     putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
-  override fun listenForProxyBindAll(): Flow<Boolean> =
-      preferenceBooleanFlow(PROXY_BIND_ALL, false) { preferences }.flowOn(context = Dispatchers.IO)
-
-  override fun setProxyBindAll(bind: Boolean) = setPreference { putBoolean(PROXY_BIND_ALL, bind) }
-
   override fun listenProxyYolo(): Flow<Boolean> =
       preferenceBooleanFlow(PROXY_YOLO_MODE, false) { preferences }.flowOn(context = Dispatchers.IO)
 
@@ -305,7 +300,6 @@ internal constructor(
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
-    private const val PROXY_BIND_ALL = "key_proxy_bind_all_1"
     private const val PROXY_YOLO_MODE = "key_proxy_yolo_mode_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"

@@ -217,7 +217,6 @@ fun StatusEntry(
       onHideSetupError = { viewModel.handleCloseSetupError() },
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
       onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
-      onToggleProxyBindAll = { viewModel.handleToggleProxyBindAll() },
       onToggleProxyYolo = { viewModel.handleToggleProxyYolo() },
       onShowProxyError = { viewModel.handleOpenProxyError() },
       onHideProxyError = { viewModel.handleCloseProxyError() },

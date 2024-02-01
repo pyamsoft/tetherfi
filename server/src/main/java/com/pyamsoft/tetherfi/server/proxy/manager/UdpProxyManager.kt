@@ -16,11 +16,9 @@
 
 package com.pyamsoft.tetherfi.server.proxy.manager
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
@@ -30,14 +28,12 @@ import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 internal class UdpProxyManager
 internal constructor(
-    private val preferences: ServerPreferences,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<UdpProxyData>,
     private val hostName: String,
@@ -68,11 +64,6 @@ internal constructor(
     }
   }
 
-  @CheckResult
-  private suspend fun getProxyAddress(): String {
-    return if (preferences.listenForProxyBindAll().first()) HOSTNAME_BIND_ALL else hostName
-  }
-
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = serverDispatcher.primary) {
         // Tag sockets for Android O strict mode
@@ -80,7 +71,7 @@ internal constructor(
 
         val localAddress =
             getServerAddress(
-                hostName = getProxyAddress(),
+                hostName = hostName,
                 port = port,
                 verifyPort = false,
                 verifyHostName = true,

@@ -80,11 +80,6 @@ internal constructor(
     }
   }
 
-  @CheckResult
-  private suspend fun getProxyAddress(): String {
-    return if (preferences.listenForProxyBindAll().first()) HOSTNAME_BIND_ALL else hostName
-  }
-
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = serverDispatcher.primary) {
         // Tag sockets for Android O strict mode
@@ -92,7 +87,7 @@ internal constructor(
 
         val localAddress =
             getServerAddress(
-                hostName = getProxyAddress(),
+                hostName = hostName,
                 port = port,
                 verifyPort = true,
                 verifyHostName = true,
