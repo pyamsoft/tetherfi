@@ -56,7 +56,9 @@ internal constructor(
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
-    PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+    PreferenceManager.getDefaultSharedPreferences(context.applicationContext).also {
+      removeOldPreferences(it)
+    }
   }
 
   // Keep this lazy so that the fallback password is always the same
@@ -66,6 +68,10 @@ internal constructor(
     CoroutineScope(
         context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name),
     )
+  }
+
+  private fun removeOldPreferences(preferences: SharedPreferences) {
+    preferences.edit { OLD_PREFERENCES.forEach { remove(it) } }
   }
 
   private fun setPreference(block: SharedPreferences.Editor.() -> Unit) {
@@ -179,14 +185,14 @@ internal constructor(
 
             Timber.d {
               "In app rating check: ${
-                mapOf(
-                    "lastVersion" to lastVersionShown,
-                    "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
-                    "hotspotUsed" to hotspotUsed,
-                    "devicesConnected" to devicesConnected,
-                    "appOpened" to appOpened,
-                )
-            }"
+                    mapOf(
+                        "lastVersion" to lastVersionShown,
+                        "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
+                        "hotspotUsed" to hotspotUsed,
+                        "devicesConnected" to devicesConnected,
+                        "appOpened" to appOpened,
+                    )
+                }"
             }
 
             if (lastVersionShown.isInAppRatingAlreadyShown()) {
@@ -282,6 +288,10 @@ internal constructor(
   }
 
   companion object {
+    private val OLD_PREFERENCES =
+        listOf(
+            // PROXY_BIND_ALL
+            "key_proxy_bind_all_1")
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
