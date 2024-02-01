@@ -74,14 +74,14 @@ internal constructor(
     preferences.edit { OLD_PREFERENCES.forEach { remove(it) } }
   }
 
-  private fun setPreference(block: SharedPreferences.Editor.() -> Unit) {
+  private inline fun setPreference(crossinline block: SharedPreferences.Editor.() -> Unit) {
     scope.launch {
       enforcer.assertOffMainThread()
-      preferences.edit { block() }
+      preferences.edit(action = block)
     }
   }
 
-  private fun updatePreference(block: SharedPreferences.() -> Unit) {
+  private inline fun updatePreference(crossinline block: SharedPreferences.() -> Unit) {
     scope.launch {
       enforcer.assertOffMainThread()
       preferences.block()
