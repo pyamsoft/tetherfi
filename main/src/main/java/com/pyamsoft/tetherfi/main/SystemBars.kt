@@ -17,14 +17,38 @@
 package com.pyamsoft.tetherfi.main
 
 import android.graphics.Color
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.CheckResult
+import androidx.annotation.ColorInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
+
+private val LIGHT_MODE_SCRIM by lazy { Color.argb(0x60, 0x1B, 0x1B, 0x1B) }
+private val DARK_MODE_SCRIM by lazy { Color.argb(0x90, 0xCE, 0xCE, 0xCE) }
+
+/** Android below O has zero support for navbar color, the appearance method is a lie. */
+@CheckResult
+private fun needsNavbarScrim(): Boolean {
+  return Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+}
+
+@ColorInt
+@CheckResult
+private fun getDarkModeColor(): Int {
+  return if (needsNavbarScrim()) DARK_MODE_SCRIM else Color.TRANSPARENT
+}
+
+@ColorInt
+@CheckResult
+private fun getLightModeColor(): Int {
+  return if (needsNavbarScrim()) LIGHT_MODE_SCRIM else Color.TRANSPARENT
+}
 
 @Composable
 fun ComponentActivity.SystemBars(
@@ -44,8 +68,8 @@ fun ComponentActivity.SystemBars(
       controller,
   ) {
     val style =
-        if (isDarkMode) SystemBarStyle.dark(Color.TRANSPARENT)
-        else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+        if (isDarkMode) SystemBarStyle.dark(getDarkModeColor())
+        else SystemBarStyle.light(Color.TRANSPARENT, getLightModeColor())
     enableEdgeToEdge(
         statusBarStyle = style,
         navigationBarStyle = style,
