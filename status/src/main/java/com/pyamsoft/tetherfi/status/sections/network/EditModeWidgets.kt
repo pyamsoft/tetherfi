@@ -44,7 +44,7 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 
-private const val SYSTEM_DEFINED = "SYSTEM DEFINED: CANNOT CHANGE"
+private const val SYSTEM_DEFINED = "SET BY SYSTEM: CAN'T CHANGE"
 
 @Composable
 internal fun EditPort(
