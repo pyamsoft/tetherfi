@@ -33,7 +33,6 @@ import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.LifecycleEventEffect
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
@@ -51,8 +50,6 @@ internal class StatusInjector : ComposableInjector() {
 
   @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
 
-  @JvmField @Inject internal var featureFlags: FeatureFlags? = null
-
   override fun onInject(activity: ComponentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).plusStatus().create().inject(this)
   }
@@ -61,7 +58,6 @@ internal class StatusInjector : ComposableInjector() {
     viewModel = null
     permissionRequestBus = null
     permissionResponseBus = null
-    featureFlags = null
   }
 }
 
@@ -162,7 +158,6 @@ fun StatusEntry(
   val viewModel = rememberNotNull(component.viewModel)
   val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
-  val featureFlags = rememberNotNull(component.featureFlags)
 
   val scope = rememberCoroutineScope()
 
@@ -176,7 +171,6 @@ fun StatusEntry(
 
   StatusScreen(
       modifier = modifier,
-      featureFlags = featureFlags,
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,

@@ -34,8 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
-import com.pyamsoft.tetherfi.core.FeatureFlags
-import com.pyamsoft.tetherfi.core.TestFeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -58,7 +56,6 @@ private val staticHotspotError =
 @Composable
 fun StatusScreen(
     modifier: Modifier = Modifier,
-    featureFlags: FeatureFlags,
     appName: String,
     state: StatusViewState,
     serverViewState: ServerViewState,
@@ -249,7 +246,6 @@ fun StatusScreen(
             onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onToggleProxyYolo = onToggleProxyYolo,
             onJumpToHowTo = onJumpToHowTo,
-            featureFlags = featureFlags,
             onShowPowerBalance = onShowPowerBalance,
         )
       }
@@ -292,7 +288,6 @@ private fun PreviewStatusScreen(
             this.port.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
-      featureFlags = TestFeatureFlags,
       serverViewState = TestServerViewState(),
       appName = "TEST",
       onStatusUpdated = {},

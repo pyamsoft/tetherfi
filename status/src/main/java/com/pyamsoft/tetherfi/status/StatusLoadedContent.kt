@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
@@ -42,7 +41,6 @@ private enum class StatusLoadedContentTypes {
 
 internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
-    featureFlags: FeatureFlags,
     appName: String,
     state: StatusViewState,
     serverViewState: ServerViewState,
@@ -111,7 +109,6 @@ internal fun LazyListScope.renderLoadedContent(
       isEditable = isEditable,
       appName = appName,
       state = state,
-      featureFlags = featureFlags,
       showNotificationSettings = showNotificationSettings,
       onDisableBatteryOptimizations = onOpenBatterySettings,
       onNotificationPermissionRequest = onRequestNotificationPermission,

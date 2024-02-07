@@ -103,7 +103,7 @@ internal fun NetworkBands(
               MaterialTheme.typography.body1.copy(
                   fontWeight = FontWeight.W700,
                   color =
-                      MaterialTheme.colors.primary.copy(
+                      MaterialTheme.colors.onSurface.copy(
                           alpha = ContentAlpha.medium,
                       ),
               ),

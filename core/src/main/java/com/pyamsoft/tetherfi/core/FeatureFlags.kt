@@ -24,17 +24,4 @@ interface FeatureFlags {
    * UDP support is currently incomplete so this is flagged off in all non-dev builds
    */
   val isUdpProxyEnabled: Boolean
-
-  /**
-   * Tile UI on Status Screen
-   *
-   * If we don't get FGS from Google, the TileService may be able to keep our app at a "foreground
-   * priority" because as long as the system binds the Tile, the app is kept hot in memory and is
-   * allowed to run operations.
-   *
-   * Technically this is a hack around and Google may close it with their continued war on BG work.
-   *
-   * https://developer.android.com/guide/components/activities/background-starts
-   */
-  val isTileUiEnabled: Boolean
 }

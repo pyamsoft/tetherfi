@@ -43,7 +43,6 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.service.ServicePreferences
-import com.pyamsoft.tetherfi.status.PartialStatusAppComponent
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
@@ -73,7 +72,7 @@ import kotlinx.coroutines.CoroutineScope
             CoreAppModule::class,
         ],
 )
-internal interface TetherFiComponent : PartialStatusAppComponent {
+internal interface TetherFiComponent {
 
   @CheckResult fun plusMain(): MainComponent.Factory
 
