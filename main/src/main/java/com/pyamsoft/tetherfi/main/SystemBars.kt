@@ -60,9 +60,9 @@ fun ComponentActivity.SystemBars(
       isDarkMode,
       controller,
   ) {
-      val statusStyle =
-          if (isDarkMode) SystemBarStyle.dark(Color.TRANSPARENT)
-          else SystemBarStyle.light(Color.TRANSPARENT, getLightModeColor())
+    val statusStyle =
+        if (isDarkMode) SystemBarStyle.dark(Color.TRANSPARENT)
+        else SystemBarStyle.light(Color.TRANSPARENT, getLightModeColor())
 
     val navStyle =
         if (isDarkMode) SystemBarStyle.dark(Color.TRANSPARENT)
