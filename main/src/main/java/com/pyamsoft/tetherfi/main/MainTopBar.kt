@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
@@ -59,7 +58,7 @@ fun rememberAllTabs(): SnapshotStateList<MainView> {
 
 // Needs ExperimentalPagerApi even for new function (even though the annotation is deprecated)
 @Composable
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
@@ -118,6 +117,7 @@ fun MainTopBar(
             backgroundColor = Color.Transparent,
             contentColor = LocalContentColor.current,
             indicator = { tabPositions ->
+              @Suppress("DEPRECATION")
               TabRowDefaults.Indicator(
                   modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
               )

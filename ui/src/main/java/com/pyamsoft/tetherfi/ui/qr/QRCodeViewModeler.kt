@@ -19,12 +19,15 @@ package com.pyamsoft.tetherfi.ui.qr
 import android.graphics.Bitmap
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import io.github.g0dkar.qrcode.QRCode
+import com.pyamsoft.pydroid.core.cast
+import com.pyamsoft.pydroid.core.requireNotNull
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import qrcode.QRCode
 
 class QRCodeViewModeler
 @Inject
@@ -34,17 +37,21 @@ internal constructor(
     @Named("password") password: String,
 ) : QRCodeViewState by state, AbstractViewModeler<QRCodeViewState>(state) {
 
-  private val data =
-      formatQRCode(
-          ssid = ssid,
-          password = password,
-      )
+  private val qrData by lazy {
+    formatQRCode(
+        ssid = ssid,
+        password = password,
+    )
+  }
+
+  @CheckResult
+  private suspend fun renderQRCode(): Bitmap =
+      withContext(context = Dispatchers.Default) {
+        QRCode.ofSquares().build(qrData).render().nativeImage().cast<Bitmap>().requireNotNull()
+      }
 
   fun load(scope: CoroutineScope) {
-    scope.launch(context = Dispatchers.Default) {
-      val data = QRCode(data = data).render().nativeImage() as Bitmap
-      state.qrCode.value = data
-    }
+    scope.launch(context = Dispatchers.Default) { state.qrCode.value = renderQRCode() }
   }
 
   companion object {

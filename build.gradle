@@ -25,7 +25,7 @@ buildscript {
 
     // Kotlin
     kotlin = "1.9.22"
-    coroutines = "1.7.3"
+    coroutines = "1.8.0"
 
     // Us
     pydroid = "26.9.4"
@@ -37,12 +37,12 @@ buildscript {
     dagger = "2.50"
 
     // Compose
-    compose = "1.6.0"
-    composeCompiler = "1.5.8"
-    composeMaterial = "1.6.0"
+    compose = "1.6.1"
+    composeCompiler = "1.5.9"
+    composeMaterial = "1.6.1"
     composeActivity = "1.8.2"
 
-    accompanist = "0.32.0"
+    accompanist = "0.34.0"
 
     desugar = "2.0.4"
 

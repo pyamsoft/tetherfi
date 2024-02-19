@@ -68,7 +68,7 @@ dependencies {
 
   // WiFi QR Code
   api("io.coil-kt:coil-compose-base:2.5.0")
-  implementation("io.github.g0dkar:qrcode-kotlin-android:3.3.0")
+  implementation("io.github.g0dkar:qrcode-kotlin-android:4.1.1")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
