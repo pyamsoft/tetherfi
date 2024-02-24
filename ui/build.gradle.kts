@@ -67,7 +67,7 @@ dependencies {
   debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
 
   // WiFi QR Code
-  api("io.coil-kt:coil-compose-base:2.5.0")
+  api("io.coil-kt:coil-compose-base:2.6.0")
   implementation("io.github.g0dkar:qrcode-kotlin-android:4.1.1")
 
   // PYDroid
