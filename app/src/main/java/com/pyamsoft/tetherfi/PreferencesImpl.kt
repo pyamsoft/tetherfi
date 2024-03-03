@@ -25,6 +25,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.preferenceBooleanFlow
 import com.pyamsoft.pydroid.util.preferenceIntFlow
 import com.pyamsoft.pydroid.util.preferenceStringFlow
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
@@ -51,6 +52,7 @@ internal class PreferencesImpl
 @Inject
 internal constructor(
     private val enforcer: ThreadEnforcer,
+    private val featureFlags: FeatureFlags,
     context: Context,
 ) : ServerPreferences, ServicePreferences, InAppRatingPreferences, ConfigPreferences {
 
@@ -170,7 +172,15 @@ internal constructor(
   }
 
   override fun listenProxyYolo(): Flow<Boolean> =
-      preferenceBooleanFlow(PROXY_YOLO_MODE, false) { preferences }.flowOn(context = Dispatchers.IO)
+      preferenceBooleanFlow(PROXY_YOLO_MODE, false) { preferences }
+          .flowOn(context = Dispatchers.IO)
+          .map { yolo ->
+            if (featureFlags.isAlwaysStubborn) {
+              return@map true
+            }
+
+            return@map yolo
+          }
 
   override fun setProxyYolo(yolo: Boolean) = setPreference { putBoolean(PROXY_YOLO_MODE, yolo) }
 
