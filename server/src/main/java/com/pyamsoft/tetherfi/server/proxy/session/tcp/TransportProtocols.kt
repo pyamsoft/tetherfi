@@ -19,12 +19,14 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 import androidx.annotation.CheckResult
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.joinTo
+import io.ktor.utils.io.close
+import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.writeFully
 
 private const val LINE_ENDING = "\r\n"
 
-internal suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel) {
+@CheckResult
+internal suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel): Long {
   //    KtorDefaultPool.useInstance { buffer ->
   //      while (isActive) {
   //        val array = buffer.array()
@@ -38,7 +40,16 @@ internal suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel) {
   //    }
 
   // Should be faster than parsing byte buffers raw
-  input.joinTo(output, closeOnEnd = true)
+  // input.joinTo(output, closeOnEnd = true)
+
+  // https://github.com/pyamsoft/tetherfi/issues/279
+  //
+  // We want to keep track of how many total bytes we've worked with
+  try {
+    return input.copyTo(output, Long.MAX_VALUE)
+  } finally {
+    output.close()
+  }
 }
 
 /** Write a generic error back to the client socket because something has gone wrong */

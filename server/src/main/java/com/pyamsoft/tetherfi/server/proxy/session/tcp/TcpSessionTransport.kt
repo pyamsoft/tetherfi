@@ -27,6 +27,7 @@ internal interface TcpSessionTransport {
 
   @CheckResult suspend fun parseRequest(input: ByteReadChannel): ProxyRequest?
 
+  @CheckResult
   suspend fun exchangeInternet(
       scope: CoroutineScope,
       serverDispatcher: ServerDispatcher,
@@ -35,5 +36,10 @@ internal interface TcpSessionTransport {
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
+  ): ByteTransferReport?
+
+  data class ByteTransferReport(
+      val internetToProxy: ULong,
+      val proxyToInternet: ULong,
   )
 }

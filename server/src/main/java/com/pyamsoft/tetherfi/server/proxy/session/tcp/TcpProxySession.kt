@@ -144,12 +144,26 @@ internal constructor(
     launch(context = serverDispatcher.sideEffect) { seenClients.seen(client) }
   }
 
+  private fun CoroutineScope.handleClientReportSideEffects(
+      serverDispatcher: ServerDispatcher,
+      client: TetherClient,
+      report: TcpSessionTransport.ByteTransferReport,
+  ) {
+    enforcer.assertOffMainThread()
+
+    // Track the report for the given client
+    launch(context = serverDispatcher.sideEffect) {
+      Timber.d { "Client TCP transfer report: $client $report" }
+    }
+  }
+
+  @CheckResult
   private suspend fun CoroutineScope.proxyToInternet(
       serverDispatcher: ServerDispatcher,
       handler: RequestHandler,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
-  ) {
+  ): TcpSessionTransport.ByteTransferReport? {
     enforcer.assertOffMainThread()
 
     val request = handler.request
@@ -157,33 +171,37 @@ internal constructor(
 
     // Given the request, connect to the Web
     try {
-      connectToInternet(
-          serverDispatcher = serverDispatcher,
-          request = request,
-      ) { internet ->
-        val internetInput = internet.openReadChannel()
-        val internetOutput = internet.openWriteChannel(autoFlush = true)
-
-        try {
-          // Communicate between the web connection we've made and back to our client device
-          transport.exchangeInternet(
-              scope = this,
+      val report =
+          connectToInternet(
               serverDispatcher = serverDispatcher,
-              proxyInput = proxyInput,
-              proxyOutput = proxyOutput,
-              internetInput = internetInput,
-              internetOutput = internetOutput,
               request = request,
-          )
-        } finally {
-          withContext(context = NonCancellable) {
-            internetInput.cancel()
-            internetOutput.close()
+          ) { internet ->
+            val internetInput = internet.openReadChannel()
+            val internetOutput = internet.openWriteChannel(autoFlush = true)
+
+            try {
+              // Communicate between the web connection we've made and back to our client device
+              return@connectToInternet transport.exchangeInternet(
+                  scope = this,
+                  serverDispatcher = serverDispatcher,
+                  proxyInput = proxyInput,
+                  proxyOutput = proxyOutput,
+                  internetInput = internetInput,
+                  internetOutput = internetOutput,
+                  request = request,
+              )
+            } finally {
+              withContext(context = NonCancellable) {
+                internetInput.cancel()
+                internetOutput.close()
+              }
+            }
           }
-        }
-      }
+
+      return report
     } catch (e: Throwable) {
       e.ifNotCancellation { writeError(proxyOutput) }
+      return null
     }
   }
 
@@ -232,12 +250,27 @@ internal constructor(
     }
 
     // And then we go to the web!
-    scope.proxyToInternet(
-        serverDispatcher = serverDispatcher,
-        handler = handler,
-        proxyInput = proxyInput,
-        proxyOutput = proxyOutput,
-    )
+    val report =
+        scope.proxyToInternet(
+            serverDispatcher = serverDispatcher,
+            handler = handler,
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+        )
+
+    if (report != null) {
+      // This is launched as its own scope so that the side effect does not slow
+      // down the internet traffic processing.
+      // Since this context is our own dispatcher which is cachedThreadPool backed,
+      // we just "spin up" another thread and forget about it performance wise.
+      scope.launch(context = serverDispatcher.primary) {
+        handleClientReportSideEffects(
+            serverDispatcher = serverDispatcher,
+            client = client,
+            report = report,
+        )
+      }
+    }
   }
 
   override suspend fun exchange(

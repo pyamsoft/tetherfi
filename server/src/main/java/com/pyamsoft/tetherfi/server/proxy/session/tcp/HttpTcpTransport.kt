@@ -33,6 +33,8 @@ import io.ktor.utils.io.writeFully
 import java.net.URI
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -291,8 +293,18 @@ internal constructor(
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
-  ) {
+  ): TcpSessionTransport.ByteTransferReport? {
     enforcer.assertOffMainThread()
+
+    // We use MSF here even though we aren't reacting because how
+    // else do I get a Kotlin native atomic?
+    val report =
+        MutableStateFlow(
+            TcpSessionTransport.ByteTransferReport(
+                proxyToInternet = 0UL,
+                internetToProxy = 0UL,
+            ),
+        )
 
     try {
       if (isHttpsConnection(request)) {
@@ -312,22 +324,48 @@ internal constructor(
       val job =
           scope.launch(context = serverDispatcher.primary) {
             // Send data from the internet back to the proxy in a different thread
-            talk(
-                input = internetInput,
-                output = proxyOutput,
-            )
+            val totalBytes =
+                talk(
+                    input = internetInput,
+                    output = proxyOutput,
+                )
+
+            // Save as report
+            // MSF shouldn't need a mutex and this operation touches an exclusive field,
+            // we should be okay
+            report.update {
+              it.copy(
+                  internetToProxy = it.internetToProxy + totalBytes.toULong(),
+              )
+            }
           }
 
       // Send input from the proxy (clients) to the internet on this thread
-      talk(
-          input = proxyInput,
-          output = internetOutput,
-      )
+      val totalBytes =
+          talk(
+              input = proxyInput,
+              output = internetOutput,
+          )
+
+      // Save as report
+      // MSF shouldn't need a mutex and this operation touches an exclusive field,
+      // we should be okay
+      report.update {
+        it.copy(
+            proxyToInternet = it.proxyToInternet + totalBytes.toULong(),
+        )
+      }
 
       // Wait for internet communication to finish
       job.join()
+
+      // And deliver!
+      return report.value
     } catch (e: Throwable) {
       e.ifNotCancellation { writeError(proxyOutput) }
+
+      // Error means no report
+      return null
     }
   }
 
