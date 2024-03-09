@@ -22,4 +22,6 @@ import androidx.annotation.VisibleForTesting
 object TestFeatureFlags : FeatureFlags {
 
   override val isUdpProxyEnabled = false
+
+  override val isAlwaysStubborn = false
 }
