@@ -125,11 +125,6 @@ internal constructor(
     }
   }
 
-  @CheckResult
-  private fun isBlockedClient(client: TetherClient): Boolean {
-    return blockedClients.isBlocked(client)
-  }
-
   private fun CoroutineScope.handleClientRequestSideEffects(
       serverDispatcher: ServerDispatcher,
       client: TetherClient
@@ -227,7 +222,7 @@ internal constructor(
     }
 
     // If the client is blocked we do not process any inpue
-    if (isBlockedClient(client)) {
+    if (blockedClients.isBlocked(client)) {
       Timber.w { "Client is marked blocked: $client" }
       writeError(proxyOutput)
       return
