@@ -62,12 +62,9 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix("Fix unbounded connection pools never closing")
-                    bugfix("Track 'Invalid Argument' Proxy errors and notify the user")
-                    change(
-                        "Added: 'Stubborn Proxy' mode, which attempts to work-around Proxy 'Invalid Argument' launch errors.")
-                    change(
-                        "Internal: Move away from deprecated Accompanist method for Edge-to-Edge screen support.")
+                    change("Reduce RAM usage when running the proxy")
+                    feature("Track total network activity for Connections")
+                    bugfix("Faster proxy performance on older or weaker devices")
 
                     // NEXT
                     //                    change(
