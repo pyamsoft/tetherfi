@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.clients
+package com.pyamsoft.tetherfi.server
 
-import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
-
-interface AllowedClients {
-
-  @CheckResult fun listenForClients(): Flow<List<TetherClient>>
-
-  @CheckResult suspend fun retrieve(hostNameOrIp: String): TetherClient?
-
-  suspend fun seen(client: TetherClient)
-
-  suspend fun reportTransfer(
-      client: TetherClient,
-      report: ByteTransferReport,
-  )
-}
+/**
+ * What the fuck is this
+ * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
+ *
+ * Tests if a given string is an IP address
+ */
+@JvmField
+internal val IP_ADDRESS_REGEX =
+    """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
+        .toRegex()

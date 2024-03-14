@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import java.time.Clock
@@ -225,6 +226,21 @@ internal constructor(
     return blocked.firstOrNull { it.matches(client) } != null
   }
 
+  @CheckResult
+  private inline fun <reified T : TetherClient> retrieveExistingClient(): List<T> {
+    return allowedClients.value.filterIsInstance<T>()
+  }
+
+  @CheckResult
+  private fun retrieveIpClient(ipAddress: String): TetherClient? {
+    return retrieveExistingClient<TetherClient.IpAddress>().firstOrNull { it.ip == ipAddress }
+  }
+
+  @CheckResult
+  private fun retrieveHostnameClient(hostName: String): TetherClient? {
+    return retrieveExistingClient<TetherClient.HostName>().firstOrNull { it.hostname == hostName }
+  }
+
   private fun CoroutineScope.handleClientUpdate(
       client: TetherClient,
       onClientUpdated: (TetherClient) -> TetherClient,
@@ -281,6 +297,14 @@ internal constructor(
 
     oldClientCheck.cancel()
     noClientCheck.cancel()
+  }
+
+  override suspend fun retrieve(hostNameOrIp: String): TetherClient? {
+    return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+      retrieveIpClient(hostNameOrIp)
+    } else {
+      retrieveHostnameClient(hostNameOrIp)
+    }
   }
 
   override fun listenForClients(): Flow<List<TetherClient>> {

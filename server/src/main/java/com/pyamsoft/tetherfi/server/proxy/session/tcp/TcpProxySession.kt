@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -98,16 +99,21 @@ internal constructor(
   }
 
   @CheckResult
-  private fun resolveClient(connection: Socket): TetherClient? {
+  private suspend fun resolveClient(connection: Socket): TetherClient? {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
       Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
       return null
     }
 
-    // TODO(Peter): Reduce allocation by looking up an existing allowedClient?
-
     val hostNameOrIp = remote.hostname
+
+    // If a matching client exists, use it instead of allocating a new client
+    val existing = allowedClients.retrieve(hostNameOrIp)
+    if (existing != null) {
+      return existing
+    }
+
     return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
       TetherClient.IpAddress(
           ip = hostNameOrIp,
@@ -314,17 +320,4 @@ internal constructor(
       val transport: TcpSessionTransport,
       val request: ProxyRequest,
   )
-
-  companion object {
-
-    /**
-     * What the fuck is this
-     * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
-     *
-     * Tests if a given string is an IP address
-     */
-    private val IP_ADDRESS_REGEX =
-        """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
-            .toRegex()
-  }
 }
