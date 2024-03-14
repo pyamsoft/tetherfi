@@ -23,8 +23,6 @@ interface AllowedClients {
 
   @CheckResult fun listenForClients(): Flow<List<TetherClient>>
 
-  @CheckResult suspend fun retrieve(hostNameOrIp: String): TetherClient?
-
   suspend fun seen(hostNameOrIp: String)
 
   suspend fun reportTransfer(
