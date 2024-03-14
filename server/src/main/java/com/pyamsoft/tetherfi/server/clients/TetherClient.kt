@@ -19,6 +19,8 @@ package com.pyamsoft.tetherfi.server.clients
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import java.time.Clock
 import java.time.LocalDateTime
 
 private val UNIT_JUMP = 1024UL
@@ -78,6 +80,26 @@ sealed class TetherClient(
   }
 
   @CheckResult
+  fun matches(hostNameOrIp: String): Boolean {
+    when (this) {
+      is IpAddress -> {
+        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+          return ip == hostNameOrIp
+        }
+
+        return false
+      }
+      is HostName -> {
+        if (!IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+          return hostname == hostNameOrIp
+        }
+
+        return false
+      }
+    }
+  }
+
+  @CheckResult
   fun mergeReport(report: ByteTransferReport): ByteTransferReport {
     return report.copy(
         internetToProxy = report.internetToProxy + totalBytes.internetToProxy,
@@ -85,7 +107,8 @@ sealed class TetherClient(
     )
   }
 
-  data class IpAddress(
+  data class IpAddress
+  internal constructor(
       val ip: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
@@ -97,7 +120,8 @@ sealed class TetherClient(
           totalBytes = totalBytes,
       )
 
-  data class HostName(
+  data class HostName
+  internal constructor(
       val hostname: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
@@ -108,6 +132,28 @@ sealed class TetherClient(
           mostRecentlySeen = mostRecentlySeen,
           totalBytes = totalBytes,
       )
+
+  companion object {
+
+    @CheckResult
+    fun create(hostNameOrIp: String, clock: Clock): TetherClient {
+      return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+        IpAddress(
+            ip = hostNameOrIp,
+            mostRecentlySeen = LocalDateTime.now(clock),
+            nickName = "",
+            totalBytes = ByteTransferReport.EMPTY,
+        )
+      } else {
+        HostName(
+            hostname = hostNameOrIp,
+            mostRecentlySeen = LocalDateTime.now(clock),
+            nickName = "",
+            totalBytes = ByteTransferReport.EMPTY,
+        )
+      }
+    }
+  }
 }
 
 @CheckResult

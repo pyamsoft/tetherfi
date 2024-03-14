@@ -81,6 +81,13 @@ internal constructor(
       )
 
   @CheckResult
+  private fun TetherClient.toHostNameOrIp(): String =
+      when (this) {
+        is TetherClient.IpAddress -> ip
+        is TetherClient.HostName -> hostname
+      }
+
+  @CheckResult
   private fun markLastSeenNow(client: TetherClient): TetherClient =
       when (client) {
         is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
@@ -190,6 +197,12 @@ internal constructor(
     }
   }
 
+  @CheckResult
+  private inline fun checkBlocked(checker: (TetherClient) -> Boolean): Boolean {
+    val blocked = blockedClients.value
+    return blocked.firstOrNull { checker(it) } != null
+  }
+
   override suspend fun started() =
       withContext(context = Dispatchers.Default) { watchForNoClients() }
 
@@ -221,9 +234,12 @@ internal constructor(
     }
   }
 
+  override fun isBlocked(hostNameOrIp: String): Boolean {
+    return checkBlocked { it.matches(hostNameOrIp) }
+  }
+
   override fun isBlocked(client: TetherClient): Boolean {
-    val blocked = blockedClients.value
-    return blocked.firstOrNull { it.matches(client) } != null
+    return checkBlocked { it.matches(client) }
   }
 
   @CheckResult
@@ -242,14 +258,19 @@ internal constructor(
   }
 
   private fun CoroutineScope.handleClientUpdate(
-      client: TetherClient,
+      hostNameOrIp: String,
       onClientUpdated: (TetherClient) -> TetherClient,
   ) {
     val clients =
         allowedClients.updateAndGet { list ->
-          val existing = list.firstOrNull { it.matches(client) }
+          val existing = list.firstOrNull { it.matches(hostNameOrIp) }
 
           if (existing == null) {
+            val client =
+                TetherClient.create(
+                    hostNameOrIp = hostNameOrIp,
+                    clock = clock,
+                )
             return@updateAndGet (list + client).also { onNewClientSeen(client) }
           } else {
             return@updateAndGet list.map { c ->
@@ -265,10 +286,10 @@ internal constructor(
     onClientsUpdated(clients)
   }
 
-  override suspend fun seen(client: TetherClient) =
+  override suspend fun seen(hostNameOrIp: String) =
       withContext(context = Dispatchers.Default) {
         handleClientUpdate(
-            client = client,
+            hostNameOrIp = hostNameOrIp,
             onClientUpdated = { markLastSeenNow(it) },
         )
       }
@@ -276,15 +297,15 @@ internal constructor(
   override suspend fun updateNickName(client: TetherClient, nickName: String) =
       withContext(context = Dispatchers.Default) {
         handleClientUpdate(
-            client = client,
+            hostNameOrIp = client.toHostNameOrIp(),
             onClientUpdated = { editNickName(it, nickName) },
         )
       }
 
-  override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) =
+  override suspend fun reportTransfer(hostNameOrIp: String, report: ByteTransferReport) =
       withContext(context = Dispatchers.Default) {
         handleClientUpdate(
-            client = client,
+            hostNameOrIp = hostNameOrIp,
             onClientUpdated = { updateTransferReport(it, report) },
         )
       }

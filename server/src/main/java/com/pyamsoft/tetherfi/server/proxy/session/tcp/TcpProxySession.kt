@@ -20,12 +20,10 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
-import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
@@ -39,8 +37,6 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.cancel
 import io.ktor.utils.io.close
-import java.time.Clock
-import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
@@ -54,7 +50,6 @@ internal constructor(
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
     private val blockedClients: BlockedClients,
     private val allowedClients: AllowedClients,
-    private val clock: Clock,
     private val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
 
@@ -99,41 +94,19 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun resolveClient(connection: Socket): TetherClient? {
+  private fun resolveHostNameOrIpAddress(connection: Socket): String? {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
       Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
       return null
     }
 
-    val hostNameOrIp = remote.hostname
-
-    // If a matching client exists, use it instead of allocating a new client
-    val existing = allowedClients.retrieve(hostNameOrIp)
-    if (existing != null) {
-      return existing
-    }
-
-    return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-      TetherClient.IpAddress(
-          ip = hostNameOrIp,
-          mostRecentlySeen = LocalDateTime.now(clock),
-          nickName = "",
-          totalBytes = ByteTransferReport.EMPTY,
-      )
-    } else {
-      TetherClient.HostName(
-          hostname = hostNameOrIp,
-          mostRecentlySeen = LocalDateTime.now(clock),
-          nickName = "",
-          totalBytes = ByteTransferReport.EMPTY,
-      )
-    }
+    return remote.hostname
   }
 
   private fun CoroutineScope.handleClientRequestSideEffects(
       serverDispatcher: ServerDispatcher,
-      client: TetherClient
+      hostNameOrIp: String,
   ) {
     enforcer.assertOffMainThread()
 
@@ -147,18 +120,20 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(client) }
+    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(hostNameOrIp) }
   }
 
   private fun CoroutineScope.handleClientReportSideEffects(
       serverDispatcher: ServerDispatcher,
-      client: TetherClient,
+      hostNameOrIp: String,
       report: ByteTransferReport,
   ) {
     enforcer.assertOffMainThread()
 
     // Track the report for the given client
-    launch(context = serverDispatcher.sideEffect) { allowedClients.reportTransfer(client, report) }
+    launch(context = serverDispatcher.sideEffect) {
+      allowedClients.reportTransfer(hostNameOrIp, report)
+    }
   }
 
   @CheckResult
@@ -214,7 +189,7 @@ internal constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
-      client: TetherClient
+      hostNameOrIp: String,
   ) {
     // This is launched as its own scope so that the side effect does not slow
     // down the internet traffic processing.
@@ -223,13 +198,13 @@ internal constructor(
     scope.launch(context = serverDispatcher.primary) {
       handleClientRequestSideEffects(
           serverDispatcher = serverDispatcher,
-          client = client,
+          hostNameOrIp = hostNameOrIp,
       )
     }
 
     // If the client is blocked we do not process any inpue
-    if (blockedClients.isBlocked(client)) {
-      Timber.w { "Client is marked blocked: $client" }
+    if (blockedClients.isBlocked(hostNameOrIp)) {
+      Timber.w { "Client is marked blocked: $hostNameOrIp" }
       writeError(proxyOutput)
       return
     }
@@ -270,7 +245,7 @@ internal constructor(
       scope.launch(context = serverDispatcher.primary) {
         handleClientReportSideEffects(
             serverDispatcher = serverDispatcher,
-            client = client,
+            hostNameOrIp = hostNameOrIp,
             report = report,
         )
       }
@@ -290,8 +265,8 @@ internal constructor(
 
         try {
           // Resolve the client as an IP or hostname
-          val client = resolveClient(connection)
-          if (client == null) {
+          val hostNameOrIp = resolveHostNameOrIpAddress(connection)
+          if (hostNameOrIp == null) {
             Timber.w { "Unable to resolve TetherClient for connection: $connection" }
             writeError(proxyOutput)
             return@withContext
@@ -302,7 +277,7 @@ internal constructor(
               serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
-              client = client,
+              hostNameOrIp = hostNameOrIp,
           )
         } catch (e: Throwable) {
           e.ifNotCancellation {

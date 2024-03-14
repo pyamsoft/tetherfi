@@ -25,10 +25,10 @@ interface AllowedClients {
 
   @CheckResult suspend fun retrieve(hostNameOrIp: String): TetherClient?
 
-  suspend fun seen(client: TetherClient)
+  suspend fun seen(hostNameOrIp: String)
 
   suspend fun reportTransfer(
-      client: TetherClient,
+      hostNameOrIp: String,
       report: ByteTransferReport,
   )
 }
