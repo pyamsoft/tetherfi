@@ -24,8 +24,8 @@ import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.toNotifyId
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
-import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import javax.inject.Inject
@@ -47,7 +47,7 @@ internal constructor(
     @ServiceInternalApi private val notifier: Notifier,
     private val enforcer: ThreadEnforcer,
     private val networkStatus: BroadcastNetworkStatus,
-    private val seenClients: SeenClients,
+    private val allowedClients: AllowedClients,
     private val blockedClients: BlockedClients,
 ) : NotificationLauncher {
 
@@ -125,7 +125,7 @@ internal constructor(
       }
 
       // Listen for client updates
-      seenClients
+      allowedClients
           .listenForClients()
           .map { it.size }
           .also { f ->

@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
@@ -293,14 +294,14 @@ internal constructor(
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
-  ): TcpSessionTransport.ByteTransferReport? {
+  ): ByteTransferReport? {
     enforcer.assertOffMainThread()
 
     // We use MSF here even though we aren't reacting because how
     // else do I get a Kotlin native atomic?
     val report =
         MutableStateFlow(
-            TcpSessionTransport.ByteTransferReport(
+            ByteTransferReport(
                 proxyToInternet = 0UL,
                 internetToProxy = 0UL,
             ),

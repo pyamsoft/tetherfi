@@ -54,10 +54,16 @@ internal constructor(
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val serverPreferences: ServerPreferences,
     enforcer: ThreadEnforcer,
-) : BlockedClientTracker, BlockedClients, SeenClients, ClientEraser, StartedClients, ClientEditor {
+) :
+    BlockedClientTracker,
+    BlockedClients,
+    AllowedClients,
+    ClientEraser,
+    StartedClients,
+    ClientEditor {
 
   private val blockedClients = MutableStateFlow<Collection<TetherClient>>(mutableSetOf())
-  private val seenClients = MutableStateFlow<List<TetherClient>>(mutableListOf())
+  private val allowedClients = MutableStateFlow<List<TetherClient>>(mutableListOf())
 
   private val oldClientCheck =
       TimerTrigger(
@@ -74,20 +80,25 @@ internal constructor(
       )
 
   @CheckResult
-  private fun markLastSeenNow(client: TetherClient): TetherClient {
-    return when (client) {
-      is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
-      is TetherClient.HostName -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
-    }
-  }
+  private fun markLastSeenNow(client: TetherClient): TetherClient =
+      when (client) {
+        is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+        is TetherClient.HostName -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+      }
 
   @CheckResult
-  private fun editNickName(client: TetherClient, nickName: String): TetherClient {
-    return when (client) {
-      is TetherClient.IpAddress -> client.copy(nickName = nickName)
-      is TetherClient.HostName -> client.copy(nickName = nickName)
-    }
-  }
+  private fun editNickName(client: TetherClient, nickName: String): TetherClient =
+      when (client) {
+        is TetherClient.IpAddress -> client.copy(nickName = nickName)
+        is TetherClient.HostName -> client.copy(nickName = nickName)
+      }
+
+  @CheckResult
+  private fun updateTransferReport(client: TetherClient, report: ByteTransferReport): TetherClient =
+      when (client) {
+        is TetherClient.IpAddress -> client.copy(totalBytes = client.mergeReport(report))
+        is TetherClient.HostName -> client.copy(totalBytes = client.mergeReport(report))
+      }
 
   private fun CoroutineScope.onNewClientSeen(client: TetherClient) {
     Timber.d { "First time seeing client: $client" }
@@ -110,7 +121,7 @@ internal constructor(
 
     // "Live" client must have activity within 2 minutes
     val newClients =
-        seenClients.updateAndGet { list ->
+        allowedClients.updateAndGet { list ->
           list.filter {
             val newEnough = it.mostRecentlySeen >= cutoffTime
             if (!newEnough) {
@@ -134,7 +145,7 @@ internal constructor(
 
   private suspend fun shutdownWithNoClients() {
     if (isShutdownWithNoClientsEnabled()) {
-      if (seenClients.value.isEmpty()) {
+      if (allowedClients.value.isEmpty()) {
         Timber.d { "No clients are connected. Shutdown Proxy!" }
         shutdownBus.emit(ServerShutdownEvent)
       }
@@ -214,49 +225,58 @@ internal constructor(
     return blocked.firstOrNull { it.matches(client) } != null
   }
 
-  override suspend fun seen(client: TetherClient) =
-      withContext(context = Dispatchers.Default) {
-        val clients =
-            seenClients.updateAndGet { list ->
-              val existing = list.firstOrNull { it.matches(client) }
+  private fun CoroutineScope.handleClientUpdate(
+      client: TetherClient,
+      onClientUpdated: (TetherClient) -> TetherClient,
+  ) {
+    val clients =
+        allowedClients.updateAndGet { list ->
+          val existing = list.firstOrNull { it.matches(client) }
 
-              if (existing == null) {
-                return@updateAndGet (list + client).also { onNewClientSeen(client) }
+          if (existing == null) {
+            return@updateAndGet (list + client).also { onNewClientSeen(client) }
+          } else {
+            return@updateAndGet list.map { c ->
+              if (c == existing) {
+                return@map onClientUpdated(c)
               } else {
-                return@updateAndGet list.map { c ->
-                  if (c == existing) {
-                    return@map markLastSeenNow(c)
-                  } else {
-                    return@map c
-                  }
-                }
+                return@map c
               }
             }
-
-        onClientsUpdated(clients)
-      }
-
-  override fun updateNickName(client: TetherClient, nickName: String) {
-    seenClients.update { list ->
-      val existing = list.firstOrNull { it.matches(client) }
-      if (existing == null) {
-        return@update list
-      } else {
-        return@update list.map { c ->
-          if (c == existing) {
-            return@map editNickName(c, nickName)
-          } else {
-            return@map c
           }
         }
-      }
-    }
+
+    onClientsUpdated(clients)
   }
+
+  override suspend fun seen(client: TetherClient) =
+      withContext(context = Dispatchers.Default) {
+        handleClientUpdate(
+            client = client,
+            onClientUpdated = { markLastSeenNow(it) },
+        )
+      }
+
+  override suspend fun updateNickName(client: TetherClient, nickName: String) =
+      withContext(context = Dispatchers.Default) {
+        handleClientUpdate(
+            client = client,
+            onClientUpdated = { editNickName(it, nickName) },
+        )
+      }
+
+  override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) =
+      withContext(context = Dispatchers.Default) {
+        handleClientUpdate(
+            client = client,
+            onClientUpdated = { updateTransferReport(it, report) },
+        )
+      }
 
   override fun clear() {
     Timber.d { "Clear client tracker" }
 
-    seenClients.value = emptyList()
+    allowedClients.value = emptyList()
     blockedClients.value = emptySet()
 
     oldClientCheck.cancel()
@@ -264,7 +284,7 @@ internal constructor(
   }
 
   override fun listenForClients(): Flow<List<TetherClient>> {
-    return seenClients
+    return allowedClients
   }
 
   override fun listenForBlocked(): Flow<Collection<TetherClient>> {

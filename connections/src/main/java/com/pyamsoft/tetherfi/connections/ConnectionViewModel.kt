@@ -17,9 +17,9 @@
 package com.pyamsoft.tetherfi.connections
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
-import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import javax.inject.Inject
@@ -31,14 +31,14 @@ class ConnectionViewModel
 @Inject
 internal constructor(
     override val state: MutableConnectionViewState,
-    private val seenClients: SeenClients,
+    private val allowedClients: AllowedClients,
     private val blockedClients: BlockedClients,
     private val blockTracker: BlockedClientTracker,
 ) : ConnectionViewState by state, AbstractViewModeler<ConnectionViewState>(state) {
 
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
-      seenClients.listenForClients().collect { clients ->
+      allowedClients.listenForClients().collect { clients ->
         val list = clients.toList().sortedBy { it.key() }
         state.connections.value = list
       }

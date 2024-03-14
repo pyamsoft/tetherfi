@@ -64,6 +64,8 @@ internal fun ConnectionItem(
       remember(client) {
         FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen)
       }
+  val totalTransferredToInternet = remember(client) { client.transferToInternet }
+  val totalTransferredFromInternet = remember(client) { client.transferFromInternet }
 
   val isNotBlocked =
       remember(
@@ -111,12 +113,35 @@ internal fun ConnectionItem(
         }
 
         Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
             text = "Last seen: $seenTime",
             style =
                 MaterialTheme.typography.body2.copy(
                     color =
                         MaterialTheme.colors.onSurface.copy(
                             alpha = ContentAlpha.medium,
+                        ),
+                ),
+        )
+
+        Text(
+            text = "Total Transferred To Internet: $totalTransferredToInternet",
+            style =
+                MaterialTheme.typography.caption.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.disabled,
+                        ),
+                ),
+        )
+
+        Text(
+            text = "Total Transferred From Internet: $totalTransferredFromInternet",
+            style =
+                MaterialTheme.typography.caption.copy(
+                    color =
+                        MaterialTheme.colors.onSurface.copy(
+                            alpha = ContentAlpha.disabled,
                         ),
                 ),
         )

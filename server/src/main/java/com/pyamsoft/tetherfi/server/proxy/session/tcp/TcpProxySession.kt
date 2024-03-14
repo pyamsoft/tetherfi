@@ -21,8 +21,9 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
-import com.pyamsoft.tetherfi.server.clients.SeenClients
+import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
@@ -51,7 +52,7 @@ internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
     private val blockedClients: BlockedClients,
-    private val seenClients: SeenClients,
+    private val allowedClients: AllowedClients,
     private val clock: Clock,
     private val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
@@ -110,12 +111,14 @@ internal constructor(
           ip = hostNameOrIp,
           mostRecentlySeen = LocalDateTime.now(clock),
           nickName = "",
+          totalBytes = ByteTransferReport.EMPTY,
       )
     } else {
       TetherClient.HostName(
           hostname = hostNameOrIp,
           mostRecentlySeen = LocalDateTime.now(clock),
           nickName = "",
+          totalBytes = ByteTransferReport.EMPTY,
       )
     }
   }
@@ -141,20 +144,18 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch(context = serverDispatcher.sideEffect) { seenClients.seen(client) }
+    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(client) }
   }
 
   private fun CoroutineScope.handleClientReportSideEffects(
       serverDispatcher: ServerDispatcher,
       client: TetherClient,
-      report: TcpSessionTransport.ByteTransferReport,
+      report: ByteTransferReport,
   ) {
     enforcer.assertOffMainThread()
 
     // Track the report for the given client
-    launch(context = serverDispatcher.sideEffect) {
-      Timber.d { "Client TCP transfer report: $client $report" }
-    }
+    launch(context = serverDispatcher.sideEffect) { allowedClients.reportTransfer(client, report) }
   }
 
   @CheckResult
@@ -163,7 +164,7 @@ internal constructor(
       handler: RequestHandler,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
-  ): TcpSessionTransport.ByteTransferReport? {
+  ): ByteTransferReport? {
     enforcer.assertOffMainThread()
 
     val request = handler.request

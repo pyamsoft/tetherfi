@@ -21,12 +21,41 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import java.time.LocalDateTime
 
+private val UNIT_JUMP = 1024UL
+
 @Stable
 @Immutable
 sealed class TetherClient(
     open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
+    protected open val totalBytes: ByteTransferReport,
 ) {
+
+  val transferToInternet by lazy { parseBytesToDisplay(totalBytes.proxyToInternet) }
+  val transferFromInternet by lazy { parseBytesToDisplay(totalBytes.internetToProxy) }
+
+  @CheckResult
+  private fun parseBytesToDisplay(total: ULong): String {
+    var amount = total
+    var suffix = " bytes"
+    while (amount > UNIT_JUMP) {
+      suffix = mapSuffixToNextLargest(amount, suffix)
+      amount /= UNIT_JUMP
+    }
+
+    return "$amount$suffix"
+  }
+
+  @CheckResult
+  private fun mapSuffixToNextLargest(amount: ULong, suffix: String): String =
+      when (suffix) {
+        " bytes" -> "KB"
+        "KB" -> "MB"
+        "MB" -> "GB"
+        "GB" -> "TB"
+        "TB" -> "PB"
+        else -> throw IllegalStateException("Bytes payload too big: $amount$suffix")
+      }
 
   @CheckResult
   fun matches(o: TetherClient): Boolean {
@@ -48,24 +77,36 @@ sealed class TetherClient(
     }
   }
 
+  @CheckResult
+  fun mergeReport(report: ByteTransferReport): ByteTransferReport {
+    return report.copy(
+        internetToProxy = report.internetToProxy + totalBytes.internetToProxy,
+        proxyToInternet = report.proxyToInternet + totalBytes.proxyToInternet,
+    )
+  }
+
   data class IpAddress(
       val ip: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
+      override val totalBytes: ByteTransferReport,
   ) :
       TetherClient(
           nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
+          totalBytes = totalBytes,
       )
 
   data class HostName(
       val hostname: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
+      override val totalBytes: ByteTransferReport,
   ) :
       TetherClient(
           nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
+          totalBytes = totalBytes,
       )
 }
 

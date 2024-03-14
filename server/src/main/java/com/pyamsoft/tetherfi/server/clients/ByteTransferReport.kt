@@ -16,12 +16,17 @@
 
 package com.pyamsoft.tetherfi.server.clients
 
-import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
+data class ByteTransferReport(
+    val internetToProxy: ULong,
+    val proxyToInternet: ULong,
+) {
+  companion object {
 
-interface SeenClients {
-
-  @CheckResult fun listenForClients(): Flow<List<TetherClient>>
-
-  suspend fun seen(client: TetherClient)
+    @JvmField
+    val EMPTY =
+        ByteTransferReport(
+            internetToProxy = 0UL,
+            proxyToInternet = 0UL,
+        )
+  }
 }

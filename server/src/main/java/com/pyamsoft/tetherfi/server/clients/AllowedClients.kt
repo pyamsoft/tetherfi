@@ -16,10 +16,17 @@
 
 package com.pyamsoft.tetherfi.server.clients
 
-interface ClientEditor {
+import androidx.annotation.CheckResult
+import kotlinx.coroutines.flow.Flow
 
-  suspend fun updateNickName(
+interface AllowedClients {
+
+  @CheckResult fun listenForClients(): Flow<List<TetherClient>>
+
+  suspend fun seen(client: TetherClient)
+
+  suspend fun reportTransfer(
       client: TetherClient,
-      nickName: String,
+      report: ByteTransferReport,
   )
 }

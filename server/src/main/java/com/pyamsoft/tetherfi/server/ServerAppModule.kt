@@ -23,11 +23,11 @@ import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
+import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
-import com.pyamsoft.tetherfi.server.clients.SeenClients
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
@@ -82,7 +82,7 @@ abstract class ServerAppModule {
   @CheckResult
   internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
 
-  @Binds @CheckResult internal abstract fun bindSeenClients(impl: ClientManagerImpl): SeenClients
+  @Binds @CheckResult internal abstract fun bindSeenClients(impl: ClientManagerImpl): AllowedClients
 
   @Binds @CheckResult internal abstract fun bindClientEraser(impl: ClientManagerImpl): ClientEraser
 
