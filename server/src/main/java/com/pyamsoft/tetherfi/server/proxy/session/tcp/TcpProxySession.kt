@@ -105,6 +105,8 @@ internal constructor(
       return null
     }
 
+    // TODO(Peter): Reduce allocation by looking up an existing allowedClient?
+
     val hostNameOrIp = remote.hostname
     return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
       TetherClient.IpAddress(
