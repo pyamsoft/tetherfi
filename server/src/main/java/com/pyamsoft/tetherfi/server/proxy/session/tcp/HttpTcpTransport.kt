@@ -251,6 +251,9 @@ internal constructor(
      * Read the first line as it should include enough data for us yeah ok, there is often extra
      * data sent over but its mainly for optimization and rarely required to actually make a
      * connection
+     *
+     * TODO(Peter): https://github.com/pyamsoft/tetherfi/issues/280
+     *              Is reading only a single line causing HTTP issues?
      */
     val line = input.readUTF8Line()
 
