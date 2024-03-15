@@ -253,7 +253,8 @@ internal constructor(
      * connection
      *
      * TODO(Peter): https://github.com/pyamsoft/tetherfi/issues/280
-     *              Is reading only a single line causing HTTP issues?
+     *
+     *   Is reading only a single line causing HTTP issues?
      */
     val line = input.readUTF8Line()
 
