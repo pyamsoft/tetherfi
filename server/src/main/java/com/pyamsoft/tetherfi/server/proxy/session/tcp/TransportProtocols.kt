@@ -28,47 +28,9 @@ import io.ktor.utils.io.writeFully
 
 private const val LINE_ENDING = "\r\n"
 
-private const val SHOW_ME_WHATS_GOING_ON = true
-
-@CheckResult
-private suspend fun byHandTalkBuffers(input: ByteReadChannel, output: ByteWriteChannel): Long {
-  KtorDefaultPool.useInstance { buffer ->
-    val limit = Long.MAX_VALUE
-    val dstNeedsFlush = !output.autoFlush
-
-    var copied = 0L
-
-    while (true) {
-      val remaining = limit - copied
-      if (remaining == 0L) {
-        break
-      }
-      buffer.reset()
-
-      val size = input.readAvailable(buffer)
-      if (size == -1) {
-        break
-      }
-
-      Timber.d { "SUPER DEBUG: ${String(buffer.array(), 0, size)}" }
-      output.writeFully(buffer)
-      copied += size
-
-      if (dstNeedsFlush && input.availableForRead == 0) {
-        output.flush()
-      }
-    }
-    return copied
-  }
-}
-
 @CheckResult
 internal suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel): Long {
   try {
-    if (SHOW_ME_WHATS_GOING_ON) {
-      return byHandTalkBuffers(input, output)
-    }
-
     // Should be faster than parsing byte buffers raw
     // input.joinTo(output, closeOnEnd = true)
 
