@@ -75,7 +75,14 @@ internal constructor(
               port = request.port,
           )
 
-      val socket = builder.tcp().connect(remoteAddress = remote)
+      val socket =
+          builder
+              .tcp()
+              .configure {
+                reuseAddress = true
+                reusePort = true
+              }
+              .connect(remoteAddress = remote)
       try {
         block(socket)
       } finally {
