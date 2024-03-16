@@ -327,6 +327,9 @@ internal constructor(
       }
 
       // Exchange data until completed
+      //
+      // For HTTP, this will send over "the rest" of the request
+      // For HTTPS, the client "assumes" the CONNECT has succeeded, so there is no more request
       val job =
           scope.launch(context = serverDispatcher.primary) {
             // Send data from the internet back to the proxy in a different thread
