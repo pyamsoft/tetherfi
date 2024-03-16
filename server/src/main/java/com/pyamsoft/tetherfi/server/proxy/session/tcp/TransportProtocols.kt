@@ -17,13 +17,10 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.core.Timber
-import io.ktor.util.cio.KtorDefaultPool
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.close
 import io.ktor.utils.io.copyTo
-import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.writeFully
 
 private const val LINE_ENDING = "\r\n"

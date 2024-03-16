@@ -194,7 +194,7 @@ internal constructor(
     return MethodData(
         url = restOfLine.substring(0, nextSpace).trim().fixSpecialBuggyUrls(),
         method = line.substring(0, firstSpace).trim(),
-        version = restOfLine.substring(nextSpace + 1).trim(),
+        // version = restOfLine.substring(nextSpace + 1).trim(),
     )
   }
 
@@ -277,12 +277,10 @@ internal constructor(
 
       val urlData = getUrlAndPort(methodData.url)
       return ProxyRequest(
-              url = methodData.url,
-              host = urlData.hostName,
-              method = methodData.method,
-              port = urlData.port,
-              version = methodData.version,
               raw = line,
+              method = methodData.method,
+              host = urlData.hostName,
+              port = urlData.port,
           )
           .also { Timber.d { "Proxy Request: $it" } }
     } catch (e: Throwable) {
@@ -380,6 +378,6 @@ internal constructor(
   private data class MethodData(
       val url: String,
       val method: String,
-      val version: String,
+      // val version: String,
   )
 }
