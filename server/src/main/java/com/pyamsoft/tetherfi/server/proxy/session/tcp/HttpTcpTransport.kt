@@ -231,11 +231,14 @@ internal constructor(
       request: ProxyRequest,
   ) {
     // Strip off the hostname just leaving file name for requests
-    val file = request.url.replace("http://.+\\.\\w+/".toRegex(), "/")
-
-    val newRequest = "${request.method} $file ${request.version}"
-
-    output.writeFully(writeMessageAndAwaitMore(newRequest))
+    // NOTE(Peter): We used to do this and things would work because most network requests
+    // would also send over a HOST header. But it looks like also just sending the unchanged
+    // first line of the request also works just fine. So I do not know why we did this parsing
+    // actually.
+    //
+    // val file = request.url.replace("http://.+\\.\\w+/".toRegex(), "/")
+    // val newRequest = "${request.method} $file ${request.version}"
+    output.writeFully(writeMessageAndAwaitMore(request.raw))
   }
 
   /**
