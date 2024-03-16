@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -128,8 +127,8 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun CoroutineScope.ensureAcceptedConnection(server: ServerSocket): Socket {
-    while (isActive && !server.isClosed) {
+  private suspend fun ensureAcceptedConnection(server: ServerSocket): Socket {
+    while (!server.isClosed) {
       try {
         if (appEnvironment.isYoloError.first()) {
           Timber.w { "In YOLO mode, we simulate an IOException after 3 seconds of waiting" }
@@ -164,7 +163,7 @@ internal constructor(
         Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
 
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
-        while (isActive && !server.isClosed) {
+        while (!server.isClosed) {
           // We must close the connection in the launch{} after exchange is over
           val connection = ensureAcceptedConnection(server)
 

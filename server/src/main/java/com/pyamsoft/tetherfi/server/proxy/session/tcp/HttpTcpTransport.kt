@@ -36,7 +36,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 internal class HttpTcpTransport
@@ -204,7 +203,7 @@ internal constructor(
    *
    * Establish the connection to a site and then continue processing the connection data
    */
-  private suspend fun CoroutineScope.establishHttpsConnection(
+  private suspend fun establishHttpsConnection(
       input: ByteReadChannel,
       output: ByteWriteChannel,
   ) {
@@ -216,7 +215,7 @@ internal constructor(
     var throwaway: String?
     do {
       throwaway = input.readUTF8Line()
-    } while (isActive && !throwaway.isNullOrBlank())
+    } while (!throwaway.isNullOrBlank())
 
     proxyResponse(output, "HTTP/1.1 200 Connection Established")
   }
@@ -317,7 +316,7 @@ internal constructor(
         // Establish an HTTPS connection by faking the CONNECT response
         // Send a 200 to the connecting client so that they will then continue to
         // send the actual HTTP data to the real endpoint
-        scope.establishHttpsConnection(proxyInput, proxyOutput)
+        establishHttpsConnection(proxyInput, proxyOutput)
       } else {
         // Send initial HTTP communication, since we consumed it above
         replayHttpCommunication(

@@ -241,21 +241,6 @@ internal constructor(
     return checkBlocked { it.matches(client) }
   }
 
-  @CheckResult
-  private inline fun <reified T : TetherClient> retrieveExistingClient(): List<T> {
-    return allowedClients.value.filterIsInstance<T>()
-  }
-
-  @CheckResult
-  private fun retrieveIpClient(ipAddress: String): TetherClient? {
-    return retrieveExistingClient<TetherClient.IpAddress>().firstOrNull { it.ip == ipAddress }
-  }
-
-  @CheckResult
-  private fun retrieveHostnameClient(hostName: String): TetherClient? {
-    return retrieveExistingClient<TetherClient.HostName>().firstOrNull { it.hostname == hostName }
-  }
-
   private fun CoroutineScope.handleClientUpdate(
       hostNameOrIp: String,
       onClientUpdated: (TetherClient) -> TetherClient,
