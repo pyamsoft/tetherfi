@@ -34,12 +34,12 @@ buildscript {
     leakCanary = "2.13"
 
     // Dagger
-    dagger = "2.50"
+    dagger = "2.51"
 
     // Compose
-    compose = "1.6.2"
+    compose = "1.6.3"
     composeCompiler = "1.5.10"
-    composeMaterial = "1.6.2"
+    composeMaterial = "1.6.3"
     composeActivity = "1.8.2"
 
     accompanist = "0.34.0"
