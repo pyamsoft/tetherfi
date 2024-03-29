@@ -32,12 +32,13 @@ android {
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     // Flag to enable support for the new language APIs
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlinOptions { jvmTarget = "17" }
+  kotlinOptions { jvmTarget = JavaVersion.VERSION_17.getMajorVersion() }
 
   buildFeatures { buildConfig = false }
 }
