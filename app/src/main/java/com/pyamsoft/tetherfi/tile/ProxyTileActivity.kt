@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
@@ -45,7 +44,6 @@ class ProxyTileActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
 
     ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
-    stableLayoutHideNavigation()
 
     val vm = viewModel.requireNotNull()
     val appName = getString(R.string.app_name)

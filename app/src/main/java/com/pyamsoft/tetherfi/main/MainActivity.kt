@@ -34,7 +34,6 @@ import com.pyamsoft.pydroid.ui.app.installPYDroid
 import com.pyamsoft.pydroid.ui.changelog.ChangeLogProvider
 import com.pyamsoft.pydroid.ui.changelog.buildChangeLog
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
-import com.pyamsoft.pydroid.util.stableLayoutHideNavigation
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
@@ -94,9 +93,6 @@ class MainActivity : AppCompatActivity() {
 
     // Then register for any permissions
     registerPermissionRequester()
-
-    // Finally update the View
-    stableLayoutHideNavigation()
   }
 
   private fun safeOpenSettingsIntent(action: String) {
