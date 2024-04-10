@@ -14,7 +14,6 @@
   ~ limitations under the License.
   -->
 <resources>
-
   <style name="Theme.TetherFi" parent="Theme.AppCompat.DayNight.NoActionBar">
     <item name="colorPrimary">@color/primary</item>
     <item name="colorPrimaryDark">@color/primary</item>
@@ -36,5 +35,4 @@
     <!-- No animation on the window -->
     <item name="android:animation">@null</item>
   </style>
-
 </resources>
