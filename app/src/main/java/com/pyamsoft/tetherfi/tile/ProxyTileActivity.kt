@@ -67,11 +67,8 @@ class ProxyTileActivity : AppCompatActivity() {
         )
       }
     }
-  }
 
-  override fun onResume() {
-    super.onResume()
-    viewModel.requireNotNull().handleSyncDarkTheme(this)
+    vm.handleSyncDarkTheme(this)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {
