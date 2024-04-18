@@ -27,10 +27,12 @@ import kotlinx.coroutines.flow.StateFlow
 @Stable
 interface ThemeViewState : UiViewState {
   val theme: StateFlow<Theming.Mode>
+  val isMaterialYou: StateFlow<Boolean>
 }
 
 @Stable
 @ActivityScope
 class MutableThemeViewState @Inject internal constructor() : ThemeViewState {
   override val theme = MutableStateFlow(Theming.Mode.SYSTEM)
+  override val isMaterialYou = MutableStateFlow(false)
 }

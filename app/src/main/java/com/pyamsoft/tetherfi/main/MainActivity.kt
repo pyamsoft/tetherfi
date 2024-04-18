@@ -117,11 +117,13 @@ class MainActivity : AppCompatActivity() {
 
     setContent {
       val theme by vm.theme.collectAsStateWithLifecycle()
+      val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
 
       SaveStateDisposableEffect(vm)
 
       TetherFiTheme(
           theme = theme,
+          isMaterialYou = isMaterialYou,
       ) {
         SystemBars(
             isDarkMode = theme.getSystemDarkMode(),

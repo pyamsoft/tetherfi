@@ -48,8 +48,8 @@ import com.pyamsoft.pydroid.ui.uri.rememberExternalUriHandler
 
 @Composable
 @ChecksSdkIntAtLeast(Build.VERSION_CODES.S)
-private fun rememberCanUseDynamic(): Boolean {
-  return remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && false }
+private fun rememberCanUseDynamic(isMaterialYou: Boolean): Boolean {
+  return remember(isMaterialYou) { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isMaterialYou }
 }
 
 @Composable
@@ -57,6 +57,7 @@ private fun rememberCanUseDynamic(): Boolean {
 private fun themeColors(
     activity: Activity,
     isDarkMode: Boolean,
+    isMaterialYou: Boolean,
 ): ColorScheme {
   val colors =
       remember(isDarkMode) {
@@ -70,7 +71,7 @@ private fun themeColors(
   val black = colorResource(android.R.color.black)
   val white = colorResource(android.R.color.white)
 
-  val canUseDynamic = rememberCanUseDynamic()
+  val canUseDynamic = rememberCanUseDynamic(isMaterialYou)
 
   return remember(
       activity,
@@ -121,6 +122,7 @@ private fun themeShapes(): Shapes {
 @Composable
 fun ComponentActivity.TetherFiTheme(
     theme: Theming.Mode,
+    isMaterialYou: Boolean,
     content: @Composable () -> Unit,
 ) {
   val self = this
@@ -130,7 +132,7 @@ fun ComponentActivity.TetherFiTheme(
   val uriHandler = rememberExternalUriHandler()
 
   PYDroidTheme(
-      colorScheme = themeColors(self, isDarkMode),
+      colorScheme = themeColors(self, isDarkMode, isMaterialYou),
       shapes = themeShapes(),
   ) {
     CompositionLocalProvider(
