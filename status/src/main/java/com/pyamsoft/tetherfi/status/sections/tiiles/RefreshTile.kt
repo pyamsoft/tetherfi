@@ -25,14 +25,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,11 +72,8 @@ internal fun RefreshTile(
         Text(
             text = "Refresh Hotspot",
             style =
-                MaterialTheme.typography.caption.copy(
-                    color =
-                        color.copy(
-                            alpha = ContentAlpha.medium,
-                        ),
+                MaterialTheme.typography.bodySmall.copy(
+                    color = color,
                 ),
         )
       }
@@ -137,7 +133,7 @@ private fun AttemptRefreshButton(
           modifier = Modifier.graphicsLayer { rotationZ = if (fakeSpin) angle else 0F },
           imageVector = Icons.Filled.Refresh,
           contentDescription = "Refresh",
-          tint = MaterialTheme.colors.primary,
+          tint = MaterialTheme.colorScheme.primary,
       )
     }
   }

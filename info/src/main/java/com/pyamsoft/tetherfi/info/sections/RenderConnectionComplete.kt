@@ -19,9 +19,8 @@ package com.pyamsoft.tetherfi.info.sections
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +43,7 @@ internal fun LazyListScope.renderConnectionComplete(
     ) {
       Text(
           text = "Your device should now be sharing its Internet connection!",
-          style = MaterialTheme.typography.body1,
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
@@ -59,11 +58,8 @@ internal fun LazyListScope.renderConnectionComplete(
           text =
               "At this point, normal Internet browsing and email should work. If it does not, disconnect from the $appName Hotspot and double-check that you have entered the correct Network and Proxy settings.",
           style =
-              MaterialTheme.typography.body2.copy(
-                  color =
-                      MaterialTheme.colors.onBackground.copy(
-                          alpha = ContentAlpha.medium,
-                      ),
+              MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onBackground,
               ),
       )
     }

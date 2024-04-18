@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.ui.checkable
 
 import androidx.annotation.CheckResult
-import androidx.compose.material.ContentAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
@@ -30,18 +29,11 @@ internal constructor(
 @Composable
 @CheckResult
 internal fun rememberCheckableAlpha(isEditable: Boolean): CheckableCardAlpha {
-  val highAlpha = ContentAlpha.high
-  val mediumAlpha = ContentAlpha.medium
-  val disabledAlpha = ContentAlpha.disabled
-
   return remember(
       isEditable,
-      highAlpha,
-      mediumAlpha,
-      disabledAlpha,
   ) {
-    val primary = if (isEditable) highAlpha else disabledAlpha
-    val secondary = if (isEditable) mediumAlpha else disabledAlpha
+    val primary = 1F
+    val secondary = 1F
 
     return@remember CheckableCardAlpha(primary, secondary)
   }

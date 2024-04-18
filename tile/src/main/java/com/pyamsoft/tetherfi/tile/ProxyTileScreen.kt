@@ -23,13 +23,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
@@ -142,7 +140,7 @@ fun ProxyTileScreen(
       Surface(
           modifier = modifier.padding(MaterialTheme.keylines.content),
           shape = MaterialTheme.shapes.medium,
-          elevation = DialogDefaults.Elevation,
+          shadowElevation = DialogDefaults.Elevation,
       ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
@@ -164,11 +162,8 @@ fun ProxyTileScreen(
                 textAlign = TextAlign.Center,
                 text = "Please open the $appName app and try again.",
                 style =
-                    MaterialTheme.typography.body2.copy(
-                        color =
-                            MaterialTheme.colors.error.copy(
-                                alpha = ContentAlpha.medium,
-                            ),
+                    MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.error,
                     ),
             )
           }
@@ -198,7 +193,7 @@ private fun StatusText(
       modifier = modifier,
       text = statusText,
       textAlign = TextAlign.Center,
-      style = MaterialTheme.typography.h4,
+      style = MaterialTheme.typography.headlineMedium,
   )
 }
 
@@ -282,9 +277,9 @@ private fun Step(
     isError: Boolean,
     isDone: Boolean,
 ) {
-  val errorColor = MaterialTheme.colors.error
-  val runningColor = MaterialTheme.colors.success
-  val defaultColor = MaterialTheme.colors.onSurface
+  val errorColor = MaterialTheme.colorScheme.error
+  val runningColor = MaterialTheme.colorScheme.primary
+  val defaultColor = MaterialTheme.colorScheme.onSurface
   val color =
       remember(
           isError,
@@ -322,10 +317,10 @@ private fun Connector(
     isDone: Boolean,
     inProgress: Boolean,
 ) {
-  val errorColor = MaterialTheme.colors.error
-  val runningColor = MaterialTheme.colors.success
-  val primaryColor = MaterialTheme.colors.primary
-  val defaultColor = MaterialTheme.colors.onSurface
+  val errorColor = MaterialTheme.colorScheme.error
+  val runningColor = MaterialTheme.colorScheme.primary
+  val primaryColor = MaterialTheme.colorScheme.secondary
+  val defaultColor = MaterialTheme.colorScheme.onSurface
   val color =
       remember(
           isError,

@@ -20,10 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -32,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.util.bottomBorder
 import com.pyamsoft.pydroid.ui.util.sideBorders
 import com.pyamsoft.pydroid.ui.util.topBorder
@@ -78,11 +76,11 @@ internal fun LazyListScope.renderPowerBalance(
         rememberCheckableColor(
             label = "Wake Locks",
             condition = isChecked,
-            selectedColor = MaterialTheme.colors.primary,
+            selectedColor = MaterialTheme.colorScheme.primary,
         )
 
-    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val highAlpha = 1F
+    val mediumAlpha = 1F
 
     BetterSurface(
         modifier =
@@ -90,12 +88,11 @@ internal fun LazyListScope.renderPowerBalance(
                 .topBorder(
                     strokeWidth = 2.dp,
                     color =
-                        MaterialTheme.colors.primary.copy(
+                        MaterialTheme.colorScheme.primary.copy(
                             alpha = mediumAlpha,
                         ),
                     cornerRadius = MaterialTheme.keylines.content,
                 ),
-        elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
                 bottomStart = ZeroCornerSize,
@@ -106,7 +103,7 @@ internal fun LazyListScope.renderPowerBalance(
           modifier = itemModifier.padding(MaterialTheme.keylines.content),
           text = "Expert: Power Balance",
           style =
-              MaterialTheme.typography.h6.copy(
+              MaterialTheme.typography.titleLarge.copy(
                   fontWeight = FontWeight.W700,
                   color = cardColor.copy(alpha = highAlpha),
               ),
@@ -117,18 +114,17 @@ internal fun LazyListScope.renderPowerBalance(
   item(
       contentType = RenderThreadsContentTypes.EXPLAIN,
   ) {
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val mediumAlpha = 1F
 
     BetterSurface(
         modifier =
             Modifier.sideBorders(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
             ),
-        elevation = CardDefaults.Elevation,
     ) {
       Text(
           modifier =
@@ -145,11 +141,8 @@ internal fun LazyListScope.renderPowerBalance(
               """
                   .trimMargin(),
           style =
-              MaterialTheme.typography.caption.copy(
-                  color =
-                      MaterialTheme.colors.onSurface.copy(
-                          alpha = mediumAlpha,
-                      ),
+              MaterialTheme.typography.bodySmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
@@ -158,19 +151,18 @@ internal fun LazyListScope.renderPowerBalance(
   item(
       contentType = RenderThreadsContentTypes.ADJUST,
   ) {
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val mediumAlpha = 1F
 
     BetterSurface(
         modifier =
             Modifier.bottomBorder(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
                 cornerRadius = MaterialTheme.keylines.content,
             ),
-        elevation = CardDefaults.Elevation,
     ) {
       Button(
           modifier =

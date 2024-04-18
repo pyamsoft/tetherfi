@@ -18,11 +18,11 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.Scaffold
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -65,7 +65,7 @@ fun MainScreen(
       )
 
       MainContent(
-          modifier = Modifier.fillMaxWidth().weight(1F).padding(pv),
+          modifier = Modifier.fillMaxWidth().weight(1F).consumeWindowInsets(pv),
           appName = appName,
           pagerState = pagerState,
           state = state,

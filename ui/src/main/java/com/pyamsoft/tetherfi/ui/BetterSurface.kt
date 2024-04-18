@@ -20,9 +20,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.contentColorFor
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -31,7 +32,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.pyamsoft.pydroid.ui.util.surfaceColorAtElevation
 
 /**
  * In Light Mode, surfaces at the same elevation have a very thin line between them
@@ -42,7 +42,7 @@ import com.pyamsoft.pydroid.ui.util.surfaceColorAtElevation
 fun BetterSurface(
     modifier: Modifier = Modifier,
     shape: Shape = RectangleShape,
-    color: Color = MaterialTheme.colors.surface,
+    color: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = contentColorFor(color),
     border: BorderStroke? = null,
     elevation: Dp = 0.dp,
@@ -58,7 +58,7 @@ fun BetterSurface(
             modifier
                 .background(
                     color =
-                        surfaceColorAtElevation(
+                        MaterialTheme.colorScheme.surfaceColorAtElevation(
                             elevation = elevation,
                         ),
                     shape = shape,

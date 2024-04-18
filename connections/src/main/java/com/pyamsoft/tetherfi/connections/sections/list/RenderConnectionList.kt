@@ -19,9 +19,8 @@ package com.pyamsoft.tetherfi.connections.sections.list
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -78,7 +77,7 @@ private fun LazyListScope.renderRunningNoClients(
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "No connections yet!",
-        style = MaterialTheme.typography.h5,
+        style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,
     )
   }
@@ -101,11 +100,8 @@ private fun LazyListScope.renderRunningWithClients(
         text =
             "By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.",
         style =
-            MaterialTheme.typography.body2.copy(
-                color =
-                    MaterialTheme.colors.onBackground.copy(
-                        alpha = ContentAlpha.medium,
-                    ),
+            MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground,
             ),
         textAlign = TextAlign.Center,
     )
@@ -135,7 +131,7 @@ private fun LazyListScope.renderNotRunning(modifier: Modifier = Modifier) {
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text = "Start the Hotspot to view and manage connected devices.",
-        style = MaterialTheme.typography.h5,
+        style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,
     )
   }

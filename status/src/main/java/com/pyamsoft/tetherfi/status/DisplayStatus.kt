@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.status
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.theme.success
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.common.StatusItem
 
@@ -57,8 +56,8 @@ internal fun DisplayStatus(
         }
       }
 
-  val errorColor = MaterialTheme.colors.error
-  val runningColor = MaterialTheme.colors.success
+  val errorColor = MaterialTheme.colorScheme.error
+  val runningColor = MaterialTheme.colorScheme.primary
   val color =
       remember(
           status,
@@ -74,8 +73,8 @@ internal fun DisplayStatus(
         }
       }
 
-  val smallStyle = MaterialTheme.typography.body1
-  val normalStyle = MaterialTheme.typography.h5
+  val smallStyle = MaterialTheme.typography.bodyLarge
+  val normalStyle = MaterialTheme.typography.headlineSmall
   val valueStyle =
       remember(
           smallStyle,
@@ -99,7 +98,7 @@ internal fun DisplayStatus(
         }
       }
 
-  val backgroundColor = MaterialTheme.colors.onBackground
+  val backgroundColor = MaterialTheme.colorScheme.onBackground
   val borderColor =
       remember(
           size,

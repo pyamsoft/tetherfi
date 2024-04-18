@@ -17,8 +17,8 @@
 package com.pyamsoft.tetherfi.status.common
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +32,7 @@ internal fun StatusItem(
     title: String,
     value: String,
     showError: (() -> Unit)? = null,
-    valueStyle: TextStyle = MaterialTheme.typography.body1,
+    valueStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     color: Color = Color.Unspecified,
 ) {
   Column(
@@ -40,7 +40,7 @@ internal fun StatusItem(
   ) {
     Label(
         text = title,
-        color = MaterialTheme.colors.onSurface,
+        color = MaterialTheme.colorScheme.onSurface,
         onAction = showError,
     )
     Text(

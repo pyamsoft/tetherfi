@@ -25,12 +25,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RadioButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -185,21 +184,15 @@ private fun PowerBalanceLimit(
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
           text = title,
-          style = MaterialTheme.typography.body1,
-          color =
-              MaterialTheme.colors.onSurface.copy(
-                  alpha = ContentAlpha.high,
-              ),
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onSurface,
           fontWeight = FontWeight.W700,
       )
 
       Text(
           text = description,
-          style = MaterialTheme.typography.caption,
-          color =
-              MaterialTheme.colors.onSurface.copy(
-                  alpha = ContentAlpha.medium,
-              ),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
     }
   }
@@ -221,7 +214,7 @@ internal fun PowerBalanceDialog(
   ) {
     Surface(
         modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-        elevation = DialogDefaults.Elevation,
+        shadowElevation = DialogDefaults.Elevation,
         shape = MaterialTheme.shapes.medium,
     ) {
       LazyColumn {

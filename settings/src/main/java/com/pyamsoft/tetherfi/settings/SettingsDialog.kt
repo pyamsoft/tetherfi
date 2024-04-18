@@ -23,10 +23,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.Checkbox
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -124,21 +123,15 @@ private fun DebugItem(
       Text(
           text = title,
           style =
-              MaterialTheme.typography.body1.copy(
-                  color =
-                      MaterialTheme.colors.onSurface.copy(
-                          alpha = ContentAlpha.high,
-                      ),
+              MaterialTheme.typography.bodyLarge.copy(
+                  color = MaterialTheme.colorScheme.onSurface,
               ),
       )
       Text(
           text = description,
           style =
-              MaterialTheme.typography.caption.copy(
-                  color =
-                      MaterialTheme.colors.onSurface.copy(
-                          alpha = ContentAlpha.medium,
-                      ),
+              MaterialTheme.typography.bodySmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }

@@ -23,13 +23,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -87,7 +87,7 @@ fun ServerErrorTile(
         Icon(
             imageVector = Icons.Filled.Warning,
             contentDescription = "Something went wrong",
-            tint = MaterialTheme.colors.error,
+            tint = MaterialTheme.colorScheme.error,
         )
       }
     }
@@ -136,7 +136,7 @@ fun ServerErrorDialog(
             Text(
                 modifier = Modifier.padding(MaterialTheme.keylines.content),
                 text = title,
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.titleLarge,
             )
           }
 
@@ -148,7 +148,7 @@ fun ServerErrorDialog(
                 modifier = Modifier.padding(MaterialTheme.keylines.content),
                 text = trace,
                 style =
-                    MaterialTheme.typography.caption.copy(
+                    MaterialTheme.typography.bodySmall.copy(
                         fontFamily = FontFamily.Monospace,
                     ),
             )

@@ -134,12 +134,6 @@ class TetherFi : Application() {
       )
 
       OssLibraries.add(
-          "Accompanist Pager Indicators",
-          "https://google.github.io/accompanist/pager/",
-          "A library which provides paging layouts for Jetpack Compose.",
-      )
-
-      OssLibraries.add(
           "AndroidX Appcompat",
           "https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/appcompat/",
           "AndroidX compatibility library for older versions of Android",

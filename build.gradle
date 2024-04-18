@@ -37,12 +37,10 @@ buildscript {
     dagger = "2.51.1"
 
     // Compose
-    compose = "1.6.5"
-    composeCompiler = "1.5.11"
-    composeMaterial = "1.6.5"
-    composeActivity = "1.8.2"
-
-    accompanist = "0.34.0"
+    compose = "1.6.6"
+    composeCompiler = "1.5.12"
+    composeMaterial3 = "1.2.1"
+    composeActivity = "1.9.0"
 
     desugar = "2.0.4"
 

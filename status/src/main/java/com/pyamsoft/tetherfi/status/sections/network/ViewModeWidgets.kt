@@ -21,11 +21,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconToggleButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -77,7 +76,7 @@ internal fun ViewProxy(
         title = "PROXY URL/HOSTNAME",
         value = ipAddress,
         valueStyle =
-            MaterialTheme.typography.h6.copy(
+            MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
@@ -91,7 +90,7 @@ internal fun ViewProxy(
         title = "PROXY PORT",
         value = port,
         valueStyle =
-            MaterialTheme.typography.h6.copy(
+            MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
@@ -120,7 +119,7 @@ internal fun ViewPassword(
         title = "HOTSPOT PASSWORD",
         value = password,
         valueStyle =
-            MaterialTheme.typography.h6.copy(
+            MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
@@ -142,7 +141,7 @@ internal fun ViewPassword(
             imageVector =
                 if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
             contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
-            tint = MaterialTheme.colors.primary,
+            tint = MaterialTheme.colorScheme.primary,
         )
       }
     }
@@ -162,7 +161,7 @@ internal fun ViewSsid(
       title = "HOTSPOT NAME",
       value = ssid,
       valueStyle =
-          MaterialTheme.typography.h6.copy(
+          MaterialTheme.typography.titleLarge.copy(
               fontWeight = FontWeight.W400,
               fontFamily = FontFamily.Monospace,
           ),
@@ -180,7 +179,7 @@ internal fun ViewInstructions(
 
     appendLink(
         tag = SETUP_TAG,
-        linkColor = MaterialTheme.colors.primary,
+        linkColor = MaterialTheme.colorScheme.primary,
         text = SETUP_TEXT,
         url = SETUP_TAG,
     )
@@ -189,11 +188,8 @@ internal fun ViewInstructions(
   ClickableText(
       modifier = modifier,
       style =
-          MaterialTheme.typography.body2.copy(
-              color =
-                  MaterialTheme.colors.onBackground.copy(
-                      alpha = ContentAlpha.medium,
-                  ),
+          MaterialTheme.typography.bodyMedium.copy(
+              color = MaterialTheme.colorScheme.onBackground,
               textAlign = TextAlign.Center,
           ),
       text = text,

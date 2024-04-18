@@ -21,9 +21,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -100,12 +99,9 @@ internal fun NetworkBands(
       Text(
           text = "Network Broadcast Frequency is defined by the system and cannot be changed.",
           style =
-              MaterialTheme.typography.body1.copy(
+              MaterialTheme.typography.bodyLarge.copy(
                   fontWeight = FontWeight.W700,
-                  color =
-                      MaterialTheme.colors.onSurface.copy(
-                          alpha = ContentAlpha.medium,
-                      ),
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }

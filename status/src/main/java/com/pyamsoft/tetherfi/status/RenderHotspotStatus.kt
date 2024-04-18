@@ -23,13 +23,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
+import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.util.bottomBorder
 import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -59,8 +59,8 @@ internal fun LazyListScope.renderHotspotStatus(
                 .topBorder(
                     strokeWidth = 4.dp,
                     color =
-                        MaterialTheme.colors.onSurface.copy(
-                            alpha = ContentAlpha.disabled,
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
                         ),
                     cornerRadius = MaterialTheme.keylines.content,
                 ),
@@ -106,8 +106,8 @@ internal fun LazyListScope.renderHotspotStatus(
                 .bottomBorder(
                     strokeWidth = 4.dp,
                     color =
-                        MaterialTheme.colors.onSurface.copy(
-                            alpha = ContentAlpha.disabled,
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
                         ),
                     cornerRadius = MaterialTheme.keylines.content,
                 ),

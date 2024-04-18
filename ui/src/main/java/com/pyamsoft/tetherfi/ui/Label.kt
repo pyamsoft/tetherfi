@@ -22,12 +22,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +40,7 @@ import com.pyamsoft.pydroid.theme.keylines
 fun Label(
     modifier: Modifier = Modifier,
     text: String,
-    color: Color = MaterialTheme.colors.onBackground,
+    color: Color = MaterialTheme.colorScheme.onBackground,
     onAction: (() -> Unit)? = null,
 ) {
   Row(
@@ -52,12 +51,9 @@ fun Label(
     Text(
         text = text,
         style =
-            MaterialTheme.typography.caption.copy(
+            MaterialTheme.typography.bodySmall.copy(
                 fontWeight = FontWeight.W700,
-                color =
-                    color.copy(
-                        alpha = ContentAlpha.medium,
-                    ),
+                color = color,
             ),
     )
 

@@ -18,10 +18,9 @@ package com.pyamsoft.tetherfi.status.sections.tiiles
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +37,7 @@ internal fun ConnectionErrorTile(
   connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also {
     StatusTile(
         modifier = modifier,
-        color = MaterialTheme.colors.error,
+        color = MaterialTheme.colorScheme.error,
     ) {
       ServerErrorTile(
           onShowError = onShowConnectionError,
@@ -54,11 +53,8 @@ internal fun ConnectionErrorTile(
           Text(
               text = "Network Error",
               style =
-                  MaterialTheme.typography.caption.copy(
-                      color =
-                          color.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
+                  MaterialTheme.typography.bodySmall.copy(
+                      color = color,
                   ),
           )
         }

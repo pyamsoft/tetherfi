@@ -16,19 +16,23 @@
 
 package com.pyamsoft.tetherfi.status.trouble
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 
 @Composable
@@ -41,44 +45,50 @@ internal fun TroubleshootDialog(
 ) {
   val hapticManager = LocalHapticManager.current
 
-  AlertDialog(
-      modifier =
-          modifier
-              // Top already has padding for some reason?
-              .padding(horizontal = MaterialTheme.keylines.content)
-              .padding(bottom = MaterialTheme.keylines.content),
+  Dialog(
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
-      text = {
-        TroubleshootUnableToStart(
-            modifier = Modifier.fillMaxWidth(),
-            appName = appName,
-            isBroadcastError = isBroadcastError,
-            isProxyError = isProxyError,
-        )
-      },
-      buttons = {
-        Row(
-            modifier =
-                Modifier.padding(horizontal = MaterialTheme.keylines.content)
-                    .padding(bottom = MaterialTheme.keylines.baseline),
-            verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Box(
+        modifier =
+            modifier
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content),
+    ) {
+      Surface(
+          modifier = Modifier.fillMaxWidth(),
+          shadowElevation = DialogDefaults.Elevation,
+          shape = MaterialTheme.shapes.medium,
+      ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
         ) {
-          Spacer(
-              modifier = Modifier.weight(1F),
+          TroubleshootUnableToStart(
+              modifier = Modifier.fillMaxWidth(),
+              appName = appName,
+              isBroadcastError = isBroadcastError,
+              isProxyError = isProxyError,
           )
-
-          TextButton(
-              onClick = {
-                hapticManager?.cancelButtonPress()
-                onDismiss()
-              },
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
           ) {
-            Text(
-                text = "Close",
+            Spacer(
+                modifier = Modifier.weight(1F),
             )
+
+            TextButton(
+                onClick = {
+                  hapticManager?.cancelButtonPress()
+                  onDismiss()
+                },
+            ) {
+              Text(
+                  text = "Close",
+              )
+            }
           }
         }
-      },
-  )
+      }
+    }
+  }
 }

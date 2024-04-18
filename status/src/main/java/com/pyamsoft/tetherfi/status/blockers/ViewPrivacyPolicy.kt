@@ -18,12 +18,12 @@ package com.pyamsoft.tetherfi.status.blockers
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
 import com.pyamsoft.tetherfi.ui.appendLink
@@ -43,7 +43,7 @@ internal fun ViewPrivacyPolicy(
 
       appendLink(
           tag = URI_TAG,
-          linkColor = MaterialTheme.colors.primary,
+          linkColor = MaterialTheme.colorScheme.primary,
           text = LINK_TEXT,
           url = PRIVACY_POLICY_URL,
       )
@@ -53,12 +53,9 @@ internal fun ViewPrivacyPolicy(
     ClickableText(
         text = text,
         style =
-            MaterialTheme.typography.caption.copy(
+            MaterialTheme.typography.bodySmall.copy(
                 textAlign = TextAlign.Center,
-                color =
-                    MaterialTheme.colors.onSurface.copy(
-                        alpha = ContentAlpha.medium,
-                    ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         onClick = { start ->
           text
@@ -72,4 +69,10 @@ internal fun ViewPrivacyPolicy(
         },
     )
   }
+}
+
+@Preview
+@Composable
+private fun PreviewViewPrivacyPolicy9() {
+  ViewPrivacyPolicy()
 }

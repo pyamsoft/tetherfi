@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
@@ -88,7 +88,7 @@ internal fun LazyListScope.renderNetworkInformation(
                   .padding(bottom = MaterialTheme.keylines.content * 2)
                   .border(
                       width = HairlineSize,
-                      color = MaterialTheme.colors.error,
+                      color = MaterialTheme.colorScheme.error,
                       shape = MaterialTheme.shapes.medium,
                   )
                   .padding(vertical = MaterialTheme.keylines.content),

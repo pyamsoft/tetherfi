@@ -17,19 +17,17 @@
 package com.pyamsoft.tetherfi.status.sections.tiiles
 
 import androidx.compose.foundation.border
-import androidx.compose.material.Card
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 
 @Composable
 internal fun StatusTile(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colors.primary,
+    color: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -39,12 +37,11 @@ internal fun StatusTile(
               width = 2.dp,
               color =
                   color.copy(
-                      alpha = if (enabled) ContentAlpha.medium else ContentAlpha.disabled,
+                      alpha = 1F,
                   ),
               shape = MaterialTheme.shapes.medium,
           ),
       shape = MaterialTheme.shapes.medium,
-      elevation = CardDefaults.Elevation,
   ) {
     content()
   }

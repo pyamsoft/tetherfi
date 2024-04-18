@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -51,8 +51,8 @@ fun LazyListScope.renderLinks(
   item(
       contentType = LinkContentTypes.FAQ_LINK,
   ) {
-    val textColor = MaterialTheme.colors.onSurface
-    val linkColor = MaterialTheme.colors.primary
+    val textColor = MaterialTheme.colorScheme.onSurface
+    val linkColor = MaterialTheme.colorScheme.primary
     val faqBlurb =
         remember(
             textColor,
@@ -95,9 +95,9 @@ fun LazyListScope.renderLinks(
         border =
             BorderStroke(
                 width = HairlineSize,
-                color = MaterialTheme.colors.primary,
+                color = MaterialTheme.colorScheme.primary,
             ),
-        elevation = ZeroElevation,
+        shadowElevation = ZeroElevation,
         color = Color.Transparent,
         shape = MaterialTheme.shapes.medium,
     ) {
@@ -105,7 +105,7 @@ fun LazyListScope.renderLinks(
       ClickableText(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text = faqBlurb,
-          style = MaterialTheme.typography.body1,
+          style = MaterialTheme.typography.bodyLarge,
           onClick = { offset ->
             faqBlurb
                 .getStringAnnotations(

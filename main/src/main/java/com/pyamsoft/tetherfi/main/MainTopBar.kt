@@ -24,20 +24,20 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.AppBarDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Surface
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRowDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 
@@ -58,7 +57,7 @@ fun rememberAllTabs(): SnapshotStateList<MainView> {
 
 // Needs ExperimentalPagerApi even for new function (even though the annotation is deprecated)
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
@@ -71,25 +70,29 @@ fun MainTopBar(
 
   Surface(
       modifier = modifier,
-      color = MaterialTheme.colors.background,
-      elevation = ZeroElevation,
+      color = MaterialTheme.colorScheme.background,
+      shadowElevation = ZeroElevation,
   ) {
     Surface(
-        contentColor = MaterialTheme.colors.onPrimary,
-        color = MaterialTheme.colors.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        color = MaterialTheme.colorScheme.primary,
         shape =
             MaterialTheme.shapes.medium.copy(
                 topStart = ZeroCornerSize,
                 topEnd = ZeroCornerSize,
             ),
-        elevation = AppBarDefaults.TopAppBarElevation,
     ) {
       Column {
+        val contentColor = LocalContentColor.current
         TopAppBar(
             modifier = Modifier.fillMaxWidth().statusBarsPadding(),
-            elevation = ZeroElevation,
-            backgroundColor = Color.Transparent,
-            contentColor = LocalContentColor.current,
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = contentColor,
+                    navigationIconContentColor = contentColor,
+                    actionIconContentColor = contentColor,
+                ),
             title = {
               Text(
                   text = appName,
@@ -114,14 +117,8 @@ fun MainTopBar(
         ScrollableTabRow(
             modifier = Modifier.fillMaxWidth(),
             selectedTabIndex = currentPage,
-            backgroundColor = Color.Transparent,
+            containerColor = Color.Transparent,
             contentColor = LocalContentColor.current,
-            indicator = { tabPositions ->
-              @Suppress("DEPRECATION")
-              TabRowDefaults.Indicator(
-                  modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-              )
-            },
         ) {
           for (index in allTabs.indices) {
             val tab = allTabs[index]

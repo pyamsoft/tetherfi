@@ -19,13 +19,12 @@ package com.pyamsoft.tetherfi.status.sections.network
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconToggleButton
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -190,10 +189,7 @@ internal fun EditSsid(
               style =
                   textStyle.copy(
                       fontFamily = FontFamily.Monospace,
-                      color =
-                          MaterialTheme.colors.onSurface.copy(
-                              alpha = ContentAlpha.disabled,
-                          ),
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                   ),
           )
         }

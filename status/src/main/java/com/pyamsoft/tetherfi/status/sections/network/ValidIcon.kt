@@ -16,15 +16,14 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.pyamsoft.pydroid.theme.success
 
 @Composable
 internal fun ValidIcon(
@@ -40,7 +39,7 @@ internal fun ValidIcon(
       ) {
         "$what is ${if (isValid) "Valid" else "Invalid"}"
       }
-  val tint = if (isValid) MaterialTheme.colors.success else MaterialTheme.colors.error
+  val tint = if (isValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
   Icon(
       modifier = modifier,

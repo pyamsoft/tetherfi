@@ -17,17 +17,21 @@
 package com.pyamsoft.tetherfi
 
 import android.app.Activity
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.CheckResult
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.appcompat.R
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Colors
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Shapes
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -43,11 +47,17 @@ import com.pyamsoft.pydroid.ui.uri.LocalExternalUriHandler
 import com.pyamsoft.pydroid.ui.uri.rememberExternalUriHandler
 
 @Composable
+@ChecksSdkIntAtLeast(Build.VERSION_CODES.S)
+private fun rememberCanUseDynamic(): Boolean {
+  return remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && false }
+}
+
+@Composable
 @CheckResult
 private fun themeColors(
     activity: Activity,
     isDarkMode: Boolean,
-): Colors {
+): ColorScheme {
   val colors =
       remember(isDarkMode) {
         activity.attributesFromCurrentTheme(
@@ -60,33 +70,40 @@ private fun themeColors(
   val black = colorResource(android.R.color.black)
   val white = colorResource(android.R.color.white)
 
+  val canUseDynamic = rememberCanUseDynamic()
+
   return remember(
+      activity,
+      canUseDynamic,
       isDarkMode,
       primary,
       secondary,
       black,
       white,
   ) {
-    if (isDarkMode)
-        darkColors(
+    if (isDarkMode) {
+      if (canUseDynamic) {
+        dynamicDarkColorScheme(activity)
+      } else {
+        darkColorScheme(
             primary = primary,
             onPrimary = black,
             secondary = secondary,
             onSecondary = white,
-            // Must be specified for things like Switch color
-            primaryVariant = primary,
-            secondaryVariant = secondary,
         )
-    else
-        lightColors(
+      }
+    } else {
+      if (canUseDynamic) {
+        dynamicLightColorScheme(activity)
+      } else {
+        lightColorScheme(
             primary = primary,
             onPrimary = black,
             secondary = secondary,
             onSecondary = white,
-            // Must be specified for things like Switch color
-            primaryVariant = primary,
-            secondaryVariant = secondary,
         )
+      }
+    }
   }
 }
 
@@ -113,13 +130,13 @@ fun ComponentActivity.TetherFiTheme(
   val uriHandler = rememberExternalUriHandler()
 
   PYDroidTheme(
-      colors = themeColors(self, isDarkMode),
+      colorScheme = themeColors(self, isDarkMode),
       shapes = themeShapes(),
   ) {
     CompositionLocalProvider(
         // We update the LocalContentColor to match our onBackground. This allows the default
         // content color to be more appropriate to the theme background
-        LocalContentColor provides MaterialTheme.colors.onBackground,
+        LocalContentColor provides MaterialTheme.colorScheme.onBackground,
 
         // We provide the local haptic manager since PYDroid makes it optional
         LocalHapticManager provides hapticManager,

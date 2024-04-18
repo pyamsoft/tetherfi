@@ -25,11 +25,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -84,7 +83,7 @@ internal fun LazyListScope.renderDeviceSetup(
     ) {
       Text(
           text = "Open the Wi-Fi settings page",
-          style = MaterialTheme.typography.body1,
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
@@ -98,7 +97,7 @@ internal fun LazyListScope.renderDeviceSetup(
       Column {
         Text(
             text = "Connect to the $appName Hotspot",
-            style = MaterialTheme.typography.body2,
+            style = MaterialTheme.typography.bodyMedium,
         )
 
         Row {
@@ -117,11 +116,8 @@ internal fun LazyListScope.renderDeviceSetup(
           Text(
               text = "Name",
               style =
-                  MaterialTheme.typography.body1.copy(
-                      color =
-                          MaterialTheme.colors.onBackground.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
+                  MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onBackground,
                   ),
           )
 
@@ -129,7 +125,7 @@ internal fun LazyListScope.renderDeviceSetup(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = ssid,
               style =
-                  MaterialTheme.typography.body1.copy(
+                  MaterialTheme.typography.bodyLarge.copy(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -148,7 +144,7 @@ internal fun LazyListScope.renderDeviceSetup(
                   modifier = Modifier.size(16.dp),
                   imageVector = Icons.Filled.QrCode,
                   contentDescription = "QR Code",
-                  tint = MaterialTheme.colors.primary,
+                  tint = MaterialTheme.colorScheme.primary,
               )
             }
           }
@@ -165,18 +161,15 @@ internal fun LazyListScope.renderDeviceSetup(
           Text(
               text = "Password",
               style =
-                  MaterialTheme.typography.body1.copy(
-                      color =
-                          MaterialTheme.colors.onBackground.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
+                  MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onBackground,
                   ),
           )
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = password,
               style =
-                  MaterialTheme.typography.body1.copy(
+                  MaterialTheme.typography.bodyLarge.copy(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -205,7 +198,7 @@ internal fun LazyListScope.renderDeviceSetup(
                       else Icons.Filled.Visibility,
                   contentDescription =
                       if (isPasswordVisible) "Password Visible" else "Password Hidden",
-                  tint = MaterialTheme.colors.primary,
+                  tint = MaterialTheme.colorScheme.primary,
               )
             }
           }
@@ -215,7 +208,7 @@ internal fun LazyListScope.renderDeviceSetup(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
             text =
                 "Configure the proxy settings. Use MANUAL mode and configure both HTTP and HTTPS proxy options.",
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
         )
 
         Row(
@@ -228,18 +221,15 @@ internal fun LazyListScope.renderDeviceSetup(
           Text(
               text = "URL",
               style =
-                  MaterialTheme.typography.body1.copy(
-                      color =
-                          MaterialTheme.colors.onBackground.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
+                  MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onBackground,
                   ),
           )
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = ipAddress,
               style =
-                  MaterialTheme.typography.body1.copy(
+                  MaterialTheme.typography.bodyLarge.copy(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -252,11 +242,8 @@ internal fun LazyListScope.renderDeviceSetup(
           Text(
               text = "Port",
               style =
-                  MaterialTheme.typography.body1.copy(
-                      color =
-                          MaterialTheme.colors.onBackground.copy(
-                              alpha = ContentAlpha.medium,
-                          ),
+                  MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onBackground,
                   ),
           )
 
@@ -266,7 +253,7 @@ internal fun LazyListScope.renderDeviceSetup(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
               text = portNumber,
               style =
-                  MaterialTheme.typography.body1.copy(
+                  MaterialTheme.typography.bodyLarge.copy(
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -289,7 +276,7 @@ internal fun LazyListScope.renderDeviceSetup(
       Text(
           text =
               "Turn the Wi-Fi off and back on again. It should automatically connect to the $appName Hotspot",
-          style = MaterialTheme.typography.body1,
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
@@ -301,11 +288,8 @@ private fun FullConnectionInstructions(
 ) {
   val uriHandler = rememberUriHandler()
 
-  val textColor =
-      MaterialTheme.colors.onBackground.copy(
-          alpha = ContentAlpha.medium,
-      )
-  val linkColor = MaterialTheme.colors.primary
+  val textColor = MaterialTheme.colorScheme.onBackground
+  val linkColor = MaterialTheme.colorScheme.primary
   val instructions =
       remember(
           textColor,
@@ -332,7 +316,7 @@ private fun FullConnectionInstructions(
   ClickableText(
       modifier = modifier,
       text = instructions,
-      style = MaterialTheme.typography.body1,
+      style = MaterialTheme.typography.bodyLarge,
       onClick = { offset ->
         instructions
             .getStringAnnotations(

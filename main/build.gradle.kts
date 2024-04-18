@@ -55,11 +55,6 @@ dependencies {
 
   implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
 
-  implementation(
-      "com.google.accompanist:accompanist-pager-indicators:${rootProject.extra["accompanist"]}")
-  implementation(
-      "com.google.accompanist:accompanist-systemuicontroller:${rootProject.extra["accompanist"]}")
-
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 

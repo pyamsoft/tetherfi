@@ -19,7 +19,6 @@ package com.pyamsoft.tetherfi.ui.checkable
 import androidx.annotation.CheckResult
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,11 +26,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -43,8 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.theme.success
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
@@ -57,7 +54,7 @@ fun rememberCheckableColor(
     condition: Boolean,
     selectedColor: Color,
 ): State<Color> {
-  val unselectedColor = MaterialTheme.colors.onSurface
+  val unselectedColor = MaterialTheme.colorScheme.onSurface
   val color =
       remember(
           condition,
@@ -75,8 +72,8 @@ fun rememberCheckableColor(
 @Composable
 @CheckResult
 internal fun rememberCheckableIconColor(condition: Boolean): Color {
-  val unselectedColor = MaterialTheme.colors.onSurface
-  val selectedColor = MaterialTheme.colors.success
+  val unselectedColor = MaterialTheme.colorScheme.onSurface
+  val selectedColor = MaterialTheme.colorScheme.primary
   return remember(
       condition,
       unselectedColor,
@@ -104,7 +101,7 @@ fun CheckableCard(
       condition = condition,
       title = title,
       description = description,
-      selectedColor = MaterialTheme.colors.primary,
+      selectedColor = MaterialTheme.colorScheme.primary,
       extraHeight = extraHeight,
       onClick = onClick,
   )
@@ -143,7 +140,6 @@ private fun CheckableCard(
               color = color.copy(alpha = alphas.secondary),
           ),
       shape = MaterialTheme.shapes.medium,
-      elevation = CardDefaults.Elevation,
   ) {
     Column(
         modifier =
@@ -157,7 +153,7 @@ private fun CheckableCard(
             modifier = Modifier.weight(1F).padding(bottom = MaterialTheme.keylines.baseline),
             text = title,
             style =
-                MaterialTheme.typography.h6.copy(
+                MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
                     color = color.copy(alpha = alphas.primary),
                 ),
@@ -181,8 +177,8 @@ private fun CheckableCard(
       Text(
           text = description,
           style =
-              MaterialTheme.typography.caption.copy(
-                  color = MaterialTheme.colors.onSurface.copy(alpha = alphas.secondary),
+              MaterialTheme.typography.bodySmall.copy(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = alphas.secondary),
                   fontWeight = FontWeight.W400,
               ),
       )

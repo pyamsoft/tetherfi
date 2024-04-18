@@ -21,10 +21,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TriStateCheckbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
 import com.pyamsoft.pydroid.ui.util.bottomBorder
 import com.pyamsoft.pydroid.ui.util.sideBorders
 import com.pyamsoft.pydroid.ui.util.topBorder
@@ -83,23 +81,22 @@ internal fun LazyListScope.renderWakelocks(
         rememberCheckableColor(
             label = "Wake Locks",
             condition = isChecked,
-            selectedColor = MaterialTheme.colors.primary,
+            selectedColor = MaterialTheme.colorScheme.primary,
         )
 
-    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val highAlpha = 1F
+    val mediumAlpha = 1F
 
     BetterSurface(
         modifier =
             Modifier.topBorder(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
                 cornerRadius = MaterialTheme.keylines.content,
             ),
-        elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
                 bottomStart = ZeroCornerSize,
@@ -114,7 +111,7 @@ internal fun LazyListScope.renderWakelocks(
             modifier = Modifier.weight(1F),
             text = "Wake Locks",
             style =
-                MaterialTheme.typography.h6.copy(
+                MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
                     color = cardColor.copy(alpha = highAlpha),
                 ),
@@ -133,18 +130,17 @@ internal fun LazyListScope.renderWakelocks(
   item(
       contentType = RenderWakelocksContentTypes.EXPLAIN,
   ) {
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val mediumAlpha = 1F
 
     BetterSurface(
         modifier =
             Modifier.sideBorders(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
             ),
-        elevation = CardDefaults.Elevation,
     ) {
       Text(
           modifier =
@@ -158,8 +154,8 @@ internal fun LazyListScope.renderWakelocks(
                   |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
                   .trimMargin(),
           style =
-              MaterialTheme.typography.caption.copy(
-                  color = MaterialTheme.colors.onSurface.copy(alpha = mediumAlpha),
+              MaterialTheme.typography.bodySmall.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
@@ -168,15 +164,15 @@ internal fun LazyListScope.renderWakelocks(
   item(
       contentType = RenderWakelocksContentTypes.WIFI_LOCK,
   ) {
-    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val highAlpha = 1F
+    val mediumAlpha = 1F
 
     val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
     val wifiLockColor by
         rememberCheckableColor(
             label = "Wi-Fi Lock",
             condition = keepWifiLock,
-            selectedColor = MaterialTheme.colors.primary,
+            selectedColor = MaterialTheme.colorScheme.primary,
         )
 
     BetterSurface(
@@ -184,11 +180,10 @@ internal fun LazyListScope.renderWakelocks(
             Modifier.sideBorders(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
             ),
-        elevation = CardDefaults.Elevation,
     ) {
       ToggleSwitch(
           modifier = itemModifier,
@@ -208,15 +203,15 @@ internal fun LazyListScope.renderWakelocks(
   item(
       contentType = RenderWakelocksContentTypes.WAKE_LOCK,
   ) {
-    val highAlpha = if (isEditable) ContentAlpha.high else ContentAlpha.disabled
-    val mediumAlpha = if (isEditable) ContentAlpha.medium else ContentAlpha.disabled
+    val highAlpha = 1F
+    val mediumAlpha = 1F
 
     val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
     val wakeLockColor by
         rememberCheckableColor(
             label = "CPU Lock",
             condition = keepWakeLock,
-            selectedColor = MaterialTheme.colors.primary,
+            selectedColor = MaterialTheme.colorScheme.primary,
         )
 
     BetterSurface(
@@ -224,12 +219,11 @@ internal fun LazyListScope.renderWakelocks(
             Modifier.bottomBorder(
                 strokeWidth = 2.dp,
                 color =
-                    MaterialTheme.colors.primary.copy(
+                    MaterialTheme.colorScheme.primary.copy(
                         alpha = mediumAlpha,
                     ),
                 cornerRadius = MaterialTheme.keylines.content,
             ),
-        elevation = CardDefaults.Elevation,
         shape =
             MaterialTheme.shapes.medium.copy(
                 topStart = ZeroCornerSize,

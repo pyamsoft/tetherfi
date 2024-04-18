@@ -16,19 +16,27 @@
 
 package com.pyamsoft.tetherfi.status.blockers
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 
 @Composable
@@ -39,61 +47,79 @@ internal fun VpnBlocker(
 ) {
   val hapticManager = LocalHapticManager.current
 
-  AlertDialog(
-      modifier = modifier.padding(MaterialTheme.keylines.content),
+  Dialog(
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
-      title = {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Box(
+        modifier = modifier.padding(MaterialTheme.keylines.content),
+    ) {
+      Surface(
+          modifier = Modifier.fillMaxWidth(),
+          shadowElevation = DialogDefaults.Elevation,
+          shape = MaterialTheme.shapes.medium,
+      ) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
         ) {
-          Text(
-              text = "Conflicting VPN",
-              style = MaterialTheme.typography.h5,
-          )
-        }
-      },
-      text = {
-        Column {
-          Text(
-              text = "$appName has trouble starting the hotspot when a VPN is connected.",
-              style = MaterialTheme.typography.body1,
-          )
-
-          Text(
-              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-              text =
-                  "Please disconnect from your VPN, and then attempt to launch the Hotspot again.",
-              style = MaterialTheme.typography.body1,
-          )
-
-          ViewPrivacyPolicy(
-              modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-          )
-        }
-      },
-      buttons = {
-        Row(
-            modifier =
-                Modifier.padding(horizontal = MaterialTheme.keylines.content)
-                    .padding(bottom = MaterialTheme.keylines.baseline),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Spacer(
-              modifier = Modifier.weight(1F),
-          )
-
-          TextButton(
-              onClick = {
-                hapticManager?.cancelButtonPress()
-                onDismiss()
-              },
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
           ) {
             Text(
-                text = "Okay",
+                text = "Conflicting VPN",
+                style = MaterialTheme.typography.headlineSmall,
             )
           }
+          Column {
+            Text(
+                text = "$appName has trouble starting the hotspot when a VPN is connected.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            Text(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                text =
+                    "Please disconnect from your VPN, and then attempt to launch the Hotspot again.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            ViewPrivacyPolicy(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+            )
+          }
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            Spacer(
+                modifier = Modifier.weight(1F),
+            )
+
+            TextButton(
+                onClick = {
+                  hapticManager?.cancelButtonPress()
+                  onDismiss()
+                },
+            ) {
+              Text(
+                  text = "Okay",
+              )
+            }
+          }
         }
-      },
-  )
+      }
+    }
+  }
+}
+
+@Preview
+@Composable
+private fun PreviewVpnBlocker() {
+  CompositionLocalProvider(
+      LocalContentColor provides Color.White,
+  ) {
+    VpnBlocker(
+        appName = "TEST",
+        onDismiss = {},
+    )
+  }
 }

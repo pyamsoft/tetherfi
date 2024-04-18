@@ -21,11 +21,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -33,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.CardDefaults
+import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
@@ -84,7 +84,7 @@ internal fun ConnectionItem(
   ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.Elevation,
+        elevation = CardDefaults.cardElevation(),
         shape = MaterialTheme.shapes.medium,
     ) {
       Column(
@@ -97,7 +97,7 @@ internal fun ConnectionItem(
           Text(
               modifier = Modifier.weight(1F),
               text = name,
-              style = MaterialTheme.typography.h6,
+              style = MaterialTheme.typography.titleLarge,
           )
           Switch(
               checked = isNotBlocked,
@@ -116,21 +116,18 @@ internal fun ConnectionItem(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
             text = "Last seen: $seenTime",
             style =
-                MaterialTheme.typography.body2.copy(
-                    color =
-                        MaterialTheme.colors.onSurface.copy(
-                            alpha = ContentAlpha.medium,
-                        ),
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )
 
         Text(
             text = "Total Transferred To Internet: $totalTransferredToInternet",
             style =
-                MaterialTheme.typography.caption.copy(
+                MaterialTheme.typography.bodySmall.copy(
                     color =
-                        MaterialTheme.colors.onSurface.copy(
-                            alpha = ContentAlpha.disabled,
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
                         ),
                 ),
         )
@@ -138,10 +135,10 @@ internal fun ConnectionItem(
         Text(
             text = "Total Transferred From Internet: $totalTransferredFromInternet",
             style =
-                MaterialTheme.typography.caption.copy(
+                MaterialTheme.typography.bodySmall.copy(
                     color =
-                        MaterialTheme.colors.onSurface.copy(
-                            alpha = ContentAlpha.disabled,
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
                         ),
                 ),
         )
