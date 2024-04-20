@@ -23,11 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 
 @Composable
 internal fun StatusTile(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.primary,
+    borderColor: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -36,8 +37,8 @@ internal fun StatusTile(
           modifier.border(
               width = 2.dp,
               color =
-                  color.copy(
-                      alpha = 1F,
+                  borderColor.copy(
+                      alpha = if (enabled) 1F else TypographyDefaults.ALPHA_DISABLED,
                   ),
               shape = MaterialTheme.shapes.medium,
           ),

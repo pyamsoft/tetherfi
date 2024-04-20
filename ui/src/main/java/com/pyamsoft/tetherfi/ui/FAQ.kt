@@ -22,19 +22,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.theme.HairlineSize
-import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 
 private enum class LinkContentTypes {
@@ -87,18 +85,13 @@ fun LazyListScope.renderLinks(
           }
         }
 
-    Surface(
-        modifier =
-            modifier
-                .padding(top = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.baseline),
+    Card(
+        modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
         border =
             BorderStroke(
-                width = HairlineSize,
-                color = MaterialTheme.colorScheme.primary,
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shadowElevation = ZeroElevation,
-        color = Color.Transparent,
         shape = MaterialTheme.shapes.medium,
     ) {
       val uriHandler = rememberUriHandler()

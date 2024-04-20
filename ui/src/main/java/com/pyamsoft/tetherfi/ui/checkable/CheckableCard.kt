@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +46,6 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
-import com.pyamsoft.tetherfi.ui.BetterSurface
 
 @Composable
 @CheckResult
@@ -101,7 +101,8 @@ fun CheckableCard(
       condition = condition,
       title = title,
       description = description,
-      selectedColor = MaterialTheme.colorScheme.primary,
+      titleColor = MaterialTheme.colorScheme.primary,
+      borderColor = MaterialTheme.colorScheme.primaryContainer,
       extraHeight = extraHeight,
       onClick = onClick,
   )
@@ -114,7 +115,8 @@ private fun CheckableCard(
     condition: Boolean,
     title: String,
     description: String,
-    selectedColor: Color,
+    titleColor: Color,
+    borderColor: Color,
     extraHeight: Dp,
     onClick: () -> Unit,
 ) {
@@ -124,7 +126,7 @@ private fun CheckableCard(
       rememberCheckableColor(
           label = title,
           condition = condition,
-          selectedColor = selectedColor,
+          selectedColor = titleColor,
       )
 
   val checkIcon =
@@ -132,12 +134,12 @@ private fun CheckableCard(
         if (condition) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked
       }
 
-  BetterSurface(
+  Card(
       modifier = modifier,
       border =
           BorderStroke(
               width = 2.dp,
-              color = color.copy(alpha = alphas.secondary),
+              color = borderColor.copy(alpha = alphas.secondary),
           ),
       shape = MaterialTheme.shapes.medium,
   ) {

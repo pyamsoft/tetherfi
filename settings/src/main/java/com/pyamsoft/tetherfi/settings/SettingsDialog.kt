@@ -19,10 +19,13 @@ package com.pyamsoft.tetherfi.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,7 +39,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.settings.SettingsPage
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -82,25 +84,30 @@ fun SettingsDialog(
             )
           },
       )
-      SettingsPage(
+      Card(
           modifier = Modifier.fillMaxWidth().weight(1F),
-          dialogModifier = modifier,
-          customElevation = DialogDefaults.Elevation,
-          customBottomItemMargin = MaterialTheme.keylines.baseline,
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,
                   topEnd = ZeroCornerSize,
               ),
-          extraDebugContent = {
-            if (context.isDebugMode()) {
-              renderExtraDebugContent(
-                  itemModifier = itemModifier,
-                  appEnvironment = appEnvironment,
-              )
-            }
-          },
-      )
+          elevation = CardDefaults.elevatedCardElevation(),
+          colors = CardDefaults.elevatedCardColors(),
+      ) {
+        SettingsPage(
+            modifier = Modifier.fillMaxSize(),
+            dialogModifier = modifier,
+            customBottomItemMargin = MaterialTheme.keylines.baseline,
+            extraDebugContent = {
+              if (context.isDebugMode()) {
+                renderExtraDebugContent(
+                    itemModifier = itemModifier,
+                    appEnvironment = appEnvironment,
+                )
+              }
+            },
+        )
+      }
     }
   }
 }

@@ -16,11 +16,13 @@
 
 package com.pyamsoft.tetherfi.status.sections.performance
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -31,17 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.util.bottomBorder
-import com.pyamsoft.pydroid.ui.util.sideBorders
-import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.ui.BetterSurface
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
 private enum class RenderThreadsContentTypes {
-  LABEL,
-  EXPLAIN,
-  ADJUST,
+  POWER_BALANCE,
 }
 
 internal fun LazyListScope.renderPowerBalance(
@@ -52,7 +48,7 @@ internal fun LazyListScope.renderPowerBalance(
     onShowPowerBalance: () -> Unit,
 ) {
   item(
-      contentType = RenderThreadsContentTypes.LABEL,
+      contentType = RenderThreadsContentTypes.POWER_BALANCE,
   ) {
     val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
     val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
@@ -79,103 +75,49 @@ internal fun LazyListScope.renderPowerBalance(
             selectedColor = MaterialTheme.colorScheme.primary,
         )
 
-    val highAlpha = 1F
-    val mediumAlpha = 1F
-
-    BetterSurface(
-        modifier =
-            Modifier.padding(top = MaterialTheme.keylines.content)
-                .topBorder(
-                    strokeWidth = 2.dp,
-                    color =
-                        MaterialTheme.colorScheme.primary.copy(
-                            alpha = mediumAlpha,
-                        ),
-                    cornerRadius = MaterialTheme.keylines.content,
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      Column(modifier = Modifier.padding(MaterialTheme.keylines.content)) {
+        Text(
+            text = "Expert: Power Balance",
+            style =
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.W700,
+                    color = cardColor,
                 ),
-        shape =
-            MaterialTheme.shapes.medium.copy(
-                bottomStart = ZeroCornerSize,
-                bottomEnd = ZeroCornerSize,
-            ),
-    ) {
-      Text(
-          modifier = itemModifier.padding(MaterialTheme.keylines.content),
-          text = "Expert: Power Balance",
-          style =
-              MaterialTheme.typography.titleLarge.copy(
-                  fontWeight = FontWeight.W700,
-                  color = cardColor.copy(alpha = highAlpha),
-              ),
-      )
-    }
-  }
-
-  item(
-      contentType = RenderThreadsContentTypes.EXPLAIN,
-  ) {
-    val mediumAlpha = 1F
-
-    BetterSurface(
-        modifier =
-            Modifier.sideBorders(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-            ),
-    ) {
-      Text(
-          modifier =
-              itemModifier
-                  .fillMaxWidth()
-                  .padding(horizontal = MaterialTheme.keylines.content)
-                  .padding(bottom = MaterialTheme.keylines.content * 2),
-          text =
-              """This is for Advanced Users.
+        )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+            text =
+                """This is for Advanced Users.
                   |
                   |You can adjust the performance and resource usage of the $appName Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.
                   |
                   |More Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.
               """
-                  .trimMargin(),
-          style =
-              MaterialTheme.typography.bodySmall.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-      )
-    }
-  }
-
-  item(
-      contentType = RenderThreadsContentTypes.ADJUST,
-  ) {
-    val mediumAlpha = 1F
-
-    BetterSurface(
-        modifier =
-            Modifier.bottomBorder(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-                cornerRadius = MaterialTheme.keylines.content,
-            ),
-    ) {
-      Button(
-          modifier =
-              itemModifier
-                  .fillMaxWidth()
-                  .padding(horizontal = MaterialTheme.keylines.content)
-                  .padding(bottom = MaterialTheme.keylines.content),
-          onClick = onShowPowerBalance,
-          enabled = isEditable,
-      ) {
-        Text(
-            text = "Adjust Power Balance",
+                    .trimMargin(),
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
         )
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onShowPowerBalance,
+            enabled = isEditable,
+        ) {
+          Text(
+              text = "Adjust Power Balance",
+          )
+        }
       }
     }
   }

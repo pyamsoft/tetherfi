@@ -37,7 +37,7 @@ internal fun ConnectionErrorTile(
   connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also {
     StatusTile(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.error,
+        borderColor = MaterialTheme.colorScheme.error,
     ) {
       ServerErrorTile(
           onShowError = onShowConnectionError,

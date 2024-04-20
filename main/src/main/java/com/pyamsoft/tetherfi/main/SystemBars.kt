@@ -71,7 +71,7 @@ fun ComponentActivity.SystemBars(
         statusBarStyle = statusStyle,
         navigationBarStyle = navStyle,
     )
-    controller.isAppearanceLightStatusBars = true
-    controller.isAppearanceLightNavigationBars = isDarkMode
+    controller.isAppearanceLightStatusBars = isDarkMode
+    controller.isAppearanceLightNavigationBars = !isDarkMode
   }
 }

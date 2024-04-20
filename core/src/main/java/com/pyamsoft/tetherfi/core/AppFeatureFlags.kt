@@ -30,8 +30,6 @@ internal constructor(
 
   override val isUdpProxyEnabled = flag { debug }
 
-  override val isAlwaysStubborn = flag { debug }
-
   companion object {
 
     /** Set this false to turn off all feature flags */

@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,20 +55,28 @@ internal fun DisplayStatus(
         }
       }
 
-  val errorColor = MaterialTheme.colorScheme.error
-  val runningColor = MaterialTheme.colorScheme.primary
-  val color =
+  val textErrorColor = MaterialTheme.colorScheme.onErrorContainer
+  val textRunningColor = MaterialTheme.colorScheme.onTertiaryContainer
+  val textProgressColor = MaterialTheme.colorScheme.onSecondaryContainer
+  val textColor =
       remember(
+          size,
           status,
-          errorColor,
-          runningColor,
+          textErrorColor,
+          textRunningColor,
+          textProgressColor,
       ) {
         when (status) {
-          is RunningStatus.Error -> errorColor
+          is RunningStatus.Error -> textErrorColor
+          is RunningStatus.Running -> textRunningColor
           is RunningStatus.NotRunning -> Color.Unspecified
-          is RunningStatus.Running -> runningColor
-          is RunningStatus.Starting -> Color.Cyan
-          is RunningStatus.Stopping -> Color.Magenta
+          is RunningStatus.Starting,
+          is RunningStatus.Stopping -> {
+            when (size) {
+              StatusSize.SMALL -> Color.Unspecified
+              StatusSize.NORMAL -> textProgressColor
+            }
+          }
         }
       }
 
@@ -87,38 +94,33 @@ internal fun DisplayStatus(
         }
       }
 
-  val bgColor =
+  val backgroundErrorColor = MaterialTheme.colorScheme.errorContainer
+  val backgroundRunningColor = MaterialTheme.colorScheme.tertiaryContainer
+  val backgroundProgressColor = MaterialTheme.colorScheme.secondaryContainer
+  val backgroundColor =
       remember(
-          size,
-          color,
-      ) {
-        when (size) {
-          StatusSize.SMALL -> Color.Unspecified
-          StatusSize.NORMAL -> color
-        }
-      }
+          size, status, backgroundErrorColor, backgroundProgressColor, backgroundRunningColor) {
+            when (size) {
+              StatusSize.SMALL -> Color.Unspecified
+              StatusSize.NORMAL ->
+                  when (status) {
+                    is RunningStatus.Error -> backgroundErrorColor
+                    is RunningStatus.Running -> backgroundRunningColor
+                    is RunningStatus.Starting -> backgroundProgressColor
+                    is RunningStatus.Stopping -> backgroundProgressColor
+                    is RunningStatus.NotRunning -> Color.Unspecified
+                  }
+            }
+          }
 
-  val backgroundColor = MaterialTheme.colorScheme.onBackground
   val borderColor =
       remember(
           size,
-          color,
           backgroundColor,
       ) {
         when (size) {
           StatusSize.SMALL -> Color.Unspecified
-          StatusSize.NORMAL -> if (color.isUnspecified) backgroundColor else color
-        }
-      }
-
-  val fgColor =
-      remember(
-          size,
-          color,
-      ) {
-        when (size) {
-          StatusSize.SMALL -> color
-          StatusSize.NORMAL -> Color.Unspecified
+          StatusSize.NORMAL -> backgroundColor
         }
       }
 
@@ -134,7 +136,7 @@ internal fun DisplayStatus(
       modifier = modifier,
       title = title,
       value = text,
-      color = fgColor,
+      color = textColor,
       showError = showError,
       valueModifier =
           Modifier.run {
@@ -149,7 +151,7 @@ internal fun DisplayStatus(
                   shape = MaterialTheme.shapes.small,
               )
               .background(
-                  color = bgColor,
+                  color = backgroundColor,
                   shape = MaterialTheme.shapes.small,
               )
               .run {

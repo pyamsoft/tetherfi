@@ -37,7 +37,7 @@ internal fun GroupErrorTile(
   group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also {
     StatusTile(
         modifier = modifier,
-        color = MaterialTheme.colorScheme.error,
+        borderColor = MaterialTheme.colorScheme.error,
     ) {
       ServerErrorTile(
           onShowError = onShowGroupError,

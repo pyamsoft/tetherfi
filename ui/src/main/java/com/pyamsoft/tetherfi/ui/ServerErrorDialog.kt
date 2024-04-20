@@ -123,6 +123,7 @@ fun ServerErrorDialog(
       )
       Surface(
           modifier = Modifier.fillMaxWidth().weight(1F),
+          color = MaterialTheme.colorScheme.surfaceVariant,
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,

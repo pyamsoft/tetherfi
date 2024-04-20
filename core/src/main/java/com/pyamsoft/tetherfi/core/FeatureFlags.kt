@@ -24,11 +24,4 @@ interface FeatureFlags {
    * UDP support is currently incomplete so this is flagged off in all non-dev builds
    */
   val isUdpProxyEnabled: Boolean
-
-  /**
-   * Are we always using a stubborn proxy?
-   *
-   * Don't enable now, but enable in the next version once the stubborn mode is more tested
-   */
-  val isAlwaysStubborn: Boolean
 }

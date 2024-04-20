@@ -16,10 +16,12 @@
 
 package com.pyamsoft.tetherfi.status.sections.tweaks
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -28,20 +30,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.util.bottomBorder
-import com.pyamsoft.pydroid.ui.util.sideBorders
-import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.ui.BetterSurface
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 
 private enum class RenderTweakCardContentTypes {
-  LABEL,
-  EXPLAIN,
-  IGNORE_VPN,
-  KILL_ON_IDLE,
-  PROXY_BIND_ALL,
-  PROXY_YOLO,
+  BEHAVIOR_TWEAKS,
 }
 
 internal fun LazyListScope.renderTweakCard(
@@ -54,246 +47,138 @@ internal fun LazyListScope.renderTweakCard(
     onToggleProxyYolo: () -> Unit,
 ) {
   item(
-      contentType = RenderTweakCardContentTypes.LABEL,
+      contentType = RenderTweakCardContentTypes.BEHAVIOR_TWEAKS,
   ) {
-    val highAlpha = 1F
-    val mediumAlpha = 1F
-
-    BetterSurface(
-        modifier =
-            Modifier.topBorder(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-                cornerRadius = MaterialTheme.keylines.content,
-            ),
-        shape =
-            MaterialTheme.shapes.medium.copy(
-                bottomEnd = ZeroCornerSize,
-                bottomStart = ZeroCornerSize,
+    Card(
+        modifier = itemModifier,
+        shape = MaterialTheme.shapes.medium,
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
             ),
     ) {
-      Text(
-          modifier = itemModifier.padding(MaterialTheme.keylines.content),
-          text = "Behavior Tweaks",
-          style =
-              MaterialTheme.typography.titleLarge.copy(
-                  fontWeight = FontWeight.W700,
-                  color = MaterialTheme.colorScheme.primary.copy(alpha = highAlpha),
-              ),
-      )
-    }
-  }
+      Column(
+          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
+      ) {
+        Text(
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
+            text = "Behavior Tweaks",
+            style =
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.W700,
+                    color = MaterialTheme.colorScheme.primary,
+                ),
+        )
 
-  item(
-      contentType = RenderTweakCardContentTypes.EXPLAIN,
-  ) {
-    val mediumAlpha = 1F
-
-    BetterSurface(
-        modifier =
-            Modifier.sideBorders(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-            ),
-    ) {
-      Text(
-          modifier =
-              itemModifier
-                  .fillMaxWidth()
-                  .padding(horizontal = MaterialTheme.keylines.content)
-                  .padding(bottom = MaterialTheme.keylines.content * 2),
-          text =
-              """Tweaks change how $appName performs in various ways
+        Text(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
+            text =
+                """Tweaks change how $appName performs in various ways
                   |
                   |All of these options are completely optional and do not impact network or hotspot performance in any way."""
-                  .trimMargin(),
-          style =
-              MaterialTheme.typography.bodySmall.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-      )
-    }
-  }
-
-  item(
-      contentType = RenderTweakCardContentTypes.IGNORE_VPN,
-  ) {
-    val mediumAlpha = 1F
-    val highAlpha = 1F
-
-    val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
-    val ignoreVpnColor by
-        rememberCheckableColor(
-            label = "Ignore VPN",
-            condition = isIgnoreVpn,
-            selectedColor = MaterialTheme.colorScheme.primary,
+                    .trimMargin(),
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
         )
 
-    BetterSurface(
-        modifier =
-            Modifier.sideBorders(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-            ),
-    ) {
-      ToggleSwitch(
-          modifier = itemModifier,
-          highAlpha = highAlpha,
-          mediumAlpha = mediumAlpha,
-          isEditable = isEditable,
-          color = ignoreVpnColor,
-          checked = isIgnoreVpn,
-          title = "Avoid VPN Blocker Dialog",
-          description =
-              """When starting, $appName sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.
+        val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
+        val ignoreVpnColor by
+            rememberCheckableColor(
+                label = "Ignore VPN",
+                condition = isIgnoreVpn,
+                selectedColor = MaterialTheme.colorScheme.primary,
+            )
+
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = ignoreVpnColor,
+            checked = isIgnoreVpn,
+            title = "Avoid VPN Blocker Dialog",
+            description =
+                """When starting, $appName sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.
                   |
                   |If you KNOW your VPN app works fine with $appName, turn this option on to avoid the blocking dialog."""
-                  .trimMargin(),
-          onClick = onToggleIgnoreVpn,
-      )
-    }
-  }
-
-  item(
-      contentType = RenderTweakCardContentTypes.KILL_ON_IDLE,
-  ) {
-    val mediumAlpha = 1F
-    val highAlpha = 1F
-
-    val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
-    val shutdownNoClientsColor by
-        rememberCheckableColor(
-            label = "Shutdown No Clients",
-            condition = isShutdownWithNoClients,
-            selectedColor = MaterialTheme.colorScheme.primary,
+                    .trimMargin(),
+            onClick = onToggleIgnoreVpn,
         )
 
-    BetterSurface(
-        modifier =
-            Modifier.sideBorders(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-            ),
-    ) {
-      ToggleSwitch(
-          modifier = itemModifier,
-          highAlpha = highAlpha,
-          mediumAlpha = mediumAlpha,
-          isEditable = isEditable,
-          color = shutdownNoClientsColor,
-          checked = isShutdownWithNoClients,
-          title = "Stop Hotspot With No Clients",
-          description =
-              """If the $appName hotspot has been running for 10 minutes without serving any client devices, shut it down.
+        val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
+        val shutdownNoClientsColor by
+            rememberCheckableColor(
+                label = "Shutdown No Clients",
+                condition = isShutdownWithNoClients,
+                selectedColor = MaterialTheme.colorScheme.primary,
+            )
+
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = shutdownNoClientsColor,
+            checked = isShutdownWithNoClients,
+            title = "Stop Hotspot With No Clients",
+            description =
+                """If the $appName hotspot has been running for 10 minutes without serving any client devices, shut it down.
                   |
                   |Automatically shutting down the hotspot when it is not being used can save battery."""
-                  .trimMargin(),
-          onClick = onToggleShutdownWithNoClients,
-      )
-    }
-  }
-
-  item(
-      contentType = RenderTweakCardContentTypes.PROXY_BIND_ALL,
-  ) {
-    val mediumAlpha = 1F
-    val highAlpha = 1F
-
-    val proxyBindAllColor by
-        rememberCheckableColor(
-            label = "Bind Proxy to All Interfaces",
-            condition = false,
-            selectedColor = MaterialTheme.colorScheme.primary,
+                    .trimMargin(),
+            onClick = onToggleShutdownWithNoClients,
         )
 
-    BetterSurface(
-        modifier =
-            Modifier.sideBorders(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-            ),
-    ) {
-      ToggleSwitch(
-          modifier = itemModifier,
-          highAlpha = highAlpha,
-          mediumAlpha = mediumAlpha,
-          isEditable = isEditable,
-          color = proxyBindAllColor,
-          checked = false,
-          title = "Bind Proxy to All Interfaces",
-          description =
-              """This Tweak is no longer supported - the default Hotspot configuration is MORE performant and MORE reliable.
+        val proxyBindAllColor by
+            rememberCheckableColor(
+                label = "Bind Proxy to All Interfaces",
+                condition = false,
+                selectedColor = MaterialTheme.colorScheme.primary,
+            )
+
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = proxyBindAllColor,
+            checked = false,
+            title = "Bind Proxy to All Interfaces",
+            description =
+                """This Tweak is no longer supported - the default Hotspot configuration is MORE performant and MORE reliable.
                     |
                     |This Tweak will be removed in a future update.
                 """
-                  .trimMargin(),
-          onClick = {},
-      )
-    }
-  }
-
-  item(
-      contentType = RenderTweakCardContentTypes.PROXY_YOLO,
-  ) {
-    val mediumAlpha = 1F
-    val highAlpha = 1F
-
-    val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
-    val proxyYoloColor by
-        rememberCheckableColor(
-            label = "Stubborn Proxy",
-            condition = isProxyYolo,
-            selectedColor = MaterialTheme.colorScheme.primary,
+                    .trimMargin(),
+            onClick = {},
         )
 
-    BetterSurface(
-        modifier =
-            Modifier.bottomBorder(
-                strokeWidth = 2.dp,
-                color =
-                    MaterialTheme.colorScheme.primary.copy(
-                        alpha = mediumAlpha,
-                    ),
-                cornerRadius = MaterialTheme.keylines.content,
-            ),
-        shape =
-            MaterialTheme.shapes.medium.copy(
-                topEnd = ZeroCornerSize,
-                topStart = ZeroCornerSize,
-            ),
-    ) {
-      ToggleSwitch(
-          modifier = itemModifier,
-          highAlpha = highAlpha,
-          mediumAlpha = mediumAlpha,
-          isEditable = isEditable,
-          color = proxyYoloColor,
-          checked = isProxyYolo,
-          title = "Stubborn Proxy",
-          description =
-              """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
+        val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
+        val proxyYoloColor by
+            rememberCheckableColor(
+                label = "Stubborn Proxy",
+                condition = isProxyYolo,
+                selectedColor = MaterialTheme.colorScheme.primary,
+            )
+
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = proxyYoloColor,
+            checked = isProxyYolo,
+            title = "Stubborn Proxy",
+            description =
+                """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
                     |
                     |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode.
                     |
                     |This option will be made Default in a future version."""
-                  .trimMargin(),
-          onClick = onToggleProxyYolo,
-      )
+                    .trimMargin(),
+            onClick = onToggleProxyYolo,
+        )
+      }
     }
   }
 }

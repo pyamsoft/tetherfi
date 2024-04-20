@@ -36,8 +36,6 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 internal fun ToggleSwitch(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
-    highAlpha: Float,
-    mediumAlpha: Float,
     color: Color,
     checked: Boolean,
     title: String,
@@ -57,11 +55,12 @@ internal fun ToggleSwitch(
                 }
                 onClick()
               }
-              .padding(horizontal = MaterialTheme.keylines.content)
-              .padding(bottom = MaterialTheme.keylines.content),
+              .padding(vertical = MaterialTheme.keylines.baseline),
   ) {
     Row(
-        modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+        modifier =
+            Modifier.padding(bottom = MaterialTheme.keylines.baseline)
+                .padding(horizontal = MaterialTheme.keylines.content),
         verticalAlignment = Alignment.CenterVertically,
     ) {
       Switch(
@@ -77,13 +76,13 @@ internal fun ToggleSwitch(
           style =
               MaterialTheme.typography.bodyLarge.copy(
                   fontWeight = FontWeight.W700,
-                  color = color.copy(alpha = highAlpha),
+                  color = color,
               ),
       )
     }
 
     Text(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content),
         text = description,
         style =
             MaterialTheme.typography.bodySmall.copy(

@@ -16,27 +16,26 @@
 
 package com.pyamsoft.tetherfi.status
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
-import com.pyamsoft.pydroid.ui.util.bottomBorder
-import com.pyamsoft.pydroid.ui.util.topBorder
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.BetterSurface
 
 private enum class RenderHotspotStatusContentTypes {
-  COMPONENT_STATUS,
   HOTSPOT_STATUS
 }
 
@@ -49,27 +48,20 @@ internal fun LazyListScope.renderHotspotStatus(
     onShowProxyError: () -> Unit,
 ) {
   item(
-      contentType = RenderHotspotStatusContentTypes.COMPONENT_STATUS,
+      contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS,
   ) {
-    BetterSurface(
+    Card(
         modifier =
-            itemModifier
-                .fillMaxWidth()
-                .padding(top = MaterialTheme.keylines.content * 2)
-                .topBorder(
-                    strokeWidth = 4.dp,
-                    color =
-                        MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = TypographyDefaults.ALPHA_DISABLED,
-                        ),
-                    cornerRadius = MaterialTheme.keylines.content,
-                ),
-        elevation = DialogDefaults.Elevation,
-        shape =
-            MaterialTheme.shapes.medium.copy(
-                bottomStart = ZeroCornerSize,
-                bottomEnd = ZeroCornerSize,
+            itemModifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content * 2),
+        border =
+            BorderStroke(
+                width = 4.dp,
+                color =
+                    MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = TypographyDefaults.ALPHA_DISABLED,
+                    ),
             ),
+        shape = MaterialTheme.shapes.medium,
     ) {
       Row(
           modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
@@ -92,32 +84,7 @@ internal fun LazyListScope.renderHotspotStatus(
             onClickShowError = onShowProxyError,
         )
       }
-    }
-  }
 
-  item(
-      contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS,
-  ) {
-    BetterSurface(
-        modifier =
-            itemModifier
-                .fillMaxWidth()
-                .padding(bottom = MaterialTheme.keylines.content * 2)
-                .bottomBorder(
-                    strokeWidth = 4.dp,
-                    color =
-                        MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = TypographyDefaults.ALPHA_DISABLED,
-                        ),
-                    cornerRadius = MaterialTheme.keylines.content,
-                ),
-        elevation = DialogDefaults.Elevation,
-        shape =
-            MaterialTheme.shapes.medium.copy(
-                topStart = ZeroCornerSize,
-                topEnd = ZeroCornerSize,
-            ),
-    ) {
       Box(
           modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
           contentAlignment = Alignment.Center,
@@ -129,5 +96,19 @@ internal fun LazyListScope.renderHotspotStatus(
         )
       }
     }
+  }
+}
+
+@Preview
+@Composable
+private fun PreviewRenderHotspotStatus() {
+  LazyColumn {
+    renderHotspotStatus(
+        wiDiStatus = RunningStatus.NotRunning,
+        proxyStatus = RunningStatus.NotRunning,
+        hotspotStatus = RunningStatus.NotRunning,
+        onShowBroadcastError = {},
+        onShowProxyError = {},
+    )
   }
 }

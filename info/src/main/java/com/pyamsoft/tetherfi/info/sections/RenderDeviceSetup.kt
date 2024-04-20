@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,22 +33,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.TestServerViewState
-import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -57,9 +51,6 @@ import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
-
-private const val LINK_TAG = "instructions"
-private const val LINK_TEXT = "here"
 
 private enum class DeviceSetupContentTypes {
   SETTINGS,
@@ -259,10 +250,6 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
         }
-
-        FullConnectionInstructions(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.typography),
-        )
       }
     }
   }
@@ -280,54 +267,6 @@ internal fun LazyListScope.renderDeviceSetup(
       )
     }
   }
-}
-
-@Composable
-private fun FullConnectionInstructions(
-    modifier: Modifier = Modifier,
-) {
-  val uriHandler = rememberUriHandler()
-
-  val textColor = MaterialTheme.colorScheme.onBackground
-  val linkColor = MaterialTheme.colorScheme.primary
-  val instructions =
-      remember(
-          textColor,
-          linkColor,
-      ) {
-        buildAnnotatedString {
-          withStyle(
-              style =
-                  SpanStyle(
-                      color = textColor,
-                  ),
-          ) {
-            append("Having trouble configuring Proxy Settings? See more detailed instructions ")
-            appendLink(
-                tag = LINK_TAG,
-                linkColor = linkColor,
-                text = LINK_TEXT,
-                url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
-            )
-          }
-        }
-      }
-
-  ClickableText(
-      modifier = modifier,
-      text = instructions,
-      style = MaterialTheme.typography.bodyLarge,
-      onClick = { offset ->
-        instructions
-            .getStringAnnotations(
-                tag = LINK_TAG,
-                start = offset,
-                end = offset + LINK_TEXT.length,
-            )
-            .firstOrNull()
-            ?.also { uriHandler.openUri(it.item) }
-      },
-  )
 }
 
 @Preview

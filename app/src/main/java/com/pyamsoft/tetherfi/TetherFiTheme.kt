@@ -21,7 +21,6 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.CheckResult
 import androidx.annotation.ChecksSdkIntAtLeast
-import androidx.appcompat.R
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
@@ -35,10 +34,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.PYDroidTheme
-import com.pyamsoft.pydroid.theme.attributesFromCurrentTheme
 import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
@@ -59,49 +57,144 @@ private fun themeColors(
     isDarkMode: Boolean,
     isMaterialYou: Boolean,
 ): ColorScheme {
-  val colors =
-      remember(isDarkMode) {
-        activity.attributesFromCurrentTheme(
-            R.attr.colorPrimary,
-            R.attr.colorAccent,
-        )
-      }
-  val primary = colorResource(colors[0])
-  val secondary = colorResource(colors[1])
-  val black = colorResource(android.R.color.black)
-  val white = colorResource(android.R.color.white)
-
   val canUseDynamic = rememberCanUseDynamic(isMaterialYou)
 
   return remember(
       activity,
       canUseDynamic,
       isDarkMode,
-      primary,
-      secondary,
-      black,
-      white,
   ) {
     if (isDarkMode) {
+
       if (canUseDynamic) {
         dynamicDarkColorScheme(activity)
       } else {
+        val primary = Color(0xFFC1D02C)
+        val onPrimary = Color(0xFF2F3300)
+        val primaryContainer = Color(0xFF444B00)
+        val onPrimaryContainer = Color(0xFFDDED49)
+        val secondary = Color(0xFFC7C9A6)
+        val onSecondary = Color(0xFF30321A)
+        val secondaryContainer = Color(0xFF46492E)
+        val onSecondaryContainer = Color(0xFFE4E5C1)
+        val tertiary = Color(0xFFA2D0C1)
+        val onTertiary = Color(0xFF07372D)
+        val tertiaryContainer = Color(0xFF234E43)
+        val onTertiaryContainer = Color(0xFFBEECDC)
+        val error = Color(0xFFFFB4AB)
+        val errorContainer = Color(0xFF93000A)
+        val onError = Color(0xFF690005)
+        val onErrorContainer = Color(0xFFFFDAD6)
+        val background = Color(0xFF1C1C17)
+        val onBackground = Color(0xFFE5E2DA)
+        val surface = Color(0xFF1C1C17)
+        val onSurface = Color(0xFFE5E2DA)
+        val surfaceVariant = Color(0xFF47483B)
+        val onSurfaceVariant = Color(0xFFC8C7B7)
+        val outline = Color(0xFF929282)
+        val inverseOnSurface = Color(0xFF1C1C17)
+        val inverseSurface = Color(0xFFE5E2DA)
+        val inversePrimary = Color(0xFF5B6300)
+        val surfaceTint = Color(0xFFC1D02C)
+        val outlineVariant = Color(0xFF47483B)
+        val scrim = Color(0xFF000000)
+
         darkColorScheme(
             primary = primary,
-            onPrimary = black,
+            onPrimary = onPrimary,
+            primaryContainer = primaryContainer,
+            onPrimaryContainer = onPrimaryContainer,
+            inversePrimary = inversePrimary,
             secondary = secondary,
-            onSecondary = white,
+            onSecondary = onSecondary,
+            secondaryContainer = secondaryContainer,
+            onSecondaryContainer = onSecondaryContainer,
+            tertiary = tertiary,
+            onTertiary = onTertiary,
+            tertiaryContainer = tertiaryContainer,
+            onTertiaryContainer = onTertiaryContainer,
+            error = error,
+            errorContainer = errorContainer,
+            onError = onError,
+            onErrorContainer = onErrorContainer,
+            background = background,
+            onBackground = onBackground,
+            surface = surface,
+            onSurface = onSurface,
+            inverseSurface = inverseSurface,
+            inverseOnSurface = inverseOnSurface,
+            surfaceVariant = surfaceVariant,
+            onSurfaceVariant = onSurfaceVariant,
+            outline = outline,
+            outlineVariant = outlineVariant,
+            surfaceTint = surfaceTint,
+            scrim = scrim,
         )
       }
     } else {
       if (canUseDynamic) {
         dynamicLightColorScheme(activity)
       } else {
+        val primary = Color(0xFF5B6300)
+        val onPrimary = Color(0xFFFFFFFF)
+        val primaryContainer = Color(0xFFDDED49)
+        val onPrimaryContainer = Color(0xFF1A1D00)
+        val secondary = Color(0xFF5E6044)
+        val onSecondary = Color(0xFFFFFFFF)
+        val secondaryContainer = Color(0xFFE4E5C1)
+        val onSecondaryContainer = Color(0xFF1B1D07)
+        val tertiary = Color(0xFF3C665A)
+        val onTertiary = Color(0xFFFFFFFF)
+        val tertiaryContainer = Color(0xFFBEECDC)
+        val onTertiaryContainer = Color(0xFF002019)
+        val error = Color(0xFFBA1A1A)
+        val errorContainer = Color(0xFFFFDAD6)
+        val onError = Color(0xFFFFFFFF)
+        val onErrorContainer = Color(0xFF410002)
+        val background = Color(0xFFFEFFFE)
+        val onBackground = Color(0xFF1C1C17)
+        val surface = Color(0xFFFEFFD8)
+        val onSurface = Color(0xFF1C1C17)
+        val surfaceVariant = Color(0xFFE5E3D2)
+        val onSurfaceVariant = Color(0xFF47483B)
+        val outline = Color(0xFF787869)
+        val inverseOnSurface = Color(0xFFF3F1E8)
+        val inverseSurface = Color(0xFF31312B)
+        val inversePrimary = Color(0xFFC1D02C)
+        val surfaceTint = Color(0xFF5B6300)
+        val outlineVariant = Color(0xFFC8C7B7)
+        val scrim = Color(0xFF000000)
+
         lightColorScheme(
             primary = primary,
-            onPrimary = black,
+            onPrimary = onPrimary,
+            primaryContainer = primaryContainer,
+            onPrimaryContainer = onPrimaryContainer,
+            inversePrimary = inversePrimary,
             secondary = secondary,
-            onSecondary = white,
+            onSecondary = onSecondary,
+            secondaryContainer = secondaryContainer,
+            onSecondaryContainer = onSecondaryContainer,
+            tertiary = tertiary,
+            onTertiary = onTertiary,
+            tertiaryContainer = tertiaryContainer,
+            onTertiaryContainer = onTertiaryContainer,
+            error = error,
+            errorContainer = errorContainer,
+            onError = onError,
+            onErrorContainer = onErrorContainer,
+            background = background,
+            onBackground = onBackground,
+            surface = surface,
+            onSurface = onSurface,
+            inverseSurface = inverseSurface,
+            inverseOnSurface = inverseOnSurface,
+            surfaceVariant = surfaceVariant,
+            onSurfaceVariant = onSurfaceVariant,
+            outline = outline,
+            outlineVariant = outlineVariant,
+            surfaceTint = surfaceTint,
+            scrim = scrim,
         )
       }
     }

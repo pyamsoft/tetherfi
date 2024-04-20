@@ -140,6 +140,7 @@ fun ProxyTileScreen(
       Surface(
           modifier = modifier.padding(MaterialTheme.keylines.content),
           shape = MaterialTheme.shapes.medium,
+          color = MaterialTheme.colorScheme.surfaceVariant,
           shadowElevation = DialogDefaults.Elevation,
       ) {
         Column(
@@ -277,8 +278,8 @@ private fun Step(
     isError: Boolean,
     isDone: Boolean,
 ) {
-  val errorColor = MaterialTheme.colorScheme.error
-  val runningColor = MaterialTheme.colorScheme.primary
+  val errorColor = MaterialTheme.colorScheme.errorContainer
+  val runningColor = MaterialTheme.colorScheme.primaryContainer
   val defaultColor = MaterialTheme.colorScheme.onSurface
   val color =
       remember(

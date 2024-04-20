@@ -57,6 +57,7 @@ internal fun VpnBlocker(
       Surface(
           modifier = Modifier.fillMaxWidth(),
           shadowElevation = DialogDefaults.Elevation,
+          color = MaterialTheme.colorScheme.surfaceVariant,
           shape = MaterialTheme.shapes.medium,
       ) {
         Column(

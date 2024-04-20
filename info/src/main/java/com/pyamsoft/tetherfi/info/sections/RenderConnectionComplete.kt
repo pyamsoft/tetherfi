@@ -19,16 +19,24 @@ package com.pyamsoft.tetherfi.info.sections
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
+import com.pyamsoft.tetherfi.ui.appendLink
 
 private enum class ConnectionCompleteContentTypes {
   SHARING,
   DONE,
+  FULL,
 }
 
 internal fun LazyListScope.renderConnectionComplete(
@@ -64,6 +72,65 @@ internal fun LazyListScope.renderConnectionComplete(
       )
     }
   }
+
+  item(
+      contentType = ConnectionCompleteContentTypes.FULL,
+  ) {
+    FullConnectionInstructions(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    )
+  }
+}
+
+private const val LINK_TAG = "instructions"
+private const val LINK_TEXT = "here"
+
+@Composable
+private fun FullConnectionInstructions(
+    modifier: Modifier = Modifier,
+) {
+  val uriHandler = rememberUriHandler()
+
+  val textColor = MaterialTheme.colorScheme.onBackground
+  val linkColor = MaterialTheme.colorScheme.primary
+  val instructions =
+      remember(
+          textColor,
+          linkColor,
+      ) {
+        buildAnnotatedString {
+          withStyle(
+              style =
+                  SpanStyle(
+                      color = textColor,
+                  ),
+          ) {
+            append("Having trouble configuring Proxy Settings? See more detailed instructions ")
+            appendLink(
+                tag = LINK_TAG,
+                linkColor = linkColor,
+                text = LINK_TEXT,
+                url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+            )
+          }
+        }
+      }
+
+  ClickableText(
+      modifier = modifier,
+      text = instructions,
+      style = MaterialTheme.typography.bodyLarge,
+      onClick = { offset ->
+        instructions
+            .getStringAnnotations(
+                tag = LINK_TAG,
+                start = offset,
+                end = offset + LINK_TEXT.length,
+            )
+            .firstOrNull()
+            ?.also { uriHandler.openUri(it.item) }
+      },
+  )
 }
 
 @Preview

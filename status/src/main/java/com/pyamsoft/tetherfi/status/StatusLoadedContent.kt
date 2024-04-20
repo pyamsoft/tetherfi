@@ -147,14 +147,6 @@ internal fun LazyListScope.renderLoadedContent(
       onShowPowerBalance = onShowPowerBalance,
   )
 
-  item(
-      contentType = StatusLoadedContentTypes.SPACER,
-  ) {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
-    )
-  }
-
   renderTweaks(
       itemModifier = itemModifier,
       isEditable = isEditable,
