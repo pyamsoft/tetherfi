@@ -28,9 +28,7 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
-import com.pyamsoft.pydroid.notify.NotifyPermission
 import com.pyamsoft.pydroid.ui.theme.Theming
-import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.core.CoreAppModule
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
@@ -167,14 +165,6 @@ internal interface TetherFiComponent {
       @Named("app_icon_foreground")
       internal fun provideAppIconForegroundRes(): Int {
         return R.mipmap.ic_launcher_foreground
-      }
-
-      @Provides
-      @JvmStatic
-      @Singleton
-      @Named("notification")
-      internal fun provideNotificationPermissionRequester(): PermissionRequester {
-        return NotifyPermission.createDefault()
       }
 
       @Provides

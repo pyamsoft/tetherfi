@@ -20,7 +20,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
-import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
@@ -53,7 +52,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -140,14 +138,6 @@ abstract class ServerAppModule {
 
   @Module
   companion object {
-
-    @Provides
-    @JvmStatic
-    @Singleton
-    @Named("server")
-    internal fun provideServerPermissionRequester(guard: PermissionGuard): PermissionRequester {
-      return PermissionRequester.create(guard.requiredPermissions.toTypedArray())
-    }
 
     @Provides
     @JvmStatic

@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.tile
 
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +28,6 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.main.SystemBars
 import com.pyamsoft.tetherfi.main.ThemeViewModeler

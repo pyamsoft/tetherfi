@@ -43,7 +43,7 @@ internal constructor(
       mutableListOf<SaveableStateRegistry.Entry>().apply {
         val s = state
 
-        registry.registerProvider(KEY_THEME_MODE) { s.mode.value }.also { add(it) }
+        registry.registerProvider(KEY_THEME_MODE) { s.mode.value.name }.also { add(it) }
 
         registry.registerProvider(KEY_THEME_MATERIAL_YOU) { s.isMaterialYou.value }.also { add(it) }
       }

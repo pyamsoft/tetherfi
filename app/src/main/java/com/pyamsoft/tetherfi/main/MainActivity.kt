@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.main
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -48,8 +47,9 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
-  @Inject @JvmField internal var permissions: MainPermissions? = null
+
   @Inject @JvmField internal var launcher: ServiceLauncher? = null
+
   private var pydroid: PYDroidActivityDelegate? = null
 
   private fun initializePYDroid() {
@@ -75,10 +75,6 @@ class MainActivity : AppCompatActivity() {
         )
   }
 
-  private fun registerPermissionRequester() {
-    permissions.requireNotNull().register(this)
-  }
-
   private fun handleShowInAppRating() {
     pydroid?.loadInAppRating()
   }
@@ -93,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     ObjectGraph.ActivityScope.install(this, component)
 
     // Then register for any permissions
-    registerPermissionRequester()
+    registerPermissionManager(component)
   }
 
   private fun safeOpenSettingsIntent(action: String) {
@@ -158,11 +154,7 @@ class MainActivity : AppCompatActivity() {
 
   override fun onDestroy() {
     super.onDestroy()
-
-    permissions?.unregister()
-
     pydroid = null
-    permissions = null
     viewModel = null
     launcher = null
   }

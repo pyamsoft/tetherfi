@@ -40,6 +40,8 @@ internal interface MainComponent {
 
   fun inject(injector: MainInjector)
 
+  fun inject(permissionManager: PermissionManager)
+
   @Subcomponent.Factory
   interface Factory {
 
