@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     ObjectGraph.ActivityScope.install(this, component)
 
     // Then register for any permissions
-    registerPermissionManager(component)
+    PermissionManager.createAndRegister(this, component)
   }
 
   private fun safeOpenSettingsIntent(action: String) {

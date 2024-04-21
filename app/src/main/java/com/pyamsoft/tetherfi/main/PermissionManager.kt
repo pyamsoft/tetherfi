@@ -18,13 +18,11 @@ package com.pyamsoft.tetherfi.main
 
 import android.os.Build
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.CheckResult
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.util.PermissionRequester
 import com.pyamsoft.pydroid.util.doOnCreate
 import com.pyamsoft.pydroid.util.doOnDestroy
 import com.pyamsoft.tetherfi.core.Timber
@@ -35,59 +33,30 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-internal class PermissionManager internal constructor() {
+internal class PermissionManager private constructor() {
 
   @Inject @JvmField internal var permissionRequestBus: EventConsumer<PermissionRequests>? = null
-
   @Inject @JvmField internal var permissionResponseBus: EventBus<PermissionResponse>? = null
-
   @Inject @JvmField internal var permissionGuard: PermissionGuard? = null
 
-  @CheckResult
-  private fun createServerPermissionRequester(
-      activity: ComponentActivity
-  ): ActivityResultLauncher<Array<String>> {
-    return activity.registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()) { results ->
-          val ungrantedPermissions = results.filterNot { it.value }.map { it.key }
-          val allPermissionsGranted = ungrantedPermissions.isEmpty()
-          if (allPermissionsGranted) {
-            Timber.d { "All permissions granted" }
-
-            // Broadcast in the background
-            activity.lifecycleScope.launch(context = Dispatchers.Default) {
-              Timber.d { "Toggle Proxy service!" }
-              permissionResponseBus.requireNotNull().emit(PermissionResponse.ToggleProxy)
-            }
-          } else {
-            Timber.w { "Did not grant all permissions: $ungrantedPermissions" }
-          }
-        }
+  private fun handleServerPermissionsGranted(activity: ComponentActivity) {
+    activity.lifecycleScope.launch(context = Dispatchers.Default) {
+      Timber.d { "Toggle Proxy service!" }
+      permissionResponseBus.requireNotNull().emit(PermissionResponse.ToggleProxy)
+    }
   }
 
-  @CheckResult
-  private fun createNotificationPermissionRequester(
-      activity: ComponentActivity
-  ): ActivityResultLauncher<String> {
-    return activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted
-      ->
-      if (granted) {
-        Timber.d { "Granted notification permission!" }
-
-        // Broadcast in the background
-        activity.lifecycleScope.launch(context = Dispatchers.Default) {
-          permissionResponseBus.requireNotNull().emit(PermissionResponse.RefreshNotification)
-        }
-      } else {
-        Timber.w { "Did not grant notification permission" }
-      }
+  private fun handleNotificationPermissionGranted(activity: ComponentActivity) {
+    activity.lifecycleScope.launch(context = Dispatchers.Default) {
+      Timber.d { "Notification permission granted!" }
+      permissionResponseBus.requireNotNull().emit(PermissionResponse.RefreshNotification)
     }
   }
 
   private fun registerPermissionListeners(
       activity: ComponentActivity,
-      serverPermissionRequester: ActivityResultLauncher<Array<String>>,
-      notificationPermissionRequester: ActivityResultLauncher<String>
+      serverPermissionRequester: PermissionRequester.Launcher,
+      notificationPermissionRequester: PermissionRequester.Launcher,
   ) {
     permissionRequestBus.requireNotNull().also { f ->
       activity.lifecycleScope.launch(context = Dispatchers.Default) {
@@ -102,9 +71,7 @@ internal class PermissionManager internal constructor() {
               }
             }
             is PermissionRequests.Server -> {
-              serverPermissionRequester.launch(
-                  permissionGuard.requireNotNull().requiredPermissions.toTypedArray(),
-              )
+              serverPermissionRequester.launch(permissionGuard.requireNotNull().requiredPermissions)
             }
           }
         }
@@ -119,8 +86,19 @@ internal class PermissionManager internal constructor() {
   }
 
   fun create(activity: ComponentActivity, component: MainComponent) {
-    val serverPermissionRequester = createServerPermissionRequester(activity)
-    val notificationPermissionRequester = createNotificationPermissionRequester(activity)
+    val serverPermissionRequester =
+        PermissionRequester.createAndRegister(activity) {
+          if (it) {
+            handleServerPermissionsGranted(activity)
+          }
+        }
+
+    val notificationPermissionRequester =
+        PermissionRequester.createAndRegister(activity) {
+          if (it) {
+            handleNotificationPermissionGranted(activity)
+          }
+        }
 
     component.inject(this)
 
@@ -132,19 +110,18 @@ internal class PermissionManager internal constructor() {
       )
     }
 
-    activity.doOnDestroy {
-      serverPermissionRequester.unregister()
-      notificationPermissionRequester.unregister()
+    activity.doOnDestroy { handleDestroy() }
+  }
 
-      handleDestroy()
+  companion object {
+
+    @JvmStatic
+    internal fun createAndRegister(activity: ComponentActivity, component: MainComponent) {
+      PermissionManager()
+          .create(
+              activity = activity,
+              component = component,
+          )
     }
   }
-}
-
-internal fun ComponentActivity.registerPermissionManager(component: MainComponent) {
-  PermissionManager()
-      .create(
-          activity = this,
-          component = component,
-      )
 }
