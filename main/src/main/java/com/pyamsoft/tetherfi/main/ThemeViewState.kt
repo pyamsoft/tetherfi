@@ -16,23 +16,34 @@
 
 package com.pyamsoft.tetherfi.main
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.pydroid.ui.theme.Theming
 import com.pyamsoft.tetherfi.core.ActivityScope
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
+
+@Stable
+@Immutable
+data class ThemeSnapshot(
+    val mode: Theming.Mode,
+    val isMaterialYou: Boolean,
+)
 
 @Stable
 interface ThemeViewState : UiViewState {
-  val theme: StateFlow<Theming.Mode>
-  val isMaterialYou: StateFlow<Boolean>
+    val theme: StateFlow<ThemeSnapshot>
 }
 
 @Stable
 @ActivityScope
 class MutableThemeViewState @Inject internal constructor() : ThemeViewState {
-  override val theme = MutableStateFlow(Theming.Mode.SYSTEM)
-  override val isMaterialYou = MutableStateFlow(false)
+    override val theme = MutableStateFlow(
+        ThemeSnapshot(
+            mode = Theming.Mode.SYSTEM,
+            isMaterialYou = false,
+        ),
+    )
 }

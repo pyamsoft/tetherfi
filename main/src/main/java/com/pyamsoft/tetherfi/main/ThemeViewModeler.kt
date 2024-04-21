@@ -16,11 +16,17 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.app.Activity
 import android.content.res.Configuration
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.ui.theme.Theming
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ThemeViewModeler
@@ -30,35 +36,72 @@ internal constructor(
     private val theming: Theming,
 ) : ThemeViewState by state, AbstractViewModeler<ThemeViewState>(state) {
 
-  override fun registerSaveState(
-      registry: SaveableStateRegistry
-  ): List<SaveableStateRegistry.Entry> =
-      mutableListOf<SaveableStateRegistry.Entry>().apply {
+    override fun registerSaveState(
+        registry: SaveableStateRegistry
+    ): List<SaveableStateRegistry.Entry> =
+        mutableListOf<SaveableStateRegistry.Entry>().apply {
+            val s = state
+
+            registry.registerProvider(KEY_THEME) {
+                val current = s.theme.value
+                return@registerProvider "${current.mode}|${current.isMaterialYou}"
+            }.also { add(it) }
+        }
+
+    override fun consumeRestoredState(registry: SaveableStateRegistry) {
         val s = state
+        registry
+            .consumeRestored(KEY_THEME)
+            ?.let { it as String }
+            ?.also { current ->
+                val split = current.split("|")
+                val mode = Theming.Mode.valueOf(split[0])
+                val isMaterialYou = split[1].toBooleanStrict()
+                s.theme.value = ThemeSnapshot(
+                    mode = mode,
+                    isMaterialYou = isMaterialYou,
+                )
+            }
+    }
 
-        registry.registerProvider(KEY_THEME) { s.theme.value.name }.also { add(it) }
-      }
+    private fun bind(scope: CoroutineScope) {
+        combineTransform(
+            theming.listenForModeChanges(),
+            theming.listenForMaterialYouChanges(),
+        ) { mode, isMaterialYou ->
+            emit(mode to isMaterialYou)
+        }.flowOn(context = Dispatchers.Default)
+            .also { f ->
+                scope.launch(context = Dispatchers.Default) {
+                    f.collect {
+                        state.theme.value = ThemeSnapshot(it.first, it.second)
+                    }
+                }
+            }
+    }
 
-  override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    val s = state
-    registry
-        .consumeRestored(KEY_THEME)
-        ?.let { it as String }
-        ?.let { Theming.Mode.valueOf(it) }
-        ?.also { s.theme.value = it }
-  }
+    private fun handleSyncDarkTheme(activity: ComponentActivity) {
+        handleSyncDarkTheme(
+            scope = activity.lifecycleScope, configuration = activity.resources.configuration,
+        )
+    }
 
-  fun handleSyncDarkTheme(activity: Activity) {
-    handleSyncDarkTheme(activity.resources.configuration)
-  }
+    fun init(activity: ComponentActivity) {
+        bind(scope = activity.lifecycleScope)
+        handleSyncDarkTheme(activity)
+    }
 
-  fun handleSyncDarkTheme(configuration: Configuration) {
-    val isDark = theming.isDarkTheme(configuration)
-    state.theme.value = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
-  }
+    fun handleSyncDarkTheme(
+        scope: CoroutineScope,
+        configuration: Configuration,
+    ) {
+        val isDark = theming.isDarkTheme(configuration)
+        val newMode = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
+        theming.setDarkTheme(scope, newMode)
+    }
 
-  companion object {
+    companion object {
 
-    private const val KEY_THEME = "theme"
-  }
+        private const val KEY_THEME = "theme"
+    }
 }

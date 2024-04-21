@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
@@ -37,49 +38,55 @@ import javax.inject.Inject
 
 class ProxyTileActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
+    @Inject
+    @JvmField
+    internal var viewModel: ThemeViewModeler? = null
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    setTheme(R.style.Theme_TetherFi_Tile)
-    super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_TetherFi_Tile)
+        super.onCreate(savedInstanceState)
 
-    ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
+        ObjectGraph.ApplicationScope.retrieve(this).plusTile().create().inject(this)
 
-    val vm = viewModel.requireNotNull()
-    val appName = getString(R.string.app_name)
+        val vm = viewModel.requireNotNull()
+        val appName = getString(R.string.app_name)
 
-    setContent {
-      val theme by vm.theme.collectAsStateWithLifecycle()
-      val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
+        setContent {
+            val snapshot by vm.theme.collectAsStateWithLifecycle()
+            val theme = snapshot.mode
+            val isMaterialYou = snapshot.isMaterialYou
 
-      SaveStateDisposableEffect(vm)
+            SaveStateDisposableEffect(vm)
 
-      TetherFiTheme(
-          theme = theme,
-          isMaterialYou = isMaterialYou,
-      ) {
-        SystemBars(
-            isDarkMode = theme.getSystemDarkMode(),
-        )
-        ProxyTileEntry(
-            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-            appName = appName,
-            onComplete = { finishAndRemoveTask() },
-            onUpdateTile = { ProxyTileService.updateTile(this) },
-        )
-      }
+            TetherFiTheme(
+                theme = theme,
+                isMaterialYou = isMaterialYou,
+            ) {
+                SystemBars(
+                    isDarkMode = theme.getSystemDarkMode(),
+                )
+                ProxyTileEntry(
+                    modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+                    appName = appName,
+                    onComplete = { finishAndRemoveTask() },
+                    onUpdateTile = { ProxyTileService.updateTile(this) },
+                )
+            }
+        }
+
+        vm.init(this)
     }
 
-    vm.handleSyncDarkTheme(this)
-  }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        viewModel.requireNotNull().handleSyncDarkTheme(
+            scope = lifecycleScope,
+            configuration = newConfig,
+        )
+    }
 
-  override fun onConfigurationChanged(newConfig: Configuration) {
-    super.onConfigurationChanged(newConfig)
-    viewModel.requireNotNull().handleSyncDarkTheme(this)
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-    viewModel = null
-  }
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel = null
+    }
 }
