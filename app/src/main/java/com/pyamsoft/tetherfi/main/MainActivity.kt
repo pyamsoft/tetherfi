@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
@@ -48,139 +47,122 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    @Inject
-    @JvmField
-    internal var viewModel: ThemeViewModeler? = null
-    @Inject
-    @JvmField
-    internal var permissions: MainPermissions? = null
-    @Inject
-    @JvmField
-    internal var launcher: ServiceLauncher? = null
-    private var pydroid: PYDroidActivityDelegate? = null
+  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
+  @Inject @JvmField internal var permissions: MainPermissions? = null
+  @Inject @JvmField internal var launcher: ServiceLauncher? = null
+  private var pydroid: PYDroidActivityDelegate? = null
 
-    private fun initializePYDroid() {
-        pydroid =
-            installPYDroid(
-                provider =
+  private fun initializePYDroid() {
+    pydroid =
+        installPYDroid(
+            provider =
                 object : ChangeLogProvider {
 
-                    override val applicationIcon = R.mipmap.ic_launcher
+                  override val applicationIcon = R.mipmap.ic_launcher
 
-                    override val changelog = buildChangeLog {
-                        change("Reduce RAM usage when running the proxy")
-                        feature("Track total network activity for Connections")
-                        bugfix("Faster proxy performance on older or weaker devices")
+                  override val changelog = buildChangeLog {
+                    change("Reduce RAM usage when running the proxy")
+                    feature("Track total network activity for Connections")
+                    bugfix("Faster proxy performance on older or weaker devices")
 
-                        // NEXT
-                        //                    change(
-                        //                        "Support assigning a custom name to a connected Client
-                        // device in the Connections tab.")
-                    }
+                    // NEXT
+                    //                    change(
+                    //                        "Support assigning a custom name to a connected Client
+                    // device in the Connections tab.")
+                  }
                 },
-            )
-    }
-
-    private fun registerPermissionRequester() {
-        permissions.requireNotNull().register(this)
-    }
-
-    private fun handleShowInAppRating() {
-        pydroid?.loadInAppRating()
-    }
-
-    private fun setupActivity() {
-        // Setup PYDroid first
-        initializePYDroid()
-
-        // Create and initialize the ObjectGraph
-        val component = ObjectGraph.ApplicationScope.retrieve(this).plusMain().create()
-        component.inject(this)
-        ObjectGraph.ActivityScope.install(this, component)
-
-        // Then register for any permissions
-        registerPermissionRequester()
-    }
-
-    private fun safeOpenSettingsIntent(action: String) {
-
-        // Try specific first, may fail on some devices
-        try {
-            val intent = Intent(action, "package:${packageName}".toUri())
-            startActivity(intent)
-        } catch (e: Throwable) {
-            Timber.e(e) { "Failed specific intent for $action" }
-            val intent = Intent(action)
-            startActivity(intent)
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setupActivity()
-
-        val vm = viewModel.requireNotNull()
-        val appName = getString(R.string.app_name)
-
-        setContent {
-            val snapshot by vm.theme.collectAsStateWithLifecycle()
-            val theme = snapshot.mode
-            val isMaterialYou = snapshot.isMaterialYou
-
-            SaveStateDisposableEffect(vm)
-
-            TetherFiTheme(
-                theme = theme,
-                isMaterialYou = isMaterialYou,
-            ) {
-                SystemBars(
-                    isDarkMode = theme.getSystemDarkMode(),
-                )
-                InstallPYDroidExtras(
-                    modifier = Modifier
-                        .fillUpToPortraitSize()
-                        .widthIn(max = LANDSCAPE_MAX_WIDTH),
-                    appName = appName,
-                )
-                MainEntry(
-                    modifier = Modifier.fillMaxSize(),
-                    appName = appName,
-                    onShowInAppRating = { handleShowInAppRating() },
-                    onUpdateTile = { ProxyTileService.updateTile(this) },
-                    onLaunchIntent = { safeOpenSettingsIntent(it) },
-                )
-            }
-        }
-
-        vm.init(this)
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        reportFullyDrawn()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        viewModel?.handleSyncDarkTheme(
-            scope = lifecycleScope,
-            configuration = newConfig,
         )
+  }
+
+  private fun registerPermissionRequester() {
+    permissions.requireNotNull().register(this)
+  }
+
+  private fun handleShowInAppRating() {
+    pydroid?.loadInAppRating()
+  }
+
+  private fun setupActivity() {
+    // Setup PYDroid first
+    initializePYDroid()
+
+    // Create and initialize the ObjectGraph
+    val component = ObjectGraph.ApplicationScope.retrieve(this).plusMain().create()
+    component.inject(this)
+    ObjectGraph.ActivityScope.install(this, component)
+
+    // Then register for any permissions
+    registerPermissionRequester()
+  }
+
+  private fun safeOpenSettingsIntent(action: String) {
+
+    // Try specific first, may fail on some devices
+    try {
+      val intent = Intent(action, "package:${packageName}".toUri())
+      startActivity(intent)
+    } catch (e: Throwable) {
+      Timber.e(e) { "Failed specific intent for $action" }
+      val intent = Intent(action)
+      startActivity(intent)
+    }
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setupActivity()
+
+    val vm = viewModel.requireNotNull()
+    val appName = getString(R.string.app_name)
+
+    setContent {
+      val theme by vm.mode.collectAsStateWithLifecycle()
+      val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
+
+      SaveStateDisposableEffect(vm)
+
+      TetherFiTheme(
+          theme = theme,
+          isMaterialYou = isMaterialYou,
+      ) {
+        SystemBars(
+            isDarkMode = theme.getSystemDarkMode(),
+        )
+        InstallPYDroidExtras(
+            modifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
+            appName = appName,
+        )
+        MainEntry(
+            modifier = Modifier.fillMaxSize(),
+            appName = appName,
+            onShowInAppRating = { handleShowInAppRating() },
+            onUpdateTile = { ProxyTileService.updateTile(this) },
+            onLaunchIntent = { safeOpenSettingsIntent(it) },
+        )
+      }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    vm.init(this)
+  }
 
-        permissions?.unregister()
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
 
-        pydroid = null
-        permissions = null
-        viewModel = null
-        launcher = null
-    }
+  override fun onResume() {
+    super.onResume()
+    reportFullyDrawn()
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+
+    permissions?.unregister()
+
+    pydroid = null
+    permissions = null
+    viewModel = null
+    launcher = null
+  }
 }

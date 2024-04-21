@@ -16,18 +16,19 @@
 
 package com.pyamsoft.tetherfi.main
 
-import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.pydroid.core.cast
+import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.theme.Theming
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class ThemeViewModeler
 @Inject
@@ -36,72 +37,58 @@ internal constructor(
     private val theming: Theming,
 ) : ThemeViewState by state, AbstractViewModeler<ThemeViewState>(state) {
 
-    override fun registerSaveState(
-        registry: SaveableStateRegistry
-    ): List<SaveableStateRegistry.Entry> =
-        mutableListOf<SaveableStateRegistry.Entry>().apply {
-            val s = state
-
-            registry.registerProvider(KEY_THEME) {
-                val current = s.theme.value
-                return@registerProvider "${current.mode}|${current.isMaterialYou}"
-            }.also { add(it) }
-        }
-
-    override fun consumeRestoredState(registry: SaveableStateRegistry) {
+  override fun registerSaveState(
+      registry: SaveableStateRegistry
+  ): List<SaveableStateRegistry.Entry> =
+      mutableListOf<SaveableStateRegistry.Entry>().apply {
         val s = state
-        registry
-            .consumeRestored(KEY_THEME)
-            ?.let { it as String }
-            ?.also { current ->
-                val split = current.split("|")
-                val mode = Theming.Mode.valueOf(split[0])
-                val isMaterialYou = split[1].toBooleanStrict()
-                s.theme.value = ThemeSnapshot(
-                    mode = mode,
-                    isMaterialYou = isMaterialYou,
-                )
-            }
-    }
 
-    private fun bind(scope: CoroutineScope) {
-        combineTransform(
+        registry.registerProvider(KEY_THEME_MODE) { s.mode.value }.also { add(it) }
+
+        registry.registerProvider(KEY_THEME_MATERIAL_YOU) { s.isMaterialYou.value }.also { add(it) }
+      }
+
+  override fun consumeRestoredState(registry: SaveableStateRegistry) {
+    val s = state
+    registry
+        .consumeRestored(KEY_THEME_MODE)
+        ?.let { it as String }
+        ?.let { Theming.Mode.valueOf(it) }
+        ?.also { s.mode.value = it }
+
+    registry
+        .consumeRestored(KEY_THEME_MATERIAL_YOU)
+        ?.let { it as Boolean }
+        ?.also { s.isMaterialYou.value = it }
+  }
+
+  private fun bind(scope: CoroutineScope) {
+    combineTransform(
             theming.listenForModeChanges(),
             theming.listenForMaterialYouChanges(),
         ) { mode, isMaterialYou ->
-            emit(mode to isMaterialYou)
-        }.flowOn(context = Dispatchers.Default)
-            .also { f ->
-                scope.launch(context = Dispatchers.Default) {
-                    f.collect {
-                        state.theme.value = ThemeSnapshot(it.first, it.second)
-                    }
-                }
+          emit(listOf(mode, isMaterialYou))
+        }
+        .flowOn(context = Dispatchers.Default)
+        .also { f ->
+          scope.launch(context = Dispatchers.Default) {
+            f.collect { list ->
+              val mode = list[0].cast<Theming.Mode>().requireNotNull()
+              val isMaterialYou = list[1].cast<Boolean>().requireNotNull()
+              state.mode.value = mode
+              state.isMaterialYou.value = isMaterialYou
             }
-    }
+          }
+        }
+  }
 
-    private fun handleSyncDarkTheme(activity: ComponentActivity) {
-        handleSyncDarkTheme(
-            scope = activity.lifecycleScope, configuration = activity.resources.configuration,
-        )
-    }
+  fun init(activity: ComponentActivity) {
+    bind(scope = activity.lifecycleScope)
+  }
 
-    fun init(activity: ComponentActivity) {
-        bind(scope = activity.lifecycleScope)
-        handleSyncDarkTheme(activity)
-    }
+  companion object {
 
-    fun handleSyncDarkTheme(
-        scope: CoroutineScope,
-        configuration: Configuration,
-    ) {
-        val isDark = theming.isDarkTheme(configuration)
-        val newMode = if (isDark) Theming.Mode.DARK else Theming.Mode.LIGHT
-        theming.setDarkTheme(scope, newMode)
-    }
-
-    companion object {
-
-        private const val KEY_THEME = "theme"
-    }
+    private const val KEY_THEME_MODE = "theme_mode"
+    private const val KEY_THEME_MATERIAL_YOU = "theme_material_you"
+  }
 }
