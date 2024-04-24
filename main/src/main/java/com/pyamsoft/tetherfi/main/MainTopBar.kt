@@ -58,7 +58,6 @@ fun rememberAllTabs(): SnapshotStateList<MainView> {
     return remember { MainView.entries.toMutableStateList() }
 }
 
-// Needs ExperimentalPagerApi even for new function (even though the annotation is deprecated)
 @Composable
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 fun MainTopBar(
