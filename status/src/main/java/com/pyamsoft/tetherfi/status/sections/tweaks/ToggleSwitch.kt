@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.ui.textAlpha
 
 @Composable
 internal fun ToggleSwitch(
@@ -86,7 +87,10 @@ internal fun ToggleSwitch(
         text = description,
         style =
             MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = textAlpha(isEditable),
+                    ),
             ),
     )
   }

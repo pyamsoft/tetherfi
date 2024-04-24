@@ -46,10 +46,13 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
+import com.pyamsoft.tetherfi.ui.surfaceAlpha
+import com.pyamsoft.tetherfi.ui.textAlpha
 
 @Composable
 @CheckResult
 fun rememberCheckableColor(
+    enabled: Boolean,
     label: String,
     condition: Boolean,
     selectedColor: Color,
@@ -57,11 +60,15 @@ fun rememberCheckableColor(
   val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
   val color =
       remember(
+          enabled,
           condition,
           unselectedColor,
           selectedColor,
       ) {
-        if (condition) selectedColor else unselectedColor
+        val c = if (condition) selectedColor else unselectedColor
+        return@remember c.copy(
+            alpha = surfaceAlpha(enabled),
+        )
       }
   return animateColorAsState(
       label = label,
@@ -71,15 +78,22 @@ fun rememberCheckableColor(
 
 @Composable
 @CheckResult
-internal fun rememberCheckableIconColor(condition: Boolean): Color {
+internal fun rememberCheckableIconColor(
+    enabled: Boolean,
+    condition: Boolean,
+): Color {
   val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
   val selectedColor = MaterialTheme.colorScheme.primary
   return remember(
+      enabled,
       condition,
       unselectedColor,
       selectedColor,
   ) {
-    if (condition) selectedColor else unselectedColor
+    val c = if (condition) selectedColor else unselectedColor
+    return@remember c.copy(
+        alpha = surfaceAlpha(enabled),
+    )
   }
 }
 
@@ -120,9 +134,10 @@ private fun CheckableCard(
     extraHeight: Dp,
     onClick: () -> Unit,
 ) {
-  val iconColor = rememberCheckableIconColor(condition)
+  val iconColor = rememberCheckableIconColor(isEditable, condition)
   val color by
       rememberCheckableColor(
+          enabled = isEditable,
           label = title,
           condition = condition,
           selectedColor = titleColor,
@@ -179,7 +194,10 @@ private fun CheckableCard(
           text = description,
           style =
               MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  color =
+                      MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                          alpha = textAlpha(isEditable),
+                      ),
               ),
       )
     }

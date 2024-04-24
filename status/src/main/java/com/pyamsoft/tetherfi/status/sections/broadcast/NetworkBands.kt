@@ -41,6 +41,7 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 import com.pyamsoft.tetherfi.ui.checkable.rememberHeightMatcherGenerator
+import com.pyamsoft.tetherfi.ui.surfaceAlpha
 
 @Composable
 internal fun NetworkBands(
@@ -103,11 +104,17 @@ internal fun NetworkBands(
           modifier =
               Modifier.border(
                       width = 2.dp,
-                      color = MaterialTheme.colorScheme.secondary,
+                      color =
+                          MaterialTheme.colorScheme.secondary.copy(
+                              alpha = surfaceAlpha(isEditable),
+                          ),
                       shape = MaterialTheme.shapes.medium,
                   )
                   .background(
-                      color = MaterialTheme.colorScheme.secondaryContainer,
+                      color =
+                          MaterialTheme.colorScheme.secondaryContainer.copy(
+                              alpha = surfaceAlpha(isEditable),
+                          ),
                       shape = MaterialTheme.shapes.medium,
                   )
                   .padding(MaterialTheme.keylines.content),
@@ -115,7 +122,10 @@ internal fun NetworkBands(
           style =
               MaterialTheme.typography.bodyLarge.copy(
                   fontWeight = FontWeight.W700,
-                  color = MaterialTheme.colorScheme.onSecondaryContainer,
+                  color =
+                      MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                          alpha = surfaceAlpha(isEditable),
+                      ),
               ),
       )
     }

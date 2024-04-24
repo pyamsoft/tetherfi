@@ -38,6 +38,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tweaks.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
+import com.pyamsoft.tetherfi.ui.textAlpha
 
 private enum class RenderWakelocksContentTypes {
   WAKE_LOCKS,
@@ -74,6 +75,7 @@ internal fun LazyListScope.renderWakelocks(
     val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
     val cardColor by
         rememberCheckableColor(
+            enabled = isEditable,
             label = "Wake Locks",
             condition = isChecked,
             selectedColor = MaterialTheme.colorScheme.primary,
@@ -86,87 +88,93 @@ internal fun LazyListScope.renderWakelocks(
             BorderStroke(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
-            )) {
-          Column(
-              modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
-          ) {
-            Row(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.keylines.content)
-                        .padding(bottom = MaterialTheme.keylines.content),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-              Text(
-                  modifier = Modifier.weight(1F),
-                  text = "Wake Locks",
-                  style =
-                      MaterialTheme.typography.titleLarge.copy(
-                          fontWeight = FontWeight.W700,
-                          color = cardColor,
-                      ),
-              )
+            ),
+    ) {
+      Column(
+          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
+      ) {
+        Row(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              modifier = Modifier.weight(1F),
+              text = "Wake Locks",
+              style =
+                  MaterialTheme.typography.titleLarge.copy(
+                      fontWeight = FontWeight.W700,
+                      color = cardColor,
+                  ),
+          )
 
-              TriStateCheckbox(
-                  modifier = Modifier.padding(start = MaterialTheme.keylines.content),
-                  enabled = isEditable,
-                  state = checkboxState,
-                  onClick = null,
-              )
-            }
+          TriStateCheckbox(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.content),
+              enabled = isEditable,
+              state = checkboxState,
+              onClick = null,
+          )
+        }
 
-            Text(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(horizontal = MaterialTheme.keylines.content)
-                        .padding(bottom = MaterialTheme.keylines.content),
-                text =
-                    """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
+        Text(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(bottom = MaterialTheme.keylines.content),
+            text =
+                """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
                   |
                   |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
-                        .trimMargin(),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
+                    .trimMargin(),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = textAlpha(isEditable),
+                        ),
+                ),
+        )
+
+        val wifiLockColor by
+            rememberCheckableColor(
+                enabled = isEditable,
+                label = "Wi-Fi Lock",
+                condition = keepWifiLock,
+                selectedColor = MaterialTheme.colorScheme.primary,
             )
 
-            val wifiLockColor by
-                rememberCheckableColor(
-                    label = "Wi-Fi Lock",
-                    condition = keepWifiLock,
-                    selectedColor = MaterialTheme.colorScheme.primary,
-                )
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = wifiLockColor,
+            checked = keepWifiLock,
+            title = "Keep WiFi Awake",
+            description =
+                "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
+            onClick = onToggleKeepWifiLock,
+        )
 
-            ToggleSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                isEditable = isEditable,
-                color = wifiLockColor,
-                checked = keepWifiLock,
-                title = "Keep WiFi Awake",
-                description =
-                    "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
-                onClick = onToggleKeepWifiLock,
+        val wakeLockColor by
+            rememberCheckableColor(
+                enabled = isEditable,
+                label = "CPU Lock",
+                condition = keepWakeLock,
+                selectedColor = MaterialTheme.colorScheme.primary,
             )
 
-            val wakeLockColor by
-                rememberCheckableColor(
-                    label = "CPU Lock",
-                    condition = keepWakeLock,
-                    selectedColor = MaterialTheme.colorScheme.primary,
-                )
-
-            ToggleSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                isEditable = isEditable,
-                color = wakeLockColor,
-                checked = keepWakeLock,
-                title = "Keep CPU Awake",
-                description =
-                    "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
-                onClick = onToggleKeepWakeLock,
-            )
-          }
-        }
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = wakeLockColor,
+            checked = keepWakeLock,
+            title = "Keep CPU Awake",
+            description =
+                "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
+            onClick = onToggleKeepWakeLock,
+        )
+      }
+    }
   }
 }

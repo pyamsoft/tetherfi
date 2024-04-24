@@ -65,7 +65,7 @@ internal fun ViewQRCodeTile(
                   if (isQREnabled) {
                     primary
                   } else {
-                    primaryContainer
+                    onSurfaceVariant
                   }
                 },
         )

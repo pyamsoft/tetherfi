@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
+import com.pyamsoft.tetherfi.ui.textAlpha
 
 private enum class RenderTweakCardContentTypes {
   BEHAVIOR_TWEAKS,
@@ -85,13 +86,16 @@ internal fun LazyListScope.renderTweakCard(
                     .trimMargin(),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = textAlpha(isEditable),
+                    ),
                 ),
         )
 
         val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
         val ignoreVpnColor by
             rememberCheckableColor(
+                enabled = isEditable,
                 label = "Ignore VPN",
                 condition = isIgnoreVpn,
                 selectedColor = MaterialTheme.colorScheme.primary,
@@ -114,6 +118,7 @@ internal fun LazyListScope.renderTweakCard(
         val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
         val shutdownNoClientsColor by
             rememberCheckableColor(
+                enabled = isEditable,
                 label = "Shutdown No Clients",
                 condition = isShutdownWithNoClients,
                 selectedColor = MaterialTheme.colorScheme.primary,
@@ -135,6 +140,7 @@ internal fun LazyListScope.renderTweakCard(
 
         val proxyBindAllColor by
             rememberCheckableColor(
+                enabled = isEditable,
                 label = "Bind Proxy to All Interfaces",
                 condition = false,
                 selectedColor = MaterialTheme.colorScheme.primary,
@@ -158,6 +164,7 @@ internal fun LazyListScope.renderTweakCard(
         val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
         val proxyYoloColor by
             rememberCheckableColor(
+                enabled = isEditable,
                 label = "Stubborn Proxy",
                 condition = isProxyYolo,
                 selectedColor = MaterialTheme.colorScheme.primary,

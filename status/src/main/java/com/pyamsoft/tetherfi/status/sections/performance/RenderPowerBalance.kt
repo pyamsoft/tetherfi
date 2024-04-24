@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
+import com.pyamsoft.tetherfi.ui.textAlpha
 
 private enum class RenderThreadsContentTypes {
   POWER_BALANCE,
@@ -70,6 +71,7 @@ internal fun LazyListScope.renderPowerBalance(
     val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
     val cardColor by
         rememberCheckableColor(
+            enabled = isEditable,
             label = "Wake Locks",
             condition = isChecked,
             selectedColor = MaterialTheme.colorScheme.primary,
@@ -84,7 +86,9 @@ internal fun LazyListScope.renderPowerBalance(
             ),
         shape = MaterialTheme.shapes.medium,
     ) {
-      Column(modifier = Modifier.padding(MaterialTheme.keylines.content)) {
+      Column(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+      ) {
         Text(
             text = "Expert: Power Balance",
             style =
@@ -105,7 +109,10 @@ internal fun LazyListScope.renderPowerBalance(
                     .trimMargin(),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = textAlpha(isEditable),
+                        ),
                 ),
         )
 
