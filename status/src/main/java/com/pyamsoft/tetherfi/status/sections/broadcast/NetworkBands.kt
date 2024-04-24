@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.status.sections.broadcast
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
@@ -97,11 +100,22 @@ internal fun NetworkBands(
       }
     } else {
       Text(
+          modifier =
+              Modifier.border(
+                      width = 2.dp,
+                      color = MaterialTheme.colorScheme.secondary,
+                      shape = MaterialTheme.shapes.medium,
+                  )
+                  .background(
+                      color = MaterialTheme.colorScheme.secondaryContainer,
+                      shape = MaterialTheme.shapes.medium,
+                  )
+                  .padding(MaterialTheme.keylines.content),
           text = "Network Broadcast Frequency is defined by the system and cannot be changed.",
           style =
               MaterialTheme.typography.bodyLarge.copy(
                   fontWeight = FontWeight.W700,
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  color = MaterialTheme.colorScheme.onSecondaryContainer,
               ),
       )
     }

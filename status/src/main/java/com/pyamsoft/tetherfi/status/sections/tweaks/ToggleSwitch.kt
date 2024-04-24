@@ -85,7 +85,7 @@ internal fun ToggleSwitch(
         modifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content),
         text = description,
         style =
-            MaterialTheme.typography.bodySmall.copy(
+            MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
     )

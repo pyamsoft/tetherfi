@@ -74,7 +74,7 @@ internal fun LazyListScope.renderDeviceSetup(
     ) {
       Text(
           text = "Open the Wi-Fi settings page",
-          style = MaterialTheme.typography.bodyLarge,
+          style = MaterialTheme.typography.headlineSmall,
       )
     }
   }
@@ -88,7 +88,10 @@ internal fun LazyListScope.renderDeviceSetup(
       Column {
         Text(
             text = "Connect to the $appName Hotspot",
-            style = MaterialTheme.typography.bodyMedium,
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
         )
 
         Row {
@@ -108,7 +111,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Name",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onBackground,
+                      color = MaterialTheme.colorScheme.onSurface,
                   ),
           )
 
@@ -153,7 +156,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Password",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onBackground,
+                      color = MaterialTheme.colorScheme.onSurface,
                   ),
           )
           Text(
@@ -197,9 +200,17 @@ internal fun LazyListScope.renderDeviceSetup(
 
         Text(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-            text =
-                "Configure the proxy settings. Use MANUAL mode and configure both HTTP and HTTPS proxy options.",
-            style = MaterialTheme.typography.bodyLarge,
+            text = "Configure the proxy settings",
+            style = MaterialTheme.typography.headlineSmall,
+        )
+
+        Text(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+            text = "Use MANUAL mode and configure both HTTP and HTTPS proxy options.",
+            style =
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
         )
 
         Row(
@@ -213,7 +224,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "URL",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onBackground,
+                      color = MaterialTheme.colorScheme.onSurface,
                   ),
           )
           Text(
@@ -234,7 +245,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Port",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onBackground,
+                      color = MaterialTheme.colorScheme.onSurface,
                   ),
           )
 
@@ -260,11 +271,19 @@ internal fun LazyListScope.renderDeviceSetup(
     OtherInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
-      Text(
-          text =
-              "Turn the Wi-Fi off and back on again. It should automatically connect to the $appName Hotspot",
-          style = MaterialTheme.typography.bodyLarge,
-      )
+      Column {
+        Text(
+            text = "Turn the Wi-Fi off and back on again.",
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        Text(
+            text = "It should automatically connect to the $appName Hotspot",
+            style =
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+        )
+      }
     }
   }
 }

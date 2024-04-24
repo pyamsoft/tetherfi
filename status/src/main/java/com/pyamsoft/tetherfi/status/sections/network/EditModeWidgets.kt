@@ -101,6 +101,68 @@ internal fun EditPassword(
 
   val hapticManager = LocalHapticManager.current
 
+  // Password is always visible when set by system
+  val isPasswordCurrentlyVisible =
+      remember(
+          canUseCustomConfig,
+          isPasswordVisible,
+      ) {
+        if (canUseCustomConfig) {
+          isPasswordVisible
+        } else {
+          true
+        }
+      }
+
+  val leadingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          Row(
+              modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            IconToggleButton(
+                checked = isPasswordVisible,
+                onCheckedChange = { newVisible ->
+                  if (newVisible) {
+                    hapticManager?.toggleOn()
+                  } else {
+                    hapticManager?.toggleOff()
+                  }
+                  onTogglePasswordVisibility()
+                },
+            ) {
+              Icon(
+                  imageVector =
+                      if (isPasswordVisible) Icons.Filled.VisibilityOff
+                      else Icons.Filled.Visibility,
+                  contentDescription =
+                      if (isPasswordVisible) "Password Visible" else "Password Hidden",
+              )
+            }
+
+            ValidIcon(
+                isValid = isValid,
+                what = "Password",
+            )
+          }
+        }
+      } else {
+        null
+      }
+
+  val trailingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          ValidIcon(
+              isValid = isValid,
+              what = "Name",
+          )
+        }
+      } else {
+        null
+      }
+
   StatusEditor(
       modifier = modifier,
       enabled = canUseCustomConfig,
@@ -108,41 +170,14 @@ internal fun EditPassword(
       value = hotspotPassword,
       onChange = onPasswordChanged,
       visualTransformation =
-          if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+          if (isPasswordCurrentlyVisible) VisualTransformation.None
+          else PasswordVisualTransformation(),
       keyboardOptions =
           KeyboardOptions(
               keyboardType = KeyboardType.Password,
           ),
-      trailingIcon = {
-        Row(
-            modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          IconToggleButton(
-              checked = isPasswordVisible,
-              onCheckedChange = { newVisible ->
-                if (newVisible) {
-                  hapticManager?.toggleOn()
-                } else {
-                  hapticManager?.toggleOff()
-                }
-                onTogglePasswordVisibility()
-              },
-          ) {
-            Icon(
-                imageVector =
-                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                contentDescription =
-                    if (isPasswordVisible) "Password Visible" else "Password Hidden",
-            )
-          }
-
-          ValidIcon(
-              isValid = isValid,
-              what = "Password",
-          )
-        }
-      },
+      leadingIcon = leadingIcon,
+      trailingIcon = trailingIcon,
   )
 }
 
@@ -170,14 +205,9 @@ internal fun EditSsid(
         if (canUseCustomConfig) ssid.isNotBlank() else true
       }
 
-  StatusEditor(
-      modifier = modifier,
-      enabled = canUseCustomConfig,
-      title = "HOTSPOT NAME",
-      value = hotspotSsid,
-      onChange = onSsidChanged,
-      leadingIcon = {
-        if (canUseCustomConfig) {
+  val leadingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
           val textStyle = LocalTextStyle.current
           Text(
               modifier =
@@ -193,12 +223,29 @@ internal fun EditSsid(
                   ),
           )
         }
-      },
-      trailingIcon = {
-        ValidIcon(
-            isValid = isValid,
-            what = "Name",
-        )
-      },
+      } else {
+        null
+      }
+
+  val trailingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          ValidIcon(
+              isValid = isValid,
+              what = "Name",
+          )
+        }
+      } else {
+        null
+      }
+
+  StatusEditor(
+      modifier = modifier,
+      enabled = canUseCustomConfig,
+      title = "HOTSPOT NAME",
+      value = hotspotSsid,
+      onChange = onSsidChanged,
+      leadingIcon = leadingIcon,
+      trailingIcon = trailingIcon,
   )
 }

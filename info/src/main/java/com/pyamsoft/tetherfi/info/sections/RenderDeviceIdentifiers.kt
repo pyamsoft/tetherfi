@@ -58,7 +58,7 @@ internal fun LazyListScope.renderDeviceIdentifiers(
       Text(
           text = "This Device",
           style =
-              MaterialTheme.typography.bodySmall.copy(
+              MaterialTheme.typography.bodyMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
@@ -75,7 +75,7 @@ internal fun LazyListScope.renderDeviceIdentifiers(
       Text(
           text = "Other Device",
           style =
-              MaterialTheme.typography.bodySmall.copy(
+              MaterialTheme.typography.bodyMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )

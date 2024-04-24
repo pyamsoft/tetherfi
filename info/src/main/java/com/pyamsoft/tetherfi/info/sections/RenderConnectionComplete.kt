@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.info.sections
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.ui.appendLink
@@ -51,7 +54,7 @@ internal fun LazyListScope.renderConnectionComplete(
     ) {
       Text(
           text = "Your device should now be sharing its Internet connection!",
-          style = MaterialTheme.typography.bodyLarge,
+          style = MaterialTheme.typography.headlineSmall,
       )
     }
   }
@@ -66,8 +69,8 @@ internal fun LazyListScope.renderConnectionComplete(
           text =
               "At this point, normal Internet browsing and email should work. If it does not, disconnect from the $appName Hotspot and double-check that you have entered the correct Network and Proxy settings.",
           style =
-              MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onBackground,
+              MaterialTheme.typography.bodyLarge.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
@@ -117,7 +120,18 @@ private fun FullConnectionInstructions(
       }
 
   ClickableText(
-      modifier = modifier,
+      modifier =
+          modifier
+              .border(
+                  width = 2.dp,
+                  color = MaterialTheme.colorScheme.primaryContainer,
+                  shape = MaterialTheme.shapes.medium,
+              )
+              .background(
+                  color = MaterialTheme.colorScheme.surfaceVariant,
+                  shape = MaterialTheme.shapes.medium,
+              )
+              .padding(MaterialTheme.keylines.content),
       text = instructions,
       style = MaterialTheme.typography.bodyLarge,
       onClick = { offset ->

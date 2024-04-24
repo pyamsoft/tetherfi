@@ -84,7 +84,7 @@ internal fun LazyListScope.renderTweakCard(
                   |All of these options are completely optional and do not impact network or hotspot performance in any way."""
                     .trimMargin(),
             style =
-                MaterialTheme.typography.bodySmall.copy(
+                MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )

@@ -58,27 +58,23 @@ internal fun DisplayStatus(
   val textErrorColor = MaterialTheme.colorScheme.onErrorContainer
   val textRunningColor = MaterialTheme.colorScheme.onTertiaryContainer
   val textProgressColor = MaterialTheme.colorScheme.onSecondaryContainer
+  val textNothingColor = MaterialTheme.colorScheme.onSurfaceVariant
   val textColor =
       remember(
-          size,
-          status,
-          textErrorColor,
-          textRunningColor,
-          textProgressColor,
-      ) {
-        when (status) {
-          is RunningStatus.Error -> textErrorColor
-          is RunningStatus.Running -> textRunningColor
-          is RunningStatus.NotRunning -> Color.Unspecified
-          is RunningStatus.Starting,
-          is RunningStatus.Stopping -> {
-            when (size) {
-              StatusSize.SMALL -> Color.Unspecified
-              StatusSize.NORMAL -> textProgressColor
+          size, status, textErrorColor, textRunningColor, textProgressColor, textNothingColor) {
+            when (status) {
+              is RunningStatus.Error -> textErrorColor
+              is RunningStatus.Running -> textRunningColor
+              is RunningStatus.NotRunning -> textNothingColor
+              is RunningStatus.Starting,
+              is RunningStatus.Stopping -> {
+                when (size) {
+                  StatusSize.SMALL -> textNothingColor
+                  StatusSize.NORMAL -> textProgressColor
+                }
+              }
             }
           }
-        }
-      }
 
   val smallStyle = MaterialTheme.typography.bodyLarge
   val normalStyle = MaterialTheme.typography.headlineSmall

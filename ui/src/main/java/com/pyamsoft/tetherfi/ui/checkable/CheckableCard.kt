@@ -54,7 +54,7 @@ fun rememberCheckableColor(
     condition: Boolean,
     selectedColor: Color,
 ): State<Color> {
-  val unselectedColor = MaterialTheme.colorScheme.onSurface
+  val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
   val color =
       remember(
           condition,
@@ -72,7 +72,7 @@ fun rememberCheckableColor(
 @Composable
 @CheckResult
 internal fun rememberCheckableIconColor(condition: Boolean): Color {
-  val unselectedColor = MaterialTheme.colorScheme.onSurface
+  val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
   val selectedColor = MaterialTheme.colorScheme.primary
   return remember(
       condition,
@@ -121,7 +121,6 @@ private fun CheckableCard(
     onClick: () -> Unit,
 ) {
   val iconColor = rememberCheckableIconColor(condition)
-  val alphas = rememberCheckableAlpha(isEditable)
   val color by
       rememberCheckableColor(
           label = title,
@@ -139,7 +138,7 @@ private fun CheckableCard(
       border =
           BorderStroke(
               width = 2.dp,
-              color = borderColor.copy(alpha = alphas.secondary),
+              color = borderColor,
           ),
       shape = MaterialTheme.shapes.medium,
   ) {
@@ -157,7 +156,7 @@ private fun CheckableCard(
             style =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
-                    color = color.copy(alpha = alphas.primary),
+                    color = color,
                 ),
         )
 
@@ -165,7 +164,7 @@ private fun CheckableCard(
             modifier = Modifier.size(ImageDefaults.IconSize),
             imageVector = checkIcon,
             contentDescription = title,
-            tint = iconColor.copy(alpha = alphas.secondary),
+            tint = iconColor,
         )
       }
 
@@ -179,9 +178,8 @@ private fun CheckableCard(
       Text(
           text = description,
           style =
-              MaterialTheme.typography.bodySmall.copy(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = alphas.secondary),
-                  fontWeight = FontWeight.W400,
+              MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }

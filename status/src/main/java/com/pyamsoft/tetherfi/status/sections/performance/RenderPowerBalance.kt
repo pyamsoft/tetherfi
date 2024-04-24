@@ -104,7 +104,7 @@ internal fun LazyListScope.renderPowerBalance(
               """
                     .trimMargin(),
             style =
-                MaterialTheme.typography.bodySmall.copy(
+                MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )

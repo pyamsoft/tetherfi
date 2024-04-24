@@ -18,9 +18,9 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -65,7 +65,13 @@ fun MainScreen(
       )
 
       MainContent(
-          modifier = Modifier.fillMaxWidth().weight(1F).consumeWindowInsets(pv),
+          modifier =
+              Modifier.fillMaxWidth()
+                  .weight(1F)
+                  // So this basically doesn't do anything since we handle the padding ourselves
+                  // BUT, we don't just want to consume it because we DO actually care when using
+                  // Modifier.navigationBarsPadding()
+                  .heightIn(min = pv.calculateBottomPadding()),
           appName = appName,
           pagerState = pagerState,
           state = state,

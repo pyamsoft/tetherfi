@@ -50,14 +50,14 @@ internal fun LazyListScope.renderAppSetup(
       Column {
         Text(
             text = "Turn on Wi-Fi.",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Text(
             text =
                 "You do not need to connect to a Network, but Wi-Fi must be on for $appName to work.",
             style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
                 ),
         )
       }
@@ -73,13 +73,13 @@ internal fun LazyListScope.renderAppSetup(
       Column {
         Text(
             text = "Connect to the Internet.",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Text(
             text = "You can connect via Wi-Fi or Mobile Data",
             style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
                 ),
         )
       }
@@ -118,7 +118,7 @@ internal fun LazyListScope.renderAppSetup(
               "You can optionally choose to keep the CPU and/or WiFi awake while the Hotspot is running, which greatly improves performance while the screen is off. If the CPU is not kept awake, you may notice extreme network slowdown while the device screen is off.",
           style =
               MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onBackground,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
@@ -136,7 +136,7 @@ internal fun LazyListScope.renderAppSetup(
               "You can optionally choose to ignore Android's system battery optimizations, which will allow $appName to run at maximum performance at all times. This may use more battery but will significantly enhance your networking experience.",
           style =
               MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onBackground,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
@@ -151,13 +151,13 @@ internal fun LazyListScope.renderAppSetup(
       Column {
         Text(
             text = "Start the $appName Hotspot.",
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.headlineSmall,
         )
         Text(
             text = "Check that the Broadcast, Proxy, and Hotspot status are all green and running.",
             style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
                 ),
         )
       }

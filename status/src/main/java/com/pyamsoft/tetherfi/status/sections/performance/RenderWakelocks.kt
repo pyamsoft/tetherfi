@@ -126,7 +126,7 @@ internal fun LazyListScope.renderWakelocks(
                   |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
                         .trimMargin(),
                 style =
-                    MaterialTheme.typography.bodySmall.copy(
+                    MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
             )

@@ -43,7 +43,7 @@ internal fun LazyListScope.renderExcuse(
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color =
-                    MaterialTheme.colorScheme.onBackground.copy(
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
                         alpha = TypographyDefaults.ALPHA_DISABLED,
                     ),
             ),
@@ -60,7 +60,7 @@ internal fun LazyListScope.renderExcuse(
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color =
-                    MaterialTheme.colorScheme.onBackground.copy(
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
                         alpha = TypographyDefaults.ALPHA_DISABLED,
                     ),
             ),

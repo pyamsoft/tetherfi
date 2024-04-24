@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,8 +50,6 @@ internal fun ViewQRCodeTile(
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      val color = LocalContentColor.current
-
       IconButton(
           onClick = {
             hapticManager?.actionButtonPress()
@@ -64,9 +61,13 @@ internal fun ViewQRCodeTile(
             imageVector = Icons.Filled.QrCode,
             contentDescription = "QR Code",
             tint =
-                MaterialTheme.colorScheme.primary.copy(
-                    alpha = 1F,
-                ),
+                MaterialTheme.colorScheme.run {
+                  if (isQREnabled) {
+                    primary
+                  } else {
+                    primaryContainer
+                  }
+                },
         )
       }
 
@@ -75,10 +76,13 @@ internal fun ViewQRCodeTile(
           style =
               MaterialTheme.typography.bodySmall.copy(
                   color =
-                      color.copy(
-                          alpha = 1F,
-                      ),
-              ),
+                      MaterialTheme.colorScheme.run {
+                        if (isQREnabled) {
+                          onSurface
+                        } else {
+                          onSurfaceVariant
+                        }
+                      }),
       )
     }
   }
