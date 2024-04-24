@@ -86,9 +86,10 @@ internal fun LazyListScope.renderTweakCard(
                     .trimMargin(),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                        alpha = textAlpha(isEditable),
-                    ),
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = textAlpha(isEditable),
+                        ),
                 ),
         )
 

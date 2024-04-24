@@ -55,7 +55,7 @@ import com.pyamsoft.pydroid.ui.theme.ZeroElevation
 @Composable
 @CheckResult
 fun rememberAllTabs(): SnapshotStateList<MainView> {
-    return remember { MainView.entries.toMutableStateList() }
+  return remember { MainView.entries.toMutableStateList() }
 }
 
 @Composable
@@ -68,91 +68,90 @@ fun MainTopBar(
     onSettingsOpen: () -> Unit,
     onTabChanged: (MainView) -> Unit,
 ) {
-    val hapticManager = LocalHapticManager.current
+  val hapticManager = LocalHapticManager.current
 
+  Surface(
+      modifier = modifier,
+      color = MaterialTheme.colorScheme.background,
+      shadowElevation = ZeroElevation,
+  ) {
     Surface(
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = ZeroElevation,
-    ) {
-        Surface(
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            color = MaterialTheme.colorScheme.primary,
-            shape =
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        color = MaterialTheme.colorScheme.primary,
+        shape =
             MaterialTheme.shapes.medium.copy(
                 topStart = ZeroCornerSize,
                 topEnd = ZeroCornerSize,
             ),
-        ) {
-            Column {
-                val contentColor = LocalContentColor.current
-                TopAppBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding(),
-                    colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        titleContentColor = contentColor,
-                        navigationIconContentColor = contentColor,
-                        actionIconContentColor = contentColor,
-                    ),
-                    title = {
-                        Text(
-                            text = appName,
-                        )
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                hapticManager?.actionButtonPress()
-                                onSettingsOpen()
-                            },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Settings,
-                                contentDescription = "Open Settings",
-                            )
-                        }
-                    },
-                )
-
-                val currentPage = pagerState.currentPage
-                ScrollableTabRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    selectedTabIndex = currentPage,
+    ) {
+      Column {
+        val contentColor = LocalContentColor.current
+        TopAppBar(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding(),
+            colors =
+                TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                    contentColor = LocalContentColor.current,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(
-                                currentTabPosition = tabPositions[currentPage],
-                            ),
-                            height = MaterialTheme.keylines.typography,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    },
-                ) {
-                    for (index in allTabs.indices) {
-                        val tab = allTabs[index]
-                        val isSelected =
-                            remember(
-                                index,
-                                currentPage,
-                            ) {
-                                index == currentPage
-                            }
+                    titleContentColor = contentColor,
+                    navigationIconContentColor = contentColor,
+                    actionIconContentColor = contentColor,
+                ),
+            title = {
+              Text(
+                  text = appName,
+              )
+            },
+            actions = {
+              IconButton(
+                  onClick = {
+                    hapticManager?.actionButtonPress()
+                    onSettingsOpen()
+                  },
+              ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Open Settings",
+                )
+              }
+            },
+        )
 
-                        MainTab(
-                            tab = tab,
-                            isSelected = isSelected,
-                            onSelected = { onTabChanged(tab) },
-                        )
-                    }
+        val currentPage = pagerState.currentPage
+        ScrollableTabRow(
+            modifier = Modifier.fillMaxWidth(),
+            selectedTabIndex = currentPage,
+            containerColor = Color.Transparent,
+            contentColor = LocalContentColor.current,
+            indicator = { tabPositions ->
+              TabRowDefaults.SecondaryIndicator(
+                  modifier =
+                      Modifier.tabIndicatorOffset(
+                          currentTabPosition = tabPositions[currentPage],
+                      ),
+                  height = MaterialTheme.keylines.typography,
+                  color = MaterialTheme.colorScheme.onPrimary,
+              )
+            },
+        ) {
+          for (index in allTabs.indices) {
+            val tab = allTabs[index]
+            val isSelected =
+                remember(
+                    index,
+                    currentPage,
+                ) {
+                  index == currentPage
                 }
-            }
+
+            MainTab(
+                tab = tab,
+                isSelected = isSelected,
+                onSelected = { onTabChanged(tab) },
+            )
+          }
         }
+      }
     }
+  }
 }
 
 @Composable
@@ -162,38 +161,38 @@ private fun MainTab(
     isSelected: Boolean,
     onSelected: () -> Unit,
 ) {
-    val textStyle = LocalTextStyle.current
-    Tab(
-        modifier = modifier,
-        selected = isSelected,
-        onClick = onSelected,
-        text = {
-            Text(
-                text = tab.displayName,
-                style =
+  val textStyle = LocalTextStyle.current
+  Tab(
+      modifier = modifier,
+      selected = isSelected,
+      onClick = onSelected,
+      text = {
+        Text(
+            text = tab.displayName,
+            style =
                 textStyle.copy(
                     fontWeight = if (isSelected) FontWeight.W700 else null,
                 ),
-            )
-        },
-    )
+        )
+      },
+  )
 }
 
 @Preview
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainTopBar() {
-    val allTabs = rememberAllTabs()
-    MainTopBar(
-        appName = "TEST",
-        pagerState =
-        rememberPagerState(
-            initialPage = 0,
-            initialPageOffsetFraction = 0F,
-            pageCount = { allTabs.size },
-        ),
-        allTabs = allTabs,
-        onSettingsOpen = {},
-        onTabChanged = {},
-    )
+  val allTabs = rememberAllTabs()
+  MainTopBar(
+      appName = "TEST",
+      pagerState =
+          rememberPagerState(
+              initialPage = 0,
+              initialPageOffsetFraction = 0F,
+              pageCount = { allTabs.size },
+          ),
+      allTabs = allTabs,
+      onSettingsOpen = {},
+      onTabChanged = {},
+  )
 }
