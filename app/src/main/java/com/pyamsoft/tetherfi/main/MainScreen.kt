@@ -22,12 +22,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.pyamsoft.pydroid.ui.util.rememberAsStateList
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.annotations.TestOnly
 
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
@@ -84,4 +90,57 @@ fun MainScreen(
       )
     }
   }
+}
+
+@TestOnly
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun PreviewMainScreen(isSettingsOpen: Boolean, isShowingQr: Boolean) {
+  val state =
+      object : MainViewState {
+        override val isSettingsOpen = MutableStateFlow(isSettingsOpen)
+        override val isShowingQRCodeDialog = MutableStateFlow(isShowingQr)
+        override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+        override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+        override val port = MutableStateFlow(0)
+      }
+  val allTabs = MainView.entries.rememberAsStateList()
+
+  MainScreen(
+      appName = "TEST",
+      state = state,
+      pagerState = rememberPagerState { allTabs.size },
+      allTabs = allTabs,
+      onTabChanged = {},
+      onSettingsOpen = {},
+      onShowQRCode = {},
+      onRefreshConnection = {},
+      onJumpToHowTo = {},
+      onLaunchIntent = {},
+      onUpdateTile = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenDefault() {
+  PreviewMainScreen(isSettingsOpen = false, isShowingQr = false)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenSettings() {
+  PreviewMainScreen(isSettingsOpen = true, isShowingQr = false)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenQr() {
+  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenBoth() {
+  PreviewMainScreen(isSettingsOpen = true, isShowingQr = true)
 }
