@@ -60,7 +60,7 @@ dependencies {
   implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
   // Android support library.
-  api("androidx.core:core-ktx:1.12.0")
+  api("androidx.core:core-ktx:1.13.0")
 
   // Dagger
   api("com.google.dagger:dagger:${rootProject.extra["dagger"]}")
