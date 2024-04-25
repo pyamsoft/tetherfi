@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
@@ -51,8 +50,7 @@ fun Label(
     Text(
         text = text,
         style =
-            MaterialTheme.typography.bodySmall.copy(
-                fontWeight = FontWeight.W700,
+            MaterialTheme.typography.labelMedium.copy(
                 color = color,
             ),
     )

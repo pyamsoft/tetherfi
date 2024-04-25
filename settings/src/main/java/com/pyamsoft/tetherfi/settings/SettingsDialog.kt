@@ -129,15 +129,12 @@ private fun DebugItem(
     ) {
       Text(
           text = title,
-          style =
-              MaterialTheme.typography.bodyLarge.copy(
-                  color = MaterialTheme.colorScheme.onSurface,
-              ),
+          style = MaterialTheme.typography.bodyLarge,
       )
       Text(
           text = description,
           style =
-              MaterialTheme.typography.bodySmall.copy(
+              MaterialTheme.typography.bodyMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )

@@ -74,7 +74,7 @@ internal fun LazyListScope.renderDeviceSetup(
     ) {
       Text(
           text = "Open the Wi-Fi settings page",
-          style = MaterialTheme.typography.headlineSmall,
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
@@ -89,7 +89,7 @@ internal fun LazyListScope.renderDeviceSetup(
         Text(
             text = "Connect to the $appName Hotspot",
             style =
-                MaterialTheme.typography.bodyMedium.copy(
+                MaterialTheme.typography.labelMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )
@@ -111,7 +111,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Name",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurface,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                   ),
           )
 
@@ -120,6 +120,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = ssid,
               style =
                   MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -156,7 +157,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Password",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurface,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                   ),
           )
           Text(
@@ -164,6 +165,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = password,
               style =
                   MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -201,15 +203,15 @@ internal fun LazyListScope.renderDeviceSetup(
         Text(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
             text = "Configure the proxy settings",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.bodyLarge,
         )
 
         Text(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
             text = "Use MANUAL mode and configure both HTTP and HTTPS proxy options.",
             style =
-                MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )
 
@@ -224,7 +226,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "URL",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurface,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                   ),
           )
           Text(
@@ -232,6 +234,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = ipAddress,
               style =
                   MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -245,7 +248,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = "Port",
               style =
                   MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurface,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                   ),
           )
 
@@ -256,6 +259,7 @@ internal fun LazyListScope.renderDeviceSetup(
               text = portNumber,
               style =
                   MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
                       fontWeight = FontWeight.W700,
                       fontFamily = FontFamily.Monospace,
                   ),
@@ -274,13 +278,13 @@ internal fun LazyListScope.renderDeviceSetup(
       Column {
         Text(
             text = "Turn the Wi-Fi off and back on again.",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.bodyLarge,
         )
         Text(
             text = "It should automatically connect to the $appName Hotspot",
             style =
-                MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         )
       }

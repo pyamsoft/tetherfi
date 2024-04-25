@@ -54,7 +54,7 @@ internal fun LazyListScope.renderConnectionComplete(
     ) {
       Text(
           text = "Your device should now be sharing its Internet connection!",
-          style = MaterialTheme.typography.headlineSmall,
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
@@ -69,7 +69,7 @@ internal fun LazyListScope.renderConnectionComplete(
           text =
               "At this point, normal Internet browsing and email should work. If it does not, disconnect from the $appName Hotspot and double-check that you have entered the correct Network and Proxy settings.",
           style =
-              MaterialTheme.typography.bodyLarge.copy(
+              MaterialTheme.typography.bodyMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )

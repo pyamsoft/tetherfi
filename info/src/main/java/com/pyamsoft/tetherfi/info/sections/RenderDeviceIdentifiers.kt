@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
@@ -58,7 +57,7 @@ internal fun LazyListScope.renderDeviceIdentifiers(
       Text(
           text = "This Device",
           style =
-              MaterialTheme.typography.bodyMedium.copy(
+              MaterialTheme.typography.labelMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
@@ -75,16 +74,13 @@ internal fun LazyListScope.renderDeviceIdentifiers(
       Text(
           text = "Other Device",
           style =
-              MaterialTheme.typography.bodyMedium.copy(
+              MaterialTheme.typography.labelMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
       )
     }
   }
 }
-
-private val THIS_DEVICE_COLOR = Color(0xFF4CAF50)
-private val OTHER_DEVICE_COLOR = Color(0xFF2196F3)
 
 @Composable
 private fun ThisDevice(
@@ -108,7 +104,7 @@ private fun ThisDevice(
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.PhoneAndroid,
       contentDescription = "This Device",
-      tint = THIS_DEVICE_COLOR,
+      tint = MaterialTheme.colorScheme.primary,
   )
 }
 
@@ -134,7 +130,7 @@ private fun OtherDevice(
               .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.Devices,
       contentDescription = "Other Devices",
-      tint = OTHER_DEVICE_COLOR,
+      tint = MaterialTheme.colorScheme.tertiary,
   )
 }
 
