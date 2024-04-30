@@ -51,7 +51,7 @@ internal fun LazyListScope.renderConnectionList(
         )
       } else {
         renderRunningWithClients(
-            modifier = modifier,
+            itemModifier = modifier,
             clients = clients,
             blocked = blocked,
             onToggleBlock = onToggleBlock,
@@ -84,7 +84,7 @@ private fun LazyListScope.renderRunningNoClients(
 }
 
 private fun LazyListScope.renderRunningWithClients(
-    modifier: Modifier = Modifier,
+    itemModifier: Modifier = Modifier,
     clients: SnapshotStateList<TetherClient>,
     blocked: SnapshotStateList<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
@@ -94,7 +94,7 @@ private fun LazyListScope.renderRunningWithClients(
   ) {
     Text(
         modifier =
-            modifier
+            itemModifier
                 .padding(vertical = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content * 3),
         text =
@@ -113,7 +113,7 @@ private fun LazyListScope.renderRunningWithClients(
       contentType = { RenderConnectionListContentTypes.CLIENT },
   ) { client ->
     ConnectionItem(
-        modifier = modifier,
+        modifier = itemModifier,
         client = client,
         blocked = blocked,
         onClick = onToggleBlock,

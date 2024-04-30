@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.connections.sections.list
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -75,67 +76,68 @@ internal fun ConnectionItem(
       }
 
   Box(
-      modifier =
-          modifier
-              .padding(horizontal = MaterialTheme.keylines.content)
-              .padding(bottom = MaterialTheme.keylines.content),
+      modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
   ) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+        modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
     ) {
-      Row(
-          modifier = Modifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically,
+      Column(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
       ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              modifier = Modifier.weight(1F),
+              text = name,
+              style = MaterialTheme.typography.titleLarge,
+          )
+          Switch(
+              checked = isNotBlocked,
+              onCheckedChange = { newBlocked ->
+                if (newBlocked) {
+                  hapticManager?.toggleOn()
+                } else {
+                  hapticManager?.toggleOff()
+                }
+                onClick(client)
+              },
+          )
+        }
+
         Text(
-            modifier = Modifier.weight(1F),
-            text = name,
-            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
+            text = "Last seen: $seenTime",
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
         )
-        Switch(
-            checked = isNotBlocked,
-            onCheckedChange = { newBlocked ->
-              if (newBlocked) {
-                hapticManager?.toggleOn()
-              } else {
-                hapticManager?.toggleOff()
-              }
-              onClick(client)
-            },
+
+        Text(
+            text = "Total Transferred To Internet: $totalTransferredToInternet",
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color =
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
+                        ),
+                ),
+        )
+
+        Text(
+            text = "Total Transferred From Internet: $totalTransferredFromInternet",
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color =
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = TypographyDefaults.ALPHA_DISABLED,
+                        ),
+                ),
         )
       }
-
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
-          text = "Last seen: $seenTime",
-          style =
-              MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-      )
-
-      Text(
-          text = "Total Transferred To Internet: $totalTransferredToInternet",
-          style =
-              MaterialTheme.typography.bodySmall.copy(
-                  color =
-                      MaterialTheme.colorScheme.onSurface.copy(
-                          alpha = TypographyDefaults.ALPHA_DISABLED,
-                      ),
-              ),
-      )
-
-      Text(
-          text = "Total Transferred From Internet: $totalTransferredFromInternet",
-          style =
-              MaterialTheme.typography.bodySmall.copy(
-                  color =
-                      MaterialTheme.colorScheme.onSurface.copy(
-                          alpha = TypographyDefaults.ALPHA_DISABLED,
-                      ),
-              ),
-      )
     }
   }
 }
