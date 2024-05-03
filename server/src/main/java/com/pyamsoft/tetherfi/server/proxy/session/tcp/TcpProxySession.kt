@@ -20,7 +20,9 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
@@ -193,6 +195,7 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
+      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -261,6 +264,7 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       data: TcpProxyData,
   ) =
@@ -279,8 +283,21 @@ internal constructor(
             return@withContext
           }
 
+          // If the host is an IP address, and we are an IP address,
+          // check that we fall into the host
+          if (hostConnection.isIpAddress) {
+            if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+              if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
+                Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
+                writeError(proxyOutput)
+                return@withContext
+              }
+            }
+          }
+
           handleClientRequest(
               scope = this,
+              hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,

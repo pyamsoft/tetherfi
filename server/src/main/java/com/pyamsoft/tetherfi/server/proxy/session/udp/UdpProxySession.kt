@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.udp
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import javax.inject.Inject
@@ -32,6 +33,7 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       data: UdpProxyData,
   ) =

@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
@@ -35,7 +36,7 @@ internal class UdpProxyManager
 internal constructor(
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<UdpProxyData>,
-    private val hostName: String,
+    private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
     serverDispatcher: ServerDispatcher,
 ) :
@@ -52,6 +53,7 @@ internal constructor(
     try {
       session.exchange(
           scope = scope,
+          hostConnection = hostConnection,
           serverDispatcher = serverDispatcher,
           data =
               UdpProxyData(
@@ -70,7 +72,7 @@ internal constructor(
 
         val localAddress =
             getServerAddress(
-                hostName = hostName,
+                hostName = hostConnection.hostName,
                 port = port,
                 verifyPort = false,
                 verifyHostName = true,

@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.server
 
-
 /**
  * What the fuck is this
  * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation

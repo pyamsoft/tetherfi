@@ -60,7 +60,7 @@ internal constructor(
         preferences = serverPreferences,
         enforcer = enforcer,
         session = tcpSession,
-        hostName = info.hostName,
+        hostConnection = info,
         port = port,
         serverDispatcher = dispatcher,
         appEnvironment = appEnvironment,
@@ -79,7 +79,7 @@ internal constructor(
     return UdpProxyManager(
         enforcer = enforcer,
         session = udpSession,
-        hostName = info.hostName,
+        hostConnection = info,
         port = port,
         serverDispatcher = dispatcher,
     )

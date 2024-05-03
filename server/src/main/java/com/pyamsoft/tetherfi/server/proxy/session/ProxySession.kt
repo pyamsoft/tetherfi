@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import kotlinx.coroutines.CoroutineScope
 
@@ -24,6 +25,7 @@ internal interface ProxySession<T : ProxyData> {
 
   suspend fun exchange(
       scope: CoroutineScope,
+      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       data: T,
   )

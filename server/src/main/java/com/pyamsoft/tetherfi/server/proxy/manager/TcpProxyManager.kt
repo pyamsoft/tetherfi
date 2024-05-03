@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
@@ -48,7 +49,7 @@ internal constructor(
     private val preferences: ServerPreferences,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
-    private val hostName: String,
+    private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
     serverDispatcher: ServerDispatcher
 ) :
@@ -68,6 +69,7 @@ internal constructor(
     try {
       session.exchange(
           scope = scope,
+          hostConnection = hostConnection,
           serverDispatcher = serverDispatcher,
           data =
               TcpProxyData(
@@ -86,7 +88,7 @@ internal constructor(
 
         val localAddress =
             getServerAddress(
-                hostName = hostName,
+                hostName = hostConnection.hostName,
                 port = port,
                 verifyPort = true,
                 verifyHostName = true,
