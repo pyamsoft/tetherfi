@@ -37,8 +37,8 @@ buildscript {
     dagger = "2.51.1"
 
     // Compose
-    compose = "1.6.6"
-    composeCompiler = "1.5.12"
+    compose = "1.6.7"
+    composeCompiler = "1.5.13"
     composeMaterial3 = "1.2.1"
     composeActivity = "1.9.0"
 
