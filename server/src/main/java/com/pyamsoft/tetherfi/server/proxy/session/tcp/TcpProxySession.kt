@@ -201,6 +201,25 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
   ) {
+    // If the host is an IP address, and we are an IP address,
+    // check that we fall into the host
+    if (hostConnection.isIpAddress) {
+      if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+        if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
+          Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
+          writeError(proxyOutput)
+          return
+        }
+      }
+    }
+
+    // If the client is blocked we do not process any inpue
+    if (blockedClients.isBlocked(hostNameOrIp)) {
+      Timber.w { "Client is marked blocked: $hostNameOrIp" }
+      writeError(proxyOutput)
+      return
+    }
+
     // This is launched as its own scope so that the side effect does not slow
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
@@ -210,13 +229,6 @@ internal constructor(
           serverDispatcher = serverDispatcher,
           hostNameOrIp = hostNameOrIp,
       )
-    }
-
-    // If the client is blocked we do not process any inpue
-    if (blockedClients.isBlocked(hostNameOrIp)) {
-      Timber.w { "Client is marked blocked: $hostNameOrIp" }
-      writeError(proxyOutput)
-      return
     }
 
     // We use a string parsing to figure out what this HTTP request wants to do
@@ -281,18 +293,6 @@ internal constructor(
             Timber.w { "Unable to resolve TetherClient for connection: $connection" }
             writeError(proxyOutput)
             return@withContext
-          }
-
-          // If the host is an IP address, and we are an IP address,
-          // check that we fall into the host
-          if (hostConnection.isIpAddress) {
-            if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-              if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
-                Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
-                writeError(proxyOutput)
-                return@withContext
-              }
-            }
           }
 
           handleClientRequest(
