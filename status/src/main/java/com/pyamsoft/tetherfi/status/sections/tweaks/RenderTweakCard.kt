@@ -139,29 +139,6 @@ internal fun LazyListScope.renderTweakCard(
             onClick = onToggleShutdownWithNoClients,
         )
 
-        val proxyBindAllColor by
-            rememberCheckableColor(
-                enabled = isEditable,
-                label = "Bind Proxy to All Interfaces",
-                condition = false,
-                selectedColor = MaterialTheme.colorScheme.primary,
-            )
-
-        ToggleSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            isEditable = isEditable,
-            color = proxyBindAllColor,
-            checked = false,
-            title = "Bind Proxy to All Interfaces",
-            description =
-                """This Tweak is no longer supported - the default Hotspot configuration is MORE performant and MORE reliable.
-                    |
-                    |This Tweak will be removed in a future update.
-                """
-                    .trimMargin(),
-            onClick = {},
-        )
-
         val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
         val proxyYoloColor by
             rememberCheckableColor(
