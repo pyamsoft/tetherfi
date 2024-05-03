@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.clients
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -159,16 +160,6 @@ sealed class TetherClient(
         )
 
     companion object {
-
-        /**
-         * What the fuck is this
-         * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
-         *
-         * Tests if a given string is an IP address
-         */
-        private val IP_ADDRESS_REGEX =
-            """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
-                .toRegex()
 
         @CheckResult
         fun create(hostNameOrIp: String, clock: Clock): TetherClient {
