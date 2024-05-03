@@ -117,7 +117,7 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = "Total Transferred To Internet: $totalTransferredToInternet",
+            text = "Total Transferred To Internet: ${totalTransferredToInternet.display}",
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
@@ -128,7 +128,7 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = "Total Transferred From Internet: $totalTransferredFromInternet",
+            text = "Total Transferred From Internet: ${totalTransferredFromInternet.display}",
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
