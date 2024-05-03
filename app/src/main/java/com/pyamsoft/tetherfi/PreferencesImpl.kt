@@ -169,14 +169,6 @@ internal constructor(
     putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
-  override fun listenProxyYolo(): Flow<Boolean> =
-      preferenceBooleanFlow(PROXY_YOLO_MODE, false) { preferences }.flowOn(context = Dispatchers.IO)
-
-  override fun setProxyYolo(yolo: Boolean) = setPreference {
-    Timber.d { "Put yolo: $yolo" }
-    putBoolean(PROXY_YOLO_MODE, yolo)
-  }
-
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
               preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
@@ -293,8 +285,11 @@ internal constructor(
   companion object {
     private val OLD_PREFERENCES =
         listOf(
-            // PROXY_BIND_ALL
-            "key_proxy_bind_all_1")
+            // PROXY_BIND_ALL: Removed in 41
+            "key_proxy_bind_all_1",
+
+            // YOLO_MODE: Made default in 41, removed in 42
+            "key_proxy_yolo_mode_1")
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
@@ -312,8 +307,6 @@ internal constructor(
 
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
-
-    private const val PROXY_YOLO_MODE = "key_proxy_yolo_mode_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
   }

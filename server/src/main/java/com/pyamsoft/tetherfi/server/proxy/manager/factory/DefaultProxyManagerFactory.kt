@@ -21,7 +21,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -42,7 +41,6 @@ internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val enforcer: ThreadEnforcer,
-    private val serverPreferences: ServerPreferences,
     private val configPreferences: ConfigPreferences,
     private val appEnvironment: AppDevEnvironment,
 ) : ProxyManager.Factory {
@@ -57,7 +55,6 @@ internal constructor(
     val port = configPreferences.listenForPortChanges().first()
 
     return TcpProxyManager(
-        preferences = serverPreferences,
         enforcer = enforcer,
         session = tcpSession,
         hostConnection = info,

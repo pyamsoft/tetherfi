@@ -45,7 +45,6 @@ internal fun LazyListScope.renderTweakCard(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleProxyYolo: () -> Unit,
 ) {
   item(
       contentType = RenderTweakCardContentTypes.BEHAVIOR_TWEAKS,
@@ -139,12 +138,11 @@ internal fun LazyListScope.renderTweakCard(
             onClick = onToggleShutdownWithNoClients,
         )
 
-        val isProxyYolo by state.isProxyYolo.collectAsStateWithLifecycle()
         val proxyYoloColor by
             rememberCheckableColor(
                 enabled = isEditable,
                 label = "Stubborn Proxy",
-                condition = isProxyYolo,
+                condition = true,
                 selectedColor = MaterialTheme.colorScheme.primary,
             )
 
@@ -152,16 +150,16 @@ internal fun LazyListScope.renderTweakCard(
             modifier = Modifier.fillMaxWidth(),
             isEditable = isEditable,
             color = proxyYoloColor,
-            checked = isProxyYolo,
+            checked = true,
             title = "Stubborn Proxy",
             description =
                 """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
                     |
                     |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode.
                     |
-                    |This option will be made Default in a future version."""
+                    |This option is now default, and will be removed in a future update."""
                     .trimMargin(),
-            onClick = onToggleProxyYolo,
+            onClick = {},
         )
       }
     }

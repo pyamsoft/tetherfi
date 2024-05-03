@@ -64,7 +64,6 @@ interface StatusViewState : UiViewState {
   // Tweaks
   val isIgnoreVpn: StateFlow<Boolean>
   val isShutdownWithNoClients: StateFlow<Boolean>
-  val isProxyYolo: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -106,5 +105,4 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
 
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)
-  override val isProxyYolo = MutableStateFlow(false)
 }

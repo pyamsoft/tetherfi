@@ -21,7 +21,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
@@ -38,7 +37,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,7 +44,6 @@ import kotlinx.coroutines.withContext
 internal class TcpProxyManager
 internal constructor(
     private val appEnvironment: AppDevEnvironment,
-    private val preferences: ServerPreferences,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -103,28 +100,20 @@ internal constructor(
             .bind(localAddress = localAddress)
       }
 
-  private suspend fun prepareToTryAgainOrThrow(e: IOException) {
+  private fun prepareToTryAgainOrThrow(e: IOException) {
     Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
-    // If we are in Yolo mode, just continue
-    val canTryAgain =
-        preferences.listenProxyYolo().first() &&
-            proxyFailCount.value < PROXY_ACCEPT_TOO_MANY_FAILURES
+    val failCount = proxyFailCount.value
+    val canTryAgain = failCount < PROXY_ACCEPT_TOO_MANY_FAILURES
     if (canTryAgain) {
       proxyFailCount.update { it + 1 }
-      Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!" }
+      Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!: $failCount" }
     } else {
-      // Get and reset
-      val oldFailCount = proxyFailCount.getAndUpdate { 0 }
-      if (oldFailCount >= PROXY_ACCEPT_TOO_MANY_FAILURES) {
+      // Reset back to zero
+      proxyFailCount.value = 0
 
-        // Otherwise, we treat this error as a no-no
-        Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(" }
-        throw IOException("Too many failed connection attempts.", e)
-      } else {
-        // Otherwise, we treat this error as a no-no
-        Timber.w { "In non-YOLO mode, IOException shuts down the server :(" }
-        throw e
-      }
+      // Otherwise, we treat this error as a no-no
+      Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(: $failCount" }
+      throw IOException("Too many failed connection attempts: $failCount", e)
     }
   }
 

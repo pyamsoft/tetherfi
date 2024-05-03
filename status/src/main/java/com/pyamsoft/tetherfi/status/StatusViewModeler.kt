@@ -75,7 +75,6 @@ internal constructor(
       var wifiLock: Boolean,
       var ignoreVpn: Boolean,
       var shutdownWithNoClients: Boolean,
-      var proxyYolo: Boolean,
       var powerBalance: Boolean,
   )
 
@@ -88,7 +87,6 @@ internal constructor(
         config.ssid &&
         config.password &&
         config.band &&
-        config.proxyYolo &&
         config.powerBalance) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
@@ -236,7 +234,6 @@ internal constructor(
             wifiLock = false,
             ignoreVpn = false,
             shutdownWithNoClients = false,
-            proxyYolo = false,
             powerBalance = false,
         )
 
@@ -297,21 +294,6 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.shutdownWithNoClients = true
-            markPreferencesLoaded(config)
-          }
-        }
-      }
-    }
-
-    // Always populate the latest proxy yolo value
-    serverPreferences.listenProxyYolo().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { yolo ->
-          s.isProxyYolo.value = yolo
-
-          // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.proxyYolo = true
             markPreferencesLoaded(config)
           }
         }
@@ -554,11 +536,6 @@ internal constructor(
   fun handleToggleShutdownNoClients() {
     val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
     serverPreferences.setShutdownWithNoClients(newVal)
-  }
-
-  fun handleToggleProxyYolo() {
-    val newVal = state.isProxyYolo.updateAndGet { !it }
-    serverPreferences.setProxyYolo(newVal)
   }
 
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
