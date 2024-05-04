@@ -15,9 +15,9 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="operating_settings">Operating Settings</string>
-  <string name="operating_always_alive_title">Always Alive</string>
-  <string
-    name="operating_always_alive_description"
-  >This will allow the %1$s Hotspot to continue running even if the app is closed.\n\nThis will significantly enhance your experience and network performance.\n(recommended)</string>
+  <string name="status_error">An unexpected error occurred.</string>
+  <string name="status_not_running">Not Running</string>
+  <string name="status_running">Running</string>
+  <string name="status_starting">Starting</string>
+  <string name="status_stopping">Stopping</string>
 </resources>

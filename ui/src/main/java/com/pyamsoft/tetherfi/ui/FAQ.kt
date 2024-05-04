@@ -47,7 +47,6 @@ fun LazyListScope.renderLinks(
   item(
       contentType = LinkContentTypes.FAQ_LINK,
   ) {
-    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
     val linkColor = MaterialTheme.colorScheme.primary
 
     val faqText = stringResource(R.string.faqs)
@@ -56,16 +55,10 @@ fun LazyListScope.renderLinks(
     val faqBlurb =
         remember(
             linkColor,
-            textColor,
             rawBlurb,
         ) {
           val faqIndex = rawBlurb.indexOf(faqText)
           val knwIndex = rawBlurb.indexOf(knownNotWorkingText)
-
-          val textStyle =
-              SpanStyle(
-                  color = textColor,
-              )
 
           val linkStyle =
               SpanStyle(
@@ -76,19 +69,9 @@ fun LazyListScope.renderLinks(
           val spanStyles =
               listOf(
                   AnnotatedString.Range(
-                      textStyle,
-                      start = 0,
-                      end = faqIndex,
-                  ),
-                  AnnotatedString.Range(
                       linkStyle,
                       start = faqIndex,
                       end = faqIndex + faqText.length,
-                  ),
-                  AnnotatedString.Range(
-                      textStyle,
-                      start = faqIndex + faqText.length,
-                      end = knwIndex,
                   ),
                   AnnotatedString.Range(
                       linkStyle,
@@ -137,7 +120,10 @@ fun LazyListScope.renderLinks(
       ClickableText(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text = faqBlurb,
-          style = MaterialTheme.typography.bodyLarge,
+          style =
+              MaterialTheme.typography.bodyLarge.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+              ),
           onClick = { offset ->
             faqBlurb
                 .getStringAnnotations(

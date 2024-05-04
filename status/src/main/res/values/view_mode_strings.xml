@@ -15,9 +15,17 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="operating_settings">Operating Settings</string>
-  <string name="operating_always_alive_title">Always Alive</string>
+  <string name="viewmode_setup_instructions">Setup Instructions</string>
   <string
-    name="operating_always_alive_description"
-  >This will allow the %1$s Hotspot to continue running even if the app is closed.\n\nThis will significantly enhance your experience and network performance.\n(recommended)</string>
+    name="viewmode_setup_view_instructions"
+  >Confused on what to do next?\nView the %1$s</string>
+
+  <string name="viewmode_invalid_port">INVALID PORT</string>
+
+  <string name="viewmode_hotspot_name">HOTSPOT NAME</string>
+  <string name="viewmode_hotspot_password">HOTSPOT PASSWORD</string>
+  <string name="viewmode_pass_visible">Password Visible</string>
+  <string name="viewmode_pass_hidden">Password Hidden</string>
+  <string name="viewmode_hotspot_port">PROXY PORT</string>
+  <string name="viewmode_hotspot_hostname">PROXY URL/HOSTNAME</string>
 </resources>

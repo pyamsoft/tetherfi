@@ -26,10 +26,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 import com.pyamsoft.tetherfi.ui.textAlpha
@@ -65,7 +67,7 @@ internal fun LazyListScope.renderTweakCard(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
-            text = "Behavior Tweaks",
+            text = stringResource(R.string.tweaks_title),
             style =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
@@ -78,11 +80,7 @@ internal fun LazyListScope.renderTweakCard(
                 Modifier.fillMaxWidth()
                     .padding(horizontal = MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
-            text =
-                """Tweaks change how $appName performs in various ways
-                  |
-                  |All of these options are completely optional and do not impact network or hotspot performance in any way."""
-                    .trimMargin(),
+            text = stringResource(R.string.tweaks_description, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -106,12 +104,8 @@ internal fun LazyListScope.renderTweakCard(
             isEditable = isEditable,
             color = ignoreVpnColor,
             checked = isIgnoreVpn,
-            title = "Avoid VPN Blocker Dialog",
-            description =
-                """When starting, $appName sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.
-                  |
-                  |If you KNOW your VPN app works fine with $appName, turn this option on to avoid the blocking dialog."""
-                    .trimMargin(),
+            title = stringResource(R.string.ignore_vpn_title),
+            description = stringResource(R.string.ignore_vpn_description, appName),
             onClick = onToggleIgnoreVpn,
         )
 
@@ -129,12 +123,8 @@ internal fun LazyListScope.renderTweakCard(
             isEditable = isEditable,
             color = shutdownNoClientsColor,
             checked = isShutdownWithNoClients,
-            title = "Stop Hotspot With No Clients",
-            description =
-                """If the $appName hotspot has been running for 10 minutes without serving any client devices, shut it down.
-                  |
-                  |Automatically shutting down the hotspot when it is not being used can save battery."""
-                    .trimMargin(),
+            title = stringResource(R.string.shutdown_no_client_title),
+            description = stringResource(R.string.shutdown_no_client_description, appName),
             onClick = onToggleShutdownWithNoClients,
         )
 
@@ -151,14 +141,8 @@ internal fun LazyListScope.renderTweakCard(
             isEditable = isEditable,
             color = proxyYoloColor,
             checked = true,
-            title = "Stubborn Proxy",
-            description =
-                """On some devices $appName fails to launch the Proxy with an 'Invalid Argument' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.
-                    |
-                    |Enabling this option lets $appName ignore these errors and constantly keep trying. YOLO Mode.
-                    |
-                    |This option is now default, and will be removed in a future update."""
-                    .trimMargin(),
+            title = stringResource(R.string.stubborn_proxy_title),
+            description = stringResource(R.string.stubborn_proxy_description, appName),
             onClick = {},
         )
       }

@@ -30,11 +30,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tweaks.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
@@ -102,7 +104,7 @@ internal fun LazyListScope.renderWakelocks(
         ) {
           Text(
               modifier = Modifier.weight(1F),
-              text = "Wake Locks",
+              text = stringResource(R.string.perf_wake_lock_title),
               style =
                   MaterialTheme.typography.titleLarge.copy(
                       fontWeight = FontWeight.W700,
@@ -123,11 +125,7 @@ internal fun LazyListScope.renderWakelocks(
                 Modifier.fillMaxWidth()
                     .padding(horizontal = MaterialTheme.keylines.content)
                     .padding(bottom = MaterialTheme.keylines.content),
-            text =
-                """Wake Locks keep $appName performance fast even when the screen is off and the system is in a low power mode.
-                  |
-                  |Your device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled."""
-                    .trimMargin(),
+            text = stringResource(R.string.perf_wake_lock_description, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -150,9 +148,8 @@ internal fun LazyListScope.renderWakelocks(
             isEditable = isEditable,
             color = wifiLockColor,
             checked = keepWifiLock,
-            title = "Keep WiFi Awake",
-            description =
-                "You should try this option first if Internet speed is slow on speed-tests while the screen is off.",
+            title = stringResource(R.string.perf_wifi_lock_title),
+            description = stringResource(R.string.perf_wifi_lock_description),
             onClick = onToggleKeepWifiLock,
         )
 
@@ -169,9 +166,8 @@ internal fun LazyListScope.renderWakelocks(
             isEditable = isEditable,
             color = wakeLockColor,
             checked = keepWakeLock,
-            title = "Keep CPU Awake",
-            description =
-                "If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.",
+            title = stringResource(R.string.perf_cpu_lock_title),
+            description = stringResource(R.string.perf_cpu_lock_description),
             onClick = onToggleKeepWakeLock,
         )
       }

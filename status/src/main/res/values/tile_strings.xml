@@ -15,9 +15,8 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="operating_settings">Operating Settings</string>
-  <string name="operating_always_alive_title">Always Alive</string>
-  <string
-    name="operating_always_alive_description"
-  >This will allow the %1$s Hotspot to continue running even if the app is closed.\n\nThis will significantly enhance your experience and network performance.\n(recommended)</string>
+  <string name="tile_qr_code">View QR Code</string>
+  <string name="tile_hotspot_error">Hotspot Error</string>
+  <string name="tile_refresh_hotspot">Refresh Hotspot</string>
+  <string name="tile_network_error">Network Error</string>
 </resources>

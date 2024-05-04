@@ -29,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
@@ -84,7 +85,7 @@ internal fun TroubleshootDialog(
                 },
             ) {
               Text(
-                  text = "Close",
+                  text = stringResource(android.R.string.cancel),
               )
             }
           }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,14 +45,19 @@ internal fun DisplayStatus(
     size: StatusSize,
     onClickShowError: (() -> Unit)? = null,
 ) {
+  val context = LocalContext.current
   val text =
-      remember(status) {
+      remember(
+          status,
+          context,
+      ) {
         when (status) {
-          is RunningStatus.Error -> status.throwable.message ?: "An unexpected error occurred."
-          is RunningStatus.NotRunning -> "Not Running"
-          is RunningStatus.Running -> "Running"
-          is RunningStatus.Starting -> "Starting"
-          is RunningStatus.Stopping -> "Stopping"
+          is RunningStatus.Error ->
+              status.throwable.message ?: context.getString(R.string.status_error)
+          is RunningStatus.NotRunning -> context.getString(R.string.status_not_running)
+          is RunningStatus.Running -> context.getString(R.string.status_running)
+          is RunningStatus.Starting -> context.getString(R.string.status_starting)
+          is RunningStatus.Stopping -> context.getString(R.string.status_stopping)
         }
       }
 

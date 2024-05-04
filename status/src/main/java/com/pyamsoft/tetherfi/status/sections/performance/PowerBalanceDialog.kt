@@ -36,12 +36,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 
 private enum class PowerBalanceDialogContentTypes {
@@ -59,41 +62,37 @@ private data class DisplayLimit(
 @Composable
 @CheckResult
 private fun rememberDisplayLimits(): List<DisplayLimit> {
-  return remember {
-    return@remember ServerPerformanceLimit.Defaults.entries
+  val context = LocalContext.current
+  return remember(context) {
+    ServerPerformanceLimit.Defaults.entries
         .map { l ->
           val title: String
           val description: String
           val t = l.coroutineLimit
           when (l) {
             ServerPerformanceLimit.Defaults.UNBOUND -> {
-              title = "Max Performance"
-              description =
-                  "Unlimited threads. Offers maximum performance. Throws battery usage concerns out the window."
+              title = context.getString(R.string.perf_balance_max_title)
+              description = context.getString(R.string.perf_balance_max_description)
             }
             ServerPerformanceLimit.Defaults.BOUND_N_CPU -> {
-              title = "Max Battery-Saving"
-              description =
-                  "$t threads. Uses the least battery but offers the slowest hotspot performance."
+              title = context.getString(R.string.perf_balance_super_save_title)
+              description = context.getString(R.string.perf_balance_super_save_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_2N_CPU -> {
-              title = "Battery-Saving"
-              description = "$t threads. Uses less battery but offers slower hotspot performance."
+              title = context.getString(R.string.perf_balance_save_title)
+              description = context.getString(R.string.perf_balance_save_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_3N_CPU -> {
-              title = "Balanced"
-              description =
-                  "$t threads. Offers a balance between battery usage and hotspot performance."
+              title = context.getString(R.string.perf_balance_normal_title)
+              description = context.getString(R.string.perf_balance_normal_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_4N_CPU -> {
-              title = "Performance"
-              description =
-                  "$t threads. Offers better hotspot performance at the cost of more battery usage."
+              title = context.getString(R.string.perf_balance_perf_title)
+              description = context.getString(R.string.perf_balance_perf_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_5N_CPU -> {
-              title = "High Performance"
-              description =
-                  "$t threads. Offers great hotspot performance at the cost of significant battery usage."
+              title = context.getString(R.string.perf_balance_super_perf_title)
+              description = context.getString(R.string.perf_balance_super_perf_description, t)
             }
           }
 
@@ -136,7 +135,7 @@ private fun DialogClose(
         onClick = onHidePowerBalance,
     ) {
       Text(
-          text = "Close",
+          text = stringResource(android.R.string.cancel),
       )
     }
   }

@@ -20,8 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
@@ -41,12 +43,8 @@ internal fun NotificationPerms(
       modifier = modifier,
       isEditable = canEdit,
       condition = hasPermission,
-      title = "Show Hotspot Notification",
-      description =
-          """Keep the Hotspot alive on newer Android versions.
-            |
-            |Without a notification, the Hotspot may be stopped randomly."""
-              .trimMargin(),
+      title = stringResource(R.string.permission_notification_title),
+      description = stringResource(R.string.permission_notification_description),
       onClick = {
         if (!hasPermission) {
           hapticManager?.actionButtonPress()

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="trouble_title">%1$s Hotspot failed to start.</string>
+  <string
+    name="trouble_description"
+  >This is NOT an error with the app, this is an error %1$s.</string>
+
+  <string
+    name="trouble_err_type_both"
+  >with your device and configuration</string>
+  <string name="trouble_err_type_proxy">with your configuration</string>
+  <string name="trouble_err_type_broadcast">from your device</string>
+  <string
+    name="trouble_double_check"
+  >Please check these issues and try again:</string>
+  <string
+    name="trouble_broadcast_wifi_on"
+  >• Wi-Fi must be turned ON to start the Hotspot</string>
+  <string
+    name="trouble_broadcast_wifi_not_connected"
+  >• Wi-Fi must NOT be connected to any other network</string>
+  <string
+    name="trouble_broadcast_wifi_restart"
+  >• Wi-Fi should be restarted by turning it OFF and then back ON again</string>
+  <string
+    name="trouble_broadcast_password_length"
+  >• The Hotspot password must be at least 8 characters long</string>
+  <string
+    name="trouble_broadcast_ssid_name"
+  >• The Hotspot name must be unique</string>
+  <string
+    name="trouble_proxy_already_used"
+  >• The Hotspot port number may be already used by a different app</string>
+  <string
+    name="trouble_proxy_port"
+  >• The Hotspot port number must be between 1025 and 65000</string>
+</resources>

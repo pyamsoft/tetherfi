@@ -26,14 +26,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 import com.pyamsoft.tetherfi.ui.textAlpha
 
@@ -45,35 +43,16 @@ internal fun LazyListScope.renderPowerBalance(
     itemModifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,
-    state: StatusViewState,
     onShowPowerBalance: () -> Unit,
 ) {
   item(
       contentType = RenderThreadsContentTypes.POWER_BALANCE,
   ) {
-    val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
-    val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
-
-    val checkboxState =
-        remember(
-            keepWakeLock,
-            keepWifiLock,
-        ) {
-          if (!keepWakeLock && !keepWifiLock) {
-            ToggleableState.Off
-          } else if (keepWakeLock && keepWifiLock) {
-            ToggleableState.On
-          } else {
-            ToggleableState.Indeterminate
-          }
-        }
-
-    val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
     val cardColor by
         rememberCheckableColor(
             enabled = isEditable,
-            label = "Wake Locks",
-            condition = isChecked,
+            label = "Power Balance",
+            condition = true,
             selectedColor = MaterialTheme.colorScheme.primary,
         )
 
@@ -90,7 +69,7 @@ internal fun LazyListScope.renderPowerBalance(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
       ) {
         Text(
-            text = "Expert: Power Balance",
+            text = stringResource(R.string.perf_power_balance_title),
             style =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
@@ -99,14 +78,7 @@ internal fun LazyListScope.renderPowerBalance(
         )
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            text =
-                """This is for Advanced Users.
-                  |
-                  |You can adjust the performance and resource usage of the $appName Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.
-                  |
-                  |More Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.
-              """
-                    .trimMargin(),
+            text = stringResource(R.string.perf_power_balance_description, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -122,7 +94,7 @@ internal fun LazyListScope.renderPowerBalance(
             enabled = isEditable,
         ) {
           Text(
-              text = "Adjust Power Balance",
+              text = stringResource(R.string.perf_power_balance_button),
           )
         }
       }

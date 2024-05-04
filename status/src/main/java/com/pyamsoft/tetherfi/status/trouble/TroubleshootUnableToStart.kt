@@ -23,8 +23,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.R
 
 @Composable
 internal fun TroubleshootUnableToStart(
@@ -33,17 +36,19 @@ internal fun TroubleshootUnableToStart(
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
+  val context = LocalContext.current
   val errType =
       remember(
           isBroadcastError,
           isProxyError,
+          context,
       ) {
         if (isBroadcastError && isProxyError) {
-          "with your device and configuration"
+          context.getString(R.string.trouble_err_type_both)
         } else if (isProxyError) {
-          "with your configuration"
+          context.getString(R.string.trouble_err_type_proxy)
         } else {
-          "from your device"
+          context.getString(R.string.trouble_err_type_broadcast)
         }
       }
 
@@ -51,13 +56,13 @@ internal fun TroubleshootUnableToStart(
       modifier = modifier.padding(horizontal = MaterialTheme.keylines.content),
   ) {
     Text(
-        text = "$appName Hotspot failed to start.",
+        text = stringResource(R.string.trouble_title, appName),
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.titleLarge,
     )
     Text(
         modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-        text = "This is NOT an error with the app, this is an error $errType.",
+        text = stringResource(R.string.trouble_description, errType),
         fontWeight = FontWeight.W700,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.error,
@@ -65,7 +70,7 @@ internal fun TroubleshootUnableToStart(
 
     Text(
         modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Please check these issues and try again:",
+        text = stringResource(R.string.trouble_double_check),
         style = MaterialTheme.typography.bodySmall,
         fontWeight = FontWeight.W700,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -74,31 +79,31 @@ internal fun TroubleshootUnableToStart(
     if (isBroadcastError) {
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• Wi-Fi must be turned ON to start the Hotspot",
+          text = stringResource(R.string.trouble_broadcast_wifi_on),
           style = MaterialTheme.typography.bodyLarge,
       )
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• Wi-Fi must NOT be connected to any other network",
+          text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
           style = MaterialTheme.typography.bodyLarge,
       )
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• Wi-Fi should be restarted by turning it OFF and then back ON again",
+          text = stringResource(R.string.trouble_broadcast_wifi_restart),
           style = MaterialTheme.typography.bodyLarge,
       )
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot password must be at least 8 characters long",
+          text = stringResource(R.string.trouble_broadcast_password_length),
           style = MaterialTheme.typography.bodyLarge,
       )
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot name must be unique",
+          text = stringResource(R.string.trouble_broadcast_ssid_name),
           style = MaterialTheme.typography.bodyLarge,
       )
     }
@@ -106,13 +111,13 @@ internal fun TroubleshootUnableToStart(
     if (isProxyError) {
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot port number may be already used by a different app",
+          text = stringResource(R.string.trouble_proxy_already_used),
           style = MaterialTheme.typography.bodyLarge,
       )
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = "• The Hotspot port number must be between 1025 and 65000",
+          text = stringResource(R.string.trouble_proxy_port),
           style = MaterialTheme.typography.bodyLarge,
       )
     }

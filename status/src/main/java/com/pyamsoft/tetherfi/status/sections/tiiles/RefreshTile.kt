@@ -41,7 +41,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import kotlinx.coroutines.delay
 
@@ -70,7 +72,7 @@ internal fun RefreshTile(
         iconButton()
 
         Text(
-            text = "Refresh Hotspot",
+            text = stringResource(R.string.tile_refresh_hotspot),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color = color,

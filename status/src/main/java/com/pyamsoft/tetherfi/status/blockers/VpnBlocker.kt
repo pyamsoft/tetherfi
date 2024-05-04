@@ -32,12 +32,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 
 @Composable
 internal fun VpnBlocker(
@@ -67,20 +69,19 @@ internal fun VpnBlocker(
               verticalAlignment = Alignment.CenterVertically,
           ) {
             Text(
-                text = "Conflicting VPN",
+                text = stringResource(R.string.block_vpn_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
           }
           Column {
             Text(
-                text = "$appName has trouble starting the hotspot when a VPN is connected.",
+                text = stringResource(R.string.block_vpn_description, appName),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
             Text(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                text =
-                    "Please disconnect from your VPN, and then attempt to launch the Hotspot again.",
+                text = stringResource(R.string.block_vpn_instruction),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -102,7 +103,7 @@ internal fun VpnBlocker(
                 },
             ) {
               Text(
-                  text = "Okay",
+                  text = stringResource(android.R.string.ok),
               )
             }
           }

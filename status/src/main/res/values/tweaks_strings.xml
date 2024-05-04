@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="tweaks_title">Behavior Tweaks</string>
+  <string
+    name="tweaks_description"
+  >Tweaks change how %1$s performs in various ways.\n\nAll of these options are completely optional and do not impact network or hotspot performance in any way.</string>
+
+  <string name="ignore_vpn_title">Avoid VPN Blocker Dialog</string>
+  <string
+    name="ignore_vpn_description"
+  >When starting, %1$s sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.\n\nIf you KNOW your VPN app works fine with %1$s, turn this option on to avoid the blocking dialog.</string>
+
+  <string name="shutdown_no_client_title">Stop Hotspot With No Clients</string>
+  <string
+    name="shutdown_no_client_description"
+  >If the %1$s hotspot has been running for 10 minutes without serving any client devices, shut it down.\n\nAutomatically shutting down the hotspot when it is not being used can save battery.</string>
+
+  <string name="stubborn_proxy_title">Stubborn Proxy</string>
+  <string
+    name="stubborn_proxy_description"
+  >On some devices %1$s fails to launch the Proxy with an \'Invalid Argument\' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.\n\nEnabling this option lets %1$s ignore these errors and constantly keep trying. YOLO Mode.\n\nThis option is now default, and will be removed in a future update.</string>
+</resources>

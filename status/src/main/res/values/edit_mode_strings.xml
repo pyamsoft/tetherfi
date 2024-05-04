@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="editmode_hotspot_port">PROXY PORT</string>
+  <string name="editmode_system_defined">SET BY SYSTEM: CAN\'T CHANGE</string>
+
+  <string name="editmode_type_port">Port</string>
+  <string name="editmode_type_password">Password</string>
+  <string name="editmode_type_ssid">SSID</string>
+
+  <string name="editmode_label_map">%1$s is %2$s</string>
+  <string name="editmode_label_valid">Valid</string>
+  <string name="editmode_label_invalid">Invalid</string>
+  <string name="editmode_label_visible">Visible</string>
+  <string name="editmode_label_hidden">Hidden</string>
+  <string name="editmode_hotspot_password">HOTSPOT PASSWORD</string>
+  <string name="editmode_hotspot_name">HOTSPOT NAME</string>
+</resources>

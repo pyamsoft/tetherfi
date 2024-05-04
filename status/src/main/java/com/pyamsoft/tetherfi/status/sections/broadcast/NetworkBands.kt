@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +38,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
@@ -61,7 +63,7 @@ internal fun NetworkBands(
     // Small label above
     Label(
         modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Broadcast Frequency",
+        text = stringResource(R.string.broadcast_frequency),
     )
     if (canUseCustomConfig) {
       val bands = remember { ServerNetworkBand.entries }
@@ -118,7 +120,7 @@ internal fun NetworkBands(
                       shape = MaterialTheme.shapes.medium,
                   )
                   .padding(MaterialTheme.keylines.content),
-          text = "Network Broadcast Frequency is defined by the system and cannot be changed.",
+          text = stringResource(R.string.network_bands_system_defined),
           style =
               MaterialTheme.typography.bodyLarge.copy(
                   fontWeight = FontWeight.W700,

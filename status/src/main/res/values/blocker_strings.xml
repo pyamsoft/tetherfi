@@ -15,9 +15,13 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="operating_settings">Operating Settings</string>
-  <string name="operating_always_alive_title">Always Alive</string>
+  <string name="block_privacy_policy">Privacy Policy</string>
+  <string name="block_view_privacy_policy">View the %1$s %2$s</string>
+  <string name="block_vpn_title">Conflicting VPN</string>
   <string
-    name="operating_always_alive_description"
-  >This will allow the %1$s Hotspot to continue running even if the app is closed.\n\nThis will significantly enhance your experience and network performance.\n(recommended)</string>
+    name="block_vpn_description"
+  >%1$s has trouble starting the hotspot when a VPN is connected.</string>
+  <string
+    name="block_vpn_instruction"
+  >Please disconnect from your VPN, and then attempt to launch the Hotspot again.</string>
 </resources>

@@ -20,8 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 
@@ -46,13 +48,8 @@ internal fun BatteryOptimization(
       modifier = modifier,
       isEditable = canEdit,
       condition = isBatteryOptimizationDisabled,
-      title = "Always Alive",
-      description =
-          """This will allow the $appName Hotspot to continue running even if the app is closed.
-            |
-            |This will significantly enhance your experience and network performance.
-            |(recommended)"""
-              .trimMargin(),
+      title = stringResource(R.string.operating_always_alive_title),
+      description = stringResource(R.string.operating_always_alive_description, appName),
       onClick = {
         if (!isBatteryOptimizationDisabled) {
           hapticManager?.confirmButtonPress()

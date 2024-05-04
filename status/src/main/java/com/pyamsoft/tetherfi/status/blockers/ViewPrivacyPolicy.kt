@@ -20,16 +20,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
-import com.pyamsoft.tetherfi.ui.appendLink
-
-private const val LINK_TEXT = "Privacy Policy"
-private const val URI_TAG = "privacy policy"
+import com.pyamsoft.tetherfi.status.R
 
 @Composable
 internal fun ViewPrivacyPolicy(
@@ -38,16 +39,50 @@ internal fun ViewPrivacyPolicy(
   Box(
       modifier = modifier,
   ) {
-    val text = buildAnnotatedString {
-      append("View our ")
+    val linkColor = MaterialTheme.colorScheme.primary
 
-      appendLink(
-          tag = URI_TAG,
-          linkColor = MaterialTheme.colorScheme.primary,
-          text = LINK_TEXT,
-          url = PRIVACY_POLICY_URL,
-      )
-    }
+    val privacyText = stringResource(R.string.block_privacy_policy)
+    val rawBlurb = stringResource(R.string.block_view_privacy_policy, privacyText)
+    val text =
+        remember(
+            linkColor,
+            rawBlurb,
+        ) {
+          val privacyIndex = rawBlurb.indexOf(privacyText)
+
+          val linkStyle =
+              SpanStyle(
+                  color = linkColor,
+                  textDecoration = TextDecoration.Underline,
+              )
+
+          val spanStyles =
+              listOf(
+                  AnnotatedString.Range(
+                      linkStyle,
+                      start = privacyIndex,
+                      end = privacyIndex + privacyText.length,
+                  ),
+              )
+
+          val visualString =
+              AnnotatedString(
+                  rawBlurb,
+                  spanStyles = spanStyles,
+              )
+
+          // Can only add annotations to builders
+          return@remember AnnotatedString.Builder(visualString)
+              .apply {
+                addStringAnnotation(
+                    tag = privacyText,
+                    annotation = PRIVACY_POLICY_URL,
+                    start = privacyIndex,
+                    end = privacyIndex + privacyText.length,
+                )
+              }
+              .toAnnotatedString()
+        }
 
     val uriHandler = rememberUriHandler()
     ClickableText(
@@ -60,9 +95,9 @@ internal fun ViewPrivacyPolicy(
         onClick = { start ->
           text
               .getStringAnnotations(
-                  tag = URI_TAG,
+                  tag = privacyText,
                   start = start,
-                  end = start + LINK_TEXT.length,
+                  end = start + privacyText.length,
               )
               .firstOrNull()
               ?.also { uriHandler.openUri(it.item) }

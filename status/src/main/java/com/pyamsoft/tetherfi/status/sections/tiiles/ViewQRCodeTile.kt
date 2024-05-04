@@ -27,7 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 
 @Composable
@@ -59,7 +61,7 @@ internal fun ViewQRCodeTile(
       ) {
         Icon(
             imageVector = Icons.Filled.QrCode,
-            contentDescription = "QR Code",
+            contentDescription = stringResource(R.string.tile_qr_code),
             tint =
                 MaterialTheme.colorScheme.run {
                   if (isQREnabled) {
@@ -72,7 +74,7 @@ internal fun ViewQRCodeTile(
       }
 
       Text(
-          text = "View QR Code",
+          text = stringResource(R.string.tile_qr_code),
           style =
               MaterialTheme.typography.bodySmall.copy(
                   color =
@@ -82,7 +84,8 @@ internal fun ViewQRCodeTile(
                         } else {
                           onSurfaceVariant
                         }
-                      }),
+                      },
+              ),
       )
     }
   }

@@ -30,41 +30,45 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.common.StatusItem
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.appendLink
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
 
-private const val SETUP_TAG = "setup_instructions"
-private const val SETUP_TEXT = "setup instructions"
-
 @Composable
 internal fun ViewProxy(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
+  val context = LocalContext.current
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
   val ipAddress = rememberServerHostname(connection)
 
   val portNumber by serverViewState.port.collectAsStateWithLifecycle()
   val port =
       remember(
+          context,
           portNumber,
       ) {
-        if (portNumber in 1024..65000) "$portNumber" else "INVALID PORT"
+        if (portNumber in 1024..65000) "$portNumber"
+        else context.getString(R.string.viewmode_invalid_port)
       }
 
   Row(
@@ -73,7 +77,7 @@ internal fun ViewProxy(
   ) {
     StatusItem(
         modifier = Modifier.weight(1F, fill = false),
-        title = "PROXY URL/HOSTNAME",
+        title = stringResource(R.string.viewmode_hotspot_hostname),
         value = ipAddress,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -87,7 +91,7 @@ internal fun ViewProxy(
     )
 
     StatusItem(
-        title = "PROXY PORT",
+        title = stringResource(R.string.viewmode_hotspot_port),
         value = port,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -116,7 +120,7 @@ internal fun ViewPassword(
   ) {
     StatusItem(
         modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-        title = "HOTSPOT PASSWORD",
+        title = stringResource(R.string.viewmode_hotspot_password),
         value = password,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -140,7 +144,10 @@ internal fun ViewPassword(
         Icon(
             imageVector =
                 if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-            contentDescription = if (isPasswordVisible) "Password Visible" else "Password Hidden",
+            contentDescription =
+                stringResource(
+                    if (isPasswordVisible) R.string.viewmode_pass_visible
+                    else R.string.viewmode_pass_hidden),
             tint = MaterialTheme.colorScheme.primary,
         )
       }
@@ -158,7 +165,7 @@ internal fun ViewSsid(
 
   StatusItem(
       modifier = modifier.padding(end = MaterialTheme.keylines.content),
-      title = "HOTSPOT NAME",
+      title = stringResource(R.string.viewmode_hotspot_name),
       value = ssid,
       valueStyle =
           MaterialTheme.typography.titleLarge.copy(
@@ -173,17 +180,50 @@ internal fun ViewInstructions(
     modifier: Modifier = Modifier,
     onJumpToHowTo: () -> Unit,
 ) {
-  val text = buildAnnotatedString {
-    appendLine("Confused on what to do next?")
-    append("View the ")
+  val linkColor = MaterialTheme.colorScheme.primary
 
-    appendLink(
-        tag = SETUP_TAG,
-        linkColor = MaterialTheme.colorScheme.primary,
-        text = SETUP_TEXT,
-        url = SETUP_TAG,
-    )
-  }
+  val setupText = stringResource(R.string.viewmode_setup_instructions)
+  val rawBlurb = stringResource(R.string.viewmode_setup_view_instructions, setupText)
+  val text =
+      remember(
+          linkColor,
+          rawBlurb,
+      ) {
+        val setupIndex = rawBlurb.indexOf(setupText)
+
+        val linkStyle =
+            SpanStyle(
+                color = linkColor,
+                textDecoration = TextDecoration.Underline,
+            )
+
+        val spanStyles =
+            listOf(
+                AnnotatedString.Range(
+                    linkStyle,
+                    start = setupIndex,
+                    end = setupIndex + setupText.length,
+                ),
+            )
+
+        val visualString =
+            AnnotatedString(
+                rawBlurb,
+                spanStyles = spanStyles,
+            )
+
+        // Can only add annotations to builders
+        return@remember AnnotatedString.Builder(visualString)
+            .apply {
+              addStringAnnotation(
+                  tag = setupText,
+                  annotation = "Placeholder, onClick handled in code",
+                  start = setupIndex,
+                  end = setupIndex + setupText.length,
+              )
+            }
+            .toAnnotatedString()
+      }
 
   ClickableText(
       modifier = modifier,
@@ -196,9 +236,9 @@ internal fun ViewInstructions(
       onClick = { start ->
         text
             .getStringAnnotations(
-                tag = SETUP_TAG,
+                tag = setupText,
                 start = start,
-                end = start + SETUP_TAG.length,
+                end = start + setupText.length,
             )
             .firstOrNull()
             ?.also { onJumpToHowTo() }

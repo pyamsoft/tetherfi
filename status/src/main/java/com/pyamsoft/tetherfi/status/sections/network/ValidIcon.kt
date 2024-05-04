@@ -29,16 +29,9 @@ import androidx.compose.ui.Modifier
 internal fun ValidIcon(
     modifier: Modifier = Modifier,
     isValid: Boolean,
-    what: String,
+    description: String,
 ) {
   val icon = remember(isValid) { if (isValid) Icons.Filled.Check else Icons.Filled.Close }
-  val description =
-      remember(
-          isValid,
-          what,
-      ) {
-        "$what is ${if (isValid) "Valid" else "Invalid"}"
-      }
   val tint = if (isValid) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
   Icon(

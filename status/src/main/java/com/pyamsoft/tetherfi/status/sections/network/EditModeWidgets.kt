@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,11 +41,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.ServerDefaults
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
-
-private const val SYSTEM_DEFINED = "SET BY SYSTEM: CAN'T CHANGE"
 
 @Composable
 internal fun EditPort(
@@ -57,7 +58,7 @@ internal fun EditPort(
 
   StatusEditor(
       modifier = modifier,
-      title = "PROXY PORT",
+      title = stringResource(R.string.editmode_hotspot_port),
       value = port,
       onChange = onPortChanged,
       keyboardOptions =
@@ -67,8 +68,14 @@ internal fun EditPort(
       trailingIcon = {
         ValidIcon(
             isValid = isValid,
-            what = "Port",
-        )
+            description =
+                stringResource(
+                    R.string.editmode_label_map,
+                    stringResource(R.string.editmode_type_port),
+                    stringResource(
+                        if (isValid) R.string.editmode_label_valid
+                        else R.string.editmode_label_invalid),
+                ))
       },
   )
 }
@@ -83,12 +90,14 @@ internal fun EditPassword(
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val password by state.password.collectAsStateWithLifecycle()
   val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
+  val context = LocalContext.current
   val hotspotPassword =
       remember(
+          context,
           canUseCustomConfig,
           password,
       ) {
-        if (canUseCustomConfig) password else SYSTEM_DEFINED
+        if (canUseCustomConfig) password else context.getString(R.string.editmode_system_defined)
       }
 
   val isValid =
@@ -137,14 +146,25 @@ internal fun EditPassword(
                       if (isPasswordVisible) Icons.Filled.VisibilityOff
                       else Icons.Filled.Visibility,
                   contentDescription =
-                      if (isPasswordVisible) "Password Visible" else "Password Hidden",
-              )
+                      stringResource(
+                          R.string.editmode_label_map,
+                          stringResource(R.string.editmode_type_password),
+                          stringResource(
+                              if (isValid) R.string.editmode_label_visible
+                              else R.string.editmode_label_hidden),
+                      ))
             }
 
             ValidIcon(
                 isValid = isValid,
-                what = "Password",
-            )
+                description =
+                    stringResource(
+                        R.string.editmode_label_map,
+                        stringResource(R.string.editmode_type_password),
+                        stringResource(
+                            if (isValid) R.string.editmode_label_valid
+                            else R.string.editmode_label_invalid),
+                    ))
           }
         }
       } else {
@@ -154,7 +174,7 @@ internal fun EditPassword(
   StatusEditor(
       modifier = modifier,
       enabled = canUseCustomConfig,
-      title = "HOTSPOT PASSWORD",
+      title = stringResource(R.string.editmode_hotspot_password),
       value = hotspotPassword,
       onChange = onPasswordChanged,
       visualTransformation =
@@ -174,14 +194,16 @@ internal fun EditSsid(
     state: StatusViewState,
     onSsidChanged: (String) -> Unit,
 ) {
+  val context = LocalContext.current
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val ssid by state.ssid.collectAsStateWithLifecycle()
   val hotspotSsid =
       remember(
+          context,
           canUseCustomConfig,
           ssid,
       ) {
-        if (canUseCustomConfig) ssid else SYSTEM_DEFINED
+        if (canUseCustomConfig) ssid else context.getString(R.string.editmode_system_defined)
       }
 
   val isValid =
@@ -219,8 +241,14 @@ internal fun EditSsid(
         {
           ValidIcon(
               isValid = isValid,
-              what = "Name",
-          )
+              description =
+                  stringResource(
+                      R.string.editmode_label_map,
+                      stringResource(R.string.editmode_type_ssid),
+                      stringResource(
+                          if (isValid) R.string.editmode_label_valid
+                          else R.string.editmode_label_invalid),
+                  ))
         }
       } else {
         null
@@ -229,7 +257,7 @@ internal fun EditSsid(
   StatusEditor(
       modifier = modifier,
       enabled = canUseCustomConfig,
-      title = "HOTSPOT NAME",
+      title = stringResource(R.string.editmode_hotspot_name),
       value = hotspotSsid,
       onChange = onSsidChanged,
       leadingIcon = leadingIcon,

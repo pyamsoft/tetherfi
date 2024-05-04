@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
@@ -49,7 +51,7 @@ internal fun LazyListScope.renderPerformanceSettings(
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = "Performance Settings",
+        text = stringResource(R.string.performance_title),
     )
   }
 
@@ -66,7 +68,6 @@ internal fun LazyListScope.renderPerformanceSettings(
       itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
-      state = state,
       onShowPowerBalance = onShowPowerBalance,
   )
 }

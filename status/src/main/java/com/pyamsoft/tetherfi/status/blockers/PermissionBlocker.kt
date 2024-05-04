@@ -32,11 +32,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.status.R
 
 @Composable
 internal fun PermissionBlocker(
@@ -46,16 +49,18 @@ internal fun PermissionBlocker(
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
 ) {
+  val context = LocalContext.current
   val hapticManager = LocalHapticManager.current
 
   // Permission needed is different on T
-  val neededPermission = remember {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-      "PRECISE LOCATION"
-    } else {
-      "NEARBY WIFI"
-    }
-  }
+  val neededPermission =
+      remember(context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+          context.getString(R.string.permission_type_location)
+        } else {
+          context.getString(R.string.permission_type_nearby)
+        }
+      }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -76,20 +81,19 @@ internal fun PermissionBlocker(
               verticalAlignment = Alignment.CenterVertically,
           ) {
             Text(
-                text = "Permission Request",
+                text = stringResource(R.string.permission_title),
                 style = MaterialTheme.typography.headlineSmall,
             )
           }
           Column {
             Text(
-                text = "$appName needs $neededPermission permission to create a Wi-Fi Group",
+                text = stringResource(R.string.permission_description, appName, neededPermission),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
             Text(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                text =
-                    "$appName will not use these permissions for anything else but Wi-Fi Group creation.",
+                text = stringResource(R.string.permission_reassure, appName),
                 style = MaterialTheme.typography.bodyLarge,
             )
 
@@ -111,7 +115,7 @@ internal fun PermissionBlocker(
                     ),
             ) {
               Text(
-                  text = "Open Settings",
+                  text = stringResource(R.string.permission_open_settings),
               )
             }
 
@@ -130,7 +134,7 @@ internal fun PermissionBlocker(
                 },
             ) {
               Text(
-                  text = "Deny",
+                  text = stringResource(R.string.permission_deny),
               )
             }
 
@@ -141,7 +145,7 @@ internal fun PermissionBlocker(
                 },
             ) {
               Text(
-                  text = "Grant",
+                  text = stringResource(R.string.permission_grant),
               )
             }
           }

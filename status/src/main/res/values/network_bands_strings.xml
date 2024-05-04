@@ -15,9 +15,8 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="operating_settings">Operating Settings</string>
-  <string name="operating_always_alive_title">Always Alive</string>
+  <string name="broadcast_frequency">Broadcast Frequency</string>
   <string
-    name="operating_always_alive_description"
-  >This will allow the %1$s Hotspot to continue running even if the app is closed.\n\nThis will significantly enhance your experience and network performance.\n(recommended)</string>
+    name="network_bands_system_defined"
+  >Network Broadcast Frequency is defined by the system and cannot be changed.</string>
 </resources>
