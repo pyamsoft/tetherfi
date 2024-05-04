@@ -62,9 +62,7 @@ class MainActivity : AppCompatActivity() {
 
                   override val changelog = buildChangeLog {
                     feature("Material You Support")
-                    change("Reduce RAM usage when running the proxy")
-                    feature("Track total network activity for Connections")
-                    bugfix("Faster proxy performance on older or weaker devices")
+                    bugfix("Fix unrelated connections being shown in the Connection page")
 
                     // NEXT
                     //                    change(
