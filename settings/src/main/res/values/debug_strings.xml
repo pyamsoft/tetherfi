@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
   ~ Copyright 2024 pyamsoft
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,24 +14,37 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-    <string name="yolo_title">Force TCP Server Error (for Stubborn Proxy)</string>
-    <string name="yolo_explain">Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)</string>
-    <string name="broadcast_title">Force Broadcast Error</string>
-    <string name="broadcast_explain">Force simulate a Broadcast Error</string>
-    <string name="proxy_title">Force Proxy Error</string>
-    <string name="proxy_explain">Force simulate a Proxy Error</string>
-    <string name="empty_group_title">Empty Group Info</string>
-    <string name="empty_group_explain">Force the WiFi Direct server to simulate returning an empty response</string>
-    <string name="connected_group_title">Connected Group Info</string>
-    <string name="connected_group_explain">Force the WiFi Direct server to simulate returning a connected response</string>
-    <string name="error_group_title">Error Group Info</string>
-    <string name="error_group_explain">Force the WiFi Direct server to simulate returning an error response</string>
-    <string name="empty_connection_title">Empty Connection Info</string>
-    <string name="empty_connection_explain">Force the WiFi Direct server to simulate returning an empty response</string>
-    <string name="connected_connection_title">Connected Connection Info</string>
-    <string name="connected_connection_explain">Force the WiFi Direct server to simulate returning a connected response</string>
-    <string name="error_connection_title">Error Connection Info</string>
-    <string name="error_connection_explain">Force the WiFi Direct server to simulate returning an error response</string>
+  <string name="yolo_title">Force TCP Server Error (for Stubborn Proxy)</string>
+  <string
+    name="yolo_explain"
+  >Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)</string>
+  <string name="broadcast_title">Force Broadcast Error</string>
+  <string name="broadcast_explain">Force simulate a Broadcast Error</string>
+  <string name="proxy_title">Force Proxy Error</string>
+  <string name="proxy_explain">Force simulate a Proxy Error</string>
+  <string name="empty_group_title">Empty Group Info</string>
+  <string
+    name="empty_group_explain"
+  >Force the WiFi Direct server to simulate returning an empty response</string>
+  <string name="connected_group_title">Connected Group Info</string>
+  <string
+    name="connected_group_explain"
+  >Force the WiFi Direct server to simulate returning a connected response</string>
+  <string name="error_group_title">Error Group Info</string>
+  <string
+    name="error_group_explain"
+  >Force the WiFi Direct server to simulate returning an error response</string>
+  <string name="empty_connection_title">Empty Connection Info</string>
+  <string
+    name="empty_connection_explain"
+  >Force the WiFi Direct server to simulate returning an empty response</string>
+  <string name="connected_connection_title">Connected Connection Info</string>
+  <string
+    name="connected_connection_explain"
+  >Force the WiFi Direct server to simulate returning a connected response</string>
+  <string name="error_connection_title">Error Connection Info</string>
+  <string
+    name="error_connection_explain"
+  >Force the WiFi Direct server to simulate returning an error response</string>
 </resources>

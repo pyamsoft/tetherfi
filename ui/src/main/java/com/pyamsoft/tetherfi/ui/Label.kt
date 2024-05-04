@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
@@ -65,7 +66,7 @@ fun Label(
                   click.requireNotNull().invoke()
                 },
             imageVector = Icons.Filled.Info,
-            contentDescription = "View Information",
+            contentDescription = stringResource(R.string.view_information),
         )
       }
     }

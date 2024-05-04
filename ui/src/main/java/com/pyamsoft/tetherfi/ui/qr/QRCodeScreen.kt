@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.isUnspecified
@@ -44,6 +45,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
+import com.pyamsoft.tetherfi.ui.R
 import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
 
 private enum class QRCodeScreenContentTypes {
@@ -143,7 +145,7 @@ fun QRCodeScreen(
     ) {
       Text(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-          text = "Scan this QR code to connect",
+          text = stringResource(R.string.qr_code_explain),
       )
     }
   }

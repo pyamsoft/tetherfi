@@ -19,16 +19,21 @@ package com.pyamsoft.tetherfi.ui
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 
 @Composable
 @CheckResult
 fun rememberServerSSID(group: BroadcastNetworkStatus.GroupInfo): String {
-  return remember(group) {
+  val context = LocalContext.current
+  return remember(
+      context,
+      group,
+  ) {
     when (group) {
       is BroadcastNetworkStatus.GroupInfo.Connected -> group.ssid
-      is BroadcastNetworkStatus.GroupInfo.Empty -> "NO NAME"
-      is BroadcastNetworkStatus.GroupInfo.Error -> "ERROR"
+      is BroadcastNetworkStatus.GroupInfo.Empty -> context.getString(R.string.ssid_no_name)
+      is BroadcastNetworkStatus.GroupInfo.Error -> context.getString(R.string.unknown_error)
       is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
         throw IllegalStateException(
             "GroupInfo.Unchanged should never escape the server-module internals.")
@@ -61,7 +66,9 @@ fun rememberServerPassword(
     group: BroadcastNetworkStatus.GroupInfo,
     isPasswordVisible: Boolean,
 ): String {
+  val context = LocalContext.current
   return remember(
+      context,
       group,
       isPasswordVisible,
   ) {
@@ -76,10 +83,10 @@ fun rememberServerPassword(
         }
       }
       is BroadcastNetworkStatus.GroupInfo.Empty -> {
-        "NO PASSWORD"
+        context.getString(R.string.passwd_none)
       }
       is BroadcastNetworkStatus.GroupInfo.Error -> {
-        "ERROR"
+        context.getString(R.string.unknown_error)
       }
       is BroadcastNetworkStatus.GroupInfo.Unchanged -> {
         throw IllegalStateException(
@@ -92,11 +99,15 @@ fun rememberServerPassword(
 @Composable
 @CheckResult
 fun rememberServerHostname(connection: BroadcastNetworkStatus.ConnectionInfo): String {
-  return remember(connection) {
+  val context = LocalContext.current
+  return remember(
+      connection,
+      context,
+  ) {
     when (connection) {
       is BroadcastNetworkStatus.ConnectionInfo.Connected -> connection.hostName
-      is BroadcastNetworkStatus.ConnectionInfo.Empty -> "NO HOST"
-      is BroadcastNetworkStatus.ConnectionInfo.Error -> "ERROR"
+      is BroadcastNetworkStatus.ConnectionInfo.Empty -> context.getString(R.string.server_no_host)
+      is BroadcastNetworkStatus.ConnectionInfo.Error -> context.getString(R.string.unknown_error)
       is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
         throw IllegalStateException(
             "ConnectionInfo.Unchanged should never escape the server-module internals.")

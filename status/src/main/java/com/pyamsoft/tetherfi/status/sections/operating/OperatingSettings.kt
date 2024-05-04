@@ -50,9 +50,9 @@ internal fun LazyListScope.renderOperatingSettings(
   ) {
     Label(
         modifier =
-        itemModifier
-            .padding(top = MaterialTheme.keylines.content)
-            .padding(bottom = MaterialTheme.keylines.baseline),
+            itemModifier
+                .padding(top = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.baseline),
         text = stringResource(R.string.operating_settings),
     )
   }

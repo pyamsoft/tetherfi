@@ -27,9 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
@@ -39,9 +40,6 @@ private enum class LinkContentTypes {
   FAQ_LINK
 }
 
-private const val FAQ_TEXT = "FAQs"
-private const val KNW_TEXT = "Known to Not Work"
-
 fun LazyListScope.renderLinks(
     modifier: Modifier = Modifier,
     appName: String,
@@ -49,40 +47,81 @@ fun LazyListScope.renderLinks(
   item(
       contentType = LinkContentTypes.FAQ_LINK,
   ) {
-    val textColor = MaterialTheme.colorScheme.onSurface
+    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
     val linkColor = MaterialTheme.colorScheme.primary
+
+    val faqText = stringResource(R.string.faqs)
+    val knownNotWorkingText = stringResource(R.string.known_to_not_work)
+    val rawBlurb = stringResource(R.string.faq_blurb, appName, faqText, knownNotWorkingText)
     val faqBlurb =
         remember(
-            textColor,
             linkColor,
-            appName,
+            textColor,
+            rawBlurb,
         ) {
-          buildAnnotatedString {
-            withStyle(
-                style =
-                    SpanStyle(
-                        color = textColor,
-                    ),
-            ) {
-              appendLine(
-                  "Have questions about how $appName works? Noticing some issues connecting?")
-              appendLine()
-              append("View our ")
-              appendLink(
-                  tag = "FAQ",
-                  linkColor = linkColor,
-                  text = FAQ_TEXT,
-                  url = "https://github.com/pyamsoft/tetherfi/wiki",
+          val faqIndex = rawBlurb.indexOf(faqText)
+          val knwIndex = rawBlurb.indexOf(knownNotWorkingText)
+
+          val textStyle =
+              SpanStyle(
+                  color = textColor,
               )
-              append(" and apps that are ")
-              appendLink(
-                  tag = "KNW",
-                  linkColor = linkColor,
-                  text = KNW_TEXT,
-                  url = "https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working",
+
+          val linkStyle =
+              SpanStyle(
+                  color = linkColor,
+                  textDecoration = TextDecoration.Underline,
               )
-            }
-          }
+
+          val spanStyles =
+              listOf(
+                  AnnotatedString.Range(
+                      textStyle,
+                      start = 0,
+                      end = faqIndex,
+                  ),
+                  AnnotatedString.Range(
+                      linkStyle,
+                      start = faqIndex,
+                      end = faqIndex + faqText.length,
+                  ),
+                  AnnotatedString.Range(
+                      textStyle,
+                      start = faqIndex + faqText.length,
+                      end = knwIndex,
+                  ),
+                  AnnotatedString.Range(
+                      linkStyle,
+                      start = knwIndex,
+                      end = knwIndex + knownNotWorkingText.length,
+                  ),
+              )
+
+          val visualString =
+              AnnotatedString(
+                  rawBlurb,
+                  spanStyles = spanStyles,
+              )
+
+          // Can only add annotations to builders
+          return@remember AnnotatedString.Builder(visualString)
+              .apply {
+                // FAQ clickable
+                addStringAnnotation(
+                    tag = faqText,
+                    annotation = "https://github.com/pyamsoft/tetherfi/wiki",
+                    start = faqIndex,
+                    end = faqIndex + faqText.length,
+                )
+                // KNW clickable
+                addStringAnnotation(
+                    tag = knownNotWorkingText,
+                    annotation = "https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working",
+                    start = knwIndex,
+                    end = knwIndex + knownNotWorkingText.length,
+                )
+              }
+              .toAnnotatedString()
         }
 
     Card(
@@ -102,18 +141,18 @@ fun LazyListScope.renderLinks(
           onClick = { offset ->
             faqBlurb
                 .getStringAnnotations(
-                    tag = "FAQ",
+                    tag = faqText,
                     start = offset,
-                    end = offset + FAQ_TEXT.length,
+                    end = offset + faqText.length,
                 )
                 .firstOrNull()
                 ?.also { uriHandler.openUri(it.item) }
 
             faqBlurb
                 .getStringAnnotations(
-                    tag = "KNW",
+                    tag = knownNotWorkingText,
                     start = offset,
-                    end = offset + KNW_TEXT.length,
+                    end = offset + knownNotWorkingText.length,
                 )
                 .firstOrNull()
                 ?.also { uriHandler.openUri(it.item) }

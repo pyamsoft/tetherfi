@@ -67,10 +67,7 @@ fun SettingsDialog(
   val context = LocalContext.current
   val baselinePadding = MaterialTheme.keylines.baseline
   val itemModifier =
-      remember(baselinePadding) {
-          Modifier
-              .fillMaxWidth()
-              .padding(bottom = baselinePadding) }
+      remember(baselinePadding) { Modifier.fillMaxWidth().padding(bottom = baselinePadding) }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -89,9 +86,7 @@ fun SettingsDialog(
           },
       )
       Card(
-          modifier = Modifier
-              .fillMaxWidth()
-              .weight(1F),
+          modifier = Modifier.fillMaxWidth().weight(1F),
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,
@@ -163,8 +158,7 @@ private fun LazyListScope.renderExtraDebugContent(
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.yolo_title),
-        description =
-        stringResource(R.string.yolo_explain),
+        description = stringResource(R.string.yolo_explain),
         checked = isYoloError,
         onCheckedChange = { appEnvironment.updateYolo(it) },
     )

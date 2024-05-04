@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
@@ -86,7 +87,7 @@ fun ServerErrorTile(
       ) {
         Icon(
             imageVector = Icons.Filled.Warning,
-            contentDescription = "Something went wrong",
+            contentDescription = stringResource(R.string.something_went_wrong),
             tint = MaterialTheme.colorScheme.error,
         )
       }
@@ -117,7 +118,7 @@ fun ServerErrorDialog(
           onClose = onDismiss,
           title = {
             Text(
-                text = "Hotspot Error",
+                text = stringResource(R.string.hotspot_error),
             )
           },
       )
