@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
@@ -66,7 +67,10 @@ fun SettingsDialog(
   val context = LocalContext.current
   val baselinePadding = MaterialTheme.keylines.baseline
   val itemModifier =
-      remember(baselinePadding) { Modifier.fillMaxWidth().padding(bottom = baselinePadding) }
+      remember(baselinePadding) {
+          Modifier
+              .fillMaxWidth()
+              .padding(bottom = baselinePadding) }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -80,12 +84,14 @@ fun SettingsDialog(
           onClose = onDismiss,
           title = {
             Text(
-                text = "Settings",
+                text = stringResource(R.string.settings),
             )
           },
       )
       Card(
-          modifier = Modifier.fillMaxWidth().weight(1F),
+          modifier = Modifier
+              .fillMaxWidth()
+              .weight(1F),
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,
@@ -156,9 +162,9 @@ private fun LazyListScope.renderExtraDebugContent(
     val isYoloError by appEnvironment.isYoloError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Force TCP Server Error (for Stubborn Proxy)",
+        title = stringResource(R.string.yolo_title),
         description =
-            "Force simulate a TCP Server IOException, see if Stubborn Proxy works (YOLO mode)",
+        stringResource(R.string.yolo_explain),
         checked = isYoloError,
         onCheckedChange = { appEnvironment.updateYolo(it) },
     )
@@ -170,8 +176,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isBroadcastFakeError by appEnvironment.isBroadcastFakeError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Force Broadcast Error",
-        description = "Force simulate a Broadcast Error",
+        title = stringResource(R.string.broadcast_title),
+        description = stringResource(R.string.broadcast_explain),
         checked = isBroadcastFakeError,
         onCheckedChange = { appEnvironment.updateBroadcast(it) },
     )
@@ -183,8 +189,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isProxyFakeError by appEnvironment.isProxyFakeError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Force Proxy Error",
-        description = "Force simulate a Proxy Error",
+        title = stringResource(R.string.proxy_title),
+        description = stringResource(R.string.proxy_explain),
         checked = isProxyFakeError,
         onCheckedChange = { appEnvironment.updateProxy(it) },
     )
@@ -196,8 +202,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isGroupFakeEmpty by appEnvironment.group.isEmpty.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Empty Group Info",
-        description = "Force the WiFi Direct server to simulate returning an empty response",
+        title = stringResource(R.string.empty_group_title),
+        description = stringResource(R.string.empty_group_explain),
         checked = isGroupFakeEmpty,
         onCheckedChange = { appEnvironment.updateGroup(isEmpty = it) },
     )
@@ -209,8 +215,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isGroupFakeConnected by appEnvironment.group.isConnected.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Connected Group Info",
-        description = "Force the WiFi Direct server to simulate returning a connected response",
+        title = stringResource(R.string.connected_group_title),
+        description = stringResource(R.string.connected_group_explain),
         checked = isGroupFakeConnected,
         onCheckedChange = { appEnvironment.updateGroup(isConnected = it) },
     )
@@ -222,8 +228,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isGroupFakeError by appEnvironment.group.isError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Error Group Info",
-        description = "Force the WiFi Direct server to simulate returning an error response",
+        title = stringResource(R.string.error_group_title),
+        description = stringResource(R.string.error_group_explain),
         checked = isGroupFakeError,
         onCheckedChange = { appEnvironment.updateGroup(isError = it) },
     )
@@ -235,8 +241,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isConnectionFakeEmpty by appEnvironment.connection.isEmpty.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Empty Connection Info",
-        description = "Force the WiFi Direct server to simulate returning an empty response",
+        title = stringResource(R.string.empty_connection_title),
+        description = stringResource(R.string.empty_connection_explain),
         checked = isConnectionFakeEmpty,
         onCheckedChange = { appEnvironment.updateConnection(isEmpty = it) },
     )
@@ -249,8 +255,8 @@ private fun LazyListScope.renderExtraDebugContent(
         appEnvironment.connection.isConnected.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Connected Connection Info",
-        description = "Force the WiFi Direct server to simulate returning a connected response",
+        title = stringResource(R.string.connected_connection_title),
+        description = stringResource(R.string.connected_connection_explain),
         checked = isConnectionFakeConnected,
         onCheckedChange = { appEnvironment.updateConnection(isConnected = it) },
     )
@@ -262,8 +268,8 @@ private fun LazyListScope.renderExtraDebugContent(
     val isConnectionFakeError by appEnvironment.connection.isError.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
-        title = "Error Connection Info",
-        description = "Force the WiFi Direct server to simulate returning an error response",
+        title = stringResource(R.string.error_connection_title),
+        description = stringResource(R.string.error_connection_explain),
         checked = isConnectionFakeError,
         onCheckedChange = { appEnvironment.updateConnection(isError = it) },
     )
