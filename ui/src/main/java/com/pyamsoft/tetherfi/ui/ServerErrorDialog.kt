@@ -25,10 +25,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
@@ -122,14 +124,14 @@ fun ServerErrorDialog(
             )
           },
       )
-      Surface(
-          modifier = Modifier.fillMaxWidth().weight(1F),
-          color = MaterialTheme.colorScheme.surfaceVariant,
+      Card(
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,
                   topEnd = ZeroCornerSize,
               ),
+          elevation = CardDefaults.elevatedCardElevation(),
+          colors = CardDefaults.elevatedCardColors(),
       ) {
         LazyColumn {
           item(
@@ -159,4 +161,14 @@ fun ServerErrorDialog(
       }
     }
   }
+}
+
+@Preview
+@Composable
+private fun PreviewServerErrorDialog() {
+  ServerErrorDialog(
+      title = "TEST",
+      error = IllegalStateException("TEST ERROR"),
+      onDismiss = {},
+  )
 }

@@ -17,15 +17,15 @@
 package com.pyamsoft.tetherfi.status.blockers
 
 import android.os.Build
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,12 +34,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.status.R
+
+private enum class PermissionBlockerContentTypes {
+  EXPLAIN,
+  REASSURE,
+  PRIVACY_POLICY,
+}
 
 @Composable
 internal fun PermissionBlocker(
@@ -66,92 +72,123 @@ internal fun PermissionBlocker(
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
   ) {
-    Box(
+    Card(
         modifier = modifier.padding(MaterialTheme.keylines.content),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.elevatedCardElevation(),
+        colors = CardDefaults.elevatedCardColors(),
     ) {
-      Surface(
-          modifier = Modifier.fillMaxWidth(),
-          shadowElevation = DialogDefaults.Elevation,
-          shape = MaterialTheme.shapes.medium,
+      Text(
+          modifier =
+              Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                  .padding(top = MaterialTheme.keylines.content),
+          text = stringResource(R.string.permission_title),
+          style = MaterialTheme.typography.headlineSmall,
+      )
+
+      LazyColumn(
+          modifier =
+              Modifier.weight(
+                  weight = 1F,
+                  fill = false,
+              ),
       ) {
-        Column(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
+        item(
+            contentType = PermissionBlockerContentTypes.EXPLAIN,
         ) {
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            Text(
-                text = stringResource(R.string.permission_title),
-                style = MaterialTheme.typography.headlineSmall,
-            )
-          }
-          Column {
-            Text(
-                text = stringResource(R.string.permission_description, appName, neededPermission),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+          Text(
+              modifier =
+                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                      .padding(top = MaterialTheme.keylines.content),
+              text = stringResource(R.string.permission_description, appName, neededPermission),
+              style = MaterialTheme.typography.bodyLarge,
+          )
+        }
 
-            Text(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                text = stringResource(R.string.permission_reassure, appName),
-                style = MaterialTheme.typography.bodyLarge,
-            )
+        item(
+            contentType = PermissionBlockerContentTypes.REASSURE,
+        ) {
+          Text(
+              modifier =
+                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                      .padding(top = MaterialTheme.keylines.content),
+              text = stringResource(R.string.permission_reassure, appName),
+              style = MaterialTheme.typography.bodyLarge,
+          )
+        }
 
-            ViewPrivacyPolicy(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                appName = appName,
-            )
-          }
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            TextButton(
-                onClick = {
-                  hapticManager?.actionButtonPress()
-                  onOpenPermissionSettings()
-                },
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-            ) {
-              Text(
-                  text = stringResource(R.string.permission_open_settings),
-              )
-            }
+        item(
+            contentType = PermissionBlockerContentTypes.PRIVACY_POLICY,
+        ) {
+          ViewPrivacyPolicy(
+              modifier =
+                  Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                      .padding(top = MaterialTheme.keylines.content),
+              appName = appName,
+          )
+        }
+      }
 
-            Spacer(
-                modifier = Modifier.weight(1F),
-            )
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        TextButton(
+            onClick = {
+              hapticManager?.actionButtonPress()
+              onOpenPermissionSettings()
+            },
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        ) {
+          Text(
+              text = stringResource(R.string.permission_open_settings),
+          )
+        }
 
-            TextButton(
-                colors =
-                    ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
-                onClick = {
-                  hapticManager?.cancelButtonPress()
-                  onDismiss()
-                },
-            ) {
-              Text(
-                  text = stringResource(R.string.permission_deny),
-              )
-            }
+        Spacer(
+            modifier = Modifier.weight(1F),
+        )
 
-            TextButton(
-                onClick = {
-                  hapticManager?.confirmButtonPress()
-                  onRequestPermissions()
-                },
-            ) {
-              Text(
-                  text = stringResource(R.string.permission_grant),
-              )
-            }
-          }
+        TextButton(
+            colors =
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            onClick = {
+              hapticManager?.cancelButtonPress()
+              onDismiss()
+            },
+        ) {
+          Text(
+              text = stringResource(R.string.permission_deny),
+          )
+        }
+
+        TextButton(
+            onClick = {
+              hapticManager?.confirmButtonPress()
+              onRequestPermissions()
+            },
+        ) {
+          Text(
+              text = stringResource(R.string.permission_grant),
+          )
         }
       }
     }
   }
+}
+
+@Preview
+@Composable
+private fun PreviewPermissionBlocker() {
+  PermissionBlocker(
+      appName = "TEST",
+      onDismiss = {},
+      onOpenPermissionSettings = {},
+      onRequestPermissions = {},
+  )
 }

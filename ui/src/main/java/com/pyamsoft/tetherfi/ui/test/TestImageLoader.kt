@@ -36,6 +36,7 @@ import coil.request.SuccessResult
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
+import org.jetbrains.annotations.TestOnly
 
 /** Only use for tests/previews */
 private class TestImageLoader(context: Context) : ImageLoader {
@@ -92,9 +93,10 @@ private class TestImageLoader(context: Context) : ImageLoader {
 }
 
 /** Only use for tests/previews */
+@TestOnly
 @Composable
 @CheckResult
-internal fun createNewTestImageLoader(): ImageLoader {
+fun createNewTestImageLoader(): ImageLoader {
   val context = LocalContext.current
   return TestImageLoader(context)
 }

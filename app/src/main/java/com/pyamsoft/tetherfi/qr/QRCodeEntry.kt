@@ -17,27 +17,29 @@
 package com.pyamsoft.tetherfi.qr
 
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.ImageLoader
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
@@ -45,7 +47,10 @@ import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.ui.DialogToolbar
 import com.pyamsoft.tetherfi.ui.qr.QRCodeScreen
 import com.pyamsoft.tetherfi.ui.qr.QRCodeViewModeler
+import com.pyamsoft.tetherfi.ui.qr.QRCodeViewState
+import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 
 internal class QRCodeInjector(
     private val ssid: String,
@@ -53,6 +58,7 @@ internal class QRCodeInjector(
 ) : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: QRCodeViewModeler? = null
+
   @JvmField @Inject internal var imageLoader: ImageLoader? = null
 
   override fun onInject(activity: ComponentActivity) {
@@ -110,6 +116,21 @@ fun QRCodeEntry(
     viewModel.load(scope = this)
   }
 
+  QRCodeDialog(
+      modifier = modifier,
+      state = viewModel,
+      imageLoader = imageLoader,
+      onDismiss = onDismiss,
+  )
+}
+
+@Composable
+private fun QRCodeDialog(
+    modifier: Modifier = Modifier,
+    state: QRCodeViewState,
+    imageLoader: ImageLoader,
+    onDismiss: () -> Unit,
+) {
   // We need to tell this how large it is in advance or the Dialog sizes weird
   Dialog(
       properties = rememberDialogProperties(),
@@ -135,22 +156,41 @@ fun QRCodeEntry(
           },
       )
 
-      Surface(
-          modifier = Modifier.fillMaxWidth(),
-          shadowElevation = DialogDefaults.Elevation,
-          color = MaterialTheme.colorScheme.surfaceVariant,
+      Card(
           shape =
               MaterialTheme.shapes.medium.copy(
                   topStart = ZeroCornerSize,
                   topEnd = ZeroCornerSize,
               ),
+          elevation = CardDefaults.elevatedCardElevation(),
+          colors = CardDefaults.elevatedCardColors(),
       ) {
         QRCodeScreen(
             modifier = Modifier.fillMaxWidth(),
-            state = viewModel,
+            state = state,
             imageLoader = imageLoader,
         )
       }
     }
   }
+}
+
+@Composable
+private fun PreviewQRCodeDialog(bitmap: Bitmap?) {
+  QRCodeDialog(
+      state =
+          object : QRCodeViewState {
+            override val qrCode = MutableStateFlow(bitmap)
+          },
+      imageLoader = createNewTestImageLoader(),
+      onDismiss = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewQRCodeDialogNone() {
+  PreviewQRCodeDialog(
+      bitmap = null,
+  )
 }

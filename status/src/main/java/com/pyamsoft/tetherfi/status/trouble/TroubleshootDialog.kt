@@ -16,25 +16,30 @@
 
 package com.pyamsoft.tetherfi.status.trouble
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
-import com.pyamsoft.pydroid.ui.defaults.DialogDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+
+private enum class TroubleshootDialogContentTypes {
+  STEPS
+}
 
 @Composable
 internal fun TroubleshootDialog(
@@ -50,47 +55,101 @@ internal fun TroubleshootDialog(
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
   ) {
-    Box(
-        modifier =
-            modifier
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.content),
+    Card(
+        modifier = modifier.padding(MaterialTheme.keylines.content),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.elevatedCardElevation(),
+        colors = CardDefaults.elevatedCardColors(),
     ) {
-      Surface(
-          modifier = Modifier.fillMaxWidth(),
-          shadowElevation = DialogDefaults.Elevation,
-          color = MaterialTheme.colorScheme.surfaceVariant,
-          shape = MaterialTheme.shapes.medium,
-      ) {
-        Column(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
+      Column {
+        LazyColumn(
+            modifier =
+                Modifier.weight(
+                    weight = 1F,
+                    fill = false,
+                ),
         ) {
-          TroubleshootUnableToStart(
-              modifier = Modifier.fillMaxWidth(),
-              appName = appName,
-              isBroadcastError = isBroadcastError,
-              isProxyError = isProxyError,
-          )
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
+          item(
+              contentType = TroubleshootDialogContentTypes.STEPS,
           ) {
-            Spacer(
-                modifier = Modifier.weight(1F),
+            TroubleshootUnableToStart(
+                modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
+                appName = appName,
+                isBroadcastError = isBroadcastError,
+                isProxyError = isProxyError,
             )
+          }
+        }
 
-            TextButton(
-                onClick = {
-                  hapticManager?.cancelButtonPress()
-                  onDismiss()
-                },
-            ) {
-              Text(
-                  text = stringResource(android.R.string.cancel),
-              )
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Spacer(
+              modifier = Modifier.weight(1F),
+          )
+
+          TextButton(
+              onClick = {
+                hapticManager?.cancelButtonPress()
+                onDismiss()
+              },
+          ) {
+            Text(
+                text = stringResource(android.R.string.cancel),
+            )
           }
         }
       }
     }
   }
+}
+
+@Composable
+private fun PreviewTroubleshootDialog(
+    isBroadcastError: Boolean,
+    isProxyError: Boolean,
+) {
+  TroubleshootDialog(
+      appName = "TEST",
+      isBroadcastError = isBroadcastError,
+      isProxyError = isProxyError,
+      onDismiss = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootDialogNone() {
+  PreviewTroubleshootDialog(
+      isBroadcastError = false,
+      isProxyError = false,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootDialogBroadcast() {
+  PreviewTroubleshootDialog(
+      isBroadcastError = true,
+      isProxyError = false,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootDialogProxy() {
+  PreviewTroubleshootDialog(
+      isBroadcastError = false,
+      isProxyError = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootDialogBoth() {
+  PreviewTroubleshootDialog(
+      isBroadcastError = true,
+      isProxyError = true,
+  )
 }
