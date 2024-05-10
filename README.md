@@ -6,28 +6,68 @@ Share your Android device's Internet connection with other devices without needi
 
 ### Get TetherFi
 
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+[<img
+  src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+  alt="Get it on Google Play"
+  height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
+[<img
+  src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
+  alt="Get it on IzzyOnDroid"
+  height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
 
 or get the APK from the
 [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
+
+### Screenshots
+
+#### Hotspot Status
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png"
+  alt="Light Mode: Hotspot Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png)
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png"
+  alt="Light Mode: Hotspot Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png)
+
+#### Setup Instructions
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png"
+  alt="Light Mode: Instructions Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png)
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png"
+  alt="Light Mode: Instructions Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png)
+
+#### Manage Connections
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png"
+  alt="Light Mode: Connections Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png)
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png"
+  alt="Light Mode: Connections Screen"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png)
+
+#### Hotspot Active
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png"
+  alt="Light Mode: Hotspot Active"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png)
+[<img
+  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png"
+  alt="Light Mode: Hotspot Active"
+  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png)
 
 ### What is TetherFi
 
 TetherFi works by creating a Wi-Fi Direct legacy group and an HTTP proxy server. Other
 devices can connect to the broadcasted Wi-Fi network, and connect to the Internet by
 setting the proxy server settings to the server created by TetherFi. You do not need a
-Hotspot data plan to use TetherFi.
+Hotspot data plan to use TetherFi, but the app works best with "unlimited" data plans.
 
-Please note that TetherFi is still a work in progress and not everything will work.
-For example, using TetherFi to get an open NAT type on consoles is currently not
-possible. General "normal" internet browsing should work fine - however, it is
-dependent on the speed and availability of your Android device's internet connection.
-
-To see a list of apps that are known to not work currently, see the
-[Wiki](https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working)
-
-### TetherFi may be for you if:
+#### TetherFi may be for you if:
 
 - You want to share your Android's Wi-Fi or Mobile Data
 - You have an Unlimited Data and a Hotspot plan from your Carrier, but Hotspot
@@ -37,6 +77,22 @@ To see a list of apps that are known to not work currently, see the
 - You do not have a mobile Hotspot plan
 - You wish to create a LAN between devices
 - Your home router has reached the device connection limit
+
+### How
+
+TetherFi uses a Foreground Service to create a long-running Wi-Fi Direct Network that
+other devices can connect to. Connected devices can exchange network data between each other.
+The user is in full control of this Foreground Service and can explicitly choose when to
+turn it on and off.
+
+TetherFi is still a work in progress and not everything will work. For example, using the
+app to get an open NAT type on consoles is currently not possible. Using TetherFi for certain
+online apps, chat apps, video apps, and gaming apps is currently not possible. Some services
+such as email may be unavailable. General "normal" internet browsing should work fine - however,
+it is dependent on the speed and availability of your Android device's internet connection.
+
+To see a list of apps that are known to not work currently, see the
+[Wiki](https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working)
 
 ### Privacy
 
@@ -61,7 +117,7 @@ proposing feature requests.
 Apache 2
 
 ```
-Copyright 2023 pyamsoft
+Copyright 2024 pyamsoft
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
