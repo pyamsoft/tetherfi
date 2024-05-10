@@ -27,8 +27,6 @@ android {
   defaultConfig {
     minSdk = rootProject.extra["minSdk"] as Int
 
-    resourceConfigurations += setOf("en")
-
     // Android Testing
     // https://developer.android.com/training/testing/instrumented-tests
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

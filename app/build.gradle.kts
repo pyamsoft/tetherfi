@@ -35,8 +35,6 @@ android {
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
 
-    resourceConfigurations += setOf("en")
-
     vectorDrawables.useSupportLibrary = true
   }
 
