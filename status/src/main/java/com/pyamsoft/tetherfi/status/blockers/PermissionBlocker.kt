@@ -99,6 +99,7 @@ internal fun PermissionBlocker(
 
             ViewPrivacyPolicy(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                appName = appName,
             )
           }
           Row(
