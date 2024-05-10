@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.tile
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
@@ -97,6 +98,7 @@ internal constructor(
         service: TileService,
     ) : Base(tileActivityClass, context, service) {
 
+      @SuppressLint("StartActivityAndCollapseDeprecated")
       override fun onLaunchTileActivity(service: TileService) {
         @Suppress("DEPRECATION") service.startActivityAndCollapse(tileActivityIntent)
       }

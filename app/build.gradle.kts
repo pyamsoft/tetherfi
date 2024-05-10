@@ -48,7 +48,7 @@ android {
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlinOptions { jvmTarget = JavaVersion.VERSION_17.getMajorVersion() }
+  kotlinOptions { jvmTarget = JavaVersion.VERSION_17.majorVersion }
 
   signingConfigs {
     getByName("debug") {

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+package com.pyamsoft.tetherfi.core
+
 import androidx.test.filters.SmallTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

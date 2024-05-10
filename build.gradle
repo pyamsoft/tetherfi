@@ -85,6 +85,9 @@ plugins {
 
 subprojects {
   // If this project has an Android plugin applied
+  //
+  // Cannot use withType().configureEach {} or else the subproject plugins {} block
+  // won't work
   plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
     project.apply plugin: "org.gradle.android.cache-fix"
     project.apply plugin: "kotlin-android"
@@ -133,7 +136,7 @@ allprojects {
   }
 
   // Java compile show
-  tasks.withType(JavaCompile) {
+  tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += [
       "-Xlint:unchecked",
       "-Xlint:deprecation"

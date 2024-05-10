@@ -21,6 +21,6 @@
   <string name="status_error">ERROR</string>
   <string name="status_stopped">STOPPED</string>
   <string name="status_running">RUNNING</string>
-  <string name="status_starting">STARTING...</string>
-  <string name="status_stopping">STOPPING...</string>
+  <string name="status_starting">STARTING…</string>
+  <string name="status_stopping">STOPPING…</string>
 </resources>

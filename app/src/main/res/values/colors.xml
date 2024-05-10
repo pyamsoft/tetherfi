@@ -15,9 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <color name="secondary">#9CA72C</color>
   <color name="primary">#CDDC39</color>
   <color name="transparent">#00000000</color>
-  <color name="white">#FFFFFF</color>
-  <color name="black">#FF000000</color>
 </resources>

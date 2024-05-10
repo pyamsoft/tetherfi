@@ -37,80 +37,80 @@ internal fun ViewPrivacyPolicy(
     modifier: Modifier = Modifier,
     appName: String,
 ) {
-    Box(
-        modifier = modifier,
-    ) {
-        val linkColor = MaterialTheme.colorScheme.primary
+  Box(
+      modifier = modifier,
+  ) {
+    val linkColor = MaterialTheme.colorScheme.primary
 
-        val privacyText = stringResource(R.string.block_privacy_policy)
-        val rawBlurb = stringResource(R.string.block_view_privacy_policy, appName, privacyText)
-        val text =
-            remember(
-                linkColor,
-                rawBlurb,
-            ) {
-                val privacyIndex = rawBlurb.indexOf(privacyText)
+    val privacyText = stringResource(R.string.block_privacy_policy)
+    val rawBlurb = stringResource(R.string.block_view_privacy_policy, appName, privacyText)
+    val text =
+        remember(
+            linkColor,
+            rawBlurb,
+        ) {
+          val privacyIndex = rawBlurb.indexOf(privacyText)
 
-                val linkStyle =
-                    SpanStyle(
-                        color = linkColor,
-                        textDecoration = TextDecoration.Underline,
-                    )
+          val linkStyle =
+              SpanStyle(
+                  color = linkColor,
+                  textDecoration = TextDecoration.Underline,
+              )
 
-                val spanStyles =
-                    listOf(
-                        AnnotatedString.Range(
-                            linkStyle,
-                            start = privacyIndex,
-                            end = privacyIndex + privacyText.length,
-                        ),
-                    )
+          val spanStyles =
+              listOf(
+                  AnnotatedString.Range(
+                      linkStyle,
+                      start = privacyIndex,
+                      end = privacyIndex + privacyText.length,
+                  ),
+              )
 
-                val visualString =
-                    AnnotatedString(
-                        rawBlurb,
-                        spanStyles = spanStyles,
-                    )
+          val visualString =
+              AnnotatedString(
+                  rawBlurb,
+                  spanStyles = spanStyles,
+              )
 
-                // Can only add annotations to builders
-                return@remember AnnotatedString.Builder(visualString)
-                    .apply {
-                        addStringAnnotation(
-                            tag = privacyText,
-                            annotation = PRIVACY_POLICY_URL,
-                            start = privacyIndex,
-                            end = privacyIndex + privacyText.length,
-                        )
-                    }
-                    .toAnnotatedString()
-            }
+          // Can only add annotations to builders
+          return@remember AnnotatedString.Builder(visualString)
+              .apply {
+                addStringAnnotation(
+                    tag = privacyText,
+                    annotation = PRIVACY_POLICY_URL,
+                    start = privacyIndex,
+                    end = privacyIndex + privacyText.length,
+                )
+              }
+              .toAnnotatedString()
+        }
 
-        val uriHandler = rememberUriHandler()
-        ClickableText(
-            text = text,
-            style =
+    val uriHandler = rememberUriHandler()
+    ClickableText(
+        text = text,
+        style =
             MaterialTheme.typography.bodySmall.copy(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
-            onClick = { start ->
-                text
-                    .getStringAnnotations(
-                        tag = privacyText,
-                        start = start,
-                        end = start + privacyText.length,
-                    )
-                    .firstOrNull()
-                    ?.also { uriHandler.openUri(it.item) }
-            },
-        )
-    }
+        onClick = { start ->
+          text
+              .getStringAnnotations(
+                  tag = privacyText,
+                  start = start,
+                  end = start + privacyText.length,
+              )
+              .firstOrNull()
+              ?.also { uriHandler.openUri(it.item) }
+        },
+    )
+  }
 }
 
 @Preview
 @Composable
 private fun PreviewViewPrivacyPolicy9() {
-    ViewPrivacyPolicy(
-        appName = "TEST",
-    )
+  ViewPrivacyPolicy(
+      appName = "TEST",
+  )
 }
