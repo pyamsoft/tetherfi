@@ -21,9 +21,11 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
+import com.pyamsoft.tetherfi.connections.R
 
 private enum class RenderExcuseContentTypes {
   SORRY,
@@ -39,7 +41,7 @@ internal fun LazyListScope.renderExcuse(
     Text(
         modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
         text =
-            "Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.",
+        stringResource(R.string.connection_sorry),
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color =
@@ -56,7 +58,7 @@ internal fun LazyListScope.renderExcuse(
   ) {
     Text(
         modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-        text = "A more friendly solution is being actively investigated.",
+        text = stringResource(R.string.connection_excuse),
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color =

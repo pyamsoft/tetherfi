@@ -24,9 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
+import com.pyamsoft.tetherfi.info.R
 import com.pyamsoft.tetherfi.server.ServerDefaults
 
 private enum class AppSetupContentTypes {
@@ -50,12 +52,12 @@ internal fun LazyListScope.renderAppSetup(
     ) {
       Column {
         Text(
-            text = "Turn on Wi-Fi.",
+            text = stringResource(R.string.turn_on_wi_fi),
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
             text =
-                "You do not need to connect to a Network, but Wi-Fi must be on for $appName to work.",
+            stringResource(R.string.wifi_must_be_on, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -73,11 +75,11 @@ internal fun LazyListScope.renderAppSetup(
     ) {
       Column {
         Text(
-            text = "Connect to the Internet.",
+            text = stringResource(R.string.connect_internet),
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-            text = "You can connect via Wi-Fi or Mobile Data",
+            text = stringResource(R.string.connect_internet_options),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -97,7 +99,7 @@ internal fun LazyListScope.renderAppSetup(
       ) {
         Text(
             text =
-                "You can optionally configure the Name, Password, Proxy Port and Broadcast Frequency Band. This is not required, and the defaults will work fine for most people.",
+            stringResource(R.string.optionally_configure_hotspot),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -119,7 +121,7 @@ internal fun LazyListScope.renderAppSetup(
     ) {
       Text(
           text =
-              "You can optionally choose to keep the CPU and/or WiFi awake while the Hotspot is running, which greatly improves performance while the screen is off. If the CPU is not kept awake, you may notice extreme network slowdown while the device screen is off.",
+          stringResource(R.string.optionally_configure_wakelock),
           style =
               MaterialTheme.typography.bodyMedium.copy(
                   color =
@@ -140,7 +142,7 @@ internal fun LazyListScope.renderAppSetup(
     ) {
       Text(
           text =
-              "You can optionally choose to ignore Android's system battery optimizations, which will allow $appName to run at maximum performance at all times. This may use more battery but will significantly enhance your networking experience.",
+          stringResource(R.string.optionally_configure_power, appName),
           style =
               MaterialTheme.typography.bodyMedium.copy(
                   color =
@@ -160,11 +162,11 @@ internal fun LazyListScope.renderAppSetup(
     ) {
       Column {
         Text(
-            text = "Start the $appName Hotspot.",
+            text = stringResource(R.string.start_the_hotspot, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-            text = "Check that the Broadcast, Proxy, and Hotspot status are all green and running.",
+            text = stringResource(R.string.check_hotspot_green),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface,

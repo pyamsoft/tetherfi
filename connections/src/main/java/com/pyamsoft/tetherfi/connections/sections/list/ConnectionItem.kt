@@ -30,10 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.connections.R
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import java.time.format.DateTimeFormatter
@@ -109,7 +111,7 @@ internal fun ConnectionItem(
 
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
-            text = "Last seen: $seenTime",
+            text = stringResource(R.string.connection_last_seen, seenTime),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -117,7 +119,10 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = "Total Transferred To Internet: ${totalTransferredToInternet.display}",
+            text = stringResource(
+                R.string.connection_total_to_internet,
+                totalTransferredToInternet.display
+            ),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
@@ -128,7 +133,10 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = "Total Transferred From Internet: ${totalTransferredFromInternet.display}",
+            text = stringResource(
+                R.string.connection_total_from_internet,
+                totalTransferredFromInternet.display
+            ),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =

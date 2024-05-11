@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.ui.DialogToolbar
 import com.pyamsoft.tetherfi.ui.qr.QRCodeScreen
 import com.pyamsoft.tetherfi.ui.qr.QRCodeViewModeler
@@ -140,18 +142,18 @@ private fun QRCodeDialog(
 
     Column(
         modifier =
-            modifier
-                // Top already has padding for some reason?
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.content)
-                .width(qrCodeSize),
+        modifier
+            // Top already has padding for some reason?
+            .padding(horizontal = MaterialTheme.keylines.content)
+            .padding(bottom = MaterialTheme.keylines.content)
+            .width(qrCodeSize),
     ) {
       DialogToolbar(
           modifier = Modifier.fillMaxWidth(),
           onClose = onDismiss,
           title = {
             Text(
-                text = "QR Code",
+                text = stringResource(R.string.qr_code),
             )
           },
       )

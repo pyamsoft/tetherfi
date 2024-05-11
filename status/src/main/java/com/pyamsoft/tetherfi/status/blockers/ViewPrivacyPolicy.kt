@@ -48,6 +48,7 @@ internal fun ViewPrivacyPolicy(
         remember(
             linkColor,
             rawBlurb,
+            privacyText,
         ) {
           val privacyIndex = rawBlurb.indexOf(privacyText)
 

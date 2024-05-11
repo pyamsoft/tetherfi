@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2024 pyamsoft
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <resources>
-  <string name="viewmode_setup_instructions">Setup Instructions</string>
-  <string
-    name="viewmode_setup_view_instructions"
-  >Confused on what to do next?\nView the %1$s</string>
+    <string name="configure_the_proxy_settings">Configure the proxy settings</string>
+    <string name="http_manual_proxy">Use MANUAL mode and configure both HTTP and HTTPS proxy options.</string>
+    <string name="toggle_wifi">Turn the Wi-Fi off and back on again.</string>
+    <string name="automatically_connect">It should automatically connect to the %1$s Hotspot</string>
+    <string name="connect_to_hotspot">Connect to the %1$s Hotspot</string>
+    <string name="open_wifi_settings">Open the Wi-Fi settings page</string>
 </resources>

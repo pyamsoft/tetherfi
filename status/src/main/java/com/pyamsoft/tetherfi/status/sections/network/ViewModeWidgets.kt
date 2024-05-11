@@ -43,6 +43,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
+import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.common.StatusItem
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -68,7 +69,7 @@ internal fun ViewProxy(
           portNumber,
       ) {
         if (portNumber in 1024..65000) "$portNumber"
-        else context.getString(R.string.viewmode_invalid_port)
+        else context.getString(R2.string.invalid_port)
       }
 
   Row(
@@ -77,7 +78,7 @@ internal fun ViewProxy(
   ) {
     StatusItem(
         modifier = Modifier.weight(1F, fill = false),
-        title = stringResource(R.string.viewmode_hotspot_hostname),
+        title = stringResource(R2.string.hotspot_hostname),
         value = ipAddress,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -91,7 +92,7 @@ internal fun ViewProxy(
     )
 
     StatusItem(
-        title = stringResource(R.string.viewmode_hotspot_port),
+        title = stringResource(R2.string.hotspot_port),
         value = port,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -120,7 +121,7 @@ internal fun ViewPassword(
   ) {
     StatusItem(
         modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-        title = stringResource(R.string.viewmode_hotspot_password),
+        title = stringResource(R2.string.hotspot_password),
         value = password,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -146,8 +147,8 @@ internal fun ViewPassword(
                 if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
             contentDescription =
                 stringResource(
-                    if (isPasswordVisible) R.string.viewmode_pass_visible
-                    else R.string.viewmode_pass_hidden),
+                    if (isPasswordVisible) R2.string.pass_visible
+                    else R2.string.pass_hidden),
             tint = MaterialTheme.colorScheme.primary,
         )
       }
@@ -165,7 +166,7 @@ internal fun ViewSsid(
 
   StatusItem(
       modifier = modifier.padding(end = MaterialTheme.keylines.content),
-      title = stringResource(R.string.viewmode_hotspot_name),
+      title = stringResource(R2.string.hotspot_name),
       value = ssid,
       valueStyle =
           MaterialTheme.typography.titleLarge.copy(
@@ -188,6 +189,7 @@ internal fun ViewInstructions(
       remember(
           linkColor,
           rawBlurb,
+          setupText,
       ) {
         val setupIndex = rawBlurb.indexOf(setupText)
 

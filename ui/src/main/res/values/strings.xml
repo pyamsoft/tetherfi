@@ -16,7 +16,6 @@
   -->
 <resources>
   <string name="hotspot_error">Hotspot Error</string>
-  <string name="qr_code_explain">Scan this QR code to connect</string>
   <string
     name="faq_blurb"
   >Have questions about how %1$s works? Noticing some issues connecting?\n\nView our %2$s and apps that are %3$s</string>
@@ -24,8 +23,5 @@
   <string name="known_to_not_work">Known to Not Work</string>
   <string name="view_information">View Information</string>
   <string name="something_went_wrong">Something went wrong</string>
-  <string name="ssid_no_name">NO NAME</string>
   <string name="unknown_error">ERROR</string>
-  <string name="passwd_none">NO PASSWORD</string>
-  <string name="server_no_host">NO HOST</string>
 </resources>

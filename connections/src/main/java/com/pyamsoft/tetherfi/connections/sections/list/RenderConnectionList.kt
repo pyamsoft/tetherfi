@@ -23,8 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.connections.R
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
@@ -73,10 +75,10 @@ private fun LazyListScope.renderRunningNoClients(
   ) {
     Text(
         modifier =
-            modifier
-                .padding(vertical = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content * 3),
-        text = "No connections yet!",
+        modifier
+            .padding(vertical = MaterialTheme.keylines.content)
+            .padding(top = MaterialTheme.keylines.content * 3),
+        text = stringResource(R.string.connection_none),
         style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,
     )
@@ -94,11 +96,11 @@ private fun LazyListScope.renderRunningWithClients(
   ) {
     Text(
         modifier =
-            itemModifier
-                .padding(vertical = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content * 3),
+        itemModifier
+            .padding(vertical = MaterialTheme.keylines.content)
+            .padding(top = MaterialTheme.keylines.content * 3),
         text =
-            "By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.",
+        stringResource(R.string.connection_running_explain),
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onBackground,
@@ -127,10 +129,10 @@ private fun LazyListScope.renderNotRunning(modifier: Modifier = Modifier) {
   ) {
     Text(
         modifier =
-            modifier
-                .padding(vertical = MaterialTheme.keylines.content)
-                .padding(top = MaterialTheme.keylines.content * 3),
-        text = "Start the Hotspot to view and manage connected devices.",
+        modifier
+            .padding(vertical = MaterialTheme.keylines.content)
+            .padding(top = MaterialTheme.keylines.content * 3),
+        text = stringResource(R.string.connection_start_before_manage),
         style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,
     )

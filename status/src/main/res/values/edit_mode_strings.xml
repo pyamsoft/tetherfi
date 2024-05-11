@@ -19,7 +19,6 @@
   <string name="editmode_system_defined">SET BY SYSTEM: CAN\'T CHANGE</string>
 
   <string name="editmode_type_port">Port</string>
-  <string name="editmode_type_password">Password</string>
   <string name="editmode_type_ssid">SSID</string>
 
   <string name="editmode_label_map">%1$s is %2$s</string>

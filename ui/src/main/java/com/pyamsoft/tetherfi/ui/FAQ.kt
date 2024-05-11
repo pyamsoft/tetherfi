@@ -56,6 +56,8 @@ fun LazyListScope.renderLinks(
         remember(
             linkColor,
             rawBlurb,
+            faqText,
+            knownNotWorkingText,
         ) {
           val faqIndex = rawBlurb.indexOf(faqText)
           val knwIndex = rawBlurb.indexOf(knownNotWorkingText)

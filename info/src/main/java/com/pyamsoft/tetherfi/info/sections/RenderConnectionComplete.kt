@@ -27,132 +27,151 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
-import com.pyamsoft.tetherfi.ui.appendLink
+import com.pyamsoft.tetherfi.info.R
 
 private enum class ConnectionCompleteContentTypes {
-  SHARING,
-  DONE,
-  FULL,
+    SHARING,
+    DONE,
+    FULL,
 }
 
 internal fun LazyListScope.renderConnectionComplete(
     itemModifier: Modifier = Modifier,
     appName: String,
 ) {
-  item(
-      contentType = ConnectionCompleteContentTypes.SHARING,
-  ) {
-    ThisInstruction(
-        modifier = itemModifier,
+    item(
+        contentType = ConnectionCompleteContentTypes.SHARING,
     ) {
-      Text(
-          text = "Your device should now be sharing its Internet connection!",
-          style = MaterialTheme.typography.bodyLarge,
-      )
+        ThisInstruction(
+            modifier = itemModifier,
+        ) {
+            Text(
+                text = stringResource(R.string.sharing_complete),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
-  }
 
-  item(
-      contentType = ConnectionCompleteContentTypes.DONE,
-  ) {
-    OtherInstruction(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    item(
+        contentType = ConnectionCompleteContentTypes.DONE,
     ) {
-      Text(
-          text =
-              "At this point, normal Internet browsing and email should work. If it does not, disconnect from the $appName Hotspot and double-check that you have entered the correct Network and Proxy settings.",
-          style =
-              MaterialTheme.typography.bodyMedium.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-      )
+        OtherInstruction(
+            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        ) {
+            Text(
+                text =
+                stringResource(R.string.sharing_caveat, appName),
+                style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            )
+        }
     }
-  }
 
-  item(
-      contentType = ConnectionCompleteContentTypes.FULL,
-  ) {
-    FullConnectionInstructions(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-    )
-  }
+    item(
+        contentType = ConnectionCompleteContentTypes.FULL,
+    ) {
+        FullConnectionInstructions(
+            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        )
+    }
 }
-
-private const val LINK_TAG = "instructions"
-private const val LINK_TEXT = "here"
 
 @Composable
 private fun FullConnectionInstructions(
     modifier: Modifier = Modifier,
 ) {
-  val uriHandler = rememberUriHandler()
+    val uriHandler = rememberUriHandler()
 
-  val textColor = MaterialTheme.colorScheme.onBackground
-  val linkColor = MaterialTheme.colorScheme.primary
-  val instructions =
-      remember(
-          textColor,
-          linkColor,
-      ) {
-        buildAnnotatedString {
-          withStyle(
-              style =
-                  SpanStyle(
-                      color = textColor,
-                  ),
-          ) {
-            append("Having trouble configuring Proxy Settings? See more detailed instructions ")
-            appendLink(
-                tag = LINK_TAG,
-                linkColor = linkColor,
-                text = LINK_TEXT,
-                url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
-            )
-          }
+    val linkColor = MaterialTheme.colorScheme.primary
+
+    val linkText = stringResource(R.string.proxy_having_link_text)
+    val rawBlurb = stringResource(R.string.proxy_having_trouble, linkText)
+    val linkBlurb =
+        remember(
+            linkColor,
+            rawBlurb,
+            linkText,
+        ) {
+            val linkIndex = rawBlurb.indexOf(linkText)
+
+            val linkStyle =
+                SpanStyle(
+                    color = linkColor,
+                    textDecoration = TextDecoration.Underline,
+                )
+
+            val spanStyles =
+                listOf(
+                    AnnotatedString.Range(
+                        linkStyle,
+                        start = linkIndex,
+                        end = linkIndex + linkText.length,
+                    ),
+                )
+
+            val visualString =
+                AnnotatedString(
+                    rawBlurb,
+                    spanStyles = spanStyles,
+                )
+
+            // Can only add annotations to builders
+            return@remember AnnotatedString.Builder(visualString)
+                .apply {
+                    addStringAnnotation(
+                        tag = linkText,
+                        annotation = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+                        start = linkIndex,
+                        end = linkIndex + linkText.length,
+                    )
+                }
+                .toAnnotatedString()
         }
-      }
 
-  ClickableText(
-      modifier =
-          modifier
-              .border(
-                  width = 2.dp,
-                  color = MaterialTheme.colorScheme.primaryContainer,
-                  shape = MaterialTheme.shapes.medium,
-              )
-              .background(
-                  color = MaterialTheme.colorScheme.surfaceVariant,
-                  shape = MaterialTheme.shapes.medium,
-              )
-              .padding(MaterialTheme.keylines.content),
-      text = instructions,
-      style = MaterialTheme.typography.bodyLarge,
-      onClick = { offset ->
-        instructions
-            .getStringAnnotations(
-                tag = LINK_TAG,
-                start = offset,
-                end = offset + LINK_TEXT.length,
+    ClickableText(
+        modifier =
+        modifier
+            .border(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.medium,
             )
-            .firstOrNull()
-            ?.also { uriHandler.openUri(it.item) }
-      },
-  )
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium,
+            )
+            .padding(MaterialTheme.keylines.content),
+        text = linkBlurb,
+        style = MaterialTheme.typography.bodyLarge,
+        onClick = { offset ->
+            linkBlurb
+                .getStringAnnotations(
+                    tag = linkText,
+                    start = offset,
+                    end = offset + linkText.length,
+                )
+                .firstOrNull()
+                ?.also { uriHandler.openUri(it.item) }
+        },
+    )
 }
 
 @Preview
 @Composable
 private fun PreviewConnectionComplete() {
-  LazyColumn {
-    renderConnectionComplete(
-        appName = "TEST",
-    )
-  }
+    LazyColumn {
+        renderConnectionComplete(
+            appName = "TEST",
+        )
+    }
 }

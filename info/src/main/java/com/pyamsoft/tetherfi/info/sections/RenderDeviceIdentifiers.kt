@@ -31,11 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
+import com.pyamsoft.tetherfi.info.R
 import com.pyamsoft.tetherfi.ui.icons.Devices
 import com.pyamsoft.tetherfi.ui.icons.PhoneAndroid
 
@@ -55,7 +57,7 @@ internal fun LazyListScope.renderDeviceIdentifiers(
         small = true,
     ) {
       Text(
-          text = "This Device",
+          text = stringResource(R.string.this_device),
           style =
               MaterialTheme.typography.labelMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -72,7 +74,7 @@ internal fun LazyListScope.renderDeviceIdentifiers(
         small = true,
     ) {
       Text(
-          text = "Other Device",
+          text = stringResource(R.string.other_device),
           style =
               MaterialTheme.typography.labelMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -98,12 +100,12 @@ private fun ThisDevice(
 
   Icon(
       modifier =
-          modifier
-              .padding(start = if (small) 2.dp else ZeroSize)
-              .size(ImageDefaults.IconSize - sizeAdjustment)
-              .padding(end = if (small) 2.dp else ZeroSize),
+      modifier
+          .padding(start = if (small) 2.dp else ZeroSize)
+          .size(ImageDefaults.IconSize - sizeAdjustment)
+          .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.PhoneAndroid,
-      contentDescription = "This Device",
+      contentDescription = stringResource(R.string.this_device),
       tint = MaterialTheme.colorScheme.primary,
   )
 }
@@ -124,12 +126,12 @@ private fun OtherDevice(
 
   Icon(
       modifier =
-          modifier
-              .padding(start = if (small) 2.dp else ZeroSize)
-              .size(ImageDefaults.IconSize - sizeAdjustment)
-              .padding(end = if (small) 2.dp else ZeroSize),
+      modifier
+          .padding(start = if (small) 2.dp else ZeroSize)
+          .size(ImageDefaults.IconSize - sizeAdjustment)
+          .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.Devices,
-      contentDescription = "Other Devices",
+      contentDescription = stringResource(R.string.other_device),
       tint = MaterialTheme.colorScheme.tertiary,
   )
 }
@@ -152,7 +154,9 @@ internal fun ThisInstruction(
     }
 
     Box(
-        modifier = Modifier.weight(1F).padding(start = MaterialTheme.keylines.content),
+        modifier = Modifier
+            .weight(1F)
+            .padding(start = MaterialTheme.keylines.content),
     ) {
       content()
     }
@@ -177,7 +181,9 @@ internal fun OtherInstruction(
     }
 
     Box(
-        modifier = Modifier.weight(1F).padding(start = MaterialTheme.keylines.content),
+        modifier = Modifier
+            .weight(1F)
+            .padding(start = MaterialTheme.keylines.content),
     ) {
       content()
     }
