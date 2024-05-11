@@ -15,11 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="hotspot_name">HOTSPOT NAME</string>
-  <string name="hotspot_password">HOTSPOT PASSWORD</string>
-  <string name="hotspot_port">PROXY PORT</string>
-  <string name="hotspot_hostname">PROXY URL/HOSTNAME</string>
-
   <string name="ssid_no_name">NO NAME</string>
   <string name="server_no_host">NO HOST</string>
   <string name="invalid_port">INVALID PORT</string>

@@ -112,7 +112,7 @@ internal fun LazyListScope.renderDeviceSetup(
               }
 
           Text(
-              text = stringResource(R2.string.hotspot_name),
+              text = stringResource(R.string.label_hotspot_name),
               style =
                   MaterialTheme.typography.bodyLarge.copy(
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -228,7 +228,7 @@ internal fun LazyListScope.renderDeviceSetup(
           val ipAddress = rememberServerHostname(connection)
 
           Text(
-              text = stringResource(R2.string.hotspot_hostname),
+              text = stringResource(R.string.label_hotspot_hostname),
               style =
                   MaterialTheme.typography.bodyLarge.copy(
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -250,7 +250,7 @@ internal fun LazyListScope.renderDeviceSetup(
             verticalAlignment = Alignment.CenterVertically,
         ) {
           Text(
-              text = stringResource(R2.string.hotspot_port),
+              text = stringResource(R.string.label_hotspot_port),
               style =
                   MaterialTheme.typography.bodyLarge.copy(
                       color = MaterialTheme.colorScheme.onSurfaceVariant,

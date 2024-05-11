@@ -77,7 +77,7 @@ internal fun ViewProxy(
   ) {
     StatusItem(
         modifier = Modifier.weight(1F, fill = false),
-        title = stringResource(R2.string.hotspot_hostname),
+        title = stringResource(R.string.viewmode_hotspot_hostname),
         value = ipAddress,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -91,7 +91,7 @@ internal fun ViewProxy(
     )
 
     StatusItem(
-        title = stringResource(R2.string.hotspot_port),
+        title = stringResource(R.string.viewmode_hotspot_port),
         value = port,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -120,7 +120,7 @@ internal fun ViewPassword(
   ) {
     StatusItem(
         modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-        title = stringResource(R2.string.hotspot_password),
+        title = stringResource(R.string.viewmode_hotspot_password),
         value = password,
         valueStyle =
             MaterialTheme.typography.titleLarge.copy(
@@ -164,7 +164,7 @@ internal fun ViewSsid(
 
   StatusItem(
       modifier = modifier.padding(end = MaterialTheme.keylines.content),
-      title = stringResource(R2.string.hotspot_name),
+      title = stringResource(R.string.viewmode_hotspot_name),
       value = ssid,
       valueStyle =
           MaterialTheme.typography.titleLarge.copy(

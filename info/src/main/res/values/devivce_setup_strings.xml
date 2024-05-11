@@ -27,4 +27,7 @@
   >It should automatically connect to the %1$s Hotspot</string>
   <string name="connect_to_hotspot">Connect to the %1$s Hotspot</string>
   <string name="open_wifi_settings">Open the Wi-Fi settings page</string>
+  <string name="label_hotspot_name">Name</string>
+  <string name="label_hotspot_hostname">URL</string>
+  <string name="label_hotspot_port">Port</string>
 </resources>
