@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
   ~ Copyright 2024 pyamsoft
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +14,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-    <string name="hotspot_name">HOTSPOT NAME</string>
-    <string name="hotspot_password">HOTSPOT PASSWORD</string>
-    <string name="hotspot_port">PROXY PORT</string>
-    <string name="hotspot_hostname">PROXY URL/HOSTNAME</string>
+  <string name="hotspot_name">HOTSPOT NAME</string>
+  <string name="hotspot_password">HOTSPOT PASSWORD</string>
+  <string name="hotspot_port">PROXY PORT</string>
+  <string name="hotspot_hostname">PROXY URL/HOSTNAME</string>
 
-    <string name="ssid_no_name">NO NAME</string>
-    <string name="server_no_host">NO HOST</string>
-    <string name="invalid_port">INVALID PORT</string>
+  <string name="ssid_no_name">NO NAME</string>
+  <string name="server_no_host">NO HOST</string>
+  <string name="invalid_port">INVALID PORT</string>
 </resources>

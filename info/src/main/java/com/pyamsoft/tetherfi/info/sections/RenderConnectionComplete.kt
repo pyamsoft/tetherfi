@@ -38,140 +38,142 @@ import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.info.R
 
 private enum class ConnectionCompleteContentTypes {
-    SHARING,
-    DONE,
-    FULL,
+  SHARING,
+  DONE,
+  FULL,
 }
 
 internal fun LazyListScope.renderConnectionComplete(
     itemModifier: Modifier = Modifier,
     appName: String,
 ) {
-    item(
-        contentType = ConnectionCompleteContentTypes.SHARING,
+  item(
+      contentType = ConnectionCompleteContentTypes.SHARING,
+  ) {
+    ThisInstruction(
+        modifier = itemModifier,
     ) {
-        ThisInstruction(
-            modifier = itemModifier,
-        ) {
-            Text(
-                text = stringResource(R.string.sharing_complete),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
+      Text(
+          text = stringResource(R.string.sharing_complete),
+          style = MaterialTheme.typography.bodyLarge,
+      )
     }
+  }
 
-    item(
-        contentType = ConnectionCompleteContentTypes.DONE,
+  item(
+      contentType = ConnectionCompleteContentTypes.DONE,
+  ) {
+    OtherInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
-        OtherInstruction(
-            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        ) {
-            Text(
-                text =
-                stringResource(R.string.sharing_caveat, appName),
-                style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-            )
-        }
+      Text(
+          text = stringResource(R.string.sharing_caveat, appName),
+          style =
+              MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+              ),
+      )
     }
+  }
 
-    item(
-        contentType = ConnectionCompleteContentTypes.FULL,
-    ) {
-        FullConnectionInstructions(
-            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        )
-    }
+  item(
+      contentType = ConnectionCompleteContentTypes.FULL,
+  ) {
+    FullConnectionInstructions(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    )
+  }
 }
 
 @Composable
 private fun FullConnectionInstructions(
     modifier: Modifier = Modifier,
 ) {
-    val uriHandler = rememberUriHandler()
+  val uriHandler = rememberUriHandler()
 
-    val linkColor = MaterialTheme.colorScheme.primary
+  val linkColor = MaterialTheme.colorScheme.primary
 
-    val linkText = stringResource(R.string.proxy_having_link_text)
-    val rawBlurb = stringResource(R.string.proxy_having_trouble, linkText)
-    val linkBlurb =
-        remember(
-            linkColor,
-            rawBlurb,
-            linkText,
-        ) {
-            val linkIndex = rawBlurb.indexOf(linkText)
+  val linkText = stringResource(R.string.proxy_having_link_text)
+  val rawBlurb = stringResource(R.string.proxy_having_trouble, linkText)
+  val linkBlurb =
+      remember(
+          linkColor,
+          rawBlurb,
+          linkText,
+      ) {
+        val linkIndex = rawBlurb.indexOf(linkText)
 
-            val linkStyle =
-                SpanStyle(
-                    color = linkColor,
-                    textDecoration = TextDecoration.Underline,
-                )
-
-            val spanStyles =
-                listOf(
-                    AnnotatedString.Range(
-                        linkStyle,
-                        start = linkIndex,
-                        end = linkIndex + linkText.length,
-                    ),
-                )
-
-            val visualString =
-                AnnotatedString(
-                    rawBlurb,
-                    spanStyles = spanStyles,
-                )
-
-            // Can only add annotations to builders
-            return@remember AnnotatedString.Builder(visualString)
-                .apply {
-                    addStringAnnotation(
-                        tag = linkText,
-                        annotation = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
-                        start = linkIndex,
-                        end = linkIndex + linkText.length,
-                    )
-                }
-                .toAnnotatedString()
-        }
-
-    ClickableText(
-        modifier =
-        modifier
-            .border(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = MaterialTheme.shapes.medium,
+        val linkStyle =
+            SpanStyle(
+                color = linkColor,
+                textDecoration = TextDecoration.Underline,
             )
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium,
+
+        val spanStyles =
+            listOf(
+                AnnotatedString.Range(
+                    linkStyle,
+                    start = linkIndex,
+                    end = linkIndex + linkText.length,
+                ),
             )
-            .padding(MaterialTheme.keylines.content),
-        text = linkBlurb,
-        style = MaterialTheme.typography.bodyLarge,
-        onClick = { offset ->
-            linkBlurb
-                .getStringAnnotations(
-                    tag = linkText,
-                    start = offset,
-                    end = offset + linkText.length,
-                )
-                .firstOrNull()
-                ?.also { uriHandler.openUri(it.item) }
-        },
-    )
+
+        val visualString =
+            AnnotatedString(
+                rawBlurb,
+                spanStyles = spanStyles,
+            )
+
+        // Can only add annotations to builders
+        return@remember AnnotatedString.Builder(visualString)
+            .apply {
+              addStringAnnotation(
+                  tag = linkText,
+                  annotation = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+                  start = linkIndex,
+                  end = linkIndex + linkText.length,
+              )
+            }
+            .toAnnotatedString()
+      }
+
+  ClickableText(
+      modifier =
+          modifier
+              .border(
+                  width = 2.dp,
+                  color = MaterialTheme.colorScheme.primaryContainer,
+                  shape = MaterialTheme.shapes.medium,
+              )
+              .background(
+                  color = MaterialTheme.colorScheme.surfaceVariant,
+                  shape = MaterialTheme.shapes.medium,
+              )
+              .padding(MaterialTheme.keylines.content),
+      text = linkBlurb,
+      style =
+          MaterialTheme.typography.bodyLarge.copy(
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+          ),
+      onClick = { offset ->
+        linkBlurb
+            .getStringAnnotations(
+                tag = linkText,
+                start = offset,
+                end = offset + linkText.length,
+            )
+            .firstOrNull()
+            ?.also { uriHandler.openUri(it.item) }
+      },
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewConnectionComplete() {
-    LazyColumn {
-        renderConnectionComplete(
-            appName = "TEST",
-        )
-    }
+  LazyColumn {
+    renderConnectionComplete(
+        appName = "TEST",
+    )
+  }
 }

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
   ~ Copyright 2024 pyamsoft
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-    <string name="qr_code">QR Code</string>
-    <string name="qr_code_explain">Scan this QR code to connect</string>
+  <string name="qr_code">QR Code</string>
+  <string name="qr_code_explain">Scan this QR code to connect</string>
 </resources>

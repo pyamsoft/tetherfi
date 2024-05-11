@@ -40,8 +40,7 @@ internal fun LazyListScope.renderExcuse(
   ) {
     Text(
         modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-        text =
-        stringResource(R.string.connection_sorry),
+        text = stringResource(R.string.connection_sorry),
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color =

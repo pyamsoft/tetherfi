@@ -24,9 +24,7 @@ android {
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
-  defaultConfig {
-    minSdk = rootProject.extra["minSdk"] as Int
-  }
+  defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17

@@ -100,10 +100,10 @@ private fun ThisDevice(
 
   Icon(
       modifier =
-      modifier
-          .padding(start = if (small) 2.dp else ZeroSize)
-          .size(ImageDefaults.IconSize - sizeAdjustment)
-          .padding(end = if (small) 2.dp else ZeroSize),
+          modifier
+              .padding(start = if (small) 2.dp else ZeroSize)
+              .size(ImageDefaults.IconSize - sizeAdjustment)
+              .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.PhoneAndroid,
       contentDescription = stringResource(R.string.this_device),
       tint = MaterialTheme.colorScheme.primary,
@@ -126,10 +126,10 @@ private fun OtherDevice(
 
   Icon(
       modifier =
-      modifier
-          .padding(start = if (small) 2.dp else ZeroSize)
-          .size(ImageDefaults.IconSize - sizeAdjustment)
-          .padding(end = if (small) 2.dp else ZeroSize),
+          modifier
+              .padding(start = if (small) 2.dp else ZeroSize)
+              .size(ImageDefaults.IconSize - sizeAdjustment)
+              .padding(end = if (small) 2.dp else ZeroSize),
       imageVector = Icons.Filled.Devices,
       contentDescription = stringResource(R.string.other_device),
       tint = MaterialTheme.colorScheme.tertiary,
@@ -154,9 +154,7 @@ internal fun ThisInstruction(
     }
 
     Box(
-        modifier = Modifier
-            .weight(1F)
-            .padding(start = MaterialTheme.keylines.content),
+        modifier = Modifier.weight(1F).padding(start = MaterialTheme.keylines.content),
     ) {
       content()
     }
@@ -181,9 +179,7 @@ internal fun OtherInstruction(
     }
 
     Box(
-        modifier = Modifier
-            .weight(1F)
-            .padding(start = MaterialTheme.keylines.content),
+        modifier = Modifier.weight(1F).padding(start = MaterialTheme.keylines.content),
     ) {
       content()
     }

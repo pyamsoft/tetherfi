@@ -75,9 +75,9 @@ private fun LazyListScope.renderRunningNoClients(
   ) {
     Text(
         modifier =
-        modifier
-            .padding(vertical = MaterialTheme.keylines.content)
-            .padding(top = MaterialTheme.keylines.content * 3),
+            modifier
+                .padding(vertical = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content * 3),
         text = stringResource(R.string.connection_none),
         style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,
@@ -96,11 +96,10 @@ private fun LazyListScope.renderRunningWithClients(
   ) {
     Text(
         modifier =
-        itemModifier
-            .padding(vertical = MaterialTheme.keylines.content)
-            .padding(top = MaterialTheme.keylines.content * 3),
-        text =
-        stringResource(R.string.connection_running_explain),
+            itemModifier
+                .padding(vertical = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content * 3),
+        text = stringResource(R.string.connection_running_explain),
         style =
             MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onBackground,
@@ -129,9 +128,9 @@ private fun LazyListScope.renderNotRunning(modifier: Modifier = Modifier) {
   ) {
     Text(
         modifier =
-        modifier
-            .padding(vertical = MaterialTheme.keylines.content)
-            .padding(top = MaterialTheme.keylines.content * 3),
+            modifier
+                .padding(vertical = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content * 3),
         text = stringResource(R.string.connection_start_before_manage),
         style = MaterialTheme.typography.headlineSmall,
         textAlign = TextAlign.Center,

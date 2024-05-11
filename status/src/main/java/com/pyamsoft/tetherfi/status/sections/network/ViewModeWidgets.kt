@@ -43,9 +43,9 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.common.StatusItem
+import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -68,8 +68,7 @@ internal fun ViewProxy(
           context,
           portNumber,
       ) {
-        if (portNumber in 1024..65000) "$portNumber"
-        else context.getString(R2.string.invalid_port)
+        if (portNumber in 1024..65000) "$portNumber" else context.getString(R2.string.invalid_port)
       }
 
   Row(
@@ -147,8 +146,7 @@ internal fun ViewPassword(
                 if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
             contentDescription =
                 stringResource(
-                    if (isPasswordVisible) R2.string.pass_visible
-                    else R2.string.pass_hidden),
+                    if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden),
             tint = MaterialTheme.colorScheme.primary,
         )
       }

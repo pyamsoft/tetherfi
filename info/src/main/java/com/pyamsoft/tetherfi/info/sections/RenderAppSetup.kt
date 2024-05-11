@@ -56,8 +56,7 @@ internal fun LazyListScope.renderAppSetup(
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-            text =
-            stringResource(R.string.wifi_must_be_on, appName),
+            text = stringResource(R.string.wifi_must_be_on, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -98,8 +97,7 @@ internal fun LazyListScope.renderAppSetup(
           small = true,
       ) {
         Text(
-            text =
-            stringResource(R.string.optionally_configure_hotspot),
+            text = stringResource(R.string.optionally_configure_hotspot),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -120,8 +118,7 @@ internal fun LazyListScope.renderAppSetup(
         small = true,
     ) {
       Text(
-          text =
-          stringResource(R.string.optionally_configure_wakelock),
+          text = stringResource(R.string.optionally_configure_wakelock),
           style =
               MaterialTheme.typography.bodyMedium.copy(
                   color =
@@ -141,8 +138,7 @@ internal fun LazyListScope.renderAppSetup(
         small = true,
     ) {
       Text(
-          text =
-          stringResource(R.string.optionally_configure_power, appName),
+          text = stringResource(R.string.optionally_configure_power, appName),
           style =
               MaterialTheme.typography.bodyMedium.copy(
                   color =

@@ -119,10 +119,9 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = stringResource(
-                R.string.connection_total_to_internet,
-                totalTransferredToInternet.display
-            ),
+            text =
+                stringResource(
+                    R.string.connection_total_to_internet, totalTransferredToInternet.display),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
@@ -133,10 +132,9 @@ internal fun ConnectionItem(
         )
 
         Text(
-            text = stringResource(
-                R.string.connection_total_from_internet,
-                totalTransferredFromInternet.display
-            ),
+            text =
+                stringResource(
+                    R.string.connection_total_from_internet, totalTransferredFromInternet.display),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =

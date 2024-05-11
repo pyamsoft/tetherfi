@@ -24,9 +24,7 @@ android {
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
-  defaultConfig {
-    minSdk = rootProject.extra["minSdk"] as Int
-  }
+  defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -49,7 +47,7 @@ dependencies {
   // Compose runtime for annotations
   implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
-  implementation("io.ktor:ktor-network:2.3.10")
+  implementation("io.ktor:ktor-network:2.3.11")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")

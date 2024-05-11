@@ -43,9 +43,9 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
-import com.pyamsoft.tetherfi.ui.R as R2
 
 @Composable
 internal fun EditPort(
@@ -53,34 +53,32 @@ internal fun EditPort(
     state: StatusViewState,
     onPortChanged: (String) -> Unit,
 ) {
-    val port by state.port.collectAsStateWithLifecycle()
-    val portNumber = remember(port) { port.toIntOrNull() }
-    val isValid = remember(portNumber) { portNumber != null && portNumber in 1025..65000 }
+  val port by state.port.collectAsStateWithLifecycle()
+  val portNumber = remember(port) { port.toIntOrNull() }
+  val isValid = remember(portNumber) { portNumber != null && portNumber in 1025..65000 }
 
-    StatusEditor(
-        modifier = modifier,
-        title = stringResource(R.string.editmode_hotspot_port),
-        value = port,
-        onChange = onPortChanged,
-        keyboardOptions =
-        KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-        ),
-        trailingIcon = {
-            ValidIcon(
-                isValid = isValid,
-                description =
+  StatusEditor(
+      modifier = modifier,
+      title = stringResource(R.string.editmode_hotspot_port),
+      value = port,
+      onChange = onPortChanged,
+      keyboardOptions =
+          KeyboardOptions(
+              keyboardType = KeyboardType.Number,
+          ),
+      trailingIcon = {
+        ValidIcon(
+            isValid = isValid,
+            description =
                 stringResource(
                     R.string.editmode_label_map,
                     stringResource(R.string.editmode_type_port),
                     stringResource(
                         if (isValid) R.string.editmode_label_valid
-                        else R.string.editmode_label_invalid
-                    ),
-                )
-            )
-        },
-    )
+                        else R.string.editmode_label_invalid),
+                ))
+      },
+  )
 }
 
 @Composable
@@ -90,109 +88,107 @@ internal fun EditPassword(
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
-    val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
-    val password by state.password.collectAsStateWithLifecycle()
-    val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val hotspotPassword =
-        remember(
-            context,
-            canUseCustomConfig,
-            password,
-        ) {
-            if (canUseCustomConfig) password else context.getString(R.string.editmode_system_defined)
-        }
+  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
+  val password by state.password.collectAsStateWithLifecycle()
+  val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
+  val context = LocalContext.current
+  val hotspotPassword =
+      remember(
+          context,
+          canUseCustomConfig,
+          password,
+      ) {
+        if (canUseCustomConfig) password else context.getString(R.string.editmode_system_defined)
+      }
 
-    val isValid =
-        remember(
-            canUseCustomConfig,
-            password,
-        ) {
-            if (canUseCustomConfig) password.trimmedLength() in 8..63 else true
-        }
+  val isValid =
+      remember(
+          canUseCustomConfig,
+          password,
+      ) {
+        if (canUseCustomConfig) password.trimmedLength() in 8..63 else true
+      }
 
-    val hapticManager = LocalHapticManager.current
+  val hapticManager = LocalHapticManager.current
 
-    // Password is always visible when set by system
-    val isPasswordCurrentlyVisible =
-        remember(
-            canUseCustomConfig,
-            isPasswordVisible,
-        ) {
-            if (canUseCustomConfig) {
-                isPasswordVisible
-            } else {
-                true
-            }
-        }
-
-    val trailingIcon: (@Composable () -> Unit)? =
+  // Password is always visible when set by system
+  val isPasswordCurrentlyVisible =
+      remember(
+          canUseCustomConfig,
+          isPasswordVisible,
+      ) {
         if (canUseCustomConfig) {
-            {
-                Row(
-                    modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconToggleButton(
-                        checked = isPasswordVisible,
-                        onCheckedChange = { newVisible ->
-                            if (newVisible) {
-                                hapticManager?.toggleOn()
-                            } else {
-                                hapticManager?.toggleOff()
-                            }
-                            onTogglePasswordVisibility()
-                        },
-                    ) {
-                        Icon(
-                            imageVector =
-                            if (isPasswordVisible) Icons.Filled.VisibilityOff
-                            else Icons.Filled.Visibility,
-                            contentDescription =
-                            stringResource(
-                                R.string.editmode_label_map,
-                                stringResource(R2.string.password),
-                                stringResource(
-                                    if (isValid) R.string.editmode_label_visible
-                                    else R.string.editmode_label_hidden
-                                ),
-                            ),
-                        )
-                    }
-
-                    ValidIcon(
-                        isValid = isValid,
-                        description =
-                        stringResource(
-                            R.string.editmode_label_map,
-                            stringResource(R2.string.password),
-                            stringResource(
-                                if (isValid) R.string.editmode_label_valid
-                                else R.string.editmode_label_invalid
-                            ),
-                        ),
-                    )
-                }
-            }
+          isPasswordVisible
         } else {
-            null
+          true
         }
+      }
 
-    StatusEditor(
-        modifier = modifier,
-        enabled = canUseCustomConfig,
-        title = stringResource(R.string.editmode_hotspot_password),
-        value = hotspotPassword,
-        onChange = onPasswordChanged,
-        visualTransformation =
-        if (isPasswordCurrentlyVisible) VisualTransformation.None
-        else PasswordVisualTransformation(),
-        keyboardOptions =
-        KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-        ),
-        trailingIcon = trailingIcon,
-    )
+  val trailingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          Row(
+              modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            IconToggleButton(
+                checked = isPasswordVisible,
+                onCheckedChange = { newVisible ->
+                  if (newVisible) {
+                    hapticManager?.toggleOn()
+                  } else {
+                    hapticManager?.toggleOff()
+                  }
+                  onTogglePasswordVisibility()
+                },
+            ) {
+              Icon(
+                  imageVector =
+                      if (isPasswordVisible) Icons.Filled.VisibilityOff
+                      else Icons.Filled.Visibility,
+                  contentDescription =
+                      stringResource(
+                          R.string.editmode_label_map,
+                          stringResource(R2.string.password),
+                          stringResource(
+                              if (isValid) R.string.editmode_label_visible
+                              else R.string.editmode_label_hidden),
+                      ),
+              )
+            }
+
+            ValidIcon(
+                isValid = isValid,
+                description =
+                    stringResource(
+                        R.string.editmode_label_map,
+                        stringResource(R2.string.password),
+                        stringResource(
+                            if (isValid) R.string.editmode_label_valid
+                            else R.string.editmode_label_invalid),
+                    ),
+            )
+          }
+        }
+      } else {
+        null
+      }
+
+  StatusEditor(
+      modifier = modifier,
+      enabled = canUseCustomConfig,
+      title = stringResource(R.string.editmode_hotspot_password),
+      value = hotspotPassword,
+      onChange = onPasswordChanged,
+      visualTransformation =
+          if (isPasswordCurrentlyVisible) VisualTransformation.None
+          else PasswordVisualTransformation(),
+      keyboardOptions =
+          KeyboardOptions(
+              keyboardType = KeyboardType.Password,
+          ),
+      trailingIcon = trailingIcon,
+  )
 }
 
 @Composable
@@ -201,75 +197,73 @@ internal fun EditSsid(
     state: StatusViewState,
     onSsidChanged: (String) -> Unit,
 ) {
-    val context = LocalContext.current
-    val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
-    val ssid by state.ssid.collectAsStateWithLifecycle()
-    val hotspotSsid =
-        remember(
-            context,
-            canUseCustomConfig,
-            ssid,
-        ) {
-            if (canUseCustomConfig) ssid else context.getString(R.string.editmode_system_defined)
-        }
+  val context = LocalContext.current
+  val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
+  val ssid by state.ssid.collectAsStateWithLifecycle()
+  val hotspotSsid =
+      remember(
+          context,
+          canUseCustomConfig,
+          ssid,
+      ) {
+        if (canUseCustomConfig) ssid else context.getString(R.string.editmode_system_defined)
+      }
 
-    val isValid =
-        remember(
-            canUseCustomConfig,
-            ssid,
-        ) {
-            if (canUseCustomConfig) ssid.isNotBlank() else true
-        }
+  val isValid =
+      remember(
+          canUseCustomConfig,
+          ssid,
+      ) {
+        if (canUseCustomConfig) ssid.isNotBlank() else true
+      }
 
-    val leadingIcon: (@Composable () -> Unit)? =
-        if (canUseCustomConfig) {
-            {
-                val textStyle = LocalTextStyle.current
-                Text(
-                    modifier =
-                    Modifier.padding(
-                        start = MaterialTheme.keylines.content,
-                        end = MaterialTheme.keylines.typography,
-                    ),
-                    text = remember { ServerDefaults.getSsidPrefix() },
-                    style =
-                    textStyle.copy(
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
-            }
-        } else {
-            null
+  val leadingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          val textStyle = LocalTextStyle.current
+          Text(
+              modifier =
+                  Modifier.padding(
+                      start = MaterialTheme.keylines.content,
+                      end = MaterialTheme.keylines.typography,
+                  ),
+              text = remember { ServerDefaults.getSsidPrefix() },
+              style =
+                  textStyle.copy(
+                      fontFamily = FontFamily.Monospace,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  ),
+          )
         }
+      } else {
+        null
+      }
 
-    val trailingIcon: (@Composable () -> Unit)? =
-        if (canUseCustomConfig) {
-            {
-                ValidIcon(
-                    isValid = isValid,
-                    description =
-                    stringResource(
-                        R.string.editmode_label_map,
-                        stringResource(R.string.editmode_type_ssid),
-                        stringResource(
-                            if (isValid) R.string.editmode_label_valid
-                            else R.string.editmode_label_invalid
-                        ),
-                    )
-                )
-            }
-        } else {
-            null
+  val trailingIcon: (@Composable () -> Unit)? =
+      if (canUseCustomConfig) {
+        {
+          ValidIcon(
+              isValid = isValid,
+              description =
+                  stringResource(
+                      R.string.editmode_label_map,
+                      stringResource(R.string.editmode_type_ssid),
+                      stringResource(
+                          if (isValid) R.string.editmode_label_valid
+                          else R.string.editmode_label_invalid),
+                  ))
         }
+      } else {
+        null
+      }
 
-    StatusEditor(
-        modifier = modifier,
-        enabled = canUseCustomConfig,
-        title = stringResource(R.string.editmode_hotspot_name),
-        value = hotspotSsid,
-        onChange = onSsidChanged,
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
-    )
+  StatusEditor(
+      modifier = modifier,
+      enabled = canUseCustomConfig,
+      title = stringResource(R.string.editmode_hotspot_name),
+      value = hotspotSsid,
+      onChange = onSsidChanged,
+      leadingIcon = leadingIcon,
+      trailingIcon = trailingIcon,
+  )
 }

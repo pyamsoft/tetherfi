@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
   ~ Copyright 2024 pyamsoft
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +14,25 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-    <string name="connection_last_seen">Last seen: %1$s</string>
-    <string name="connection_total_to_internet">Total Transferred To Internet: %1$s</string>
-    <string name="connection_total_from_internet">Total Transferred From Internet: %1$s</string>
-    <string name="connection_excuse">A more friendly solution is being actively investigated.</string>
-    <string name="connection_sorry">Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.</string>
-    <string name="connection_none">No connections yet!</string>
-    <string name="connection_start_before_manage">Start the Hotspot to view and manage connected devices.</string>
-    <string name="connection_running_explain">By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.</string>
+  <string name="connection_last_seen">Last seen: %1$s</string>
+  <string
+    name="connection_total_to_internet"
+  >Total Transferred To Internet: %1$s</string>
+  <string
+    name="connection_total_from_internet"
+  >Total Transferred From Internet: %1$s</string>
+  <string
+    name="connection_excuse"
+  >A more friendly solution is being actively investigated.</string>
+  <string
+    name="connection_sorry"
+  >Sorry in advance. The Operating System does not let me see which connected device is which, so this screen can only allow you to manage things by IP address.</string>
+  <string name="connection_none">No connections yet!</string>
+  <string
+    name="connection_start_before_manage"
+  >Start the Hotspot to view and manage connected devices.</string>
+  <string
+    name="connection_running_explain"
+  >By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.</string>
 </resources>
