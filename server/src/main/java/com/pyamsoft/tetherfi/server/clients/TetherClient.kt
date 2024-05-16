@@ -49,6 +49,7 @@ data class BandwidthLimit(
 sealed class TetherClient(
     open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
+    open val limit: BandwidthLimit?,
     protected open val totalBytes: ByteTransferReport,
 ) {
 
@@ -122,6 +123,39 @@ sealed class TetherClient(
   }
 
   @CheckResult
+  private fun BandwidthLimit.isOver(limit: BandwidthLimit): Boolean {
+    // If unit is larger than other unit, we are over
+    if (this.unit > limit.unit) {
+      return false
+    }
+
+    // If units are the same, count the amount
+    if (this.unit == limit.unit) {
+      return this.amount > limit.amount
+    }
+
+    // Otherwise, I guess we are good
+    return false
+  }
+
+  @CheckResult
+  fun isOverBandwidthLimit(): Boolean {
+    // No limit, we are fine
+    val l = limit ?: return false
+
+    // Our transfer unit is larger than our limit
+    if (transferToInternet.isOver(l)) {
+      return true
+    }
+
+    if (transferFromInternet.isOver(l)) {
+      return true
+    }
+
+    return false
+  }
+
+  @CheckResult
   fun mergeReport(report: ByteTransferReport): ByteTransferReport {
     return report.copy(
         internetToProxy = report.internetToProxy + totalBytes.internetToProxy,
@@ -134,12 +168,14 @@ sealed class TetherClient(
       val ip: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
+      override val limit: BandwidthLimit?,
       override val totalBytes: ByteTransferReport,
   ) :
       TetherClient(
           nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
           totalBytes = totalBytes,
+          limit = limit,
       )
 
   data class HostName
@@ -147,12 +183,14 @@ sealed class TetherClient(
       val hostname: String,
       override val nickName: String,
       override val mostRecentlySeen: LocalDateTime,
+      override val limit: BandwidthLimit?,
       override val totalBytes: ByteTransferReport,
   ) :
       TetherClient(
           nickName = nickName,
           mostRecentlySeen = mostRecentlySeen,
           totalBytes = totalBytes,
+          limit = limit,
       )
 
   companion object {
@@ -164,6 +202,7 @@ sealed class TetherClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = "",
+            limit = null,
             totalBytes = ByteTransferReport.EMPTY,
         )
       } else {
@@ -171,6 +210,7 @@ sealed class TetherClient(
             hostname = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = "",
+            limit = null,
             totalBytes = ByteTransferReport.EMPTY,
         )
       }

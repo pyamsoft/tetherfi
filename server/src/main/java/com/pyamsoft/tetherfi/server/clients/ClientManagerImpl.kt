@@ -197,9 +197,44 @@ internal constructor(
   }
 
   @CheckResult
-  private inline fun checkBlocked(checker: (TetherClient) -> Boolean): Boolean {
+  private inline fun isBlockedClient(checker: (TetherClient) -> Boolean): TetherClient? {
     val blocked = blockedClients.value
-    return blocked.firstOrNull { checker(it) } != null
+    return blocked.firstOrNull(checker)
+  }
+
+  @CheckResult
+  private inline fun isBandwidthLimitedClient(checker: (TetherClient) -> Boolean): TetherClient? {
+    val allowed = allowedClients.value
+
+    // Find a client
+    val client = allowed.firstOrNull(checker) ?: return null
+
+    // Check if the client is over the limit
+    if (client.isOverBandwidthLimit()) {
+      return client
+    }
+
+    // Otherwise we are good
+    return null
+  }
+
+  @CheckResult
+  private inline fun checkBlocked(checker: (TetherClient) -> Boolean): Boolean {
+    // Check Blocklist
+    var blocked: TetherClient? = isBlockedClient(checker)
+    if (blocked != null) {
+      Timber.w { "Hard blocked client: $blocked" }
+      return true
+    }
+
+    // Check we are not over the bandwidth limit
+    blocked = isBandwidthLimitedClient(checker)
+    if (blocked != null) {
+      Timber.w { "Bandwidth limited client: $blocked" }
+      return true
+    }
+
+    return false
   }
 
   override suspend fun started() =
