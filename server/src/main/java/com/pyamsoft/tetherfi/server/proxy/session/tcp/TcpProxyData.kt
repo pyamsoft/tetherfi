@@ -17,9 +17,12 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
-import io.ktor.network.sockets.Socket
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
 
 internal data class TcpProxyData
 internal constructor(
-    internal val connection: Socket,
+    internal val proxyInput: ByteReadChannel,
+    internal val proxyOutput: ByteWriteChannel,
+    internal val hostNameOrIp: String,
 ) : ProxyData

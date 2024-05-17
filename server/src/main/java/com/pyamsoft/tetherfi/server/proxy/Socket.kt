@@ -17,30 +17,49 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import io.ktor.network.selector.SelectorManager
+import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.aSocket
+import io.ktor.network.sockets.openReadChannel
+import io.ktor.network.sockets.openWriteChannel
+import io.ktor.util.cio.use
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.cancel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
 
-internal suspend inline fun <T> usingSocketBuilder(
+/** Build a socket in scope for a selector manager */
+internal inline fun <T> usingSocketBuilder(
     dispatcher: CoroutineDispatcher,
     block: (SocketBuilder) -> T
 ): T {
-  val manager = SelectorManager(dispatcher = dispatcher)
-  val rawSocket = aSocket(manager)
-  try {
+  SelectorManager(dispatcher = dispatcher).use { manager ->
+    val rawSocket = aSocket(manager)
     return block(rawSocket)
-  } finally {
-    withContext(context = NonCancellable) {
-      // We use Dispatchers.IO because manager.close() could potentially block
-      // which, if we used Dispatchers.Default could starve the thread.
-      //
-      // By using Dispatchers.IO we ensure this block runs on its own pooled thread
-      // instead, so even if this blocks it will not resource starve others.
-      //
-      // Update: 12/17/2023 - use our own server dispatcher
-      withContext(context = dispatcher) { manager.close() }
+  }
+}
+
+/**
+ * Open a socket for reading and writing
+ *
+ * Close the socket after any kinds of errors, or at the end of operations
+ */
+internal inline fun <T> Socket.usingConnection(
+    autoFlush: Boolean,
+    block: (ByteReadChannel, ByteWriteChannel) -> T
+): T {
+  this.use { socket ->
+    val reader = socket.openReadChannel()
+    try {
+      socket.openWriteChannel(autoFlush = autoFlush).use {
+        val writer = this
+        return block(reader, writer)
+      }
+    } catch (e: Throwable) {
+      reader.cancel(e)
+      throw e
+    } finally {
+      reader.cancel()
     }
   }
 }

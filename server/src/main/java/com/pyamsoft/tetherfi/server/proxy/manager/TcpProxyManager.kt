@@ -26,6 +26,9 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeError
+import com.pyamsoft.tetherfi.server.proxy.usingConnection
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
@@ -33,7 +36,6 @@ import io.ktor.network.sockets.isClosed
 import java.io.IOException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -57,6 +59,17 @@ internal constructor(
   /** Keep track of how many times we fail to claim a socket in a row. */
   private val proxyFailCount = MutableStateFlow(0)
 
+  @CheckResult
+  private fun resolveHostNameOrIpAddress(connection: Socket): String {
+    val remote = connection.remoteAddress
+    if (remote !is InetSocketAddress) {
+      Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
+      return ""
+    }
+
+    return remote.hostname
+  }
+
   private suspend fun runSession(
       scope: CoroutineScope,
       connection: Socket,
@@ -64,15 +77,27 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     try {
-      session.exchange(
-          scope = scope,
-          hostConnection = hostConnection,
-          serverDispatcher = serverDispatcher,
-          data =
-              TcpProxyData(
-                  connection = connection,
-              ),
-      )
+      val hostNameOrIp = resolveHostNameOrIpAddress(connection)
+      connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
+        // Resolve the client as an IP or hostname
+        if (hostNameOrIp.isBlank()) {
+          Timber.w { "Unable to resolve TetherClient for connection: $connection" }
+          writeError(proxyOutput)
+          return
+        }
+
+        session.exchange(
+            scope = scope,
+            hostConnection = hostConnection,
+            serverDispatcher = serverDispatcher,
+            data =
+                TcpProxyData(
+                    proxyInput = proxyInput,
+                    proxyOutput = proxyOutput,
+                    hostNameOrIp = hostNameOrIp,
+                ),
+        )
+      }
     } catch (e: Throwable) {
       e.ifNotCancellation { Timber.e(e) { "Error during session $connection" } }
     }
@@ -100,13 +125,16 @@ internal constructor(
             .bind(localAddress = localAddress)
       }
 
-  private fun prepareToTryAgainOrThrow(e: IOException) {
+  private suspend fun prepareToTryAgainOrThrow(e: IOException) {
     Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
     val failCount = proxyFailCount.value
     val canTryAgain = failCount < PROXY_ACCEPT_TOO_MANY_FAILURES
     if (canTryAgain) {
       proxyFailCount.update { it + 1 }
       Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!: $failCount" }
+
+      // Wait just a little bit
+      delay(3.seconds)
     } else {
       // Reset back to zero
       proxyFailCount.value = 0
@@ -122,8 +150,7 @@ internal constructor(
     while (!server.isClosed) {
       try {
         if (appEnvironment.isYoloError.first()) {
-          Timber.w { "In YOLO mode, we simulate an IOException after 3 seconds of waiting" }
-          delay(3.seconds)
+          Timber.w { "In YOLO mode, we simulate an IOException" }
           throw IOException("YOLO Mode Test Error!")
         }
 
@@ -159,13 +186,7 @@ internal constructor(
           val connection = ensureAcceptedConnection(server)
 
           // Run this server loop off thread so we can handle multiple connections at once.
-          launch(context = serverDispatcher.primary) {
-            try {
-              runSession(this, connection)
-            } finally {
-              withContext(context = NonCancellable) { connection.dispose() }
-            }
-          }
+          launch(context = serverDispatcher.primary) { runSession(this, connection) }
         }
       }
 

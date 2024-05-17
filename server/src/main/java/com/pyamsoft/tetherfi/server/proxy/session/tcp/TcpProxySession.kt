@@ -30,18 +30,13 @@ import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
+import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.Socket
-import io.ktor.network.sockets.openReadChannel
-import io.ktor.network.sockets.openWriteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.cancel
-import io.ktor.utils.io.close
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -60,9 +55,10 @@ internal constructor(
    * socket
    */
   private suspend inline fun <T> connectToInternet(
+      autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: ProxyRequest,
-      block: (Socket) -> T
+      block: (ByteReadChannel, ByteWriteChannel) -> T
   ): T {
     enforcer.assertOffMainThread()
 
@@ -85,32 +81,9 @@ internal constructor(
                 reusePort = true
               }
               .connect(remoteAddress = remote)
-      try {
-        block(socket)
-      } finally {
-        withContext(context = NonCancellable) {
-          // We use Dispatchers.IO because manager.close() could potentially block
-          // which, if we used Dispatchers.Default could starve the thread.
-          //
-          // By using Dispatchers.IO we ensure this block runs on its own pooled thread
-          // instead, so even if this blocks it will not resource starve others.
-          //
-          // Update: 12/17/2023 - use our own server dispatcher
-          withContext(context = serverDispatcher.primary) { socket.dispose() }
-        }
-      }
-    }
-  }
 
-  @CheckResult
-  private fun resolveHostNameOrIpAddress(connection: Socket): String? {
-    val remote = connection.remoteAddress
-    if (remote !is InetSocketAddress) {
-      Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
-      return null
+      return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
     }
-
-    return remote.hostname
   }
 
   private fun CoroutineScope.handleClientRequestSideEffects(
@@ -159,36 +132,30 @@ internal constructor(
 
     // Given the request, connect to the Web
     try {
-      val report =
+      val report: ByteTransferReport? =
           connectToInternet(
+              autoFlush = true,
               serverDispatcher = serverDispatcher,
               request = request,
-          ) { internet ->
-            val internetInput = internet.openReadChannel()
-            val internetOutput = internet.openWriteChannel(autoFlush = true)
-
-            try {
-              // Communicate between the web connection we've made and back to our client device
-              return@connectToInternet transport.exchangeInternet(
-                  scope = this,
-                  serverDispatcher = serverDispatcher,
-                  proxyInput = proxyInput,
-                  proxyOutput = proxyOutput,
-                  internetInput = internetInput,
-                  internetOutput = internetOutput,
-                  request = request,
-              )
-            } finally {
-              withContext(context = NonCancellable) {
-                internetInput.cancel()
-                internetOutput.close()
-              }
-            }
+          ) { internetInput, internetOutput ->
+            // Communicate between the web connection we've made and back to our client device
+            transport.exchangeInternet(
+                scope = this,
+                serverDispatcher = serverDispatcher,
+                proxyInput = proxyInput,
+                proxyOutput = proxyOutput,
+                internetInput = internetInput,
+                internetOutput = internetOutput,
+                request = request,
+            )
           }
 
       return report
     } catch (e: Throwable) {
-      e.ifNotCancellation { writeError(proxyOutput) }
+      e.ifNotCancellation {
+        Timber.e(e) { "Error during Internet exchange" }
+        writeError(proxyOutput)
+      }
       return null
     }
   }
@@ -281,20 +248,10 @@ internal constructor(
       data: TcpProxyData,
   ) =
       withContext(context = serverDispatcher.primary) {
-        /** The Proxy is our device */
-        val connection = data.connection
-        val proxyInput = connection.openReadChannel()
-        val proxyOutput = connection.openWriteChannel(autoFlush = true)
-
+        val proxyInput = data.proxyInput
+        val proxyOutput = data.proxyOutput
+        val hostNameOrIp = data.hostNameOrIp
         try {
-          // Resolve the client as an IP or hostname
-          val hostNameOrIp = resolveHostNameOrIpAddress(connection)
-          if (hostNameOrIp == null) {
-            Timber.w { "Unable to resolve TetherClient for connection: $connection" }
-            writeError(proxyOutput)
-            return@withContext
-          }
-
           handleClientRequest(
               scope = this,
               hostConnection = hostConnection,
@@ -304,14 +261,7 @@ internal constructor(
               hostNameOrIp = hostNameOrIp,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation {
-            // Do nothing, error logging slows us down too
-          }
-        } finally {
-          withContext(context = NonCancellable) {
-            proxyInput.cancel()
-            proxyOutput.close()
-          }
+          e.ifNotCancellation { Timber.e(e) { "Error during Internet exchange" } }
         }
       }
 

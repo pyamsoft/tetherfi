@@ -24,7 +24,6 @@ import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket>
@@ -74,12 +73,9 @@ protected constructor(
   ) =
       withContext(context = serverDispatcher.primary) {
         return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
-          val server = openServer(builder = builder)
-          try {
+          openServer(builder = builder).use { server ->
             onOpened()
             runServer(server)
-          } finally {
-            withContext(context = NonCancellable) { server.dispose() }
           }
         }
       }
