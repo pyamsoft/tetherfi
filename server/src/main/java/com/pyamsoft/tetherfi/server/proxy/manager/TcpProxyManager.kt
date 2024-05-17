@@ -23,8 +23,8 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeError
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
@@ -34,7 +34,7 @@ import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import java.io.IOException
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,10 +46,12 @@ import kotlinx.coroutines.withContext
 internal class TcpProxyManager
 internal constructor(
     private val appEnvironment: AppDevEnvironment,
+    private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
+    private val yoloRepeatDelay: Duration,
     serverDispatcher: ServerDispatcher
 ) :
     BaseProxyManager<ServerSocket>(
@@ -106,7 +108,7 @@ internal constructor(
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = serverDispatcher.primary) {
         // Tag sockets for Android O strict mode
-        tagSocket()
+        socketTagger.tagSocket()
 
         val localAddress =
             getServerAddress(
@@ -134,7 +136,7 @@ internal constructor(
       Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!: $failCount" }
 
       // Wait just a little bit
-      delay(3.seconds)
+      delay(yoloRepeatDelay)
     } else {
       // Reset back to zero
       proxyFailCount.value = 0

@@ -28,8 +28,8 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
@@ -45,6 +45,7 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
+    private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val allowedClients: AllowedClients,
     private val enforcer: ThreadEnforcer,
@@ -63,7 +64,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return usingSocketBuilder(serverDispatcher.primary) { builder ->
-      tagSocket()
+      socketTagger.tagSocket()
 
       // We dont actually use the socket tls() method here since we are not a TLS server
       // We do the CONNECT based workaround to handle HTTPS connections

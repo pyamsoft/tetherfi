@@ -24,7 +24,13 @@ android {
 
   compileSdk = rootProject.extra["compileSdk"] as Int
 
-  defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
+  defaultConfig {
+    minSdk = rootProject.extra["minSdk"] as Int
+
+    // Android Testing
+    // https://developer.android.com/training/testing/instrumented-tests
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -52,6 +58,15 @@ dependencies {
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
   implementation("com.github.pyamsoft.pydroid:util:${rootProject.extra["pydroid"]}")
+
+  testImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
+  testImplementation(
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}")
+
+  androidTestImplementation("androidx.test:runner:${rootProject.extra["testRunner"]}")
+  androidTestImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
+  androidTestImplementation(
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}")
 
   implementation(project(":core"))
 }

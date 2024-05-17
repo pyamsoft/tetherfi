@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @Singleton
-class AppDevEnvironment @Inject internal constructor() {
+class AppDevEnvironment @Inject constructor() {
 
   private val isGroupFakeEmpty = MutableStateFlow(false)
   private val isGroupFakeConnected = MutableStateFlow(false)

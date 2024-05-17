@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session
+package com.pyamsoft.tetherfi.server.proxy
 
-import android.net.TrafficStats
+interface SocketTagger {
 
-internal fun tagSocket() {
-  // On Android O and above, StrictMode causes untagged socket errors
-  // Setting the ThreadStatsTag seems to fix it
-  TrafficStats.setThreadStatsTag(1)
+  fun tagSocket()
 }

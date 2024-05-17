@@ -24,6 +24,7 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
@@ -31,6 +32,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -40,6 +42,7 @@ internal class DefaultProxyManagerFactory
 internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
+    private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
     private val appEnvironment: AppDevEnvironment,
@@ -56,11 +59,13 @@ internal constructor(
 
     return TcpProxyManager(
         enforcer = enforcer,
+        socketTagger = socketTagger,
         session = tcpSession,
         hostConnection = info,
         port = port,
         serverDispatcher = dispatcher,
         appEnvironment = appEnvironment,
+        yoloRepeatDelay = 3.seconds,
     )
   }
 
@@ -78,6 +83,7 @@ internal constructor(
         session = udpSession,
         hostConnection = info,
         port = port,
+        socketTagger = socketTagger,
         serverDispatcher = dispatcher,
     )
   }

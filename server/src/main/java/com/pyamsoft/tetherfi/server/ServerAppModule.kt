@@ -33,9 +33,11 @@ import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuardImpl
 import com.pyamsoft.tetherfi.server.prereq.vpn.AndroidVpnChecker
 import com.pyamsoft.tetherfi.server.prereq.vpn.VpnChecker
+import com.pyamsoft.tetherfi.server.proxy.AndroidSocketTagger
 import com.pyamsoft.tetherfi.server.proxy.DefaultServerDispatcherFactory
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
@@ -56,6 +58,10 @@ import javax.inject.Singleton
 
 @Module
 abstract class ServerAppModule {
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindSocketTagger(impl: AndroidSocketTagger): SocketTagger
 
   @Binds
   @CheckResult

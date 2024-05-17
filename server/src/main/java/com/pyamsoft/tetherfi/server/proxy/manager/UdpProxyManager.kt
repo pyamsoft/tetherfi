@@ -21,8 +21,8 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tagSocket
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 internal class UdpProxyManager
 internal constructor(
     private val enforcer: ThreadEnforcer,
+    private val socketTagger: SocketTagger,
     private val session: ProxySession<UdpProxyData>,
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
@@ -68,7 +69,7 @@ internal constructor(
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = serverDispatcher.primary) {
         // Tag sockets for Android O strict mode
-        tagSocket()
+        socketTagger.tagSocket()
 
         val localAddress =
             getServerAddress(
