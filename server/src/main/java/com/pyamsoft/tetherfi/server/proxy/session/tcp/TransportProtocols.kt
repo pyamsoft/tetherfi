@@ -22,7 +22,8 @@ import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.writeFully
 
-private const val LINE_ENDING = "\r\n"
+/** Line ending for socket messages */
+const val LINE_ENDING = "\r\n"
 
 @CheckResult
 internal suspend fun talk(input: ByteReadChannel, output: ByteWriteChannel): Long {

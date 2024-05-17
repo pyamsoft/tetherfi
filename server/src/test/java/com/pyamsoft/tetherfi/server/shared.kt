@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session
+package com.pyamsoft.tetherfi.server
 
-data class DestinationInfo
-internal constructor(
-    val hostName: String,
-    val port: Int,
-    val file: String,
-    val isParsedByURIConstructor: Boolean,
-)
+import io.ktor.network.sockets.InetSocketAddress
+
+const val HOSTNAME = "127.0.0.1"
+const val SERVER_PORT = 6666
+const val PROXY_PORT = 9999
+
+val SERVER_REMOTE =
+    InetSocketAddress(
+        hostname = HOSTNAME,
+        port = SERVER_PORT,
+    )
+
+val PROXY_REMOTE =
+    InetSocketAddress(
+        hostname = HOSTNAME,
+        port = PROXY_PORT,
+    )

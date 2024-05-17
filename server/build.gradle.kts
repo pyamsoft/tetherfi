@@ -53,7 +53,7 @@ dependencies {
   // Compose runtime for annotations
   implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
 
-  implementation("io.ktor:ktor-network:2.3.11")
+  implementation("io.ktor:ktor-network:${rootProject.extra["ktor"]}")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
@@ -62,11 +62,13 @@ dependencies {
   testImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
   testImplementation(
       "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}")
+  testImplementation("io.ktor:ktor-server-netty-jvm:${rootProject.extra["ktor"]}")
 
   androidTestImplementation("androidx.test:runner:${rootProject.extra["testRunner"]}")
   androidTestImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
   androidTestImplementation(
       "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}")
+  androidTestImplementation("io.ktor:ktor-server-netty-jvm:${rootProject.extra["ktor"]}")
 
   implementation(project(":core"))
 }

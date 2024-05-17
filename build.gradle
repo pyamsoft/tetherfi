@@ -44,6 +44,8 @@ buildscript {
 
     desugar = "2.0.4"
 
+    ktor = "2.3.11"
+
     // Testing
     testRunner = "1.5.2"
   }

@@ -69,6 +69,8 @@ internal constructor(
     var host: String
     var protocol: String
     var port = -1
+    var file: String
+    var isParsedByURIConstructor: Boolean
 
     // This could be anything like the following
     // protocol://hostname:port
@@ -89,7 +91,11 @@ internal constructor(
       protocol = uu.scheme.requireNotNull()
       host = uu.host.requireNotNull()
       port = uu.port.requireNotNull()
+      file = uu.path.requireNotNull()
+      isParsedByURIConstructor = true
     } catch (e: Throwable) {
+      Timber.e(e) { "Failed to parse input string by URI constructor" }
+      isParsedByURIConstructor = false
       // Well that didn't work, would have hoped we didn't have to do this but
 
       // Do we have a port in this URL? if we do split it up
@@ -128,14 +134,18 @@ internal constructor(
       // the host name as the entire thing
 
       // Could be a name like mywebsite.com/filehere.html and we only want the host name
-      // mywebsite.com
+      // mywebsite.com and the file name /filehere.html
       val hostAndPossiblyFile = splitByProtocol[if (splitByProtocol.size == 1) 0 else 1]
 
       // If there is an additional file attached to this request, ignore it and just grab the URL
-      host =
-          hostAndPossiblyFile.indexOf("/").let { fileIndex ->
-            if (fileIndex >= 0) hostAndPossiblyFile.substring(0, fileIndex) else hostAndPossiblyFile
-          }
+      val fileIndex = hostAndPossiblyFile.indexOf("/")
+      if (fileIndex < 0) {
+        host = hostAndPossiblyFile
+        file = ""
+      } else {
+        host = hostAndPossiblyFile.substring(0, fileIndex)
+        file = hostAndPossiblyFile.substring(fileIndex)
+      }
 
       // Guess the protocol or assume it empty
       protocol = if (splitByProtocol.size == 1) splitByProtocol[0] else ""
@@ -147,11 +157,19 @@ internal constructor(
       port = if (protocol.startsWith("https")) 443 else 80
     }
 
+    // If we parse with the URI constructor, a root path could be a blank line.
+    // If so, make it root
+    if (file.isBlank()) {
+      file = "/"
+    }
+
     return DestinationInfo(
         // Just in-case we missed a slash, a name with a slash is not a valid hostname
         // its actually a host with a file path of ROOT, which is bad
         hostName = host.trimEnd('/'),
         port = port,
+        file = file,
+        isParsedByURIConstructor = isParsedByURIConstructor,
     )
   }
 
@@ -193,7 +211,7 @@ internal constructor(
     return MethodData(
         url = restOfLine.substring(0, nextSpace).trim().fixSpecialBuggyUrls(),
         method = line.substring(0, firstSpace).trim(),
-        // version = restOfLine.substring(nextSpace + 1).trim(),
+        version = restOfLine.substring(nextSpace + 1).trim(),
     )
   }
 
@@ -235,9 +253,9 @@ internal constructor(
     // first line of the request also works just fine. So I do not know why we did this parsing
     // actually.
     //
-    // val file = request.url.replace("http://.+\\.\\w+/".toRegex(), "/")
-    // val newRequest = "${request.method} $file ${request.version}"
-    output.writeFully(writeMessageAndAwaitMore(request.raw))
+    val newRequest = "${request.method} ${request.file} ${request.version}"
+    Timber.d { "Rewrote initial HTTP request: ${request.raw} -> $newRequest" }
+    output.writeFully(writeMessageAndAwaitMore(newRequest))
   }
 
   /**
@@ -259,6 +277,7 @@ internal constructor(
      *   Is reading only a single line causing HTTP issues?
      */
     val line = input.readUTF8Line()
+    Timber.d { "Proxy input: $line" }
 
     // No line, no go
     if (line.isNullOrBlank()) {
@@ -280,6 +299,10 @@ internal constructor(
               method = methodData.method,
               host = urlData.hostName,
               port = urlData.port,
+              url = methodData.url,
+              version = methodData.version,
+              file = urlData.file,
+              isParsedByURIConstructor = urlData.isParsedByURIConstructor,
           )
           .also { Timber.d { "Proxy Request: $it" } }
     } catch (e: Throwable) {
@@ -380,6 +403,6 @@ internal constructor(
   private data class MethodData(
       val url: String,
       val method: String,
-      // val version: String,
+      val version: String,
   )
 }
