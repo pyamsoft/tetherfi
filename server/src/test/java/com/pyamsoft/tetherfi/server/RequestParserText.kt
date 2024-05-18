@@ -106,13 +106,13 @@ class RequestParserText {
       assertNull(result)
     } else {
       assertNotNull(result)
+      isParsedByURIConstructor?.also { assertEquals(it, result.isParsedByURIConstructor) }
       port?.also { assertEquals(it, result.port) }
       host?.also { assertEquals(it, result.host) }
       method?.also { assertEquals(it, result.method) }
       file?.also { assertEquals(it, result.file) }
       version?.also { assertEquals(it, result.version) }
       url?.also { assertEquals(it, result.url) }
-      isParsedByURIConstructor?.also { assertEquals(it, result.isParsedByURIConstructor) }
       proto?.also { assertEquals(it, result.proto) }
     }
   }
@@ -241,6 +241,19 @@ class RequestParserText {
         proto = "http",
         port = 69,
         file = "/hello.html",
+        isParsedByURIConstructor = true,
+    )
+
+    // http://example.com:69/hello.html?also=1&accept=2&args=3 -> http example.com 69
+    // /hello.html?also=1&accept=2&args=3
+    parser.testSuccess(
+        line = "GET http://example.com:69/hello.html?also=1&accept=2&args=3 HTTP/1.0",
+        method = "GET",
+        version = "HTTP/1.0",
+        host = "example.com",
+        proto = "http",
+        port = 69,
+        file = "/hello.html?also=1&accept=2&args=3",
         isParsedByURIConstructor = true,
     )
   }

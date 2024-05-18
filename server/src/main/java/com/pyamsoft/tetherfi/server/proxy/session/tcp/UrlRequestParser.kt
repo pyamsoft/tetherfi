@@ -54,7 +54,7 @@ internal constructor(
    * very specific cases is correct
    */
   @CheckResult
-  protected fun String.fixSpecialBuggyUrls(): String {
+  private fun String.fixSpecialBuggyUrls(): String {
     var result = this
     for (fixer in urlFixers) {
       result = fixer.fix(result)
@@ -112,9 +112,9 @@ internal constructor(
   @CheckResult
   private fun getUrlAndPort(possiblyProtocolAndHostAndPort: String): DestinationInfo {
     var host: String
-    var protocol: String
     var port = -1
     var file = ""
+    var protocol = ""
     var isParsedByURIConstructor: Boolean
 
     // This could be anything like the following
@@ -130,14 +130,31 @@ internal constructor(
     // example.com:443/file.html -> https example.com 443
     // example.com/file.html -> http example.com 80
     try {
+      isParsedByURIConstructor = true
+
       // Just try with the normal java URI parser
       val uu = URI(possiblyProtocolAndHostAndPort)
 
-      protocol = uu.scheme.requireNotNull()
+      // Can be null, but if it is we can't do anything about this
       host = uu.host.requireNotNull()
+
+      // Can be -1, but always present
       port = uu.port.requireNotNull()
-      file = uu.path.requireNotNull()
-      isParsedByURIConstructor = true
+
+      val justProtocol: String? = uu.scheme
+      if (justProtocol != null) {
+        protocol = justProtocol
+      }
+
+      val justFile: String? = uu.path
+      val justQuery: String? = uu.query
+      if (justFile != null && justQuery != null) {
+        file = "${justFile}?${justQuery}"
+      } else if (justFile != null) {
+        file = justFile
+      } else if (justQuery != null) {
+        file = "/?${justQuery}"
+      }
     } catch (e: Throwable) {
       Timber.e(e) { "Failed to parse input string by URI constructor" }
       isParsedByURIConstructor = false
