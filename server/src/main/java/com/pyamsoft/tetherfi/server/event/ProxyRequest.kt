@@ -16,14 +16,17 @@
 
 package com.pyamsoft.tetherfi.server.event
 
+import org.jetbrains.annotations.TestOnly
+
 data class ProxyRequest
 internal constructor(
     val host: String,
     val method: String,
     val port: Int,
-    val url: String,
     val version: String,
     val raw: String,
     val file: String,
-    val isParsedByURIConstructor: Boolean,
+    @TestOnly val isParsedByURIConstructor: Boolean,
+    @TestOnly val url: String,
+    @TestOnly val proto: String,
 )

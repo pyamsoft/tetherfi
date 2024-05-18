@@ -17,23 +17,9 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
+import com.pyamsoft.tetherfi.server.event.ProxyRequest
 
-internal abstract class BaseTcpSessionTransport
-protected constructor(
-    private val urlFixers: Set<UrlFixer>,
-) : TcpSessionTransport {
+interface RequestParser {
 
-  /**
-   * Some connection request formats are buggy, this method seeks to fix them to what it knows in
-   * very specific cases is correct
-   */
-  @CheckResult
-  protected fun String.fixSpecialBuggyUrls(): String {
-    var result = this
-    for (fixer in urlFixers) {
-      result = fixer.fix(result)
-    }
-    return result
-  }
+  @CheckResult fun parse(line: String): ProxyRequest?
 }

@@ -18,20 +18,15 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
-import com.pyamsoft.tetherfi.server.proxy.session.DestinationInfo
-import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import java.net.URI
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,13 +36,9 @@ import kotlinx.coroutines.launch
 internal class HttpTcpTransport
 @Inject
 internal constructor(
-    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
-    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    private val requestParser: RequestParser,
     private val enforcer: ThreadEnforcer,
-) :
-    BaseTcpSessionTransport(
-        urlFixers = urlFixers,
-    ) {
+) : TcpSessionTransport {
 
   /**
    * Check if this is an HTTPS connection
@@ -57,162 +48,6 @@ internal constructor(
   @CheckResult
   private fun isHttpsConnection(input: ProxyRequest): Boolean {
     return input.method == "CONNECT"
-  }
-
-  /**
-   * Figure out the URL and the port of the connection
-   *
-   * If the URL does not include the port, determine it from the protocol or just assume it is HTTP
-   */
-  @CheckResult
-  private fun getUrlAndPort(possiblyProtocolAndHostAndPort: String): DestinationInfo {
-    var host: String
-    var protocol: String
-    var port = -1
-    var file: String
-    var isParsedByURIConstructor: Boolean
-
-    // This could be anything like the following
-    // protocol://hostname:port
-    //
-    // http://example.com -> http example.com 80
-    // http://example.com:69 -> http example.com 69
-    // example.com:80 -> http example.com 80
-    // example.com:443 -> https example.com 443
-    // example.com -> http example.com 80
-    // https://example.com -> https example.com 443
-    // https://example.com/file.html -> https example.com 443
-    // example.com:443/file.html -> https example.com 443
-    // example.com/file.html -> http example.com 80
-    try {
-      // Just try with the normal java URI parser
-      val uu = URI(possiblyProtocolAndHostAndPort)
-
-      protocol = uu.scheme.requireNotNull()
-      host = uu.host.requireNotNull()
-      port = uu.port.requireNotNull()
-      file = uu.path.requireNotNull()
-      isParsedByURIConstructor = true
-    } catch (e: Throwable) {
-      Timber.e(e) { "Failed to parse input string by URI constructor" }
-      isParsedByURIConstructor = false
-      // Well that didn't work, would have hoped we didn't have to do this but
-
-      // Do we have a port in this URL? if we do split it up
-      val possiblyProtocolAndHost: String
-      val portSeparator = possiblyProtocolAndHostAndPort.indexOf(':')
-      if (portSeparator >= 0) {
-
-        // Split up to just the protocol and host
-        possiblyProtocolAndHost = possiblyProtocolAndHostAndPort.substring(0, portSeparator)
-
-        // And then this, should be the port, right?
-        val portString = possiblyProtocolAndHostAndPort.substring(portSeparator + 1)
-
-        // Parse the port, or default to just 80 for HTTP traffic
-        port =
-            portString.toIntOrNull().let { maybePort ->
-              if (maybePort == null) {
-                Timber.w {
-                  "Port string was not a valid port: $possiblyProtocolAndHostAndPort => $portString"
-                }
-                // Default to port 80 for HTTP
-                80
-              } else {
-                maybePort
-              }
-            }
-      } else {
-        // No port in the URL, this is the URL then
-        possiblyProtocolAndHost = possiblyProtocolAndHostAndPort
-      }
-
-      // Then we split up the protocol
-      val splitByProtocol = possiblyProtocolAndHost.split("://")
-
-      // Strip the protocol of http:// off of the url, but if there is no protocol, we just have
-      // the host name as the entire thing
-
-      // Could be a name like mywebsite.com/filehere.html and we only want the host name
-      // mywebsite.com and the file name /filehere.html
-      val hostAndPossiblyFile = splitByProtocol[if (splitByProtocol.size == 1) 0 else 1]
-
-      // If there is an additional file attached to this request, ignore it and just grab the URL
-      val fileIndex = hostAndPossiblyFile.indexOf("/")
-      if (fileIndex < 0) {
-        host = hostAndPossiblyFile
-        file = ""
-      } else {
-        host = hostAndPossiblyFile.substring(0, fileIndex)
-        file = hostAndPossiblyFile.substring(fileIndex)
-      }
-
-      // Guess the protocol or assume it empty
-      protocol = if (splitByProtocol.size == 1) splitByProtocol[0] else ""
-    }
-
-    // If the port was passed but is some random number, guess it from the protocol
-    if (port < 0) {
-      // And if we don't know the protocol, good old 80
-      port = if (protocol.startsWith("https")) 443 else 80
-    }
-
-    // If we parse with the URI constructor, a root path could be a blank line.
-    // If so, make it root
-    if (file.isBlank()) {
-      file = "/"
-    }
-
-    return DestinationInfo(
-        // Just in-case we missed a slash, a name with a slash is not a valid hostname
-        // its actually a host with a file path of ROOT, which is bad
-        hostName = host.trimEnd('/'),
-        port = port,
-        file = file,
-        isParsedByURIConstructor = isParsedByURIConstructor,
-    )
-  }
-
-  /**
-   * Figure out the METHOD and URL
-   *
-   * The METHOD is important because we need to know if this is a CONNECT call for HTTPS
-   */
-  @CheckResult
-  private fun getMethodAndUrlString(line: String): MethodData? {
-    // Line is something like
-    // CONNECT https://my-internet-domain:80 HTTP/2
-
-    // We find the first space
-    val firstSpace = line.indexOf(' ')
-    if (firstSpace < 0) {
-      Timber.w { "Invalid request line format. No space: '$line'" }
-      return null
-    }
-
-    // We now have the first space, the start-of-line, and the rest-of-line
-    //
-    // start-of-line: CONNECT
-    // rest-of-line: https://my-internet-domain:80 HTTP/2
-    val restOfLine = line.substring(firstSpace + 1)
-
-    // Need to have the last space so we know the version too
-    val nextSpace = restOfLine.indexOf(' ')
-    if (nextSpace < 0) {
-      Timber.w { "Invalid request line format. No nextSpace: '$line' => '$restOfLine'" }
-      return null
-    }
-
-    // We have everything we need now
-    //
-    // start-of-line: CONNECT
-    // middle-of-line: https://my-internet-domain
-    // end-of-line: HTTP/2
-    return MethodData(
-        url = restOfLine.substring(0, nextSpace).trim().fixSpecialBuggyUrls(),
-        method = line.substring(0, firstSpace).trim(),
-        version = restOfLine.substring(nextSpace + 1).trim(),
-    )
   }
 
   /**
@@ -285,32 +120,8 @@ internal constructor(
       return null
     }
 
-    try {
-      // Given the line, it needs to be in an expected format or we can't do it
-      val methodData = getMethodAndUrlString(line)
-      if (methodData == null) {
-        Timber.w { "Unable to parse method and URL: $line" }
-        return null
-      }
-
-      val urlData = getUrlAndPort(methodData.url)
-      return ProxyRequest(
-              raw = line,
-              method = methodData.method,
-              host = urlData.hostName,
-              port = urlData.port,
-              url = methodData.url,
-              version = methodData.version,
-              file = urlData.file,
-              isParsedByURIConstructor = urlData.isParsedByURIConstructor,
-          )
-          .also { Timber.d { "Proxy Request: $it" } }
-    } catch (e: Throwable) {
-      e.ifNotCancellation {
-        Timber.e(e) { "Unable to parse request: $line" }
-        return null
-      }
-    }
+    // Given the line, it needs to be in an expected format or we can't do it
+    return requestParser.parse(line)
   }
 
   override suspend fun exchangeInternet(
@@ -399,10 +210,4 @@ internal constructor(
       return null
     }
   }
-
-  private data class MethodData(
-      val url: String,
-      val method: String,
-      val version: String,
-  )
 }

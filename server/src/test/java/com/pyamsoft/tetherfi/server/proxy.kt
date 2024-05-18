@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
 import java.io.IOException
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
@@ -115,7 +116,10 @@ internal suspend inline fun setupProxy(
                   transports =
                       mutableSetOf(
                           HttpTcpTransport(
-                              urlFixers = mutableSetOf(),
+                              requestParser =
+                                  UrlRequestParser(
+                                      urlFixers = mutableSetOf(),
+                                  ),
                               enforcer = enforcer,
                           ),
                       ),

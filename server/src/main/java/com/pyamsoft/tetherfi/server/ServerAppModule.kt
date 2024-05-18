@@ -43,9 +43,11 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.RequestParser
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
@@ -62,6 +64,8 @@ abstract class ServerAppModule {
   @Binds
   @CheckResult
   internal abstract fun bindSocketTagger(impl: AndroidSocketTagger): SocketTagger
+
+  @Binds @CheckResult internal abstract fun bindRequestParser(impl: UrlRequestParser): RequestParser
 
   @Binds
   @CheckResult
