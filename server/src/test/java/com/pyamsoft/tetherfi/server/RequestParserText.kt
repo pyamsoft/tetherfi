@@ -34,9 +34,6 @@ class RequestParserText {
       method: String? = null,
       file: String? = null,
       version: String? = null,
-      url: String? = null,
-      isParsedByURIConstructor: Boolean? = null,
-      proto: String? = null,
   ) {
     return test(
         fails = false,
@@ -46,9 +43,6 @@ class RequestParserText {
         method = method,
         file = file,
         version = version,
-        url = url,
-        isParsedByURIConstructor = isParsedByURIConstructor,
-        proto = proto,
     )
   }
 
@@ -59,9 +53,6 @@ class RequestParserText {
       method: String? = null,
       file: String? = null,
       version: String? = null,
-      url: String? = null,
-      isParsedByURIConstructor: Boolean? = null,
-      proto: String? = null,
   ) {
     return test(
         fails = true,
@@ -71,9 +62,6 @@ class RequestParserText {
         method = method,
         file = file,
         version = version,
-        url = url,
-        isParsedByURIConstructor = isParsedByURIConstructor,
-        proto = proto,
     )
   }
 
@@ -85,20 +73,10 @@ class RequestParserText {
       method: String? = null,
       file: String? = null,
       version: String? = null,
-      url: String? = null,
-      isParsedByURIConstructor: Boolean? = null,
-      proto: String? = null,
   ) {
     assertNotEquals(
         true,
-        proto == null &&
-            port == null &&
-            host == null &&
-            method == null &&
-            file == null &&
-            version == null &&
-            url == null &&
-            isParsedByURIConstructor == null,
+        port == null && host == null && method == null && file == null && version == null,
         "You must test at least 1 Request part")
 
     val result = this.parse(line)
@@ -106,14 +84,11 @@ class RequestParserText {
       assertNull(result)
     } else {
       assertNotNull(result)
-      isParsedByURIConstructor?.also { assertEquals(it, result.isParsedByURIConstructor) }
       port?.also { assertEquals(it, result.port) }
       host?.also { assertEquals(it, result.host) }
       method?.also { assertEquals(it, result.method) }
       file?.also { assertEquals(it, result.file) }
       version?.also { assertEquals(it, result.version) }
-      url?.also { assertEquals(it, result.url) }
-      proto?.also { assertEquals(it, result.proto) }
     }
   }
 
@@ -130,10 +105,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 80,
         file = "/",
-        isParsedByURIConstructor = true,
     )
 
     // http://example.com:69 -> http example.com 69
@@ -142,10 +115,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 69,
         file = "/",
-        isParsedByURIConstructor = true,
     )
 
     // example.com -> http example.com 80
@@ -154,10 +125,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 80,
         file = "/",
-        isParsedByURIConstructor = false,
     )
 
     // example.com:443 -> https example.com 443
@@ -166,10 +135,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "https",
         port = 443,
         file = "/",
-        isParsedByURIConstructor = false,
     )
 
     // https://example.com -> https example.com 443
@@ -178,10 +145,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "https",
         port = 443,
         file = "/",
-        isParsedByURIConstructor = true,
     )
 
     // https://example.com:80 -> https example.com 69
@@ -190,10 +155,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "https",
         port = 69,
         file = "/",
-        isParsedByURIConstructor = true,
     )
 
     // https://example.com/hello.html -> https example.com 443 /hello.html
@@ -202,10 +165,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "https",
         port = 443,
         file = "/hello.html",
-        isParsedByURIConstructor = true,
     )
 
     // example.com/hello.html -> http example.com 80 /hello.html
@@ -214,10 +175,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 80,
         file = "/hello.html",
-        isParsedByURIConstructor = false,
     )
 
     // example.com:443/hello.html -> https example.com 443 /hello.html
@@ -226,10 +185,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "https",
         port = 443,
         file = "/hello.html",
-        isParsedByURIConstructor = false,
     )
 
     // http://example.com:69/hello.html -> http example.com 69 /hello.html
@@ -238,10 +195,8 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 69,
         file = "/hello.html",
-        isParsedByURIConstructor = true,
     )
 
     // http://example.com:69/hello.html?also=1&accept=2&args=3 -> http example.com 69
@@ -251,10 +206,19 @@ class RequestParserText {
         method = "GET",
         version = "HTTP/1.0",
         host = "example.com",
-        proto = "http",
         port = 69,
         file = "/hello.html?also=1&accept=2&args=3",
-        isParsedByURIConstructor = true,
+    )
+
+    // http://example.com:69/hello.html?also=1&accept=2&args=3 -> http example.com 69
+    // /hello.html?also=1&accept=2&args=3
+    parser.testSuccess(
+        line = "GET http://example.com:69/hello.html?also=1&accept=2&args=3#hashtag HTTP/1.0",
+        method = "GET",
+        version = "HTTP/1.0",
+        host = "example.com",
+        port = 69,
+        file = "/hello.html?also=1&accept=2&args=3#hashtag",
     )
   }
 }
