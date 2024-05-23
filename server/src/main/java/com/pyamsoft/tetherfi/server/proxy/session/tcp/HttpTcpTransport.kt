@@ -48,6 +48,7 @@ internal constructor(
   private suspend fun establishHttpsConnection(
       input: ByteReadChannel,
       output: ByteWriteChannel,
+      request: ProxyRequest,
   ) {
     // We exhaust the input here because the client is sending CONNECT data to what it thinks is a
     // server but its actually us, and we don't care how they connect
@@ -59,6 +60,7 @@ internal constructor(
       throwaway = input.readUTF8Line()
     } while (!throwaway.isNullOrBlank())
 
+    Timber.d { "Establish HTTPS CONNECT tunnel ${request.raw}" }
     proxyResponse(output, "HTTP/1.1 200 Connection Established")
   }
 
@@ -85,7 +87,6 @@ internal constructor(
    */
   override suspend fun parseRequest(input: ByteReadChannel): ProxyRequest? {
     val line = input.readUTF8Line()
-    Timber.d { "Proxy input: $line" }
 
     // No line, no go
     if (line.isNullOrBlank()) {
@@ -123,7 +124,11 @@ internal constructor(
         // Establish an HTTPS connection by faking the CONNECT response
         // Send a 200 to the connecting client so that they will then continue to
         // send the actual HTTP data to the real endpoint
-        establishHttpsConnection(proxyInput, proxyOutput)
+        establishHttpsConnection(
+            input = proxyInput,
+            output = proxyOutput,
+            request = request,
+        )
       } else {
         // Send initial HTTP communication, since we consumed it above
         replayHttpCommunication(

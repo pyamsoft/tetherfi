@@ -154,7 +154,7 @@ internal constructor(
       return report
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        Timber.e(e) { "Error during Internet exchange" }
+        Timber.e(e) { "Error during Internet exchange $request" }
         writeError(proxyOutput)
       }
       return null
@@ -262,7 +262,7 @@ internal constructor(
               hostNameOrIp = hostNameOrIp,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation { Timber.e(e) { "Error during Internet exchange" } }
+          e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
         }
       }
 
