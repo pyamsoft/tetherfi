@@ -26,7 +26,17 @@ internal constructor(
     val version: String,
     val raw: String,
     val file: String,
-) : TunnelRequest(method)
+) : TunnelRequest(method) {
+
+  val httpRequest by lazy {
+    // Strip off the hostname just leaving file name for requests
+    // NOTE(Peter): We used to do this and things would work because most network requests
+    // would also send over a HOST header. But it looks like also just sending the unchanged
+    // first line of the request also works just fine. So I do not know why we did this parsing
+    // actually.
+    "$method $file $version"
+  }
+}
 
 internal abstract class TunnelRequest(
     open val method: String,

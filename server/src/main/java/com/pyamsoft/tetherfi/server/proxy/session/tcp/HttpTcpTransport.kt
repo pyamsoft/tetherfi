@@ -71,15 +71,8 @@ internal constructor(
       output: ByteWriteChannel,
       request: ProxyRequest,
   ) {
-    // Strip off the hostname just leaving file name for requests
-    // NOTE(Peter): We used to do this and things would work because most network requests
-    // would also send over a HOST header. But it looks like also just sending the unchanged
-    // first line of the request also works just fine. So I do not know why we did this parsing
-    // actually.
-    //
-    val newRequest = "${request.method} ${request.file} ${request.version}"
-    Timber.d { "Rewrote initial HTTP request: ${request.raw} -> $newRequest" }
-    output.writeFully(writeMessageAndAwaitMore(newRequest))
+    Timber.d { "Rewrote initial HTTP request: ${request.raw} -> ${request.httpRequest}" }
+    output.writeFully(writeMessageAndAwaitMore(request.httpRequest))
   }
 
   /**
@@ -91,15 +84,6 @@ internal constructor(
    * If we buffer we may end up reading the whole input which can be huge, and OOM us.
    */
   override suspend fun parseRequest(input: ByteReadChannel): ProxyRequest? {
-    /**
-     * Read the first line as it should include enough data for us yeah ok, there is often extra
-     * data sent over but its mainly for optimization and rarely required to actually make a
-     * connection
-     *
-     * TODO(Peter): https://github.com/pyamsoft/tetherfi/issues/280
-     *
-     *   Is reading only a single line causing HTTP issues?
-     */
     val line = input.readUTF8Line()
     Timber.d { "Proxy input: $line" }
 
