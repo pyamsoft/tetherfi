@@ -73,13 +73,21 @@ internal constructor(
           ),
       )
 
-  private fun readyState(type: SharedProxy.Type) {
+  private fun adjustState(type: SharedProxy.Type, ready: Boolean) {
     overallState.update { s ->
       when (type) {
-        SharedProxy.Type.TCP -> s.copy(tcp = true)
-        SharedProxy.Type.UDP -> s.copy(udp = true)
+        SharedProxy.Type.TCP -> s.copy(tcp = ready)
+        SharedProxy.Type.UDP -> s.copy(udp = ready)
       }
     }
+  }
+
+  private fun readyState(type: SharedProxy.Type) {
+    adjustState(type, ready = true)
+  }
+
+  private fun unreadyState(type: SharedProxy.Type) {
+    adjustState(type, ready = false)
   }
 
   private fun resetState() {
@@ -119,7 +127,14 @@ internal constructor(
               info = info,
               serverDispatcher = serverDispatcher,
           )
-          .loop { readyState(type) }
+          .loop(
+              onOpened = { readyState(type) },
+              onClosing = {
+                // Closing, we mark as stopping early
+                status.set(RunningStatus.Stopping)
+                unreadyState(type)
+              },
+          )
     } catch (e: Throwable) {
       handleServerLoopError(
           e = e,

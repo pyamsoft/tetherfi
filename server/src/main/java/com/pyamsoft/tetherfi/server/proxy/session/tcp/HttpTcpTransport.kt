@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
@@ -39,16 +38,6 @@ internal constructor(
     private val requestParser: RequestParser,
     private val enforcer: ThreadEnforcer,
 ) : TcpSessionTransport {
-
-  /**
-   * Check if this is an HTTPS connection
-   *
-   * The only HTTPS connection we can read is the CONNECT call
-   */
-  @CheckResult
-  private fun isHttpsConnection(input: ProxyRequest): Boolean {
-    return input.method == "CONNECT"
-  }
 
   /**
    * HTTPS Connections are encrypted and so we cannot see anything further past the initial CONNECT
@@ -146,7 +135,7 @@ internal constructor(
         )
 
     try {
-      if (isHttpsConnection(request)) {
+      if (request.isHttpsConnectRequest()) {
         // Establish an HTTPS connection by faking the CONNECT response
         // Send a 200 to the connecting client so that they will then continue to
         // send the actual HTTP data to the real endpoint

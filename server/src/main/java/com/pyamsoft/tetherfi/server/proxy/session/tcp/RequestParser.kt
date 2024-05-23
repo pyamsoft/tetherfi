@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 
-interface RequestParser {
+internal interface RequestParser {
 
   @CheckResult fun parse(line: String): ProxyRequest?
 }

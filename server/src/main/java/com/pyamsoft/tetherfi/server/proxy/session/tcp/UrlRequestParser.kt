@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
+import com.pyamsoft.tetherfi.server.event.TunnelRequest
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import java.net.URL
 import javax.inject.Inject
@@ -36,10 +37,10 @@ internal constructor(
 ) : RequestParser {
 
   private data class MethodData(
+      override val method: String,
       val url: String,
-      val method: String,
       val version: String,
-  )
+  ) : TunnelRequest(method)
 
   private data class DestinationInfo(
       val hostName: String,
@@ -109,10 +110,12 @@ internal constructor(
    * If the URL does not include the port, determine it from the protocol or just assume it is HTTP
    */
   @CheckResult
-  private fun getUrlAndPort(possiblyProtocolAndHostAndPort: String): DestinationInfo? {
+  private fun getUrlAndPort(methodData: MethodData): DestinationInfo? {
 
     // This could be anything like the following
     // protocol://hostname:port
+    //
+    // HTTPS CONNECT requests will always have a host and a port, no protocol
     //
     // http://example.com -> http example.com 80
     // http://example.com:69 -> http example.com 69
@@ -123,13 +126,20 @@ internal constructor(
     // https://example.com/file.html -> https example.com 443
     // example.com:443/file.html -> https example.com 443
     // example.com/file.html -> http example.com 80
+    val possiblyProtocolAndHostAndPort = methodData.url
 
     // If we are missing the protocol, just assume we are HTTP
     val hopefullyValidUrl =
         if (hasProtocol(possiblyProtocolAndHostAndPort)) possiblyProtocolAndHostAndPort
         else {
-          Timber.w { "No protocol provided, assume HTTP: $possiblyProtocolAndHostAndPort" }
-          "http://$possiblyProtocolAndHostAndPort"
+          if (methodData.isHttpsConnectRequest()) {
+            // For connect requests, we assume https:// as according to RFC spec
+            // https://www.rfc-editor.org/rfc/rfc9110#CONNECT
+            "https://$possiblyProtocolAndHostAndPort"
+          } else {
+            Timber.w { "No protocol provided, assume HTTP: $possiblyProtocolAndHostAndPort" }
+            "http://$possiblyProtocolAndHostAndPort"
+          }
         }
 
     try {
@@ -185,7 +195,7 @@ internal constructor(
         return null
       }
 
-      val urlData = getUrlAndPort(methodData.url)
+      val urlData = getUrlAndPort(methodData)
       if (urlData == null) {
         Timber.w { "Unable to parse URL information: $line $methodData" }
         return null

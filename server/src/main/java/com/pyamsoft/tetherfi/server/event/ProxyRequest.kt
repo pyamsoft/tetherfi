@@ -16,12 +16,24 @@
 
 package com.pyamsoft.tetherfi.server.event
 
-data class ProxyRequest
+import androidx.annotation.CheckResult
+
+internal data class ProxyRequest
 internal constructor(
+    override val method: String,
     val host: String,
-    val method: String,
     val port: Int,
     val version: String,
     val raw: String,
     val file: String,
-)
+) : TunnelRequest(method)
+
+internal abstract class TunnelRequest(
+    open val method: String,
+) {
+
+  @CheckResult
+  fun isHttpsConnectRequest(): Boolean {
+    return method == "CONNECT"
+  }
+}

@@ -70,12 +70,14 @@ protected constructor(
 
   override suspend fun loop(
       onOpened: () -> Unit,
+      onClosing: () -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
         return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
           openServer(builder = builder).use { server ->
             onOpened()
             runServer(server)
+            onClosing()
           }
         }
       }

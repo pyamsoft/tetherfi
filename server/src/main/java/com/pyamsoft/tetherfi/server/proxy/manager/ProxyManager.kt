@@ -25,6 +25,7 @@ internal interface ProxyManager {
 
   suspend fun loop(
       onOpened: () -> Unit,
+      onClosing: () -> Unit,
   )
 
   interface Factory {
