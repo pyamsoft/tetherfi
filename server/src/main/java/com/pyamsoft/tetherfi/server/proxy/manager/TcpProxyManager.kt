@@ -33,6 +33,8 @@ import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
 import java.io.IOException
 import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineScope
@@ -72,36 +74,71 @@ internal constructor(
     return remote.hostname
   }
 
+  private suspend fun CoroutineScope.handleProxyConnection(
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      hostNameOrIp: String,
+  ) {
+    // Sometimes, this can fail because of a broken pipe
+    // Catch the error and continue
+    try {
+      // Resolve the client as an IP or hostname
+      if (hostNameOrIp.isBlank()) {
+        Timber.w { "Unable to resolve TetherClient for connection" }
+        writeProxyError(proxyOutput)
+        return
+      }
+
+      session.exchange(
+          scope = this,
+          hostConnection = hostConnection,
+          serverDispatcher = serverDispatcher,
+          data =
+              TcpProxyData(
+                  proxyInput = proxyInput,
+                  proxyOutput = proxyOutput,
+                  hostNameOrIp = hostNameOrIp,
+              ),
+      )
+    } catch (e: Throwable) {
+      e.ifNotCancellation { Timber.e(e) { "Error occurred during TCP proxy connection" } }
+    }
+  }
+
   private suspend fun runSession(
       scope: CoroutineScope,
       connection: Socket,
   ) {
     enforcer.assertOffMainThread()
 
-    try {
-      val hostNameOrIp = resolveHostNameOrIpAddress(connection)
-      connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
-        // Resolve the client as an IP or hostname
-        if (hostNameOrIp.isBlank()) {
-          Timber.w { "Unable to resolve TetherClient for connection: $connection" }
-          writeProxyError(proxyOutput)
-          return
-        }
+    if (connection.isClosed) {
+      Timber.w { "Connection socket already closed before session started!" }
+      return
+    }
 
-        session.exchange(
-            scope = scope,
-            hostConnection = hostConnection,
-            serverDispatcher = serverDispatcher,
-            data =
-                TcpProxyData(
-                    proxyInput = proxyInput,
-                    proxyOutput = proxyOutput,
-                    hostNameOrIp = hostNameOrIp,
-                ),
+    val hostNameOrIp = resolveHostNameOrIpAddress(connection)
+
+    if (connection.isClosed) {
+      Timber.w {
+        "Connection socket already closed before session started, but after IP resolved: $hostNameOrIp"
+      }
+      return
+    }
+
+    // Sometimes, this can fail because of a broken pipe
+    // Catch the error and continue
+    try {
+      connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
+        scope.handleProxyConnection(
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            hostNameOrIp = hostNameOrIp,
         )
       }
     } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e) { "Error during session $connection" } }
+      e.ifNotCancellation {
+        Timber.e(e) { "Error occurred while establishing TCP Proxy Connection" }
+      }
     }
   }
 
@@ -118,10 +155,13 @@ internal constructor(
                 verifyHostName = true,
             )
         Timber.d { "Bind TCP server to local address: $localAddress" }
-        return@withContext builder.tcp().bind(localAddress = localAddress) {
-          reuseAddress = true
-          reusePort = true
-        }
+        return@withContext builder
+            .tcp()
+            .configure {
+              reuseAddress = true
+              reusePort = true
+            }
+            .bind(localAddress = localAddress)
       }
 
   private suspend fun prepareToTryAgainOrThrow(e: IOException) {

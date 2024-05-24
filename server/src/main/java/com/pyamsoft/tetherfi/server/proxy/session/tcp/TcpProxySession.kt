@@ -88,16 +88,19 @@ internal constructor(
           )
 
       val socket =
-          builder.tcp().connect(remoteAddress = remote) {
-            reuseAddress = true
-            reusePort = true
-
-            if (enableTimeout) {
-              // By default KTOR does not close sockets until "infinity" is reached.
-              // Drop sockets after 7 minutes
-              socketTimeout = 7.minutes.inWholeMilliseconds
-            }
-          }
+          builder
+              .tcp()
+              .configure {
+                reuseAddress = true
+                reusePort = true
+              }
+              .connect(remoteAddress = remote) {
+                if (enableTimeout) {
+                  // By default KTOR does not close sockets until "infinity" is reached.
+                  // Drop sockets after 7 minutes
+                  socketTimeout = 7.minutes.inWholeMilliseconds
+                }
+              }
 
       return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
     }

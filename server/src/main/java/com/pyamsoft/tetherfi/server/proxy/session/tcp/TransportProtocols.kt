@@ -32,9 +32,7 @@ const val SOCKET_EOL = "\r\n"
 /** Right now we speak 1.1, maybe 2.0 someday */
 const val PROXY_HTTP_VERSION = "HTTP/1.1"
 
-/**
- * Static proxy events
- */
+/** Static proxy events */
 private enum class ProxyEvents(
     val code: Int,
     val message: String,
