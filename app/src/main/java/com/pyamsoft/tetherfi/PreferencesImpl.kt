@@ -169,6 +169,14 @@ internal constructor(
     putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
+  override fun listenForTimeoutEnabled(): Flow<Boolean> =
+      preferenceBooleanFlow(TCP_SOCKET_TIMEOUT, false) { preferences }
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setTimeoutEnabled(enabled: Boolean) = setPreference {
+    putBoolean(TCP_SOCKET_TIMEOUT, enabled)
+  }
+
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
               preferenceIntFlow(IN_APP_HOTSPOT_USED, 0) { preferences },
@@ -309,5 +317,7 @@ internal constructor(
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
+
+    private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_1"
   }
 }

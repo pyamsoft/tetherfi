@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -36,20 +37,30 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Singleton
 internal class TcpProxySession
 @Inject
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
+    private val preferences: ConfigPreferences,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val allowedClients: AllowedClients,
     private val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
+
+  @CheckResult
+  private suspend fun isTimeoutEnabled(): Boolean {
+    return preferences.listenForTimeoutEnabled().first()
+  }
 
   /**
    * Given the initial proxy request, connect to the Internet from our device via the connected
@@ -63,6 +74,8 @@ internal constructor(
   ): T {
     enforcer.assertOffMainThread()
 
+    val enableTimeout = isTimeoutEnabled()
+
     return usingSocketBuilder(serverDispatcher.primary) { builder ->
       socketTagger.tagSocket()
 
@@ -75,13 +88,16 @@ internal constructor(
           )
 
       val socket =
-          builder
-              .tcp()
-              .configure {
-                reuseAddress = true
-                reusePort = true
-              }
-              .connect(remoteAddress = remote)
+          builder.tcp().connect(remoteAddress = remote) {
+            reuseAddress = true
+            reusePort = true
+
+            if (enableTimeout) {
+              // By default KTOR does not close sockets until "infinity" is reached.
+              // Drop sockets after 7 minutes
+              socketTimeout = 7.minutes.inWholeMilliseconds
+            }
+          }
 
       return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
     }

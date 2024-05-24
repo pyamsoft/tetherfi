@@ -47,6 +47,7 @@ internal fun LazyListScope.renderTweakCard(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
+    onToggleSocketTimeout: () -> Unit,
 ) {
   item(
       contentType = RenderTweakCardContentTypes.BEHAVIOR_TWEAKS,
@@ -88,6 +89,25 @@ internal fun LazyListScope.renderTweakCard(
                             alpha = textAlpha(isEditable),
                         ),
                 ),
+        )
+
+        val isSocketTimeoutEnabled by state.isSocketTimeoutEnabled.collectAsStateWithLifecycle()
+        val socketTimeoutColor by
+            rememberCheckableColor(
+                enabled = isEditable,
+                label = "Enable Socket Timeout",
+                condition = isSocketTimeoutEnabled,
+                selectedColor = MaterialTheme.colorScheme.primary,
+            )
+
+        ToggleSwitch(
+            modifier = Modifier.fillMaxWidth(),
+            isEditable = isEditable,
+            color = socketTimeoutColor,
+            checked = isSocketTimeoutEnabled,
+            title = stringResource(R.string.enable_socket_timeout_title),
+            description = stringResource(R.string.enable_socket_timeout_description, appName),
+            onClick = onToggleSocketTimeout,
         )
 
         val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()

@@ -140,7 +140,12 @@ internal suspend inline fun setupProxy(
 
   val server =
       scope.async {
-        val block = suspend { manager.loop {} }
+        val block = suspend {
+          manager.loop(
+              onOpened = {},
+              onClosing = {},
+          )
+        }
 
         if (expectServerFail) {
           assertFailsWith<IOException> { block() }

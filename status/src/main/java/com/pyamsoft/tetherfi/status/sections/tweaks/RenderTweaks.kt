@@ -37,6 +37,7 @@ internal fun LazyListScope.renderTweaks(
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
+    onToggleSocketTimeout: () -> Unit,
 ) {
   item(
       contentType = BehaviorTweaksContentTypes.LABEL,
@@ -57,5 +58,6 @@ internal fun LazyListScope.renderTweaks(
       state = state,
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
+      onToggleSocketTimeout = onToggleSocketTimeout,
   )
 }
