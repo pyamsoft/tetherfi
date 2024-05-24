@@ -68,9 +68,6 @@ internal constructor(
 
   override suspend fun openServer(builder: SocketBuilder): BoundDatagramSocket =
       withContext(context = serverDispatcher.primary) {
-        // Tag sockets for Android O strict mode
-        socketTagger.tagSocket()
-
         val localAddress =
             getServerAddress(
                 hostName = hostConnection.hostName,
@@ -85,6 +82,7 @@ internal constructor(
               reuseAddress = true
               reusePort = true
             }
+            .also { socketTagger.tagSocket() }
             .bind(localAddress = localAddress)
       }
 

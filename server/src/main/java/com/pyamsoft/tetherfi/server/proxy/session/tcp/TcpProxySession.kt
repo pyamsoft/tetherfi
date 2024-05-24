@@ -76,8 +76,6 @@ internal constructor(
       block: (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
       usingSocketBuilder(serverDispatcher.primary) { builder ->
-        socketTagger.tagSocket()
-
         // We dont actually use the socket tls() method here since we are not a TLS server
         // We do the CONNECT based workaround to handle HTTPS connections
         val remote =
@@ -94,6 +92,7 @@ internal constructor(
                   reuseAddress = true
                   reusePort = true
                 }
+                .also { socketTagger.tagSocket() }
                 .connect(remoteAddress = remote) {
                   if (enableTimeout) {
                     // By default KTOR does not close sockets until "infinity" is reached.
