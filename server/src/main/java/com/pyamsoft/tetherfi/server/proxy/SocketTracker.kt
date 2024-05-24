@@ -16,10 +16,10 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
-import io.ktor.network.sockets.Socket
+import io.ktor.network.sockets.ASocket
 
 /** Track sockets so that we can close them later */
 fun interface SocketTracker {
 
-  suspend fun track(socket: Socket)
+  suspend fun track(socket: ASocket)
 }

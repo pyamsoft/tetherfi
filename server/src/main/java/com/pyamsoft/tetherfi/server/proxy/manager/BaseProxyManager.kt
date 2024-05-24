@@ -23,7 +23,6 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketAddress
 import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
@@ -41,9 +40,16 @@ protected constructor(
     protected val serverDispatcher: ServerDispatcher,
 ) : ProxyManager {
 
+  /**
+   * Try our best to track every single socket we ever make
+   *
+   * The list is periodically pruned of sockets that are already closed Generally speaking, if we've
+   * done everything right this list should always be either empty or composed of closed sockets. We
+   * should generally never see the "leftover socket" log message
+   */
   private suspend inline fun trackSockets(scope: CoroutineScope, block: (SocketTracker) -> Unit) {
     val mutex = Mutex()
-    val closeAllServerSockets = mutableSetOf<Socket>()
+    val closeAllServerSockets = mutableSetOf<ASocket>()
 
     scope.launch(context = serverDispatcher.sideEffect) {
       while (isActive) {
@@ -124,6 +130,8 @@ protected constructor(
           trackSockets(scope = this) { tracker ->
             openServer(builder = builder).use { server ->
               onOpened()
+              tracker.track(server)
+
               runServer(
                   tracker = tracker,
                   server = server,
@@ -134,7 +142,10 @@ protected constructor(
         }
       }
 
-  protected abstract suspend fun runServer(tracker: SocketTracker, server: S)
+  protected abstract suspend fun runServer(
+      tracker: SocketTracker,
+      server: S,
+  )
 
   @CheckResult protected abstract suspend fun openServer(builder: SocketBuilder): S
 }
