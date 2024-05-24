@@ -111,19 +111,7 @@ internal constructor(
   ) {
     enforcer.assertOffMainThread()
 
-    if (connection.isClosed) {
-      Timber.w { "Connection socket already closed before session started!" }
-      return
-    }
-
     val hostNameOrIp = resolveHostNameOrIpAddress(connection)
-
-    if (connection.isClosed) {
-      Timber.w {
-        "Connection socket already closed before session started, but after IP resolved: $hostNameOrIp"
-      }
-      return
-    }
 
     // Sometimes, this can fail because of a broken pipe
     // Catch the error and continue
