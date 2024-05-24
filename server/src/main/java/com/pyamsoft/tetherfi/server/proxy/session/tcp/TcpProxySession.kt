@@ -65,46 +65,45 @@ internal constructor(
   /**
    * Given the initial proxy request, connect to the Internet from our device via the connected
    * socket
+   *
+   * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
+   * leak
    */
   private suspend inline fun <T> connectToInternet(
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: ProxyRequest,
       block: (ByteReadChannel, ByteWriteChannel) -> T
-  ): T {
-    enforcer.assertOffMainThread()
+  ): T =
+      usingSocketBuilder(serverDispatcher.primary) { builder ->
+        socketTagger.tagSocket()
 
-    val enableTimeout = isTimeoutEnabled()
+        // We dont actually use the socket tls() method here since we are not a TLS server
+        // We do the CONNECT based workaround to handle HTTPS connections
+        val remote =
+            InetSocketAddress(
+                hostname = request.host,
+                port = request.port,
+            )
 
-    return usingSocketBuilder(serverDispatcher.primary) { builder ->
-      socketTagger.tagSocket()
-
-      // We dont actually use the socket tls() method here since we are not a TLS server
-      // We do the CONNECT based workaround to handle HTTPS connections
-      val remote =
-          InetSocketAddress(
-              hostname = request.host,
-              port = request.port,
-          )
-
-      val socket =
-          builder
-              .tcp()
-              .configure {
-                reuseAddress = true
-                reusePort = true
-              }
-              .connect(remoteAddress = remote) {
-                if (enableTimeout) {
-                  // By default KTOR does not close sockets until "infinity" is reached.
-                  // Drop sockets after 7 minutes
-                  socketTimeout = 7.minutes.inWholeMilliseconds
+        val enableTimeout = isTimeoutEnabled()
+        val socket =
+            builder
+                .tcp()
+                .configure {
+                  reuseAddress = true
+                  reusePort = true
                 }
-              }
+                .connect(remoteAddress = remote) {
+                  if (enableTimeout) {
+                    // By default KTOR does not close sockets until "infinity" is reached.
+                    // Drop sockets after 7 minutes
+                    socketTimeout = 7.minutes.inWholeMilliseconds
+                  }
+                }
 
-      return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
-    }
-  }
+        return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
+      }
 
   private fun CoroutineScope.handleClientRequestSideEffects(
       serverDispatcher: ServerDispatcher,

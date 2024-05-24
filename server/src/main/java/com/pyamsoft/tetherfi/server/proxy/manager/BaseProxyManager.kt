@@ -68,6 +68,7 @@ protected constructor(
     )
   }
 
+  /** This function must ALWAYS call usingSocketBuilder {} or else a socket may potentially leak */
   override suspend fun loop(
       onOpened: () -> Unit,
       onClosing: () -> Unit,

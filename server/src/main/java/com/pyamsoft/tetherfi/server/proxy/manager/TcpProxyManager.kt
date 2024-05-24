@@ -105,30 +105,30 @@ internal constructor(
     }
   }
 
+  /**
+   * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
+   * leak
+   */
   private suspend fun runSession(
       scope: CoroutineScope,
       connection: Socket,
-  ) {
-    enforcer.assertOffMainThread()
+  ) =
+      try {
+        // Sometimes, this can fail because of a broken pipe
+        // Catch the error and continue
 
-    val hostNameOrIp = resolveHostNameOrIpAddress(connection)
-
-    // Sometimes, this can fail because of a broken pipe
-    // Catch the error and continue
-    try {
-      connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
-        scope.handleProxyConnection(
-            proxyInput = proxyInput,
-            proxyOutput = proxyOutput,
-            hostNameOrIp = hostNameOrIp,
-        )
+        connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
+          scope.handleProxyConnection(
+              proxyInput = proxyInput,
+              proxyOutput = proxyOutput,
+              hostNameOrIp = resolveHostNameOrIpAddress(connection),
+          )
+        }
+      } catch (e: Throwable) {
+        e.ifNotCancellation {
+          Timber.e(e) { "Error occurred while establishing TCP Proxy Connection" }
+        }
       }
-    } catch (e: Throwable) {
-      e.ifNotCancellation {
-        Timber.e(e) { "Error occurred while establishing TCP Proxy Connection" }
-      }
-    }
-  }
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = serverDispatcher.primary) {
@@ -210,6 +210,8 @@ internal constructor(
         // In a loop, we wait for new TCP connections and then offload them to their own routine.
         while (!server.isClosed) {
           // We must close the connection in the launch{} after exchange is over
+          //
+          // If this function throws, the server will stop
           val connection = ensureAcceptedConnection(server)
 
           // Run this server loop off thread so we can handle multiple connections at once.
