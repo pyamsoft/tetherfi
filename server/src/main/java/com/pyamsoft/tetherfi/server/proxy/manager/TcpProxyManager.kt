@@ -26,7 +26,7 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeError
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeProxyError
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
@@ -84,7 +84,7 @@ internal constructor(
         // Resolve the client as an IP or hostname
         if (hostNameOrIp.isBlank()) {
           Timber.w { "Unable to resolve TetherClient for connection: $connection" }
-          writeError(proxyOutput)
+          writeProxyError(proxyOutput)
           return
         }
 

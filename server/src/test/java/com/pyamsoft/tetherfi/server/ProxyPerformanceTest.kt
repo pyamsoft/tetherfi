@@ -1,6 +1,6 @@
 package com.pyamsoft.tetherfi.server
 
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.LINE_ENDING
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.utils.io.pool.ByteBufferPool
@@ -25,7 +25,7 @@ private val GET_REQUEST =
             "",
             "",
         )
-        .joinToString(LINE_ENDING)
+        .joinToString(SOCKET_EOL)
 
 private val GET_EXPECT_RESPONSE =
     """HTTP/1.1 200 OK
@@ -83,7 +83,7 @@ class ProxyPerformanceTest {
                                     String(dst.array(), 0, amt, Charsets.UTF_8)
                                         // Correct all the CRLF newlines to normal newlines
                                         // This is just for test correctness.
-                                        .replace(LINE_ENDING, System.lineSeparator())
+                                        .replace(SOCKET_EOL, System.lineSeparator())
 
                                 assertEquals(GET_EXPECT_RESPONSE, res)
                               } finally {

@@ -17,7 +17,7 @@
 package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.LINE_ENDING
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.server.application.call
@@ -90,10 +90,10 @@ internal suspend inline fun setupServer(
       b.tcp().connect(SERVER_REMOTE).usingConnection(autoFlush = true) { read, write ->
         val get =
             """
-              GET / HTTP/1.1${LINE_ENDING}
+              GET / HTTP/1.1${SOCKET_EOL}
 
               Host: ${HOSTNAME}:${SERVER_PORT}"""
-                .trimIndent() + LINE_ENDING
+                .trimIndent() + SOCKET_EOL
 
         write.writeStringUtf8(get)
         ByteBufferPool().use { pool ->

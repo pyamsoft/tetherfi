@@ -61,7 +61,7 @@ internal constructor(
     } while (!throwaway.isNullOrBlank())
 
     Timber.d { "Establish HTTPS CONNECT tunnel ${request.raw}" }
-    proxyResponse(output, "HTTP/1.1 200 Connection Established")
+    writeConnectSuccess(output)
   }
 
   /**
@@ -182,7 +182,10 @@ internal constructor(
       // And deliver!
       return report.value
     } catch (e: Throwable) {
-      e.ifNotCancellation { writeError(proxyOutput) }
+      e.ifNotCancellation {
+        Timber.e(e) { "Error occurred during internet exchange: $request" }
+        writeProxyError(proxyOutput)
+      }
 
       // Error means no report
       return null

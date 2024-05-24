@@ -171,7 +171,7 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         Timber.e(e) { "Error during Internet exchange $request" }
-        writeError(proxyOutput)
+        writeProxyError(proxyOutput)
       }
       return null
     }
@@ -191,7 +191,7 @@ internal constructor(
       if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
         if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
           Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
-          writeError(proxyOutput)
+          writeClientBlocked(proxyOutput)
           return
         }
       }
@@ -200,7 +200,7 @@ internal constructor(
     // If the client is blocked we do not process any inpue
     if (blockedClients.isBlocked(hostNameOrIp)) {
       Timber.w { "Client is marked blocked: $hostNameOrIp" }
-      writeError(proxyOutput)
+      writeClientBlocked(proxyOutput)
       return
     }
 
@@ -230,7 +230,7 @@ internal constructor(
         }
     if (handler == null) {
       Timber.w { "Could not parse proxy request" }
-      writeError(proxyOutput)
+      writeProxyError(proxyOutput)
       return
     }
 
