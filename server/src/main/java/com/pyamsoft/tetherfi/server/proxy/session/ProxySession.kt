@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.session
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import kotlinx.coroutines.CoroutineScope
 
 internal interface ProxySession<T : ProxyData> {
@@ -27,6 +28,7 @@ internal interface ProxySession<T : ProxyData> {
       scope: CoroutineScope,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
+      socketTracker: SocketTracker,
       data: T,
   )
 

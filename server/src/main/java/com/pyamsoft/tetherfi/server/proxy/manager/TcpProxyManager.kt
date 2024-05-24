@@ -17,13 +17,13 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
+import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeProxyError
@@ -49,7 +49,6 @@ internal class TcpProxyManager
 internal constructor(
     private val appEnvironment: AppDevEnvironment,
     private val socketTagger: SocketTagger,
-    private val enforcer: ThreadEnforcer,
     private val session: ProxySession<TcpProxyData>,
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
@@ -78,6 +77,7 @@ internal constructor(
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
+      socketTracker: SocketTracker,
   ) {
     // Sometimes, this can fail because of a broken pipe
     // Catch the error and continue
@@ -93,6 +93,7 @@ internal constructor(
           scope = this,
           hostConnection = hostConnection,
           serverDispatcher = serverDispatcher,
+          socketTracker = socketTracker,
           data =
               TcpProxyData(
                   proxyInput = proxyInput,
@@ -112,6 +113,7 @@ internal constructor(
   private suspend fun runSession(
       scope: CoroutineScope,
       connection: Socket,
+      socketTracker: SocketTracker,
   ) =
       try {
         // Sometimes, this can fail because of a broken pipe
@@ -122,6 +124,7 @@ internal constructor(
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
               hostNameOrIp = resolveHostNameOrIpAddress(connection),
+              socketTracker = socketTracker,
           )
         }
       } catch (e: Throwable) {
@@ -201,19 +204,32 @@ internal constructor(
     throw IllegalStateException("TCP Proxy failed to grab a socket correctly")
   }
 
-  override suspend fun runServer(server: ServerSocket) =
+  override suspend fun runServer(tracker: SocketTracker, server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
         Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
 
-        // In a loop, we wait for new TCP connections and then offload them to their own routine.
-        while (!server.isClosed) {
-          // We must close the connection in the launch{} after exchange is over
-          //
-          // If this function throws, the server will stop
-          val connection = ensureAcceptedConnection(server)
+        try {
+          // In a loop, we wait for new TCP connections and then offload them to their own routine.
+          while (!server.isClosed) {
+            // We must close the connection in the launch{} after exchange is over
+            //
+            // If this function throws, the server will stop
+            val connection = ensureAcceptedConnection(server)
 
-          // Run this server loop off thread so we can handle multiple connections at once.
-          launch(context = serverDispatcher.primary) { runSession(this, connection) }
+            // Track this socket to close it later
+            tracker.track(connection)
+
+            // Run this server loop off thread so we can handle multiple connections at once.
+            launch(context = serverDispatcher.primary) {
+              runSession(
+                  scope = this,
+                  connection = connection,
+                  socketTracker = tracker,
+              )
+            }
+          }
+        } finally {
+          Timber.d { "Closing TCP server on ${server.localAddress}" }
         }
       }
 

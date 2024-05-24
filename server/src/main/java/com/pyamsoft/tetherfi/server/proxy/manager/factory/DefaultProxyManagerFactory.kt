@@ -27,10 +27,8 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
-import com.pyamsoft.tetherfi.server.proxy.manager.UdpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +39,6 @@ internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
-    @ServerInternalApi private val udpSession: ProxySession<UdpProxyData>,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
@@ -58,7 +55,6 @@ internal constructor(
     val port = configPreferences.listenForPortChanges().first()
 
     return TcpProxyManager(
-        enforcer = enforcer,
         socketTagger = socketTagger,
         session = tcpSession,
         hostConnection = info,
@@ -66,25 +62,6 @@ internal constructor(
         serverDispatcher = dispatcher,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
-    )
-  }
-
-  @CheckResult
-  private suspend fun createUdp(
-      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      dispatcher: ServerDispatcher,
-  ): ProxyManager {
-    enforcer.assertOffMainThread()
-
-    val port = configPreferences.listenForPortChanges().first()
-
-    return UdpProxyManager(
-        enforcer = enforcer,
-        session = udpSession,
-        hostConnection = info,
-        port = port,
-        socketTagger = socketTagger,
-        serverDispatcher = dispatcher,
     )
   }
 
@@ -101,10 +78,7 @@ internal constructor(
                   dispatcher = serverDispatcher,
               )
           SharedProxy.Type.UDP ->
-              createUdp(
-                  info = info,
-                  dispatcher = serverDispatcher,
-              )
+              throw IllegalArgumentException("Proxy type $type not supported yet!")
         }
       }
 }

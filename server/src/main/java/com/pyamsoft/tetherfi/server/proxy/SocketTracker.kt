@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.udp
+package com.pyamsoft.tetherfi.server.proxy
 
-import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
-import io.ktor.network.sockets.Datagram
+import io.ktor.network.sockets.Socket
 
-internal data class UdpProxyData
-internal constructor(
-    internal val datagram: Datagram,
-) : ProxyData
+/** Track sockets so that we can close them later */
+fun interface SocketTracker {
+
+  suspend fun track(socket: Socket)
+}

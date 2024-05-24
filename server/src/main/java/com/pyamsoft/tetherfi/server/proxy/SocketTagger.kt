@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
-interface SocketTagger {
+fun interface SocketTagger {
 
   fun tagSocket()
 }

@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
+import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
@@ -73,6 +74,7 @@ internal constructor(
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: ProxyRequest,
+      socketTracker: SocketTracker,
       block: (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
       usingSocketBuilder(serverDispatcher.primary) { builder ->
@@ -100,6 +102,9 @@ internal constructor(
                     socketTimeout = 7.minutes.inWholeMilliseconds
                   }
                 }
+
+        // Track this socket for when we fully shut down
+        socketTracker.track(socket)
 
         return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
       }
@@ -142,6 +147,7 @@ internal constructor(
       handler: RequestHandler,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
   ): ByteTransferReport? {
     enforcer.assertOffMainThread()
 
@@ -154,6 +160,7 @@ internal constructor(
           connectToInternet(
               autoFlush = true,
               serverDispatcher = serverDispatcher,
+              socketTracker = socketTracker,
               request = request,
           ) { internetInput, internetOutput ->
             // Communicate between the web connection we've made and back to our client device
@@ -184,6 +191,7 @@ internal constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
       hostNameOrIp: String,
   ) {
     // If the host is an IP address, and we are an IP address,
@@ -242,6 +250,7 @@ internal constructor(
             handler = handler,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
+            socketTracker = socketTracker,
         )
 
     if (report != null) {
@@ -263,6 +272,7 @@ internal constructor(
       scope: CoroutineScope,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
+      socketTracker: SocketTracker,
       data: TcpProxyData,
   ) =
       withContext(context = serverDispatcher.primary) {
@@ -277,6 +287,7 @@ internal constructor(
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
               hostNameOrIp = hostNameOrIp,
+              socketTracker = socketTracker,
           )
         } catch (e: Throwable) {
           e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }

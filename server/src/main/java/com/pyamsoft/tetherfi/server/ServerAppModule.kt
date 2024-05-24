@@ -48,8 +48,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.udp.UdpProxySession
 import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
 import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
 import dagger.Binds
@@ -140,11 +138,6 @@ abstract class ServerAppModule {
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
-
-  @Binds
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindUdpProxySession(impl: UdpProxySession): ProxySession<UdpProxyData>
 
   @Module
   companion object {
