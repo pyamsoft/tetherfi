@@ -19,6 +19,7 @@ import java.util.Properties
 plugins {
   id("com.android.application")
   id("com.google.devtools.ksp")
+  id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -29,8 +30,8 @@ android {
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
 
-    versionCode = 41
-    versionName = "20240501-1"
+    versionCode = 42
+    versionName = "20240601-1"
 
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
@@ -90,8 +91,6 @@ android {
     compose = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "${rootProject.extra["composeCompiler"]}" }
-
   // Fixes this error message
   // More than one file was found with OS independent path "META-INF/core_release.kotlin_module"
   packaging {
@@ -121,7 +120,7 @@ dependencies {
   debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
 
   // AndroidX
-  implementation("androidx.appcompat:appcompat:1.6.1")
+  implementation("androidx.appcompat:appcompat:1.7.0")
   implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
 
   // Needed just for androidx.preference.PreferenceManager
