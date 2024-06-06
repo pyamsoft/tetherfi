@@ -17,17 +17,32 @@
 package com.pyamsoft.tetherfi.connections
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
+import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
 import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
@@ -42,6 +57,28 @@ internal fun BandwidthDialog(
     onDismiss: () -> Unit,
     onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
 ) {
+  // Don't let people pick bytes, who wants to limit bytes?
+  val availableUnits = remember { BandwidthUnit.entries.filterNot { it == BandwidthUnit.BYTE } }
+
+  // Initialize this to the current name
+  // This way we can track changes quickly without needing to update the model
+  val (enabled, setEnabled) = remember(client) { mutableStateOf(client.limit != null) }
+  val (amount, setAmount) =
+      remember(client) { mutableStateOf(client.limit?.amount?.toString().orEmpty()) }
+  val (limitUnit, setLimitUnit) =
+      remember(client) { mutableStateOf(client.limit?.unit ?: BandwidthUnit.KB) }
+
+  val hapticManager = LocalHapticManager.current
+  val amountValue = remember(amount) { amount.toULongOrNull() }
+  val canSave =
+      remember(amountValue, enabled) {
+        if (!enabled) {
+          return@remember true
+        } else {
+          return@remember amountValue != null
+        }
+      }
+
   Dialog(
       properties = rememberDialogProperties(),
       onDismissRequest = onDismiss,
@@ -55,7 +92,116 @@ internal fun BandwidthDialog(
       Column(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
       ) {
-        Text(text = "Limit: ${client.limit?.display.orEmpty()}")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+              modifier = Modifier.weight(1F),
+              text = stringResource(R.string.bandwidth_label),
+              style = MaterialTheme.typography.titleSmall,
+              color =
+                  if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                  } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                  })
+
+          Switch(
+              checked = enabled,
+              onCheckedChange = { newEnabled ->
+                if (newEnabled) {
+                  hapticManager?.toggleOn()
+                } else {
+                  hapticManager?.toggleOff()
+                }
+                setEnabled(newEnabled)
+              },
+          )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          TextField(
+              modifier = Modifier.weight(1F),
+              value = amount,
+              onValueChange = { setAmount(it) },
+              enabled = enabled,
+              keyboardOptions =
+                  KeyboardOptions(
+                      keyboardType = KeyboardType.Number,
+                  ),
+          )
+
+          Column(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+          ) {
+            availableUnits.forEach { u ->
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+              ) {
+                val isSelected = remember(limitUnit, u) { u == limitUnit }
+                RadioButton(
+                    enabled = enabled,
+                    selected = isSelected,
+                    onClick = { setLimitUnit(u) },
+                )
+
+                Text(
+                    text = u.displayName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.run {
+                          if (enabled) {
+                            this
+                          } else {
+                            copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                          }
+                        })
+              }
+            }
+          }
+        }
+
+        Row(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Spacer(
+              modifier = Modifier.weight(1F),
+          )
+
+          TextButton(
+              onClick = onDismiss,
+          ) {
+            Text(
+                text = stringResource(android.R.string.cancel),
+            )
+          }
+          Button(
+              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+              enabled = canSave,
+              onClick = {
+                val limit =
+                    if (enabled) {
+                      amountValue?.let { v ->
+                        BandwidthLimit(
+                            amount = v,
+                            unit = limitUnit,
+                        )
+                      }
+                    } else {
+                      null
+                    }
+                onUpdateBandwidthLimit(limit)
+                onDismiss()
+              },
+          ) {
+            Text(
+                text = stringResource(android.R.string.ok),
+            )
+          }
+        }
       }
     }
   }

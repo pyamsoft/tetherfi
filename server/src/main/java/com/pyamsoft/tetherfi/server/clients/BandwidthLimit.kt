@@ -32,7 +32,7 @@ enum class BandwidthUnit(val displayName: String) {
   BYTE("bytes"),
   KB("KB"),
   MB("MB"),
-  GB("DB"),
+  GB("GB"),
   TB("TB"),
   PB("PB"),
 }

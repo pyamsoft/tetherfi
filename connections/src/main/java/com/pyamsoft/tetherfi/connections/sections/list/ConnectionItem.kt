@@ -264,6 +264,7 @@ private fun Bandwidth(
         text =
             stringResource(
                 R.string.bandwidth_limit,
+                stringResource(R.string.bandwidth_label),
                 displayLimit,
             ),
         style =
