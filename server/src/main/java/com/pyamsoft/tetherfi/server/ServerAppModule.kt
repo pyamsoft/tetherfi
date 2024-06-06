@@ -25,6 +25,7 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizerImpl
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.ClientEditor
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.StartedClients
@@ -91,6 +92,8 @@ abstract class ServerAppModule {
   @Binds @CheckResult internal abstract fun bindSeenClients(impl: ClientManagerImpl): AllowedClients
 
   @Binds @CheckResult internal abstract fun bindClientEraser(impl: ClientManagerImpl): ClientEraser
+
+  @Binds @CheckResult internal abstract fun bindClientEditor(impl: ClientManagerImpl): ClientEditor
 
   @Binds
   @CheckResult

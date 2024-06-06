@@ -17,9 +17,12 @@
 package com.pyamsoft.tetherfi.connections
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
+import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.ClientEditor
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
 import javax.inject.Inject
@@ -34,6 +37,7 @@ internal constructor(
     private val allowedClients: AllowedClients,
     private val blockedClients: BlockedClients,
     private val blockTracker: BlockedClientTracker,
+    private val clientEditor: ClientEditor,
 ) : ConnectionViewState by state, AbstractViewModeler<ConnectionViewState>(state) {
 
   fun bind(scope: CoroutineScope) {
@@ -71,5 +75,25 @@ internal constructor(
 
   fun handleCloseManageBandwidthLimit() {
     state.managingBandwidthLimit.value = null
+  }
+
+  fun handleUpdateNickName(scope: CoroutineScope, nickName: String) {
+    val client = state.managingNickName.value
+    if (client == null) {
+      Timber.w { "Cannot update nick name, no client" }
+      return
+    }
+
+    scope.launch(context = Dispatchers.Default) { clientEditor.updateNickName(client, nickName) }
+  }
+
+  fun handleUpdateBandwidthLimit(scope: CoroutineScope, limit: BandwidthLimit?) {
+    val client = state.managingNickName.value
+    if (client == null) {
+      Timber.w { "Cannot update limit, no client" }
+      return
+    }
+
+    scope.launch(context = Dispatchers.Default) { clientEditor.updateBandwidthLimit(client, limit) }
   }
 }

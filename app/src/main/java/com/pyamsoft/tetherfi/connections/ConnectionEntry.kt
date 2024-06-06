@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.connections
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
@@ -59,6 +60,7 @@ fun ConnectionEntry(
 ) {
   val component = rememberComposableInjector { ConnectionInjector() }
   val viewModel = rememberNotNull(component.viewModel)
+  val scope = rememberCoroutineScope()
 
   // Hooks that run on mount
   MountHooks(
@@ -75,5 +77,17 @@ fun ConnectionEntry(
       onCloseManageNickName = { viewModel.handleCloseManageNickName() },
       onOpenManageBandwidthLimit = { viewModel.handleOpenManageBandwidthLimit(it) },
       onCloseManageBandwidthLimit = { viewModel.handleCloseManageBandwidthLimit() },
+      onUpdateNickName = {
+        viewModel.handleUpdateNickName(
+            scope = scope,
+            nickName = it,
+        )
+      },
+      onUpdateBandwidthLimit = {
+        viewModel.handleUpdateBandwidthLimit(
+            scope = scope,
+            limit = it,
+        )
+      },
   )
 }

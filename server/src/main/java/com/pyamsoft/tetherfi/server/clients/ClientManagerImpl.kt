@@ -101,6 +101,13 @@ internal constructor(
       }
 
   @CheckResult
+  private fun editBandwidthLimit(client: TetherClient, limit: BandwidthLimit?): TetherClient =
+      when (client) {
+        is IpAddressClient -> client.copy(limit = limit)
+        is HostNameClient -> client.copy(limit = limit)
+      }
+
+  @CheckResult
   private fun updateTransferReport(client: TetherClient, report: ByteTransferReport): TetherClient =
       when (client) {
         is IpAddressClient -> client.copy(totalBytes = client.mergeReport(report))
@@ -318,6 +325,14 @@ internal constructor(
         handleClientUpdate(
             hostNameOrIp = client.toHostNameOrIp(),
             onClientUpdated = { editNickName(it, nickName) },
+        )
+      }
+
+  override suspend fun updateBandwidthLimit(client: TetherClient, limit: BandwidthLimit?) =
+      withContext(context = Dispatchers.Default) {
+        handleClientUpdate(
+            hostNameOrIp = client.toHostNameOrIp(),
+            onClientUpdated = { editBandwidthLimit(it, limit) },
         )
       }
 

@@ -22,23 +22,28 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.tetherfi.connections.sections.list.renderConnectionList
 import com.pyamsoft.tetherfi.connections.sections.renderExcuse
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
+import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
+import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+import java.time.Clock
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.annotations.TestOnly
 
 private enum class ConnectionScreenContentTypes {
   BOTTOM_SPACER,
@@ -53,8 +58,10 @@ fun ConnectionScreen(
     onToggleBlock: (TetherClient) -> Unit,
     onOpenManageNickName: (TetherClient) -> Unit,
     onCloseManageNickName: () -> Unit,
+    onUpdateNickName: (String) -> Unit,
     onOpenManageBandwidthLimit: (TetherClient) -> Unit,
     onCloseManageBandwidthLimit: () -> Unit,
+    onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val clients = state.connections.collectAsStateListWithLifecycle()
@@ -101,26 +108,104 @@ fun ConnectionScreen(
   }
 
   manageNickName?.also { manage ->
-    Dialog(
-        properties = rememberDialogProperties(),
-        onDismissRequest = { onCloseManageNickName() },
-    ) {
-      Text(
-          text = "Nickname: ${manage.nickName}",
-          style = MaterialTheme.typography.bodyLarge,
-      )
-    }
+    NickNameDialog(
+        client = manage,
+        onUpdateNickName = onUpdateNickName,
+        onDismiss = { onCloseManageNickName() },
+    )
   }
 
   manageBandwidth?.also { manage ->
-    Dialog(
-        properties = rememberDialogProperties(),
-        onDismissRequest = { onCloseManageBandwidthLimit() },
-    ) {
-      Text(
-          text = "Bandwidth: ${manage.nickName}",
-          style = MaterialTheme.typography.bodyLarge,
-      )
-    }
+    BandwidthDialog(
+        client = manage,
+        onUpdateBandwidthLimit = onUpdateBandwidthLimit,
+        onDismiss = { onCloseManageBandwidthLimit() },
+    )
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewConnectionScreen(
+    serverViewState: ServerViewState,
+    nickName: TetherClient?,
+    bandwidth: TetherClient?,
+) {
+  ConnectionScreen(
+      appName = "TEST",
+      state =
+          object : ConnectionViewState {
+            override val connections = MutableStateFlow(emptyList<TetherClient>())
+            override val blocked = MutableStateFlow(emptyList<TetherClient>())
+            override val managingNickName = MutableStateFlow(nickName)
+            override val managingBandwidthLimit = MutableStateFlow(bandwidth)
+          },
+      serverViewState = serverViewState,
+      onCloseManageNickName = {},
+      onUpdateNickName = {},
+      onUpdateBandwidthLimit = {},
+      onCloseManageBandwidthLimit = {},
+      onToggleBlock = {},
+      onOpenManageNickName = {},
+      onOpenManageBandwidthLimit = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionScreenEmpty() {
+  PreviewConnectionScreen(
+      nickName = null,
+      bandwidth = null,
+      serverViewState =
+          object : ServerViewState {
+            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+            override val port = MutableStateFlow(9999)
+          },
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionScreenEmptyManageNickName() {
+  PreviewConnectionScreen(
+      nickName =
+          TetherClient.testCreate(
+              hostNameOrIp = "127.0.0.1",
+              clock = Clock.systemDefaultZone(),
+              nickName = "TEST",
+              limit = null,
+              totalBytes = ByteTransferReport.EMPTY,
+          ),
+      bandwidth = null,
+      serverViewState =
+          object : ServerViewState {
+            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+            override val port = MutableStateFlow(9999)
+          },
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionScreenEmptyManageBandwidth() {
+  PreviewConnectionScreen(
+      nickName = null,
+      bandwidth =
+          TetherClient.testCreate(
+              hostNameOrIp = "127.0.0.1",
+              clock = Clock.systemDefaultZone(),
+              nickName = "",
+              limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+              totalBytes = ByteTransferReport.EMPTY,
+          ),
+      serverViewState =
+          object : ServerViewState {
+            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+            override val port = MutableStateFlow(9999)
+          },
+  )
 }

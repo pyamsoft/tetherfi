@@ -22,4 +22,9 @@ interface ClientEditor {
       client: TetherClient,
       nickName: String,
   )
+
+  suspend fun updateBandwidthLimit(
+      client: TetherClient,
+      limit: BandwidthLimit?,
+  )
 }
