@@ -51,6 +51,26 @@ internal suspend inline fun setupProxy(
     appEnv: AppDevEnvironment.() -> Unit = {},
     withServer: CoroutineScope.(CoroutineDispatcher) -> Unit,
 ) {
+  val preferences =
+      object : ServerPreferences {
+        override fun listenForStartIgnoreVpn(): Flow<Boolean> {
+          return flowOf(false)
+        }
+
+        override fun setStartIgnoreVpn(ignore: Boolean) {}
+
+        override fun listenForShutdownWithNoClients(): Flow<Boolean> {
+          return flowOf(false)
+        }
+
+        override fun setShutdownWithNoClients(shutdown: Boolean) {}
+
+        override fun listenForTimeoutEnabled(): Flow<Boolean> {
+          return flowOf(false)
+        }
+
+        override fun setTimeoutEnabled(enabled: Boolean) {}
+      }
   val dispatcher =
       object : ServerDispatcher {
         override val primary = newSingleThreadContext("TEST")
@@ -110,7 +130,6 @@ internal suspend inline fun setupProxy(
   val manager =
       TcpProxyManager(
           appEnvironment = AppDevEnvironment().apply(appEnv),
-          enforcer = enforcer,
           session =
               TcpProxySession(
                   transports =
@@ -127,6 +146,7 @@ internal suspend inline fun setupProxy(
                   allowedClients = allowed,
                   enforcer = enforcer,
                   socketTagger = socketTagger,
+                  preferences = preferences,
               ),
           hostConnection =
               BroadcastNetworkStatus.ConnectionInfo.Connected(

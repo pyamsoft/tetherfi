@@ -20,9 +20,9 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -51,7 +51,7 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
-    private val preferences: ConfigPreferences,
+    private val preferences: ServerPreferences,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val allowedClients: AllowedClients,
@@ -98,8 +98,7 @@ internal constructor(
                 .connect(remoteAddress = remote) {
                   if (enableTimeout) {
                     // By default KTOR does not close sockets until "infinity" is reached.
-                    // Drop sockets after 7 minutes
-                    socketTimeout = 7.minutes.inWholeMilliseconds
+                    socketTimeout = 1.minutes.inWholeMilliseconds
                   }
                 }
 

@@ -25,25 +25,6 @@ import java.time.LocalDateTime
 
 private val UNIT_JUMP = 1024UL
 
-enum class BandwidthUnit(val displayName: String) {
-  BYTE("bytes"),
-  KB("KB"),
-  MB("MB"),
-  GB("DB"),
-  TB("TB"),
-  PB("PB"),
-}
-
-@Stable
-@Immutable
-data class BandwidthLimit(
-    val amount: ULong,
-    val unit: BandwidthUnit,
-) {
-
-  val display by lazy { "$amount ${unit.displayName}" }
-}
-
 @Stable
 @Immutable
 sealed class TetherClient(
@@ -83,46 +64,6 @@ sealed class TetherClient(
       }
 
   @CheckResult
-  fun matches(o: TetherClient): Boolean {
-    when (this) {
-      is IpAddress -> {
-        if (o is IpAddress) {
-          return ip == o.ip
-        }
-
-        return false
-      }
-      is HostName -> {
-        if (o is HostName) {
-          return hostname == o.hostname
-        }
-
-        return false
-      }
-    }
-  }
-
-  @CheckResult
-  fun matches(hostNameOrIp: String): Boolean {
-    when (this) {
-      is IpAddress -> {
-        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-          return ip == hostNameOrIp
-        }
-
-        return false
-      }
-      is HostName -> {
-        if (!IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-          return hostname == hostNameOrIp
-        }
-
-        return false
-      }
-    }
-  }
-
-  @CheckResult
   private fun BandwidthLimit.isOver(limit: BandwidthLimit): Boolean {
     // If unit is larger than other unit, we are over
     if (this.unit > limit.unit) {
@@ -136,6 +77,46 @@ sealed class TetherClient(
 
     // Otherwise, I guess we are good
     return false
+  }
+
+  @CheckResult
+  fun matches(o: TetherClient): Boolean {
+    when (this) {
+      is IpAddressClient -> {
+        if (o is IpAddressClient) {
+          return ip == o.ip
+        }
+
+        return false
+      }
+      is HostNameClient -> {
+        if (o is HostNameClient) {
+          return hostname == o.hostname
+        }
+
+        return false
+      }
+    }
+  }
+
+  @CheckResult
+  fun matches(hostNameOrIp: String): Boolean {
+    when (this) {
+      is IpAddressClient -> {
+        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+          return ip == hostNameOrIp
+        }
+
+        return false
+      }
+      is HostNameClient -> {
+        if (!IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+          return hostname == hostNameOrIp
+        }
+
+        return false
+      }
+    }
   }
 
   @CheckResult
@@ -163,42 +144,12 @@ sealed class TetherClient(
     )
   }
 
-  data class IpAddress
-  internal constructor(
-      val ip: String,
-      override val nickName: String,
-      override val mostRecentlySeen: LocalDateTime,
-      override val limit: BandwidthLimit?,
-      override val totalBytes: ByteTransferReport,
-  ) :
-      TetherClient(
-          nickName = nickName,
-          mostRecentlySeen = mostRecentlySeen,
-          totalBytes = totalBytes,
-          limit = limit,
-      )
-
-  data class HostName
-  internal constructor(
-      val hostname: String,
-      override val nickName: String,
-      override val mostRecentlySeen: LocalDateTime,
-      override val limit: BandwidthLimit?,
-      override val totalBytes: ByteTransferReport,
-  ) :
-      TetherClient(
-          nickName = nickName,
-          mostRecentlySeen = mostRecentlySeen,
-          totalBytes = totalBytes,
-          limit = limit,
-      )
-
   companion object {
 
     @CheckResult
     fun create(hostNameOrIp: String, clock: Clock): TetherClient {
       return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-        IpAddress(
+        IpAddressClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = "",
@@ -206,7 +157,7 @@ sealed class TetherClient(
             totalBytes = ByteTransferReport.EMPTY,
         )
       } else {
-        HostName(
+        HostNameClient(
             hostname = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = "",
@@ -221,7 +172,7 @@ sealed class TetherClient(
 @CheckResult
 fun TetherClient.key(): String {
   return when (this) {
-    is TetherClient.HostName -> this.hostname
-    is TetherClient.IpAddress -> this.ip
+    is HostNameClient -> this.hostname
+    is IpAddressClient -> this.ip
   }
 }

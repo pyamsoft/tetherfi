@@ -65,8 +65,7 @@ internal fun ConnectionItem(
       remember(client) {
         FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen)
       }
-  val totalTransferredToInternet = remember(client) { client.transferToInternet }
-  val totalTransferredFromInternet = remember(client) { client.transferFromInternet }
+  val isOverLimit = remember(client) { client.isOverBandwidthLimit() }
 
   val isNotBlocked =
       remember(
@@ -121,7 +120,7 @@ internal fun ConnectionItem(
         Text(
             text =
                 stringResource(
-                    R.string.connection_total_to_internet, totalTransferredToInternet.display),
+                    R.string.connection_total_to_internet, client.transferToInternet.display),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
@@ -134,7 +133,7 @@ internal fun ConnectionItem(
         Text(
             text =
                 stringResource(
-                    R.string.connection_total_from_internet, totalTransferredFromInternet.display),
+                    R.string.connection_total_from_internet, client.transferFromInternet.display),
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color =
@@ -143,6 +142,40 @@ internal fun ConnectionItem(
                         ),
                 ),
         )
+
+        client.limit?.also { limit ->
+          val displayLimit =
+              remember(isOverLimit, limit) {
+                if (isOverLimit) {
+                  "OVER LIMIT: ${limit.display}"
+                } else {
+                  limit.display
+                }
+              }
+
+          val color =
+              if (isOverLimit) {
+                MaterialTheme.colorScheme.error.copy(
+                    alpha = TypographyDefaults.ALPHA_DISABLED,
+                )
+              } else {
+                MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = TypographyDefaults.ALPHA_DISABLED,
+                )
+              }
+
+          Text(
+              text =
+                  stringResource(
+                      R.string.bandwidth_limit,
+                      displayLimit,
+                  ),
+              style =
+                  MaterialTheme.typography.bodySmall.copy(
+                      color = color,
+                  ),
+          )
+        }
       }
     }
   }

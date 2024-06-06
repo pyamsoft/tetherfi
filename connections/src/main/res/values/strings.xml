@@ -22,6 +22,7 @@
   <string
     name="connection_total_from_internet"
   >Total Transferred From Internet: %1$s</string>
+  <string name="bandwidth_limit">Bandwidth Limit: %1$s</string>
   <string
     name="connection_excuse"
   >A more friendly solution is being actively investigated.</string>

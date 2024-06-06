@@ -24,7 +24,7 @@
   <string
     name="enable_socket_timeout_description"
   >For most day-to-day usage, this option should be enabled.
-    This allows %1$s to clean up old/dead connections after 5 minutes of no activity.
+    This allows %1$s to clean up old/dead connections after 1 minute of no activity.
     For large or long downloads, this option should be kept OFF.
     (recommended)</string>
 </resources>

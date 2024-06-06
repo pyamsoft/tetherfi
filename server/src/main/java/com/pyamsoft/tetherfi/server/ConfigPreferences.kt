@@ -40,8 +40,4 @@ interface ConfigPreferences {
   @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
 
   fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
-
-  @CheckResult fun listenForTimeoutEnabled(): Flow<Boolean>
-
-  fun setTimeoutEnabled(enabled: Boolean)
 }

@@ -319,7 +319,7 @@ internal constructor(
     }
 
     // Always populate the latest socket timeout value
-    configPreferences.listenForTimeoutEnabled().also { f ->
+    serverPreferences.listenForTimeoutEnabled().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { timeout ->
           s.isSocketTimeoutEnabled.value = timeout
@@ -563,7 +563,7 @@ internal constructor(
 
   fun handleToggleSocketTimeout() {
     val newVal = state.isSocketTimeoutEnabled.updateAndGet { !it }
-    configPreferences.setTimeoutEnabled(newVal)
+    serverPreferences.setTimeoutEnabled(newVal)
   }
 
   companion object {

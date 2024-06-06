@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server
+package com.pyamsoft.tetherfi.server.clients
 
-import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 
-interface ServerPreferences {
+@Stable
+@Immutable
+data class BandwidthLimit(
+    val amount: ULong,
+    val unit: BandwidthUnit,
+) {
+  val display by lazy { "$amount ${unit.displayName}" }
+}
 
-  // Tweaks
-  @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
-
-  fun setStartIgnoreVpn(ignore: Boolean)
-
-  @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
-
-  fun setShutdownWithNoClients(shutdown: Boolean)
-
-  @CheckResult fun listenForTimeoutEnabled(): Flow<Boolean>
-
-  fun setTimeoutEnabled(enabled: Boolean)
+enum class BandwidthUnit(val displayName: String) {
+  BYTE("bytes"),
+  KB("KB"),
+  MB("MB"),
+  GB("DB"),
+  TB("TB"),
+  PB("PB"),
 }

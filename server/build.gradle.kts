@@ -43,6 +43,16 @@ android {
   kotlinOptions { jvmTarget = JavaVersion.VERSION_17.majorVersion }
 
   buildFeatures { buildConfig = false }
+
+  // Fixes this error message
+  // More than one file was found with OS independent path "META-INF/core_release.kotlin_module"
+  packaging {
+    resources.pickFirsts +=
+        setOf(
+            "META-INF/INDEX.LIST",
+            "META-INF/io.netty.versions.properties",
+        )
+  }
 }
 
 dependencies {

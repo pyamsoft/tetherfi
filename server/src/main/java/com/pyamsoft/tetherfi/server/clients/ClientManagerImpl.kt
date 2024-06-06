@@ -82,29 +82,29 @@ internal constructor(
   @CheckResult
   private fun TetherClient.toHostNameOrIp(): String =
       when (this) {
-        is TetherClient.IpAddress -> ip
-        is TetherClient.HostName -> hostname
+        is IpAddressClient -> ip
+        is HostNameClient -> hostname
       }
 
   @CheckResult
   private fun markLastSeenNow(client: TetherClient): TetherClient =
       when (client) {
-        is TetherClient.IpAddress -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
-        is TetherClient.HostName -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+        is IpAddressClient -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
+        is HostNameClient -> client.copy(mostRecentlySeen = LocalDateTime.now(clock))
       }
 
   @CheckResult
   private fun editNickName(client: TetherClient, nickName: String): TetherClient =
       when (client) {
-        is TetherClient.IpAddress -> client.copy(nickName = nickName)
-        is TetherClient.HostName -> client.copy(nickName = nickName)
+        is IpAddressClient -> client.copy(nickName = nickName)
+        is HostNameClient -> client.copy(nickName = nickName)
       }
 
   @CheckResult
   private fun updateTransferReport(client: TetherClient, report: ByteTransferReport): TetherClient =
       when (client) {
-        is TetherClient.IpAddress -> client.copy(totalBytes = client.mergeReport(report))
-        is TetherClient.HostName -> client.copy(totalBytes = client.mergeReport(report))
+        is IpAddressClient -> client.copy(totalBytes = client.mergeReport(report))
+        is HostNameClient -> client.copy(totalBytes = client.mergeReport(report))
       }
 
   private fun CoroutineScope.onNewClientSeen(client: TetherClient) {
