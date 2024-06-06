@@ -22,7 +22,7 @@ main() {
     return 1
   fi
   
-  npm install prettier @prettier/plugin-xml || return 1
+  npm install -E prettier @prettier/plugin-xml npm-check-updates || return 1
   return 0
 }
 

@@ -71,5 +71,9 @@ fun ConnectionEntry(
       state = viewModel,
       serverViewState = serverViewState,
       onToggleBlock = { viewModel.handleToggleBlock(it) },
+      onOpenManageNickName = { viewModel.handleOpenManageNickName(it) },
+      onCloseManageNickName = { viewModel.handleCloseManageNickName() },
+      onOpenManageBandwidthLimit = { viewModel.handleOpenManageBandwidthLimit(it) },
+      onCloseManageBandwidthLimit = { viewModel.handleCloseManageBandwidthLimit() },
   )
 }

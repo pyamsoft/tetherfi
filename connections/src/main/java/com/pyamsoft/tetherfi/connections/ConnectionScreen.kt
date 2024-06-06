@@ -22,12 +22,15 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.tetherfi.connections.sections.list.renderConnectionList
 import com.pyamsoft.tetherfi.connections.sections.renderExcuse
@@ -48,10 +51,17 @@ fun ConnectionScreen(
     state: ConnectionViewState,
     serverViewState: ServerViewState,
     onToggleBlock: (TetherClient) -> Unit,
+    onOpenManageNickName: (TetherClient) -> Unit,
+    onCloseManageNickName: () -> Unit,
+    onOpenManageBandwidthLimit: (TetherClient) -> Unit,
+    onCloseManageBandwidthLimit: () -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val clients = state.connections.collectAsStateListWithLifecycle()
   val blocked = state.blocked.collectAsStateListWithLifecycle()
+
+  val manageNickName by state.managingNickName.collectAsStateWithLifecycle()
+  val manageBandwidth by state.managingBandwidthLimit.collectAsStateWithLifecycle()
 
   LazyColumn(
       modifier = modifier,
@@ -67,6 +77,8 @@ fun ConnectionScreen(
         group = group,
         clients = clients,
         blocked = blocked,
+        onManageNickName = onOpenManageNickName,
+        onManageBandwidthLimit = onOpenManageBandwidthLimit,
         onToggleBlock = onToggleBlock,
     )
 
@@ -84,6 +96,30 @@ fun ConnectionScreen(
     ) {
       Spacer(
           modifier = Modifier.navigationBarsPadding(),
+      )
+    }
+  }
+
+  manageNickName?.also { manage ->
+    Dialog(
+        properties = rememberDialogProperties(),
+        onDismissRequest = { onCloseManageNickName() },
+    ) {
+      Text(
+          text = "Nickname: ${manage.nickName}",
+          style = MaterialTheme.typography.bodyLarge,
+      )
+    }
+  }
+
+  manageBandwidth?.also { manage ->
+    Dialog(
+        properties = rememberDialogProperties(),
+        onDismissRequest = { onCloseManageBandwidthLimit() },
+    ) {
+      Text(
+          text = "Bandwidth: ${manage.nickName}",
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }

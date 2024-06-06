@@ -56,4 +56,20 @@ internal constructor(
       blockTracker.block(client)
     }
   }
+
+  fun handleOpenManageNickName(client: TetherClient) {
+    state.managingNickName.value = client
+  }
+
+  fun handleCloseManageNickName() {
+    state.managingNickName.value = null
+  }
+
+  fun handleOpenManageBandwidthLimit(client: TetherClient) {
+    state.managingBandwidthLimit.value = client
+  }
+
+  fun handleCloseManageBandwidthLimit() {
+    state.managingBandwidthLimit.value = null
+  }
 }

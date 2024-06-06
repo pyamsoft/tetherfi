@@ -24,22 +24,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.PopupProperties
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
+import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.connections.R
 import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
@@ -69,6 +76,8 @@ internal fun ConnectionItem(
     blocked: SnapshotStateList<TetherClient>,
     client: TetherClient,
     onToggleBlock: (TetherClient) -> Unit,
+    onManageNickName: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
   val key = remember(client) { client.key() }
@@ -110,14 +119,12 @@ internal fun ConnectionItem(
             )
           }
 
-          IconButton(
-              modifier = Modifier.padding(horizontal = MaterialTheme.keylines.baseline),
-              onClick = { hapticManager?.actionButtonPress() }) {
-                Icon(
-                    contentDescription = stringResource(R.string.connection_options),
-                    imageVector = Icons.Filled.MoreVert,
-                )
-              }
+          OptionsMenu(
+              client = client,
+              hapticManager = hapticManager,
+              onManageNickName = onManageNickName,
+              onManageBandwidthLimit = onManageBandwidthLimit,
+          )
 
           Switch(
               checked = isNotBlocked,
@@ -147,6 +154,60 @@ internal fun ConnectionItem(
         )
       }
     }
+  }
+}
+
+@Composable
+private fun OptionsMenu(
+    client: TetherClient,
+    hapticManager: HapticManager?,
+    onManageNickName: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
+) {
+  val (show, setShow) = remember { mutableStateOf(false) }
+
+  val handleDismiss by rememberUpdatedState { setShow(false) }
+
+  IconButton(
+      modifier = Modifier.padding(horizontal = MaterialTheme.keylines.baseline),
+      onClick = { hapticManager?.actionButtonPress() },
+  ) {
+    Icon(
+        contentDescription = stringResource(R.string.connection_options),
+        imageVector = Icons.Filled.MoreVert,
+    )
+  }
+
+  DropdownMenu(
+      expanded = show,
+      properties = remember { PopupProperties(focusable = true) },
+      onDismissRequest = { handleDismiss() },
+  ) {
+    DropdownMenuItem(
+        onClick = {
+          hapticManager?.actionButtonPress()
+          handleDismiss()
+          onManageNickName(client)
+        },
+        text = {
+          Text(
+              text = "Set Nick Name",
+              style = MaterialTheme.typography.bodyMedium,
+          )
+        })
+
+    DropdownMenuItem(
+        onClick = {
+          hapticManager?.actionButtonPress()
+          handleDismiss()
+          onManageBandwidthLimit(client)
+        },
+        text = {
+          Text(
+              text = "Set Bandwidth Limit",
+              style = MaterialTheme.typography.bodyMedium,
+          )
+        })
   }
 }
 
@@ -256,6 +317,8 @@ private fun PreviewConnectionItem(
               totalBytes = totalBytes,
           ),
       onToggleBlock = {},
+      onManageBandwidthLimit = {},
+      onManageNickName = {},
   )
 }
 

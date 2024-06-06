@@ -27,10 +27,16 @@ import kotlinx.coroutines.flow.StateFlow
 interface ConnectionViewState : UiViewState {
   val connections: StateFlow<List<TetherClient>>
   val blocked: StateFlow<Collection<TetherClient>>
+
+  val managingNickName: StateFlow<TetherClient?>
+  val managingBandwidthLimit: StateFlow<TetherClient?>
 }
 
 @Stable
 class MutableConnectionViewState @Inject internal constructor() : ConnectionViewState {
   override val connections = MutableStateFlow(emptyList<TetherClient>())
   override val blocked = MutableStateFlow<Collection<TetherClient>>(emptySet())
+
+  override val managingBandwidthLimit = MutableStateFlow<TetherClient?>(null)
+  override val managingNickName = MutableStateFlow<TetherClient?>(null)
 }
