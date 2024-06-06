@@ -117,7 +117,7 @@ private fun LazyListScope.renderRunningWithClients(
         modifier = itemModifier,
         client = client,
         blocked = blocked,
-        onClick = onToggleBlock,
+        onToggleBlock = onToggleBlock,
     )
   }
 }

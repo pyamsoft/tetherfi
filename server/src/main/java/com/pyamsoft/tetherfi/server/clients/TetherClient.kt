@@ -22,6 +22,7 @@ import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import java.time.Clock
 import java.time.LocalDateTime
+import org.jetbrains.annotations.TestOnly
 
 private val UNIT_JUMP = 1024UL
 
@@ -147,24 +148,64 @@ sealed class TetherClient(
   companion object {
 
     @CheckResult
-    fun create(hostNameOrIp: String, clock: Clock): TetherClient {
+    private fun create(
+        hostNameOrIp: String,
+        clock: Clock,
+        nickName: String,
+        limit: BandwidthLimit?,
+        totalBytes: ByteTransferReport,
+    ): TetherClient {
       return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
         IpAddressClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
-            nickName = "",
-            limit = null,
-            totalBytes = ByteTransferReport.EMPTY,
+            nickName = nickName,
+            limit = limit,
+            totalBytes = totalBytes,
         )
       } else {
         HostNameClient(
             hostname = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
-            nickName = "",
-            limit = null,
-            totalBytes = ByteTransferReport.EMPTY,
+            nickName = nickName,
+            limit = limit,
+            totalBytes = totalBytes,
         )
       }
+    }
+
+    @CheckResult
+    fun create(
+        hostNameOrIp: String,
+        clock: Clock,
+        nickName: String = "",
+        limit: BandwidthLimit? = null,
+    ): TetherClient {
+      return create(
+          hostNameOrIp = hostNameOrIp,
+          clock = clock,
+          nickName = nickName,
+          limit = limit,
+          totalBytes = ByteTransferReport.EMPTY,
+      )
+    }
+
+    @TestOnly
+    @CheckResult
+    fun testCreate(
+        hostNameOrIp: String,
+        clock: Clock,
+        nickName: String,
+        limit: BandwidthLimit?,
+        totalBytes: ByteTransferReport,
+    ): TetherClient {
+      return create(
+          hostNameOrIp = hostNameOrIp,
+          clock = clock,
+          nickName = nickName,
+          limit = limit,
+          totalBytes = totalBytes,
+      )
     }
   }
 }

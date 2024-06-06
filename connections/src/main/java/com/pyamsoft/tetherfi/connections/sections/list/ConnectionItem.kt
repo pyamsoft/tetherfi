@@ -21,25 +21,36 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.connections.R
+import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
+import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
+import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
+import java.time.Clock
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import org.jetbrains.annotations.TestOnly
 
 private val FIRST_SEEN_DATE_FORMATTER =
     object : ThreadLocal<DateTimeFormatter>() {
@@ -57,10 +68,10 @@ internal fun ConnectionItem(
     modifier: Modifier = Modifier,
     blocked: SnapshotStateList<TetherClient>,
     client: TetherClient,
-    onClick: (TetherClient) -> Unit,
+    onToggleBlock: (TetherClient) -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
-  val name = remember(client) { client.key() }
+  val key = remember(client) { client.key() }
   val seenTime =
       remember(client) {
         FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen)
@@ -90,11 +101,24 @@ internal fun ConnectionItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-          Text(
+          Column(
               modifier = Modifier.weight(1F),
-              text = name,
-              style = MaterialTheme.typography.titleLarge,
-          )
+          ) {
+            Name(
+                client = client,
+                key = key,
+            )
+          }
+
+          IconButton(
+              modifier = Modifier.padding(horizontal = MaterialTheme.keylines.baseline),
+              onClick = { hapticManager?.actionButtonPress() }) {
+                Icon(
+                    contentDescription = stringResource(R.string.connection_options),
+                    imageVector = Icons.Filled.MoreVert,
+                )
+              }
+
           Switch(
               checked = isNotBlocked,
               onCheckedChange = { newBlocked ->
@@ -103,7 +127,7 @@ internal fun ConnectionItem(
                 } else {
                   hapticManager?.toggleOff()
                 }
-                onClick(client)
+                onToggleBlock(client)
               },
           )
         }
@@ -117,66 +141,178 @@ internal fun ConnectionItem(
                 ),
         )
 
-        Text(
-            text =
-                stringResource(
-                    R.string.connection_total_to_internet, client.transferToInternet.display),
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    color =
-                        MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = TypographyDefaults.ALPHA_DISABLED,
-                        ),
-                ),
+        Bandwidth(
+            client = client,
+            isOverLimit = isOverLimit,
         )
-
-        Text(
-            text =
-                stringResource(
-                    R.string.connection_total_from_internet, client.transferFromInternet.display),
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    color =
-                        MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = TypographyDefaults.ALPHA_DISABLED,
-                        ),
-                ),
-        )
-
-        client.limit?.also { limit ->
-          val displayLimit =
-              remember(isOverLimit, limit) {
-                if (isOverLimit) {
-                  "OVER LIMIT: ${limit.display}"
-                } else {
-                  limit.display
-                }
-              }
-
-          val color =
-              if (isOverLimit) {
-                MaterialTheme.colorScheme.error.copy(
-                    alpha = TypographyDefaults.ALPHA_DISABLED,
-                )
-              } else {
-                MaterialTheme.colorScheme.onSurface.copy(
-                    alpha = TypographyDefaults.ALPHA_DISABLED,
-                )
-              }
-
-          Text(
-              text =
-                  stringResource(
-                      R.string.bandwidth_limit,
-                      displayLimit,
-                  ),
-              style =
-                  MaterialTheme.typography.bodySmall.copy(
-                      color = color,
-                  ),
-          )
-        }
       }
     }
   }
+}
+
+@Composable
+private fun Name(
+    client: TetherClient,
+    key: String,
+) {
+  client.nickName.also { nickName ->
+    val name = remember(nickName, key) { nickName.ifBlank { key } }
+    Text(
+        text = name,
+        style = MaterialTheme.typography.titleLarge,
+    )
+
+    if (nickName.isNotBlank()) {
+      Text(
+          text = key,
+          style = MaterialTheme.typography.bodySmall,
+          color =
+              MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                  alpha = TypographyDefaults.ALPHA_DISABLED,
+              ),
+      )
+    }
+  }
+}
+
+@Composable
+private fun Bandwidth(
+    client: TetherClient,
+    isOverLimit: Boolean,
+) {
+  client.limit?.also { limit ->
+    val displayLimit =
+        remember(isOverLimit, limit) {
+          if (isOverLimit) {
+            "OVER LIMIT: ${limit.display}"
+          } else {
+            limit.display
+          }
+        }
+
+    val color =
+        if (isOverLimit) {
+          MaterialTheme.colorScheme.error
+        } else {
+          MaterialTheme.colorScheme.onSurface.copy(
+              alpha = TypographyDefaults.ALPHA_DISABLED,
+          )
+        }
+
+    Text(
+        text =
+            stringResource(
+                R.string.bandwidth_limit,
+                displayLimit,
+            ),
+        style =
+            MaterialTheme.typography.bodySmall.copy(
+                color = color,
+            ),
+    )
+  }
+
+  Text(
+      text =
+          stringResource(R.string.connection_total_to_internet, client.transferToInternet.display),
+      style =
+          MaterialTheme.typography.bodySmall.copy(
+              color =
+                  MaterialTheme.colorScheme.onSurface.copy(
+                      alpha = TypographyDefaults.ALPHA_DISABLED,
+                  ),
+          ),
+  )
+
+  Text(
+      text =
+          stringResource(
+              R.string.connection_total_from_internet, client.transferFromInternet.display),
+      style =
+          MaterialTheme.typography.bodySmall.copy(
+              color =
+                  MaterialTheme.colorScheme.onSurface.copy(
+                      alpha = TypographyDefaults.ALPHA_DISABLED,
+                  ),
+          ),
+  )
+}
+
+@TestOnly
+@Composable
+private fun PreviewConnectionItem(
+    nickName: String,
+    limit: BandwidthLimit?,
+    totalBytes: ByteTransferReport,
+) {
+  ConnectionItem(
+      blocked = remember { mutableStateListOf() },
+      client =
+          TetherClient.testCreate(
+              hostNameOrIp = "127.0.0.1",
+              clock = Clock.systemDefaultZone(),
+              nickName = nickName,
+              limit = limit,
+              totalBytes = totalBytes,
+          ),
+      onToggleBlock = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemDefault() {
+  PreviewConnectionItem(
+      nickName = "",
+      limit = null,
+      totalBytes = ByteTransferReport.EMPTY,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemWithName() {
+  PreviewConnectionItem(
+      nickName = "TEST",
+      limit = null,
+      totalBytes = ByteTransferReport.EMPTY,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemWithLimit() {
+  PreviewConnectionItem(
+      nickName = "",
+      limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+      totalBytes = ByteTransferReport.EMPTY,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemUnderLimit() {
+  PreviewConnectionItem(
+      nickName = "TEST",
+      limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+      totalBytes =
+          ByteTransferReport(
+              internetToProxy = 5UL,
+              proxyToInternet = 5UL,
+          ),
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemOverLimit() {
+  PreviewConnectionItem(
+      nickName = "TEST",
+      limit = BandwidthLimit(5UL, BandwidthUnit.MB),
+      totalBytes =
+          ByteTransferReport(
+              internetToProxy = (10UL * 1024UL * 1024UL),
+              proxyToInternet = (10UL * 1024UL * 1024UL),
+          ),
+  )
 }
