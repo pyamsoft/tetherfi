@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.connections
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +26,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -31,14 +35,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.PopupProperties
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
@@ -78,6 +86,10 @@ internal fun BandwidthDialog(
           return@remember amountValue != null
         }
       }
+
+  val (showDropdown, setShowDropdown) = remember { mutableStateOf(false) }
+
+  val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -120,6 +132,7 @@ internal fun BandwidthDialog(
         }
 
         Row(
+            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
             verticalAlignment = Alignment.CenterVertically,
         ) {
           TextField(
@@ -134,30 +147,79 @@ internal fun BandwidthDialog(
           )
 
           Column(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+              modifier =
+                  Modifier.padding(
+                      start = MaterialTheme.keylines.baseline,
+                  ),
           ) {
-            availableUnits.forEach { u ->
-              Row(
-                  verticalAlignment = Alignment.CenterVertically,
-              ) {
-                val isSelected = remember(limitUnit, u) { u == limitUnit }
-                RadioButton(
-                    enabled = enabled,
-                    selected = isSelected,
-                    onClick = { setLimitUnit(u) },
-                )
-
-                Text(
-                    text = u.displayName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color =
-                        MaterialTheme.colorScheme.onSurfaceVariant.run {
-                          if (enabled) {
+            Text(
+                modifier =
+                    Modifier.run {
+                          if (!enabled) {
                             this
                           } else {
-                            copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                            border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = MaterialTheme.shapes.small,
+                            )
                           }
-                        })
+                        }
+                        .padding(
+                            horizontal = MaterialTheme.keylines.content,
+                            vertical = MaterialTheme.keylines.baseline,
+                        )
+                        .clickable(enabled = enabled) { setShowDropdown(true) },
+                text = limitUnit.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant.run {
+                      if (enabled) {
+                        this
+                      } else {
+                        copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                      }
+                    },
+            )
+
+            DropdownMenu(
+                expanded = showDropdown,
+                properties = remember { PopupProperties(focusable = true) },
+                onDismissRequest = { handleDismissDropdown() },
+            ) {
+              availableUnits.forEach { u ->
+                DropdownMenuItem(
+                    onClick = {
+                      hapticManager?.toggleOn()
+                      setLimitUnit(u)
+                      handleDismissDropdown()
+                    },
+                    text = {
+                      val isSelected = remember(limitUnit, u) { u == limitUnit }
+                      RadioButton(
+                          enabled = enabled,
+                          selected = isSelected,
+                          onClick = {
+                            hapticManager?.toggleOn()
+                            setLimitUnit(u)
+                            handleDismissDropdown()
+                          },
+                      )
+
+                      Text(
+                          text = u.displayName,
+                          style = MaterialTheme.typography.bodySmall,
+                          color =
+                              MaterialTheme.colorScheme.onSurfaceVariant.run {
+                                if (enabled) {
+                                  this
+                                } else {
+                                  copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                                }
+                              },
+                      )
+                    },
+                )
               }
             }
           }
