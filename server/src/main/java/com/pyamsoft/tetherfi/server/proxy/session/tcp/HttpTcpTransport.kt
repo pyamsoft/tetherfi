@@ -22,6 +22,7 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readUTF8Line
@@ -183,8 +184,12 @@ internal constructor(
       return report.value
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        Timber.e(e) { "Error occurred during internet exchange: $request" }
-        writeProxyError(proxyOutput)
+        if (e is SocketTimeoutException) {
+          Timber.w { "Proxy:Internet socket timeout! $request" }
+        } else {
+          Timber.e(e) { "Error occurred during internet exchange: $request" }
+          writeProxyError(proxyOutput)
+        }
       }
 
       // Error means no report

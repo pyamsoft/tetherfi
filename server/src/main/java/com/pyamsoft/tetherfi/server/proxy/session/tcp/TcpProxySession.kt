@@ -35,6 +35,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import javax.inject.Inject
@@ -177,8 +178,14 @@ internal constructor(
       return report
     } catch (e: Throwable) {
       e.ifNotCancellation {
-        Timber.e(e) { "Error during Internet exchange $request" }
-        writeProxyError(proxyOutput)
+        // Generally, the Transport should handle SocketTimeoutException itself.
+        // We capture here JUST in case
+        if (e is SocketTimeoutException) {
+          Timber.w { "Proxy:Internet socket timeout! $request" }
+        } else {
+          Timber.e(e) { "Error during Internet exchange $request" }
+          writeProxyError(proxyOutput)
+        }
       }
       return null
     }

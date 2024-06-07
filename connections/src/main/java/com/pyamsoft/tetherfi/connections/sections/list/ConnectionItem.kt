@@ -170,7 +170,10 @@ private fun OptionsMenu(
 
   IconButton(
       modifier = Modifier.padding(horizontal = MaterialTheme.keylines.baseline),
-      onClick = { hapticManager?.actionButtonPress() },
+      onClick = {
+        hapticManager?.actionButtonPress()
+        setShow(true)
+      },
   ) {
     Icon(
         contentDescription = stringResource(R.string.connection_options),

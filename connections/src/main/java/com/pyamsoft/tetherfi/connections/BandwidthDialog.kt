@@ -51,6 +51,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
 import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
@@ -77,7 +78,14 @@ internal fun BandwidthDialog(
       remember(client) { mutableStateOf(client.limit?.unit ?: BandwidthUnit.KB) }
 
   val hapticManager = LocalHapticManager.current
-  val amountValue = remember(amount) { amount.toULongOrNull() }
+  val amountValue =
+      remember(amount) {
+        amount.toULongOrNull().also {
+          if (it == null) {
+            Timber.d { "Invalid amount: $amount" }
+          }
+        }
+      }
   val canSave =
       remember(amountValue, enabled) {
         if (!enabled) {

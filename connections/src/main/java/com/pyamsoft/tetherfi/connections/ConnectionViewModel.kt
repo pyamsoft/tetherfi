@@ -84,16 +84,22 @@ internal constructor(
       return
     }
 
-    scope.launch(context = Dispatchers.Default) { clientEditor.updateNickName(client, nickName) }
+    scope.launch(context = Dispatchers.Default) {
+      Timber.d { "Update client nickName: $client $nickName" }
+      clientEditor.updateNickName(client, nickName)
+    }
   }
 
   fun handleUpdateBandwidthLimit(scope: CoroutineScope, limit: BandwidthLimit?) {
-    val client = state.managingNickName.value
+    val client = state.managingBandwidthLimit.value
     if (client == null) {
       Timber.w { "Cannot update limit, no client" }
       return
     }
 
-    scope.launch(context = Dispatchers.Default) { clientEditor.updateBandwidthLimit(client, limit) }
+    scope.launch(context = Dispatchers.Default) {
+      Timber.d { "Update client limit: $client $limit" }
+      clientEditor.updateBandwidthLimit(client, limit)
+    }
   }
 }

@@ -61,13 +61,11 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Material You Support")
-                    bugfix("Fix unrelated connections being shown in the Connection page")
-
-                    // NEXT
-                    //                    change(
-                    //                        "Support assigning a custom name to a connected Client
-                    // device in the Connections tab.")
+                    bugfix("Less memory used per Internet connection")
+                    bugfix("Clean up old and unused Internet connections periodically")
+                    change("Tweak for closing old connections after 1 minute of no activity (recommended)")
+                    feature("Assign connected clients a nick-name in the Connections tab.")
+                    feature("Set upload and download bandwidth limits for connected clients in the Connections tab.")
                   }
                 },
         )

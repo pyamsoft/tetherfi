@@ -32,6 +32,7 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.ServerSocket
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
+import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.network.sockets.isClosed
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -79,31 +80,25 @@ internal constructor(
       hostNameOrIp: String,
       socketTracker: SocketTracker,
   ) {
-    // Sometimes, this can fail because of a broken pipe
-    // Catch the error and continue
-    try {
-      // Resolve the client as an IP or hostname
-      if (hostNameOrIp.isBlank()) {
-        Timber.w { "Unable to resolve TetherClient for connection" }
-        writeProxyError(proxyOutput)
-        return
-      }
-
-      session.exchange(
-          scope = this,
-          hostConnection = hostConnection,
-          serverDispatcher = serverDispatcher,
-          socketTracker = socketTracker,
-          data =
-              TcpProxyData(
-                  proxyInput = proxyInput,
-                  proxyOutput = proxyOutput,
-                  hostNameOrIp = hostNameOrIp,
-              ),
-      )
-    } catch (e: Throwable) {
-      e.ifNotCancellation { Timber.e(e) { "Error occurred during TCP proxy connection" } }
+    // Resolve the client as an IP or hostname
+    if (hostNameOrIp.isBlank()) {
+      Timber.w { "Unable to resolve TetherClient for connection" }
+      writeProxyError(proxyOutput)
+      return
     }
+
+    session.exchange(
+        scope = this,
+        hostConnection = hostConnection,
+        serverDispatcher = serverDispatcher,
+        socketTracker = socketTracker,
+        data =
+            TcpProxyData(
+                proxyInput = proxyInput,
+                proxyOutput = proxyOutput,
+                hostNameOrIp = hostNameOrIp,
+            ),
+    )
   }
 
   /**
@@ -114,24 +109,29 @@ internal constructor(
       scope: CoroutineScope,
       connection: Socket,
       socketTracker: SocketTracker,
-  ) =
-      try {
-        // Sometimes, this can fail because of a broken pipe
-        // Catch the error and continue
-
-        connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
-          scope.handleProxyConnection(
-              proxyInput = proxyInput,
-              proxyOutput = proxyOutput,
-              hostNameOrIp = resolveHostNameOrIpAddress(connection),
-              socketTracker = socketTracker,
-          )
-        }
-      } catch (e: Throwable) {
-        e.ifNotCancellation {
-          Timber.e(e) { "Error occurred while establishing TCP Proxy Connection" }
+  ) {
+    val hostNameOrIp = resolveHostNameOrIpAddress(connection)
+    try {
+      // Sometimes, this can fail because of a broken pipe
+      // Catch the error and continue
+      connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
+        scope.handleProxyConnection(
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            hostNameOrIp = hostNameOrIp,
+            socketTracker = socketTracker,
+        )
+      }
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        if (e is SocketTimeoutException) {
+          Timber.w { "Proxy:Server socket timeout! $hostNameOrIp" }
+        } else {
+          Timber.e(e) { "Error occurred while establishing TCP Proxy Connection: $hostNameOrIp" }
         }
       }
+    }
+  }
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
       withContext(context = serverDispatcher.primary) {
