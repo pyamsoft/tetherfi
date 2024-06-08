@@ -30,6 +30,14 @@ enum class TestServerState {
   CONNECTED,
 }
 
+@TestOnly @VisibleForTesting const val TEST_SSID = "TEST"
+
+@TestOnly @VisibleForTesting const val TEST_PASSWORD = "testing123"
+
+@TestOnly @VisibleForTesting const val TEST_PORT = 9999
+
+@TestOnly @VisibleForTesting const val TEST_HOSTNAME = "127.0.0.1"
+
 @TestOnly
 @CheckResult
 @VisibleForTesting
@@ -39,16 +47,19 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
           object : ServerViewState {
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-            override val port = MutableStateFlow(9999)
+            override val port = MutableStateFlow(TEST_PORT)
           }
       TestServerState.CONNECTED ->
           object : ServerViewState {
             override val group =
                 MutableStateFlow(
-                    BroadcastNetworkStatus.GroupInfo.Connected(ssid = "TEST", password = "testing"))
+                    BroadcastNetworkStatus.GroupInfo.Connected(
+                        ssid = TEST_SSID,
+                        password = TEST_PASSWORD,
+                    ))
             override val connection =
                 MutableStateFlow(
-                    BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = "127.0.0.1"))
-            override val port = MutableStateFlow(9999)
+                    BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
+            override val port = MutableStateFlow(TEST_PORT)
           }
     }

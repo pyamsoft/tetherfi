@@ -55,6 +55,7 @@ import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.key
+import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import java.time.Clock
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -333,7 +334,7 @@ private fun PreviewConnectionItem(
       blocked = remember { mutableStateListOf() },
       client =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = nickName,
               limit = limit,

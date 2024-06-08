@@ -40,6 +40,7 @@ import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import java.time.Clock
@@ -204,7 +205,7 @@ private fun PreviewConnectionScreenEmptyManageNickName() {
   PreviewConnectionScreen(
       nickName =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
               limit = null,
@@ -223,7 +224,7 @@ private fun PreviewConnectionScreenEmptyManageBandwidth() {
       nickName = null,
       bandwidth =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
               limit = BandwidthLimit(10UL, BandwidthUnit.MB),
@@ -251,7 +252,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
   PreviewConnectionScreen(
       nickName =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
               limit = null,
@@ -270,7 +271,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageBandwidth() {
       nickName = null,
       bandwidth =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
               limit = BandwidthLimit(10UL, BandwidthUnit.MB),
@@ -298,7 +299,7 @@ private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
   PreviewConnectionScreen(
       nickName =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
               limit = null,
@@ -317,7 +318,7 @@ private fun PreviewConnectionScreenActiveWithClientsManageBandwidth() {
       nickName = null,
       bandwidth =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
               limit = BandwidthLimit(10UL, BandwidthUnit.MB),

@@ -40,6 +40,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import java.time.Clock
 import org.jetbrains.annotations.TestOnly
 
@@ -111,7 +112,7 @@ private fun PreviewNickNameDialog(nickName: String) {
   NickNameDialog(
       client =
           TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
+              hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = nickName,
               limit = null,

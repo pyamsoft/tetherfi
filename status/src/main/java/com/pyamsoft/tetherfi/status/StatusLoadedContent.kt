@@ -20,9 +20,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -31,8 +35,15 @@ import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
 import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.status.sections.performance.renderPerformanceSettings
 import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
+import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
+import com.pyamsoft.tetherfi.ui.test.TEST_PORT
+import com.pyamsoft.tetherfi.ui.test.TEST_SSID
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import org.jetbrains.annotations.TestOnly
 
 private enum class StatusLoadedContentTypes {
   SPACER,
@@ -178,4 +189,142 @@ internal fun LazyListScope.renderLoadedContent(
             itemModifier.padding(top = MaterialTheme.keylines.content).navigationBarsPadding(),
     )
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewLoadedContent(
+    state: TestServerState,
+    isEditable: Boolean,
+    showNotifications: Boolean,
+) {
+  LazyColumn {
+    renderLoadedContent(
+        itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        state =
+            MutableStatusViewState().apply {
+              loadingState.value = StatusViewState.LoadingState.DONE
+              this.ssid.value = TEST_SSID
+              this.password.value = TEST_PASSWORD
+              this.port.value = "$TEST_PORT"
+              band.value = ServerNetworkBand.LEGACY
+            },
+        serverViewState = makeTestServerState(state),
+        appName = "TEST",
+        onRequestNotificationPermission = {},
+        onToggleKeepWakeLock = {},
+        onSelectBand = {},
+        onOpenBatterySettings = {},
+        onPasswordChanged = {},
+        onPortChanged = {},
+        onSsidChanged = {},
+        onTogglePasswordVisibility = {},
+        onShowQRCode = {},
+        onRefreshConnection = {},
+        onToggleKeepWifiLock = {},
+        onShowHotspotError = {},
+        onShowNetworkError = {},
+        onToggleIgnoreVpn = {},
+        onToggleShutdownWithNoClients = {},
+        onJumpToHowTo = {},
+        onShowPowerBalance = {},
+        onToggleSocketTimeout = {},
+        isEditable = isEditable,
+        wiDiStatus = RunningStatus.NotRunning,
+        proxyStatus = RunningStatus.NotRunning,
+        showNotificationSettings = showNotifications,
+    )
+  }
+}
+
+@TestOnly
+@Composable
+private fun PreviewEmpty(isEditable: Boolean, showNotifications: Boolean) {
+  PreviewLoadedContent(
+      state = TestServerState.EMPTY,
+      isEditable = isEditable,
+      showNotifications = showNotifications,
+  )
+}
+
+@TestOnly
+@Composable
+private fun PreviewConnected(isEditable: Boolean, showNotifications: Boolean) {
+  PreviewLoadedContent(
+      state = TestServerState.CONNECTED,
+      isEditable = isEditable,
+      showNotifications = showNotifications,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyEditableNoNotifications() {
+  PreviewEmpty(
+      isEditable = true,
+      showNotifications = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyEditableWithNotifications() {
+  PreviewEmpty(
+      isEditable = true,
+      showNotifications = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyNoEditableNoNotifications() {
+  PreviewEmpty(
+      isEditable = false,
+      showNotifications = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyNoEditableWithNotifications() {
+  PreviewEmpty(
+      isEditable = false,
+      showNotifications = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedEditableNoNotifications() {
+  PreviewConnected(
+      isEditable = true,
+      showNotifications = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedEditableWithNotifications() {
+  PreviewConnected(
+      isEditable = true,
+      showNotifications = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedNoEditableNoNotifications() {
+  PreviewConnected(
+      isEditable = false,
+      showNotifications = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedNoEditableWithNotifications() {
+  PreviewConnected(
+      isEditable = false,
+      showNotifications = true,
+  )
 }

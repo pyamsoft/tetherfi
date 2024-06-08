@@ -41,6 +41,9 @@ import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
+import com.pyamsoft.tetherfi.ui.test.TEST_PORT
+import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
@@ -276,9 +279,9 @@ fun StatusScreen(
 @Composable
 private fun PreviewStatusScreen(
     isLoading: Boolean,
-    ssid: String = "MySsid",
-    password: String = "MyPassword",
-    port: Int = 8228,
+    ssid: String = TEST_SSID,
+    password: String = TEST_PASSWORD,
+    port: Int = TEST_PORT,
 ) {
   StatusScreen(
       state =
