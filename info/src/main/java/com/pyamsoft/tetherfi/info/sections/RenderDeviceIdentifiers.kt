@@ -186,8 +186,8 @@ internal fun OtherInstruction(
   }
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewDeviceIdentifiers() {
   LazyColumn { renderDeviceIdentifiers() }
 }

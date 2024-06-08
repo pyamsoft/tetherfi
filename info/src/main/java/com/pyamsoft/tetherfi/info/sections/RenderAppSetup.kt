@@ -173,8 +173,8 @@ internal fun LazyListScope.renderAppSetup(
   }
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewAppSetup() {
   LazyColumn {
     renderAppSetup(

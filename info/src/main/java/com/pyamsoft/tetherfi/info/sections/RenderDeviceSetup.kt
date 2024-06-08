@@ -47,7 +47,6 @@ import com.pyamsoft.tetherfi.info.MutableInfoViewState
 import com.pyamsoft.tetherfi.info.R
 import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
@@ -55,6 +54,9 @@ import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import org.jetbrains.annotations.TestOnly
 
 private enum class DeviceSetupContentTypes {
   SETTINGS,
@@ -304,16 +306,36 @@ internal fun LazyListScope.renderDeviceSetup(
   }
 }
 
-@Preview
+@TestOnly
 @Composable
-private fun PreviewDeviceSetup() {
+private fun PreviewDeviceSetup(state: InfoViewState, server: TestServerState) {
   LazyColumn {
     renderDeviceSetup(
         appName = "TEST",
-        serverViewState = TestServerViewState(),
-        state = MutableInfoViewState(),
+        serverViewState = makeTestServerState(server),
+        state = state,
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
     )
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupEmpty() {
+  PreviewDeviceSetup(state = MutableInfoViewState(), server = TestServerState.EMPTY)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupActive() {
+  PreviewDeviceSetup(state = MutableInfoViewState(), server = TestServerState.CONNECTED)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupActivePassword() {
+  PreviewDeviceSetup(
+      state = MutableInfoViewState().apply { isPasswordVisible.value = true },
+      server = TestServerState.CONNECTED)
 }

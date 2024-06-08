@@ -30,7 +30,9 @@ import com.pyamsoft.tetherfi.info.sections.renderConnectionComplete
 import com.pyamsoft.tetherfi.info.sections.renderDeviceIdentifiers
 import com.pyamsoft.tetherfi.info.sections.renderDeviceSetup
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import org.jetbrains.annotations.TestOnly
 
 private enum class ConnectionInstructionContentTypes {
   SPACER,
@@ -108,16 +110,36 @@ internal fun LazyListScope.renderConnectionInstructions(
   }
 }
 
-@Preview
+@TestOnly
 @Composable
-private fun PreviewConnectionInstructions() {
+private fun PreviewConnectionInstructions(state: InfoViewState, server: TestServerState) {
   LazyColumn {
     renderConnectionInstructions(
         appName = "TEST",
-        serverViewState = TestServerViewState(),
-        state = MutableInfoViewState(),
+        serverViewState = makeTestServerState(server),
+        state = state,
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
     )
   }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsEmpty() {
+  PreviewConnectionInstructions(state = MutableInfoViewState(), server = TestServerState.EMPTY)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsActive() {
+  PreviewConnectionInstructions(state = MutableInfoViewState(), server = TestServerState.CONNECTED)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsActivePassword() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState().apply { isPasswordVisible.value = true },
+      server = TestServerState.CONNECTED)
 }

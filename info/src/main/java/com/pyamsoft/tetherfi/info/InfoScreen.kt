@@ -31,9 +31,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 
 private enum class InfoContentTypes {
   SPACER,
@@ -92,13 +93,13 @@ fun InfoScreen(
   }
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewInfoScreen() {
   InfoScreen(
       appName = "TEST",
       state = MutableInfoViewState(),
-      serverViewState = TestServerViewState(),
+      serverViewState = makeTestServerState(TestServerState.EMPTY),
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
   )

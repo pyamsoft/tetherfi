@@ -168,8 +168,8 @@ private fun FullConnectionInstructions(
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewConnectionComplete() {
   LazyColumn {
     renderConnectionComplete(

@@ -40,8 +40,10 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.TestServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import org.jetbrains.annotations.TestOnly
 
 private enum class StatusScreenContentTypes {
   BUTTON,
@@ -270,6 +272,7 @@ fun StatusScreen(
   )
 }
 
+@TestOnly
 @Composable
 private fun PreviewStatusScreen(
     isLoading: Boolean,
@@ -288,7 +291,7 @@ private fun PreviewStatusScreen(
             this.port.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
-      serverViewState = TestServerViewState(),
+      serverViewState = makeTestServerState(TestServerState.EMPTY),
       appName = "TEST",
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
@@ -325,24 +328,24 @@ private fun PreviewStatusScreen(
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenLoading() {
   PreviewStatusScreen(
       isLoading = true,
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenEditing() {
   PreviewStatusScreen(
       isLoading = false,
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenEditingBadSsid() {
   PreviewStatusScreen(
       isLoading = false,
@@ -350,8 +353,8 @@ private fun PreviewStatusScreenEditingBadSsid() {
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenEditingBadPassword() {
   PreviewStatusScreen(
       isLoading = false,
@@ -359,8 +362,8 @@ private fun PreviewStatusScreenEditingBadPassword() {
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenEditingBadPort1() {
   PreviewStatusScreen(
       isLoading = false,
@@ -368,8 +371,8 @@ private fun PreviewStatusScreenEditingBadPort1() {
   )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewStatusScreenEditingBadPort2() {
   PreviewStatusScreen(
       isLoading = false,

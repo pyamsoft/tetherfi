@@ -18,9 +18,7 @@ package com.pyamsoft.tetherfi.ui
 
 import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
-import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /** Activity global view state for server variables */
@@ -29,15 +27,4 @@ interface ServerViewState : UiViewState {
   val group: StateFlow<BroadcastNetworkStatus.GroupInfo>
   val connection: StateFlow<BroadcastNetworkStatus.ConnectionInfo>
   val port: StateFlow<Int>
-}
-
-/** Only for testing */
-@Stable
-class TestServerViewState : ServerViewState {
-  override val group =
-      MutableStateFlow<BroadcastNetworkStatus.GroupInfo>(BroadcastNetworkStatus.GroupInfo.Empty)
-  override val connection =
-      MutableStateFlow<BroadcastNetworkStatus.ConnectionInfo>(
-          BroadcastNetworkStatus.ConnectionInfo.Empty)
-  override val port = MutableStateFlow(ServerDefaults.PORT)
 }
