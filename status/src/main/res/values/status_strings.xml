@@ -20,7 +20,7 @@
   <string name="status_running">Running</string>
   <string name="status_starting">Starting</string>
   <string name="status_stopping">Stopping</string>
-  <string name="enable_socket_timeout_title">Enable Socket Timeout</string>
+  <string name="enable_socket_timeout_title">Enable Idle Timeout</string>
   <string
     name="enable_socket_timeout_description"
   >For most day-to-day usage, this option should be enabled.
