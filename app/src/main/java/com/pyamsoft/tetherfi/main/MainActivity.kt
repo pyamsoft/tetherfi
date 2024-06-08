@@ -64,9 +64,11 @@ class MainActivity : AppCompatActivity() {
                     bugfix("Less memory used per Internet connection")
                     bugfix("Clean up old and unused Internet connections periodically")
                     bugfix("Fix unrelated connections being shown on the Connections tab")
-                    change("Tweak for closing old connections after 1 minute of no activity (recommended)")
+                    change(
+                        "Tweak for closing old connections after 1 minute of no activity (recommended)")
                     feature("Assign connected clients a nick-name in the Connections tab.")
-                    feature("Set upload and download bandwidth limits for connected clients in the Connections tab.")
+                    feature(
+                        "Set upload and download bandwidth limits for connected clients in the Connections tab.")
                   }
                 },
         )

@@ -51,7 +51,6 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
 import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
@@ -66,8 +65,24 @@ internal fun BandwidthDialog(
     onDismiss: () -> Unit,
     onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
 ) {
-  // Don't let people pick bytes, who wants to limit bytes?
-  val availableUnits = remember { BandwidthUnit.entries.filterNot { it == BandwidthUnit.BYTE } }
+  BandwidthDialog(
+      modifier = modifier,
+      client = client,
+      showMenu = false,
+      onDismiss = onDismiss,
+      onUpdateBandwidthLimit = onUpdateBandwidthLimit,
+  )
+}
+
+@Composable
+private fun BandwidthDialog(
+    modifier: Modifier = Modifier,
+    client: TetherClient,
+    showMenu: Boolean,
+    onDismiss: () -> Unit,
+    onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
+) {
+  val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
 
   // Initialize this to the current name
   // This way we can track changes quickly without needing to update the model
@@ -78,14 +93,7 @@ internal fun BandwidthDialog(
       remember(client) { mutableStateOf(client.limit?.unit ?: BandwidthUnit.KB) }
 
   val hapticManager = LocalHapticManager.current
-  val amountValue =
-      remember(amount) {
-        amount.toULongOrNull().also {
-          if (it == null) {
-            Timber.d { "Invalid amount: $amount" }
-          }
-        }
-      }
+  val amountValue = remember(amount) { amount.toULongOrNull() }
   val canSave =
       remember(amountValue, enabled) {
         if (!enabled) {
@@ -94,8 +102,7 @@ internal fun BandwidthDialog(
           return@remember amountValue != null
         }
       }
-
-  val (showDropdown, setShowDropdown) = remember { mutableStateOf(false) }
+  val isError = remember(canSave) { !canSave }
 
   val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
 
@@ -152,6 +159,7 @@ internal fun BandwidthDialog(
                   KeyboardOptions(
                       keyboardType = KeyboardType.Number,
                   ),
+              isError = isError,
           )
 
           Column(
@@ -190,46 +198,17 @@ internal fun BandwidthDialog(
                     },
             )
 
-            DropdownMenu(
-                expanded = showDropdown,
-                properties = remember { PopupProperties(focusable = true) },
-                onDismissRequest = { handleDismissDropdown() },
-            ) {
-              availableUnits.forEach { u ->
-                DropdownMenuItem(
-                    onClick = {
-                      hapticManager?.toggleOn()
-                      setLimitUnit(u)
-                      handleDismissDropdown()
-                    },
-                    text = {
-                      val isSelected = remember(limitUnit, u) { u == limitUnit }
-                      RadioButton(
-                          enabled = enabled,
-                          selected = isSelected,
-                          onClick = {
-                            hapticManager?.toggleOn()
-                            setLimitUnit(u)
-                            handleDismissDropdown()
-                          },
-                      )
-
-                      Text(
-                          text = u.displayName,
-                          style = MaterialTheme.typography.bodySmall,
-                          color =
-                              MaterialTheme.colorScheme.onSurfaceVariant.run {
-                                if (enabled) {
-                                  this
-                                } else {
-                                  copy(alpha = TypographyDefaults.ALPHA_DISABLED)
-                                }
-                              },
-                      )
-                    },
-                )
-              }
-            }
+            BandwidthMenu(
+                current = limitUnit,
+                enabled = enabled,
+                showDropdown = showDropdown,
+                onDismiss = { handleDismissDropdown() },
+                onSelect = { u ->
+                  hapticManager?.actionButtonPress()
+                  setLimitUnit(u)
+                  handleDismissDropdown()
+                },
+            )
           }
         }
 
@@ -277,9 +256,78 @@ internal fun BandwidthDialog(
   }
 }
 
+@Composable
+private fun BandwidthMenu(
+    modifier: Modifier = Modifier,
+    enabled: Boolean,
+    current: BandwidthUnit,
+    showDropdown: Boolean,
+    onSelect: (BandwidthUnit) -> Unit,
+    onDismiss: () -> Unit,
+) {
+  DropdownMenu(
+      modifier = modifier,
+      expanded = showDropdown,
+      properties = remember { PopupProperties(focusable = true) },
+      onDismissRequest = onDismiss,
+  ) {
+    BandwidthMenuItems(
+        enabled = enabled,
+        current = current,
+        onSelect = onSelect,
+    )
+  }
+}
+
+@Composable
+private fun BandwidthMenuItems(
+    enabled: Boolean,
+    current: BandwidthUnit,
+    onSelect: (BandwidthUnit) -> Unit,
+) {
+  // Don't let people pick bytes, who wants to limit bytes?
+  val availableUnits = remember { BandwidthUnit.entries.filterNot { it == BandwidthUnit.BYTE } }
+
+  availableUnits.forEach { u ->
+    DropdownMenuItem(
+        onClick = { onSelect(u) },
+        text = {
+          val isSelected = remember(current, u) { u == current }
+
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            RadioButton(
+                enabled = enabled,
+                selected = isSelected,
+                onClick = { onSelect(u) },
+            )
+
+            Text(
+                modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                text = u.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant.run {
+                      if (enabled) {
+                        this
+                      } else {
+                        copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                      }
+                    },
+            )
+          }
+        },
+    )
+  }
+}
+
 @TestOnly
 @Composable
-private fun PreviewBandwidthDialog(limit: BandwidthLimit?) {
+private fun PreviewBandwidthDialog(
+    limit: BandwidthLimit?,
+    showMenu: Boolean,
+) {
   BandwidthDialog(
       client =
           TetherClient.testCreate(
@@ -289,6 +337,7 @@ private fun PreviewBandwidthDialog(limit: BandwidthLimit?) {
               limit = limit,
               totalBytes = ByteTransferReport.EMPTY,
           ),
+      showMenu = showMenu,
       onDismiss = {},
       onUpdateBandwidthLimit = {},
   )
@@ -299,16 +348,74 @@ private fun PreviewBandwidthDialog(limit: BandwidthLimit?) {
 private fun PreviewBandwidthDialogEmpty() {
   PreviewBandwidthDialog(
       limit = null,
+      showMenu = false,
   )
 }
 
 @Preview
 @Composable
-private fun PreviewBandwidthDialogName() {
+private fun PreviewBandwidthDialogEnabled() {
   PreviewBandwidthDialog(
       limit =
           BandwidthLimit(
               10UL,
               BandwidthUnit.MB,
-          ))
+          ),
+      showMenu = false,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewBandwidthDialogOpen() {
+  PreviewBandwidthDialog(
+      limit =
+          BandwidthLimit(
+              10UL,
+              BandwidthUnit.MB,
+          ),
+      showMenu = true,
+  )
+}
+
+@TestOnly
+@Composable
+private fun PreviewBandwidthMenuItems(
+    enabled: Boolean,
+    current: BandwidthUnit,
+) {
+  Column {
+    BandwidthMenuItems(
+        enabled = enabled,
+        current = current,
+        onSelect = {},
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewBandwidthMenuItemsEnabled() {
+  PreviewBandwidthMenuItems(
+      enabled = true,
+      current = BandwidthUnit.KB,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewBandwidthMenuItemsDisabled() {
+  PreviewBandwidthMenuItems(
+      enabled = false,
+      current = BandwidthUnit.KB,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewBandwidthMenuItemsPicked() {
+  PreviewBandwidthMenuItems(
+      enabled = true,
+      current = BandwidthUnit.GB,
+  )
 }
