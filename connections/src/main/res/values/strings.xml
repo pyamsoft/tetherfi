@@ -38,4 +38,7 @@
   <string
     name="connection_running_explain"
   >By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.</string>
+    <string name="option_set_nickname">Set Nick Name</string>
+  <string name="option_set_bandwidth">Set Bandwidth Limit</string>
+  <string name="bandwidth_over_limit">OVER LIMIT: %1$s</string>
 </resources>

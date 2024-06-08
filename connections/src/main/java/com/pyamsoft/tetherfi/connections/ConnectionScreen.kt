@@ -41,12 +41,12 @@ import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
-import java.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
+import java.time.Clock
 
 private enum class ConnectionScreenContentTypes {
-  BOTTOM_SPACER,
+    BOTTOM_SPACER,
 }
 
 @Composable
@@ -63,149 +63,294 @@ fun ConnectionScreen(
     onCloseManageBandwidthLimit: () -> Unit,
     onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
 ) {
-  val group by serverViewState.group.collectAsStateWithLifecycle()
-  val clients = state.connections.collectAsStateListWithLifecycle()
-  val blocked = state.blocked.collectAsStateListWithLifecycle()
+    val group by serverViewState.group.collectAsStateWithLifecycle()
+    val clients = state.connections.collectAsStateListWithLifecycle()
+    val blocked = state.blocked.collectAsStateListWithLifecycle()
 
-  val manageNickName by state.managingNickName.collectAsStateWithLifecycle()
-  val manageBandwidth by state.managingBandwidthLimit.collectAsStateWithLifecycle()
+    val manageNickName by state.managingNickName.collectAsStateWithLifecycle()
+    val manageBandwidth by state.managingBandwidthLimit.collectAsStateWithLifecycle()
 
-  LazyColumn(
-      modifier = modifier,
-      contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
-      horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    renderPYDroidExtras(
-        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-    )
-
-    renderConnectionList(
-        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-        group = group,
-        clients = clients,
-        blocked = blocked,
-        onManageNickName = onOpenManageNickName,
-        onManageBandwidthLimit = onOpenManageBandwidthLimit,
-        onToggleBlock = onToggleBlock,
-    )
-
-    renderExcuse(
-        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-    )
-
-    renderLinks(
-        modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
-        appName = appName,
-    )
-
-    item(
-        contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      Spacer(
-          modifier = Modifier.navigationBarsPadding(),
-      )
+        renderPYDroidExtras(
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        )
+
+        renderConnectionList(
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+            group = group,
+            clients = clients,
+            blocked = blocked,
+            onManageNickName = onOpenManageNickName,
+            onManageBandwidthLimit = onOpenManageBandwidthLimit,
+            onToggleBlock = onToggleBlock,
+        )
+
+        renderExcuse(
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+        )
+
+        renderLinks(
+            modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
+            appName = appName,
+        )
+
+        item(
+            contentType = ConnectionScreenContentTypes.BOTTOM_SPACER,
+        ) {
+            Spacer(
+                modifier = Modifier.navigationBarsPadding(),
+            )
+        }
     }
-  }
 
-  manageNickName?.also { manage ->
-    NickNameDialog(
-        client = manage,
-        onUpdateNickName = onUpdateNickName,
-        onDismiss = { onCloseManageNickName() },
-    )
-  }
+    manageNickName?.also { manage ->
+        NickNameDialog(
+            client = manage,
+            onUpdateNickName = onUpdateNickName,
+            onDismiss = { onCloseManageNickName() },
+        )
+    }
 
-  manageBandwidth?.also { manage ->
-    BandwidthDialog(
-        client = manage,
-        onUpdateBandwidthLimit = onUpdateBandwidthLimit,
-        onDismiss = { onCloseManageBandwidthLimit() },
-    )
-  }
+    manageBandwidth?.also { manage ->
+        BandwidthDialog(
+            client = manage,
+            onUpdateBandwidthLimit = onUpdateBandwidthLimit,
+            onDismiss = { onCloseManageBandwidthLimit() },
+        )
+    }
+}
+
+@TestOnly
+private enum class TestServerState {
+    EMPTY,
+    CONNECTED,
 }
 
 @TestOnly
 @Composable
 private fun PreviewConnectionScreen(
-    serverViewState: ServerViewState,
+    serverViewState: TestServerState,
     nickName: TetherClient?,
     bandwidth: TetherClient?,
+    clientCount: Int,
 ) {
-  ConnectionScreen(
-      appName = "TEST",
-      state =
-          object : ConnectionViewState {
-            override val connections = MutableStateFlow(emptyList<TetherClient>())
-            override val blocked = MutableStateFlow(emptyList<TetherClient>())
+    val server = when (serverViewState) {
+        TestServerState.EMPTY ->
+            object : ServerViewState {
+                override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+                override val connection =
+                    MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+                override val port = MutableStateFlow(9999)
+            }
+
+        TestServerState.CONNECTED ->
+            object : ServerViewState {
+                override val group = MutableStateFlow(
+                    BroadcastNetworkStatus.GroupInfo.Connected(
+                        ssid = "TEST",
+                        password = "testing"
+                    )
+                )
+                override val connection = MutableStateFlow(
+                    BroadcastNetworkStatus.ConnectionInfo.Connected(
+                        hostName = "127.0.0.1"
+                    )
+                )
+                override val port = MutableStateFlow(9999)
+            }
+    }
+
+    ConnectionScreen(
+        appName = "TEST",
+        state =
+        object : ConnectionViewState {
+            override val connections = MutableStateFlow(
+                mutableListOf<TetherClient>().apply {
+                    for (i in 0 until clientCount) {
+                        val client = TetherClient.testCreate(
+                            hostNameOrIp = "127.0.0.${2 + i}",
+                            clock = Clock.systemDefaultZone(),
+                            nickName = "TEST ${i + 1}",
+                            limit = null,
+                            totalBytes = ByteTransferReport.EMPTY,
+                        )
+                        add(client)
+                    }
+                },
+            )
+            override val blocked = MutableStateFlow(
+                mutableListOf<TetherClient>().apply {
+                    for (i in 0 until clientCount) {
+                        if (i %2 == 0) {
+                            continue
+                        }
+
+                        val client = TetherClient.testCreate(
+                            hostNameOrIp = "127.0.0.${2 + i}",
+                            clock = Clock.systemDefaultZone(),
+                            nickName = "TEST ${i + 1}",
+                            limit = null,
+                            totalBytes = ByteTransferReport.EMPTY,
+                        )
+                        add(client)
+                    }
+                },
+)
             override val managingNickName = MutableStateFlow(nickName)
             override val managingBandwidthLimit = MutableStateFlow(bandwidth)
-          },
-      serverViewState = serverViewState,
-      onCloseManageNickName = {},
-      onUpdateNickName = {},
-      onUpdateBandwidthLimit = {},
-      onCloseManageBandwidthLimit = {},
-      onToggleBlock = {},
-      onOpenManageNickName = {},
-      onOpenManageBandwidthLimit = {},
-  )
+        },
+        serverViewState = server,
+        onCloseManageNickName = {},
+        onUpdateNickName = {},
+        onUpdateBandwidthLimit = {},
+        onCloseManageBandwidthLimit = {},
+        onToggleBlock = {},
+        onOpenManageNickName = {},
+        onOpenManageBandwidthLimit = {},
+    )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewConnectionScreenEmpty() {
-  PreviewConnectionScreen(
-      nickName = null,
-      bandwidth = null,
-      serverViewState =
-          object : ServerViewState {
-            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
-            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-            override val port = MutableStateFlow(9999)
-          },
-  )
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth = null,
+        clientCount = 0,
+        serverViewState = TestServerState.EMPTY,
+    )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewConnectionScreenEmptyManageNickName() {
-  PreviewConnectionScreen(
-      nickName =
-          TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
-              clock = Clock.systemDefaultZone(),
-              nickName = "TEST",
-              limit = null,
-              totalBytes = ByteTransferReport.EMPTY,
-          ),
-      bandwidth = null,
-      serverViewState =
-          object : ServerViewState {
-            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
-            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-            override val port = MutableStateFlow(9999)
-          },
-  )
+    PreviewConnectionScreen(
+        nickName =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "TEST",
+            limit = null,
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        bandwidth = null,
+        clientCount = 0,
+        serverViewState = TestServerState.EMPTY,
+    )
 }
 
-@Preview
 @Composable
+@Preview(showBackground = true)
 private fun PreviewConnectionScreenEmptyManageBandwidth() {
-  PreviewConnectionScreen(
-      nickName = null,
-      bandwidth =
-          TetherClient.testCreate(
-              hostNameOrIp = "127.0.0.1",
-              clock = Clock.systemDefaultZone(),
-              nickName = "",
-              limit = BandwidthLimit(10UL, BandwidthUnit.MB),
-              totalBytes = ByteTransferReport.EMPTY,
-          ),
-      serverViewState =
-          object : ServerViewState {
-            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
-            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-            override val port = MutableStateFlow(9999)
-          },
-  )
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "",
+            limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        clientCount = 0,
+        serverViewState = TestServerState.EMPTY,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveNoClients() {
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth = null,
+        clientCount = 0,
+        serverViewState = TestServerState.CONNECTED,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
+    PreviewConnectionScreen(
+        nickName =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "TEST",
+            limit = null,
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        bandwidth = null,
+        clientCount = 0,
+        serverViewState = TestServerState.CONNECTED,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveNoClientsManageBandwidth() {
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "",
+            limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        clientCount = 0,
+        serverViewState = TestServerState.CONNECTED,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveWithClients() {
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth = null,
+        clientCount = 5,
+        serverViewState = TestServerState.CONNECTED,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
+    PreviewConnectionScreen(
+        nickName =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "TEST",
+            limit = null,
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        bandwidth = null,
+        clientCount = 5,
+        serverViewState = TestServerState.CONNECTED,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionScreenActiveWithClientsManageBandwidth() {
+    PreviewConnectionScreen(
+        nickName = null,
+        bandwidth =
+        TetherClient.testCreate(
+            hostNameOrIp = "127.0.0.1",
+            clock = Clock.systemDefaultZone(),
+            nickName = "",
+            limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        clientCount = 5,
+        serverViewState = TestServerState.CONNECTED,
+    )
 }

@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.annotation.CheckResult
+import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import coil.ComponentRegistry
@@ -96,6 +97,7 @@ private class TestImageLoader(context: Context) : ImageLoader {
 @TestOnly
 @Composable
 @CheckResult
+@VisibleForTesting
 fun createNewTestImageLoader(): ImageLoader {
   val context = LocalContext.current
   return TestImageLoader(context)
