@@ -17,11 +17,21 @@
 package com.pyamsoft.tetherfi.status.sections.network
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
+import com.pyamsoft.tetherfi.ui.test.TEST_PORT
+import com.pyamsoft.tetherfi.ui.test.TEST_SSID
+import org.jetbrains.annotations.TestOnly
 
 private enum class RenderEditableItemsContentTypes {
   EDIT_SSID,
@@ -67,4 +77,65 @@ internal fun LazyListScope.renderEditableItems(
         onPortChanged = onPortChanged,
     )
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewEditableItems(
+    ssid: String = TEST_SSID,
+    password: String = TEST_PASSWORD,
+    port: String = "$TEST_PORT",
+) {
+  LazyColumn {
+    renderEditableItems(
+        modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        state =
+            MutableStatusViewState().apply {
+              this.ssid.value = ssid
+              this.password.value = password
+              this.port.value = port
+            },
+        onPortChanged = {},
+        onSsidChanged = {},
+        onPasswordChanged = {},
+        onTogglePasswordVisibility = {},
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsBlank() {
+  PreviewEditableItems(
+      ssid = "",
+      password = "",
+      port = "",
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlySsid() {
+  PreviewEditableItems(
+      password = "",
+      port = "",
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlyPassword() {
+  PreviewEditableItems(
+      ssid = "",
+      port = "",
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlyPort() {
+  PreviewEditableItems(
+      ssid = "",
+      password = "",
+  )
 }

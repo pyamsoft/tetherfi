@@ -26,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
+import org.jetbrains.annotations.TestOnly
 
 @Composable
 internal fun TroubleshootUnableToStart(
@@ -52,6 +54,9 @@ internal fun TroubleshootUnableToStart(
         }
       }
 
+  val showTroubleshooting =
+      remember(isBroadcastError, isProxyError) { isBroadcastError || isProxyError }
+
   Column(
       modifier = modifier.padding(horizontal = MaterialTheme.keylines.content),
   ) {
@@ -68,13 +73,15 @@ internal fun TroubleshootUnableToStart(
         color = MaterialTheme.colorScheme.error,
     )
 
-    Text(
-        modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        text = stringResource(R.string.trouble_double_check),
-        style = MaterialTheme.typography.bodySmall,
-        fontWeight = FontWeight.W700,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    if (showTroubleshooting) {
+      Text(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          text = stringResource(R.string.trouble_double_check),
+          style = MaterialTheme.typography.bodySmall,
+          fontWeight = FontWeight.W700,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
 
     if (isBroadcastError) {
       Text(
@@ -122,4 +129,50 @@ internal fun TroubleshootUnableToStart(
       )
     }
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewTroubleshootUnableToStart(isBroadcastError: Boolean, isProxyError: Boolean) {
+  TroubleshootUnableToStart(
+      appName = "TEST",
+      isBroadcastError = isBroadcastError,
+      isProxyError = isProxyError,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootUnableToStartBroadcast() {
+  PreviewTroubleshootUnableToStart(
+      isBroadcastError = true,
+      isProxyError = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootUnableToStartProxy() {
+  PreviewTroubleshootUnableToStart(
+      isBroadcastError = false,
+      isProxyError = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootUnableToStartNone() {
+  PreviewTroubleshootUnableToStart(
+      isBroadcastError = false,
+      isProxyError = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootUnableToStartAll() {
+  PreviewTroubleshootUnableToStart(
+      isBroadcastError = true,
+      isProxyError = true,
+  )
 }

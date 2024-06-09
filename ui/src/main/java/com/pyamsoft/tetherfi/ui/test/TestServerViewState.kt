@@ -28,6 +28,7 @@ import org.jetbrains.annotations.TestOnly
 enum class TestServerState {
   EMPTY,
   CONNECTED,
+  ERROR,
 }
 
 @TestOnly @VisibleForTesting const val TEST_SSID = "TEST"
@@ -60,6 +61,18 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
             override val connection =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
+            override val port = MutableStateFlow(TEST_PORT)
+          }
+      TestServerState.ERROR ->
+          object : ServerViewState {
+            override val group =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.GroupInfo.Error(
+                        error = RuntimeException("Test Group Error")))
+            override val connection =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.ConnectionInfo.Error(
+                        error = RuntimeException("Test Connection Error")))
             override val port = MutableStateFlow(TEST_PORT)
           }
     }

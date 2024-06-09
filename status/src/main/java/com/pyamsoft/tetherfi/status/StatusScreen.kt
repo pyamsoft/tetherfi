@@ -226,6 +226,7 @@ fun StatusScreen(
       }
       StatusViewState.LoadingState.DONE -> {
         renderLoadedContent(
+            // Not widthIn because a TextField does not take up "all" by default
             itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
             appName = appName,
             state = state,

@@ -17,13 +17,25 @@
 package com.pyamsoft.tetherfi.status.sections.network
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tiiles.RunningTiles
+import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
+import com.pyamsoft.tetherfi.ui.test.TEST_PORT
+import com.pyamsoft.tetherfi.ui.test.TEST_SSID
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import org.jetbrains.annotations.TestOnly
 
 private enum class RenderRunningItemsContentTypes {
   VIEW_HOWTO,
@@ -94,4 +106,53 @@ internal fun LazyListScope.renderRunningItems(
         onShowNetworkError = onShowNetworkError,
     )
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewRunningItems(
+    server: TestServerState,
+) {
+  LazyColumn {
+    renderRunningItems(
+        modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        serverViewState = makeTestServerState(server),
+        state =
+            MutableStatusViewState().apply {
+              this.ssid.value = TEST_SSID
+              this.password.value = TEST_PASSWORD
+              this.port.value = "$TEST_PORT"
+            },
+        onShowNetworkError = {},
+        onShowQRCode = {},
+        onRefreshConnection = {},
+        onJumpToHowTo = {},
+        onShowHotspotError = {},
+        onTogglePasswordVisibility = {},
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsEmpty() {
+  PreviewRunningItems(
+      server = TestServerState.EMPTY,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsConnected() {
+  PreviewRunningItems(
+      server = TestServerState.CONNECTED,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsError() {
+  PreviewRunningItems(
+      server = TestServerState.ERROR,
+  )
 }

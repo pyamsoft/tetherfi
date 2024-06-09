@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
@@ -200,7 +200,7 @@ private fun PreviewLoadedContent(
 ) {
   LazyColumn {
     renderLoadedContent(
-        itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        itemModifier = Modifier.widthIn(LANDSCAPE_MAX_WIDTH),
         state =
             MutableStatusViewState().apply {
               loadingState.value = StatusViewState.LoadingState.DONE
