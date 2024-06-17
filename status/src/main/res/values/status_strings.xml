@@ -27,4 +27,9 @@
     This allows %1$s to clean up old/dead connections after 1 minute of no activity.
     For large or long downloads, this option should be kept OFF.
     (recommended)</string>
+
+  <string name="hotspot_error">%1$s Hotspot Error</string>
+  <string name="start_hotspot">Start %1$s Hotspot</string>
+  <string name="stop_hotspot">Stop %1$s Hotspot</string>
+  <string name="is_thinking">%1$s is thinking…</string>
 </resources>

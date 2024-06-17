@@ -22,9 +22,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import org.jetbrains.annotations.TestOnly
 
 @Composable
 internal fun HotspotStarter(
@@ -34,19 +37,29 @@ internal fun HotspotStarter(
     appName: String,
     onToggleProxy: () -> Unit,
 ) {
+  val context = LocalContext.current
   val hapticManager = LocalHapticManager.current
 
-  val buttonText =
+  val buttonTextResId =
       remember(
           hotspotStatus,
           appName,
       ) {
         when (hotspotStatus) {
-          is RunningStatus.Error -> "$appName Hotspot Error"
-          is RunningStatus.NotRunning -> "Start $appName Hotspot"
-          is RunningStatus.Running -> "Stop $appName Hotspot"
-          else -> "$appName is thinking..."
+          is RunningStatus.Error -> (R.string.hotspot_error)
+          is RunningStatus.NotRunning -> (R.string.start_hotspot)
+          is RunningStatus.Running -> (R.string.stop_hotspot)
+          else -> (R.string.is_thinking)
         }
+      }
+
+  val buttonText =
+      remember(
+          context,
+          appName,
+          buttonTextResId,
+      ) {
+        context.getString(buttonTextResId, appName)
       }
 
   Button(
@@ -65,4 +78,94 @@ internal fun HotspotStarter(
             ),
     )
   }
+}
+
+@TestOnly
+@Composable
+private fun PreviewHotspotStarter(
+    status: RunningStatus,
+    isButtonEnabled: Boolean,
+) {
+  HotspotStarter(
+      isButtonEnabled = isButtonEnabled,
+      hotspotStatus = status,
+      appName = "TEST",
+      onToggleProxy = {},
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterNotRunningEnabled() {
+  PreviewHotspotStarter(isButtonEnabled = true, status = RunningStatus.NotRunning)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterRunningEnabled() {
+  PreviewHotspotStarter(isButtonEnabled = true, status = RunningStatus.Running)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterStartingEnabled() {
+  PreviewHotspotStarter(isButtonEnabled = true, status = RunningStatus.Starting)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterStoppingEnabled() {
+  PreviewHotspotStarter(isButtonEnabled = true, status = RunningStatus.Stopping)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterHotspotErrorEnabled() {
+  PreviewHotspotStarter(
+      isButtonEnabled = true, status = RunningStatus.HotspotError(RuntimeException("TEST")))
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterProxyErrorEnabled() {
+  PreviewHotspotStarter(
+      isButtonEnabled = true, status = RunningStatus.ProxyError(RuntimeException("TEST")))
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterNotRunningDisabled() {
+  PreviewHotspotStarter(isButtonEnabled = false, status = RunningStatus.NotRunning)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterRunningDisabled() {
+  PreviewHotspotStarter(isButtonEnabled = false, status = RunningStatus.Running)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterStartingDisabled() {
+  PreviewHotspotStarter(isButtonEnabled = false, status = RunningStatus.Starting)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterStoppingDisabled() {
+  PreviewHotspotStarter(isButtonEnabled = false, status = RunningStatus.Stopping)
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterHotspotErrorDisabled() {
+  PreviewHotspotStarter(
+      isButtonEnabled = false, status = RunningStatus.HotspotError(RuntimeException("TEST")))
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewHotspotStarterProxyErrorDisabled() {
+  PreviewHotspotStarter(
+      isButtonEnabled = false, status = RunningStatus.ProxyError(RuntimeException("TEST")))
 }

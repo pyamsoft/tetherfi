@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import org.jetbrains.annotations.TestOnly
 
 private enum class RenderHotspotStatusContentTypes {
   HOTSPOT_STATUS
@@ -99,16 +100,110 @@ internal fun LazyListScope.renderHotspotStatus(
   }
 }
 
-@Preview
+@TestOnly
 @Composable
-private fun PreviewRenderHotspotStatus() {
+private fun PreviewRenderHotspotStatus(
+    wiDiStatus: RunningStatus,
+    proxyStatus: RunningStatus,
+    hotspotStatus: RunningStatus,
+) {
   LazyColumn {
     renderHotspotStatus(
-        wiDiStatus = RunningStatus.NotRunning,
-        proxyStatus = RunningStatus.NotRunning,
-        hotspotStatus = RunningStatus.NotRunning,
+        wiDiStatus = wiDiStatus,
+        proxyStatus = proxyStatus,
+        hotspotStatus = hotspotStatus,
         onShowBroadcastError = {},
         onShowProxyError = {},
     )
   }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusNotRunning() {
+  PreviewRenderHotspotStatus(
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.NotRunning,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusWiDiStarting() {
+  PreviewRenderHotspotStatus(
+      wiDiStatus = RunningStatus.Starting,
+      proxyStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Starting,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusWiDiRunning() {
+  PreviewRenderHotspotStatus(
+      wiDiStatus = RunningStatus.Running,
+      proxyStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Starting,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusWiDiStopping() {
+  PreviewRenderHotspotStatus(
+      wiDiStatus = RunningStatus.Stopping,
+      proxyStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Starting,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusWiDiError() {
+  PreviewRenderHotspotStatus(
+      wiDiStatus = RunningStatus.HotspotError(RuntimeException("TEST")),
+      proxyStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.HotspotError(RuntimeException("TEST")),
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusProxyStarting() {
+  PreviewRenderHotspotStatus(
+      proxyStatus = RunningStatus.Starting,
+      wiDiStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Starting,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusProxyRunning() {
+  PreviewRenderHotspotStatus(
+      proxyStatus = RunningStatus.Running,
+      wiDiStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Starting,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusProxyStopping() {
+  PreviewRenderHotspotStatus(
+      proxyStatus = RunningStatus.Stopping,
+      wiDiStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.Stopping,
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRenderHotspotStatusProxyError() {
+  PreviewRenderHotspotStatus(
+      proxyStatus = RunningStatus.ProxyError(RuntimeException("TEST")),
+      wiDiStatus = RunningStatus.NotRunning,
+      hotspotStatus = RunningStatus.ProxyError(RuntimeException("TEST")),
+  )
 }
