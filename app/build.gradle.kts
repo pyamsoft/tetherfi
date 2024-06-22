@@ -37,6 +37,7 @@ android {
     targetSdk = rootProject.extra["targetSdk"] as Int
 
     vectorDrawables.useSupportLibrary = true
+
   }
 
   compileOptions {
@@ -68,6 +69,31 @@ android {
       keyAlias = properties.getProperty("BUNDLE_KEY_ALIAS")?.toString() ?: "CANNOT BUILD"
       keyPassword = properties.getProperty("BUNDLE_KEY_PASSWD")?.toString() ?: "CANNOT BUILD"
       storePassword = properties.getProperty("BUNDLE_STORE_PASSWD")?.toString() ?: "CANNOT BUILD"
+    }
+  }
+
+  // https://developer.android.com/build/build-variants
+  flavorDimensions += listOf("store")
+
+  productFlavors {
+    create("fdroid") {
+      dimension = "store"
+
+      // https://github.com/pyamsoft/tetherfi/issues/307
+      dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+      }
+    }
+
+    create("google") {
+      dimension = "store"
+
+      // https://github.com/pyamsoft/tetherfi/issues/307
+      dependenciesInfo {
+        includeInApk = true
+        includeInBundle = true
+      }
     }
   }
 
