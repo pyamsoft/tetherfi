@@ -30,14 +30,13 @@ android {
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
 
-    versionCode = 42
-    versionName = "20240622-1"
+    versionCode = 43
+    versionName = "20240622-2"
 
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
 
     vectorDrawables.useSupportLibrary = true
-
   }
 
   compileOptions {

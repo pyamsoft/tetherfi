@@ -49,7 +49,9 @@ dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Lifecycle extensions
-  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+  // Not yet
+  // https://www.reddit.com/r/androiddev/comments/1csjwne/lifecycle_280_only_compatible_with_compose_17/
+  api("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
   // Compose
   api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
