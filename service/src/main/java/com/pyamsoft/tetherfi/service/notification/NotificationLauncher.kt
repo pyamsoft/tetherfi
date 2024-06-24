@@ -17,10 +17,14 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
+import kotlinx.coroutines.CoroutineScope
 
 interface NotificationLauncher {
 
-  suspend fun startForeground(service: Service)
+  fun startForeground(
+      scope: CoroutineScope,
+      service: Service,
+  )
 
   suspend fun update()
 }

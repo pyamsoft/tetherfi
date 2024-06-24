@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.service
 
-import android.app.Service
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
@@ -28,8 +27,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -46,7 +45,7 @@ internal constructor(
 ) {
   private val runningState = MutableStateFlow(false)
 
-  private fun CoroutineScope.startProxy(service: Service) {
+  private fun CoroutineScope.startProxy() {
     val scope = this
 
     // Watch the Wifi Receiver for events
@@ -56,13 +55,6 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         f.collect { networkUpdater.updateNetworkInfo() }
       }
-    }
-
-    // Start notification first for Android O immediately
-    scope.launch(context = Dispatchers.Default) {
-      notificationLauncher.startForeground(
-          service = service,
-      )
     }
 
     // Prepare proxy on create
@@ -87,19 +79,30 @@ internal constructor(
   }
 
   /** Start the proxy */
-  suspend fun start(service: Service) =
-      withContext(context = Dispatchers.Default) {
-        if (runningState.compareAndSet(expect = false, update = true)) {
-          try {
-            Timber.d { "Starting runner!" }
-            coroutineScope { startProxy(service = service) }
-          } finally {
-            withContext(context = NonCancellable) {
-              if (runningState.compareAndSet(expect = true, update = false)) {
-                Timber.d { "Stopping runner!" }
-              }
+  fun start(scope: CoroutineScope) {
+    if (runningState.compareAndSet(expect = false, update = true)) {
+
+      // Bail out if we are already gone
+      if (!scope.isActive) {
+        Timber.w { "start called but CoroutineScope was already cancelled!" }
+        if (runningState.compareAndSet(expect = true, update = false)) {
+          Timber.d { "Stopping runner!" }
+        }
+        return
+      }
+
+      scope.launch(context = Dispatchers.Default) {
+        Timber.d { "Starting runner!" }
+        try {
+          startProxy()
+        } finally {
+          withContext(context = NonCancellable) {
+            if (runningState.compareAndSet(expect = true, update = false)) {
+              Timber.d { "Stopping runner!" }
             }
           }
         }
       }
+    }
+  }
 }

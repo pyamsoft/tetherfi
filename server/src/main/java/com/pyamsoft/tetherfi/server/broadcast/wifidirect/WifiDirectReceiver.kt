@@ -143,6 +143,7 @@ internal constructor(
             }
 
             // And suspend until we are done
+            Timber.d { "Await Receiver cancellation..." }
             awaitCancellation()
           }
         } finally {

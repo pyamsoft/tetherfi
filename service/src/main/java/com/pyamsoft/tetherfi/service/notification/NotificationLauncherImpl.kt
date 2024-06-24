@@ -34,9 +34,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -173,6 +173,22 @@ internal constructor(
     reset()
   }
 
+  private fun start(service: Service) {
+    // Hold this here until the coroutine is cancelled
+    reset()
+
+    // Initialize with blank data first
+    val data = DEFAULT_DATA
+    notifier
+        .startForeground(
+            service = service,
+            id = NOTIFICATION_ID,
+            channelInfo = CHANNEL_INFO,
+            notification = data,
+        )
+        .also { Timber.d { "Started foreground notification: $it: $data" } }
+  }
+
   override suspend fun update() =
       withContext(context = Dispatchers.Default) {
         if (!showing.value) {
@@ -183,45 +199,42 @@ internal constructor(
         updateNotification()
       }
 
-  override suspend fun startForeground(service: Service) =
-      withContext(context = Dispatchers.Default) {
-        val scope = this
+  override fun startForeground(
+      scope: CoroutineScope,
+      service: Service,
+  ) {
+    // This happens potentially immediately
+    if (showing.compareAndSet(expect = false, update = true)) {
+      start(service)
 
-        if (showing.compareAndSet(expect = false, update = true)) {
-          try {
-            // Hold this here until the coroutine is cancelled
-            coroutineScope {
-              reset()
+      // Bail out if we are already gone
+      if (!scope.isActive) {
+        Timber.w { "startForeground called but CoroutineScope was already cancelled!" }
+        if (showing.compareAndSet(expect = true, update = false)) {
+          stop(service)
+        }
+        return
+      }
 
-              withContext(context = Dispatchers.Main) {
-                val data = DEFAULT_DATA
+      scope.launch(context = Dispatchers.Default) {
+        try {
+          // Then immediately open a channel to update
+          watchNotification()
 
-                // Initialize with blank data first
-                notifier
-                    .startForeground(
-                        service = service,
-                        id = NOTIFICATION_ID,
-                        channelInfo = CHANNEL_INFO,
-                        notification = data,
-                    )
-                    .also { Timber.d { "Started foreground notification: $it: $data" } }
-              }
-
-              // Then immediately open a channel to update
-              scope.watchNotification()
-
-              // And suspend until we are done
-              awaitCancellation()
-            }
-          } finally {
-            withContext(context = NonCancellable) {
-              if (showing.compareAndSet(expect = true, update = false)) {
-                withContext(context = Dispatchers.Main) { stop(service) }
-              }
+          // And suspend until we are done
+          Timber.d { "Await notification cancellation..." }
+          awaitCancellation()
+        } finally {
+          withContext(context = NonCancellable) {
+            Timber.d { "Notification scope is done, cancel notification!" }
+            if (showing.compareAndSet(expect = true, update = false)) {
+              withContext(context = Dispatchers.Main) { stop(service) }
             }
           }
         }
       }
+    }
+  }
 
   companion object {
 

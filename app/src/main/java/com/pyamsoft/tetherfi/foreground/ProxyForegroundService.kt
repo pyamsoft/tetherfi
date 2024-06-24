@@ -24,15 +24,17 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.service.ServiceRunner
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
 internal class ProxyForegroundService internal constructor() : Service() {
+
+  @Inject @JvmField internal var notification: NotificationLauncher? = null
 
   @Inject @JvmField internal var runner: ServiceRunner? = null
 
@@ -51,11 +53,20 @@ internal class ProxyForegroundService internal constructor() : Service() {
   }
 
   private fun startRunner() {
-    val self = this
+    runner
+        .requireNotNull()
+        .start(
+            scope = ensureScope(),
+        )
+  }
 
-    ensureScope().launch(context = Dispatchers.Default) {
-      runner.requireNotNull().start(service = self)
-    }
+  private fun startNotification() {
+    notification
+        .requireNotNull()
+        .startForeground(
+            scope = ensureScope(),
+            service = this,
+        )
   }
 
   override fun onBind(intent: Intent?): IBinder? {
@@ -72,6 +83,9 @@ internal class ProxyForegroundService internal constructor() : Service() {
    * If the app is in the background, this will not run unless the app sets Battery Optimization off
    */
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    // Ensure the notification is started
+    startNotification()
+
     // Each time the service starts/restarts we use the fact that it is tied to the Android OS
     // lifecycle to restart the launcher which does all the Proxy lifting.
     startRunner()
