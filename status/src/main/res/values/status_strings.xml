@@ -32,4 +32,8 @@
   <string name="start_hotspot">Start %1$s Hotspot</string>
   <string name="stop_hotspot">Stop %1$s Hotspot</string>
   <string name="is_thinking">%1$s is thinking…</string>
+
+  <string name="title_broadcast_status">Broadcast Status</string>
+  <string name="title_proxy_status">Proxy Status</string>
+  <string name="title_hotspot_status">Hotspot Status</string>
 </resources>

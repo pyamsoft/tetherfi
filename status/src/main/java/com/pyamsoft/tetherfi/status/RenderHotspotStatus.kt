@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
@@ -71,7 +72,7 @@ internal fun LazyListScope.renderHotspotStatus(
       ) {
         DisplayStatus(
             modifier = Modifier.weight(1F, fill = false),
-            title = "Broadcast Status:",
+            title = stringResource(R.string.title_broadcast_status),
             status = wiDiStatus,
             size = StatusSize.SMALL,
             onClickShowError = onShowBroadcastError,
@@ -79,7 +80,7 @@ internal fun LazyListScope.renderHotspotStatus(
 
         DisplayStatus(
             modifier = Modifier.weight(1F, fill = false),
-            title = "Proxy Status:",
+            title = stringResource(R.string.title_proxy_status),
             status = proxyStatus,
             size = StatusSize.SMALL,
             onClickShowError = onShowProxyError,
@@ -91,7 +92,7 @@ internal fun LazyListScope.renderHotspotStatus(
           contentAlignment = Alignment.Center,
       ) {
         DisplayStatus(
-            title = "Hotspot Status:",
+            title = stringResource(R.string.title_hotspot_status),
             status = hotspotStatus,
             size = StatusSize.NORMAL,
         )
