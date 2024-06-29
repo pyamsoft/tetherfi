@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="operating_settings">熱點運作設定</string>
+  <string name="operating_always_alive_title">永遠存活</string>
+  <string
+    name="operating_always_alive_description"
+  >這會讓 %1$s 的網路熱點得以在應用軟體被關閉的情境繼續運行。這會大幅度改進您的使用體驗與網路效能。（建議使用）</string>
+</resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="status_error">發生了一個未預期的錯誤。</string>
+  <string name="status_not_running">未在運行</string>
+  <string name="status_running">正在運行</string>
+  <string name="status_starting">正在啟動</string>
+  <string name="status_stopping">正在中止</string>
+  <string name="enable_socket_timeout_title">啟用閒置連線逾時清理功能</string>
+  <string
+    name="enable_socket_timeout_description"
+  >在日常使用的情境下這個選項應該被啟用。這讓 %1$s 得以在超過一分鐘的無活動後清理老舊/已死亡的連線。在大量或長時間下載的情境中這個選項應該保持「禁用」。（建議使用）</string>
+
+  <string name="hotspot_error">%1$s 網路熱點錯誤</string>
+  <string name="start_hotspot">啟動 %1$s 網路熱點</string>
+  <string name="stop_hotspot">中止 %1$s 網路熱點</string>
+  <string name="is_thinking">%1$s 正在判斷當前狀態……</string>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="performance_title">性能相關設定</string>
+
+  <string name="perf_wake_lock_title">喚醒鎖</string>
+  <string
+    name="perf_wake_lock_description"
+  >喚醒鎖機制得以讓 %1$s 在螢幕關閉且系統處於低耗能模式下的維持高性能表現。在這些選項被啟用的狀況下您可能會注意到更高的電池電量消耗。</string>
+  <string name="perf_wifi_lock_title">保持 WiFi 喚醒</string>
+  <string
+    name="perf_wifi_lock_description"
+  >You should try this option first if Internet speed is slow on speed-tests while the screen is off.</string>
+  <string name="perf_cpu_lock_title">保持 CPU 喚醒</string>
+  <string
+    name="perf_cpu_lock_description"
+  >If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.</string>
+
+  <string name="perf_power_balance_title">專業設定：性能平衡設定</string>
+  <string
+    name="perf_power_balance_description"
+  >此設定僅提供給「進階使用者」使用。\n\n您可以透過調整分配給熱點網路的虛擬執行緒數量來調整 %1$s 網路熱點的效能表現跟資源使用量。\n\n更高的執行緒數量通常會促成更高的性能，但也會造成更高的電池電量使用且可能會使您的裝置更熱或更慢。</string>
+  <string name="perf_power_balance_button">調整性能</string>
+
+  <string name="perf_balance_max_title">最大性能</string>
+  <string
+    name="perf_balance_max_description"
+  >無執行緒數量限制。提供最大的性能表現。將電池電量使用顧慮丟出窗外。</string>
+  <string name="perf_balance_super_save_title">最大化節省電池電量使用</string>
+  <string
+    name="perf_balance_super_save_description"
+  >最多建立 %1$d 個執行緒。使用最少的電池電量但只提供最慢的網路熱點性能。</string>
+  <string name="perf_balance_save_title">省電模式</string>
+  <string
+    name="perf_balance_save_description"
+  >最多建立 %1$d 個執行緒。使用較少的電池電量但是提供較慢的網路熱點性能。</string>
+  <string name="perf_balance_normal_title">平衡</string>
+  <string
+    name="perf_balance_normal_description"
+  >最多建立 %1$d 個執行緒。提供電池電量使用與網路熱點性能間的平衡。</string>
+  <string name="perf_balance_perf_title">性能</string>
+  <string
+    name="perf_balance_perf_description"
+  >最多建立 %1$d 個執行緒。以更多電池電量使用為代價提供較佳的網路熱點性能。</string>
+  <string name="perf_balance_super_perf_title">高性能</string>
+  <string
+    name="perf_balance_super_perf_description"
+  >最多建立 %1$d 個執行緒。以更顯著的電池電量使用為代價提供非常好的網路熱點性能。</string>
+</resources>
