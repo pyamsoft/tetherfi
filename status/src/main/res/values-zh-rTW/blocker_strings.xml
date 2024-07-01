@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="block_privacy_policy">隱私政策</string>
+  <string name="block_view_privacy_policy">查看 %1$s 的%2$s</string>
+  <string name="block_vpn_title">與 VPN 發生衝突</string>
+  <string
+    name="block_vpn_description"
+  >%1$s 在連接 VPN 時可能會無法順利啟動網路熱點。</string>
+  <string
+    name="block_vpn_instruction"
+  >請將您的 VPN 中斷連線，然後再嘗試啟動熱點。</string>
+</resources>
