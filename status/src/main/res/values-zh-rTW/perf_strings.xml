@@ -25,11 +25,11 @@
   <string name="perf_wifi_lock_title">保持 WiFi 喚醒</string>
   <string
     name="perf_wifi_lock_description"
-  >You should try this option first if Internet speed is slow on speed-tests while the screen is off.</string>
+  >如果網路速度測試在螢幕關閉時很慢的話您應該先試試看這個選項。</string>
   <string name="perf_cpu_lock_title">保持 CPU 喚醒</string>
   <string
     name="perf_cpu_lock_description"
-  >If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.</string>
+  >如果 WiFi 已經被保持於清醒狀態網路速度還是在網路速度測試中很慢的話，您可能需要使用這個選項。</string>
 
   <string name="perf_power_balance_title">專業設定：性能平衡設定</string>
   <string
