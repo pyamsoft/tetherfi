@@ -30,4 +30,8 @@
   <string name="start_hotspot">啟動 %1$s 網路熱點</string>
   <string name="stop_hotspot">中止 %1$s 網路熱點</string>
   <string name="is_thinking">%1$s 正在判斷當前狀態……</string>
+
+  <string name="title_broadcast_status">廣播狀態</string>
+  <string name="title_proxy_status">代理服務狀態</string>
+  <string name="title_hotspot_status">網路熱點狀態</string>
 </resources>
