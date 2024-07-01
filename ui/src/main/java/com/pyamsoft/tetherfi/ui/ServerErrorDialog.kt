@@ -119,9 +119,7 @@ fun ServerErrorDialog(
           modifier = Modifier.fillMaxWidth(),
           onClose = onDismiss,
           title = {
-            Text(
-                text = stringResource(R.string.hotspot_error),
-            )
+            // Intentionally blank
           },
       )
       Card(

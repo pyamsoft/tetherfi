@@ -46,10 +46,10 @@ internal fun HotspotStarter(
           appName,
       ) {
         when (hotspotStatus) {
-          is RunningStatus.Error -> (R.string.hotspot_error)
-          is RunningStatus.NotRunning -> (R.string.start_hotspot)
-          is RunningStatus.Running -> (R.string.stop_hotspot)
-          else -> (R.string.is_thinking)
+          is RunningStatus.Error -> R.string.hotspot_error
+          is RunningStatus.NotRunning -> R.string.start_hotspot
+          is RunningStatus.Running -> R.string.stop_hotspot
+          else -> R.string.is_thinking
         }
       }
 

@@ -15,7 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="hotspot_error">Hotspot Error</string>
   <string
     name="faq_blurb"
   >Have questions about how %1$s works? Noticing some issues connecting?\n\nView our %2$s and apps that are %3$s</string>
