@@ -297,7 +297,11 @@ internal constructor(
             "key_proxy_bind_all_1",
 
             // YOLO_MODE: Made default in 41, removed in 42
-            "key_proxy_yolo_mode_1")
+            "key_proxy_yolo_mode_1",
+
+            // TODO(Peter): Old preference was default OFF in 43, new preference in 45 is default ON
+            // "key_tcp_socket_timeout_1"
+            )
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
@@ -318,6 +322,8 @@ internal constructor(
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
 
+    // TODO(Peter): Remove v1 in 45 and replace with v2
     private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_1"
+    // private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_2"
   }
 }

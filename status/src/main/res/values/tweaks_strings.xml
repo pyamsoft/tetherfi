@@ -30,8 +30,12 @@
     name="shutdown_no_client_description"
   >If the %1$s hotspot has been running for 10 minutes without serving any client devices, shut it down.\n\nAutomatically shutting down the hotspot when it is not being used can save battery.</string>
 
-  <string name="stubborn_proxy_title">Stubborn Proxy</string>
+  <string name="enable_socket_timeout_title">Enable Idle Timeout</string>
   <string
-    name="stubborn_proxy_description"
-  >On some devices %1$s fails to launch the Proxy with an \'Invalid Argument\' error. In some cases, this error is "not real" and can be recovered from by being stubborn and trying again and again.\n\nEnabling this option lets %1$s ignore these errors and constantly keep trying. YOLO Mode.\n\nThis option is now default, and will be removed in a future update.</string>
+      name="enable_socket_timeout_description"
+      >For most day-to-day usage, this option should be enabled.
+    This allows %1$s to clean up old/dead connections after 1 minute of no activity.
+    For large or long downloads, this option should be kept OFF.
+
+    This option will be made default in the next version. (recommended)</string>
 </resources>

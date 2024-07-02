@@ -147,24 +147,6 @@ internal fun LazyListScope.renderTweakCard(
             description = stringResource(R.string.shutdown_no_client_description, appName),
             onClick = onToggleShutdownWithNoClients,
         )
-
-        val proxyYoloColor by
-            rememberCheckableColor(
-                enabled = isEditable,
-                label = "Stubborn Proxy",
-                condition = true,
-                selectedColor = MaterialTheme.colorScheme.primary,
-            )
-
-        ToggleSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            isEditable = isEditable,
-            color = proxyYoloColor,
-            checked = true,
-            title = stringResource(R.string.stubborn_proxy_title),
-            description = stringResource(R.string.stubborn_proxy_description, appName),
-            onClick = {},
-        )
       }
     }
   }
