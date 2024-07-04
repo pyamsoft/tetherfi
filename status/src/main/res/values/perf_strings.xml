@@ -29,35 +29,4 @@
   <string
     name="perf_cpu_lock_description"
   >If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.</string>
-
-  <string name="perf_power_balance_title">Expert: Power Balance</string>
-  <string
-    name="perf_power_balance_description"
-  >This is for Advanced Users.\n\nYou can adjust the performance and resource usage of the %1$s Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.\n\nMore Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.</string>
-  <string name="perf_power_balance_button">Adjust Power Balance</string>
-
-  <string name="perf_balance_max_title">Max Performance</string>
-  <string
-    name="perf_balance_max_description"
-  >Unlimited threads. Offers maximum performance. Throws battery usage concerns out the window.</string>
-  <string name="perf_balance_super_save_title">Max Battery-Saving</string>
-  <string
-    name="perf_balance_super_save_description"
-  >%1$d threads. Uses the least battery but offers the slowest hotspot performance.</string>
-  <string name="perf_balance_save_title">Battery-Saving</string>
-  <string
-    name="perf_balance_save_description"
-  >%1$d threads. Uses less battery but offers slower hotspot performance.</string>
-  <string name="perf_balance_normal_title">Balanced</string>
-  <string
-    name="perf_balance_normal_description"
-  >%1$d threads. Offers a balance between battery usage and hotspot performance.</string>
-  <string name="perf_balance_perf_title">Performance</string>
-  <string
-    name="perf_balance_perf_description"
-  >%1$d threads. Offers better hotspot performance at the cost of more battery usage.</string>
-  <string name="perf_balance_super_perf_title">High Performance</string>
-  <string
-    name="perf_balance_super_perf_description"
-  >%1$d threads. Offers great hotspot performance at the cost of significant battery usage.</string>
 </resources>

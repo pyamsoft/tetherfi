@@ -53,6 +53,7 @@ fun MainScreen(
     onRefreshConnection: () -> Unit,
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -87,6 +88,7 @@ fun MainScreen(
           onJumpToHowTo = onJumpToHowTo,
           onUpdateTile = onUpdateTile,
           onLaunchIntent = onLaunchIntent,
+          onShowSlowSpeedHelp = onShowSlowSpeedHelp,
       )
     }
   }
@@ -95,11 +97,16 @@ fun MainScreen(
 @TestOnly
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
-private fun PreviewMainScreen(isSettingsOpen: Boolean, isShowingQr: Boolean) {
+private fun PreviewMainScreen(
+    isSettingsOpen: Boolean,
+    isShowingQr: Boolean,
+    isShowingSlowSpeedHelp: Boolean,
+) {
   val state =
       object : MainViewState {
         override val isSettingsOpen = MutableStateFlow(isSettingsOpen)
         override val isShowingQRCodeDialog = MutableStateFlow(isShowingQr)
+        override val isShowingSlowSpeedHelp = MutableStateFlow(isShowingSlowSpeedHelp)
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
         override val port = MutableStateFlow(0)
@@ -118,29 +125,36 @@ private fun PreviewMainScreen(isSettingsOpen: Boolean, isShowingQr: Boolean) {
       onJumpToHowTo = {},
       onLaunchIntent = {},
       onUpdateTile = {},
+      onShowSlowSpeedHelp = {},
   )
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenDefault() {
-  PreviewMainScreen(isSettingsOpen = false, isShowingQr = false)
+  PreviewMainScreen(isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false)
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenSettings() {
-  PreviewMainScreen(isSettingsOpen = true, isShowingQr = false)
+  PreviewMainScreen(isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false)
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenQr() {
-  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true)
+  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false)
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenBoth() {
-  PreviewMainScreen(isSettingsOpen = true, isShowingQr = true)
+private fun PreviewMainScreenHelp() {
+  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenAll() {
+  PreviewMainScreen(isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true)
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections.performance
+package com.pyamsoft.tetherfi.status.sections.expert
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
@@ -23,41 +23,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.status.sections.performance.renderPowerBalance
 import com.pyamsoft.tetherfi.ui.Label
 
-private enum class PerformanceSettingsContentTypes {
+private enum class ExpertSettingsContentTypes {
   LABEL,
 }
 
-internal fun LazyListScope.renderPerformanceSettings(
+internal fun LazyListScope.renderExpertSettings(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
-    state: StatusViewState,
 
-    // Wake lock
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
+    // Power Balance
+    onShowPowerBalance: () -> Unit,
 ) {
   item(
-      contentType = PerformanceSettingsContentTypes.LABEL,
+      contentType = ExpertSettingsContentTypes.LABEL,
   ) {
     Label(
         modifier =
             itemModifier
                 .padding(top = MaterialTheme.keylines.content)
                 .padding(bottom = MaterialTheme.keylines.baseline),
-        text = stringResource(R.string.performance_title),
+        text = stringResource(R.string.expert_title),
     )
   }
 
-  renderWakelocks(
+  renderPowerBalance(
       itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
-      state = state,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
-      onToggleKeepWifiLock = onToggleKeepWifiLock,
+      onShowPowerBalance = onShowPowerBalance,
   )
 }

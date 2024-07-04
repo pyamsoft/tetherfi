@@ -36,16 +36,19 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.info.R
+import com.pyamsoft.tetherfi.ui.SlowSpeedsUpsell
 
 private enum class ConnectionCompleteContentTypes {
   SHARING,
   DONE,
+  SLOW,
   FULL,
 }
 
 internal fun LazyListScope.renderConnectionComplete(
     itemModifier: Modifier = Modifier,
     appName: String,
+    onShowSlowSpeedHelp: () -> Unit,
 ) {
   item(
       contentType = ConnectionCompleteContentTypes.SHARING,
@@ -72,6 +75,22 @@ internal fun LazyListScope.renderConnectionComplete(
               MaterialTheme.typography.bodyMedium.copy(
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
               ),
+      )
+    }
+  }
+
+  item(
+      contentType = ConnectionCompleteContentTypes.SLOW,
+  ) {
+    OtherInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    ) {
+      SlowSpeedsUpsell(
+          style =
+              MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+              ),
+          onClick = onShowSlowSpeedHelp,
       )
     }
   }
@@ -174,6 +193,7 @@ private fun PreviewConnectionComplete() {
   LazyColumn {
     renderConnectionComplete(
         appName = "TEST",
+        onShowSlowSpeedHelp = {},
     )
   }
 }

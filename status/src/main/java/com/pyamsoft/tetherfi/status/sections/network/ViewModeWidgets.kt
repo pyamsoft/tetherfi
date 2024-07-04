@@ -16,6 +16,8 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -227,28 +229,33 @@ internal fun ViewInstructions(
             .toAnnotatedString()
       }
 
-  ClickableText(
+  Column(
       modifier = modifier,
-      style =
-          MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onBackground,
-              textAlign = TextAlign.Center,
-          ),
-      text = text,
-      onClick = { start ->
-        text
-            .getStringAnnotations(
-                tag = setupText,
-                start = start,
-                end = start + setupText.length,
-            )
-            .firstOrNull()
-            ?.also { onJumpToHowTo() }
-      },
-  )
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center,
+  ) {
+    ClickableText(
+        style =
+            MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+            ),
+        text = text,
+        onClick = { start ->
+          text
+              .getStringAnnotations(
+                  tag = setupText,
+                  start = start,
+                  end = start + setupText.length,
+              )
+              .firstOrNull()
+              ?.also { onJumpToHowTo() }
+        },
+    )
 
-  SlowSpeedsUpsell(
-      style = MaterialTheme.typography.bodyMedium,
-      onClick = onViewSlowSpeedHelp,
-  )
+    SlowSpeedsUpsell(
+        style = MaterialTheme.typography.bodyMedium,
+        onClick = onViewSlowSpeedHelp,
+    )
+  }
 }

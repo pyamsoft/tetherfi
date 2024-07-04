@@ -44,6 +44,7 @@ fun MainContent(
     onRefreshConnection: () -> Unit,
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -67,6 +68,7 @@ fun MainContent(
             appName = appName,
             serverViewState = state,
             onShowQRCode = onShowQRCode,
+            onShowSlowSpeedHelp = onShowSlowSpeedHelp,
         )
       }
       MainView.STATUS -> {
@@ -79,6 +81,7 @@ fun MainContent(
             onJumpToHowTo = onJumpToHowTo,
             onUpdateTile = onUpdateTile,
             onLaunchIntent = onLaunchIntent,
+            onShowSlowSpeedHelp = onShowSlowSpeedHelp,
         )
       }
       MainView.CONNECTIONS -> {

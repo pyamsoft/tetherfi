@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ Copyright 2024 pyamsoft
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+  <string name="expert_title">Expert Settings</string>
+
+  <string name="expert_power_balance_title">Expert: Power Balance</string>
+  <string
+    name="expert_power_balance_description"
+  >This is for Advanced Users.\n\nYou can adjust the performance and resource usage of the %1$s Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.\n\nMore Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.</string>
+  <string name="expert_power_balance_button">Adjust Power Balance</string>
+
+  <string name="expert_balance_max_title">Max Performance</string>
+  <string
+    name="expert_balance_max_description"
+  >Unlimited threads. Offers maximum performance. Throws battery usage concerns out the window.</string>
+  <string name="expert_balance_super_save_title">Max Battery-Saving</string>
+  <string
+    name="expert_balance_super_save_description"
+  >%1$d threads. Uses the least battery but offers the slowest hotspot performance.</string>
+  <string name="expert_balance_save_title">Battery-Saving</string>
+  <string
+    name="expert_balance_save_description"
+  >%1$d threads. Uses less battery but offers slower hotspot performance.</string>
+  <string name="expert_balance_normal_title">Balanced</string>
+  <string
+    name="expert_balance_normal_description"
+  >%1$d threads. Offers a balance between battery usage and hotspot performance.</string>
+  <string name="expert_balance_expert_title">Performance</string>
+  <string
+    name="expert_balance_expert_description"
+  >%1$d threads. Offers better hotspot performance at the cost of more battery usage.</string>
+  <string name="expert_balance_super_expert_title">High Performance</string>
+  <string
+    name="expert_balance_super_expert_description"
+  >%1$d threads. Offers great hotspot performance at the cost of significant battery usage.</string>
+</resources>

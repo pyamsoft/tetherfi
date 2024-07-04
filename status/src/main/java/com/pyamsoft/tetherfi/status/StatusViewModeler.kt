@@ -161,18 +161,9 @@ internal constructor(
         registry
             .registerProvider(KEY_SHOW_POWER_BALANCE) { state.isShowingPowerBalance.value }
             .also { add(it) }
-
-        registry
-            .registerProvider(KEY_SHOW_SLOW_SPEED_HELP) { state.isShowingSlowSpeedHelp.value }
-            .also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    registry
-        .consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)
-        ?.let { it as Boolean }
-        ?.also { state.isShowingSlowSpeedHelp.value = it }
-
     registry
         .consumeRestored(KEY_SHOW_POWER_BALANCE)
         ?.let { it as Boolean }
@@ -575,21 +566,11 @@ internal constructor(
     serverPreferences.setTimeoutEnabled(newVal)
   }
 
-  fun handleOpenSlowSpeedHelp() {
-    state.isShowingSlowSpeedHelp.value = true
-  }
-
-  fun handleCloseSlowSpeedHelp() {
-    state.isShowingSlowSpeedHelp.value = false
-  }
-
   companion object {
     private const val KEY_SHOW_SETUP_ERROR = "key_show_setup_error"
     private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
     private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
 
     private const val KEY_SHOW_POWER_BALANCE = "key_show_power_balance"
-
-    private const val KEY_SHOW_SLOW_SPEED_HELP = "key_show_slow_speed_help"
   }
 }

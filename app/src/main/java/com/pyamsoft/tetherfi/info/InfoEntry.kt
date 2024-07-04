@@ -45,6 +45,7 @@ fun InfoEntry(
     appName: String,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
 ) {
   val component = rememberComposableInjector { InfoInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -55,6 +56,7 @@ fun InfoEntry(
       appName = appName,
       serverViewState = serverViewState,
       onShowQRCode = onShowQRCode,
+      onShowSlowSpeedHelp = onShowSlowSpeedHelp,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
   )
 }

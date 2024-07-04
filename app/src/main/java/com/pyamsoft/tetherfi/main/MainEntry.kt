@@ -47,6 +47,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import com.pyamsoft.tetherfi.ui.SlowSpeedsDialog
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -57,6 +58,7 @@ import kotlinx.coroutines.withContext
 internal class MainInjector @Inject internal constructor() : ComposableInjector() {
 
   @JvmField @Inject internal var viewModel: MainViewModeler? = null
+
   @JvmField @Inject internal var appEnvironment: AppDevEnvironment? = null
 
   override fun onInject(activity: ComponentActivity) {
@@ -190,6 +192,7 @@ fun MainEntry(
       onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
       onJumpToHowTo = { handleTabSelected(MainView.INFO) },
+      onShowSlowSpeedHelp = { viewModel.handleOpenSlowSpeedHelp() },
       onUpdateTile = onUpdateTile,
       onLaunchIntent = onLaunchIntent,
   )
@@ -222,5 +225,13 @@ fun MainEntry(
           onDismiss = { viewModel.handleCloseQRCodeDialog() },
       )
     }
+  }
+
+  val isShowingSlowSpeedHelp by viewModel.isShowingSlowSpeedHelp.collectAsStateWithLifecycle()
+  if (isShowingSlowSpeedHelp) {
+    SlowSpeedsDialog(
+        modifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
+        onDismiss = { viewModel.handleCloseSlowSpeedHelp() },
+    )
   }
 }

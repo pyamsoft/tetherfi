@@ -69,7 +69,7 @@ internal fun LazyListScope.renderPowerBalance(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
       ) {
         Text(
-            text = stringResource(R.string.perf_power_balance_title),
+            text = stringResource(R.string.expert_power_balance_title),
             style =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
@@ -78,7 +78,7 @@ internal fun LazyListScope.renderPowerBalance(
         )
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
-            text = stringResource(R.string.perf_power_balance_description, appName),
+            text = stringResource(R.string.expert_power_balance_description, appName),
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     color =
@@ -94,7 +94,7 @@ internal fun LazyListScope.renderPowerBalance(
             enabled = isEditable,
         ) {
           Text(
-              text = stringResource(R.string.perf_power_balance_button),
+              text = stringResource(R.string.expert_power_balance_button),
           )
         }
       }

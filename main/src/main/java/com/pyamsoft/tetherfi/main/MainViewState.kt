@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface MainViewState : ServerViewState {
   val isSettingsOpen: StateFlow<Boolean>
   val isShowingQRCodeDialog: StateFlow<Boolean>
+  val isShowingSlowSpeedHelp: StateFlow<Boolean>
 }
 
 @Stable
@@ -41,5 +42,7 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val port = MutableStateFlow(0)
 
   override val isSettingsOpen = MutableStateFlow(false)
+
   override val isShowingQRCodeDialog = MutableStateFlow(false)
+  override val isShowingSlowSpeedHelp = MutableStateFlow(false)
 }

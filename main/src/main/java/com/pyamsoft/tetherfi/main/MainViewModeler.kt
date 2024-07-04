@@ -143,6 +143,10 @@ internal constructor(
         registry
             .registerProvider(KEY_IS_SHOWING_QR) { s.isShowingQRCodeDialog.value }
             .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_SLOW_SPEED_HELP) { state.isShowingSlowSpeedHelp.value }
+            .also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
@@ -156,6 +160,11 @@ internal constructor(
         .consumeRestored(KEY_IS_SHOWING_QR)
         ?.let { it as Boolean }
         ?.also { s.isShowingQRCodeDialog.value = it }
+
+    registry
+        .consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)
+        ?.let { it as Boolean }
+        ?.also { state.isShowingSlowSpeedHelp.value = it }
   }
 
   fun handleRefreshConnectionInfo(scope: CoroutineScope) {
@@ -184,9 +193,19 @@ internal constructor(
     inAppRatingPreferences.markAppOpened()
   }
 
+  fun handleOpenSlowSpeedHelp() {
+    state.isShowingSlowSpeedHelp.value = true
+  }
+
+  fun handleCloseSlowSpeedHelp() {
+    state.isShowingSlowSpeedHelp.value = false
+  }
+
   companion object {
 
     private const val KEY_IS_SETTINGS_OPEN = "is_settings_open"
     private const val KEY_IS_SHOWING_QR = "show_qr"
+
+    private const val KEY_SHOW_SLOW_SPEED_HELP = "key_show_slow_speed_help"
   }
 }

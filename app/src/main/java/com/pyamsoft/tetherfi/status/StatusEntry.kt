@@ -150,6 +150,7 @@ fun StatusEntry(
     onRefreshConnection: () -> Unit,
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -181,6 +182,7 @@ fun StatusEntry(
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
+      onViewSlowSpeedHelp = onShowSlowSpeedHelp,
       onOpenBatterySettings = {
         onLaunchIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
@@ -219,7 +221,5 @@ fun StatusEntry(
       onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
       onHidePowerBalance = { viewModel.handleClosePowerBalance() },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
-      onViewSlowSpeedHelp = { viewModel.handleOpenSlowSpeedHelp() },
-      onHideSlowSpeedHelp = { viewModel.handleCloseSlowSpeedHelp() },
   )
 }

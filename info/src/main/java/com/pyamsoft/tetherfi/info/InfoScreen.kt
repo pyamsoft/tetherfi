@@ -49,6 +49,7 @@ fun InfoScreen(
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
+    onShowSlowSpeedHelp: () -> Unit,
 ) {
   LazyColumn(
       modifier = modifier,
@@ -81,6 +82,7 @@ fun InfoScreen(
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onShowQRCode = onShowQRCode,
+        onShowSlowSpeedHelp = onShowSlowSpeedHelp,
     )
 
     item(
@@ -102,5 +104,6 @@ private fun PreviewInfoScreen() {
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
+      onShowSlowSpeedHelp = {},
   )
 }

@@ -31,6 +31,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
+import com.pyamsoft.tetherfi.status.sections.expert.renderExpertSettings
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
 import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.status.sections.performance.renderPerformanceSettings
@@ -117,24 +118,6 @@ internal fun LazyListScope.renderLoadedContent(
       onViewSlowSpeedHelp = onViewSlowSpeedHelp,
   )
 
-  renderOperatingSettings(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-      state = state,
-      showNotificationSettings = showNotificationSettings,
-      onDisableBatteryOptimizations = onOpenBatterySettings,
-      onNotificationPermissionRequest = onRequestNotificationPermission,
-  )
-
-  item(
-      contentType = StatusLoadedContentTypes.SPACER,
-  ) {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
-    )
-  }
-
   renderBroadcastFrequency(
       itemModifier = itemModifier,
       isEditable = isEditable,
@@ -157,8 +140,25 @@ internal fun LazyListScope.renderLoadedContent(
       state = state,
       onToggleKeepWakeLock = onToggleKeepWakeLock,
       onToggleKeepWifiLock = onToggleKeepWifiLock,
-      onShowPowerBalance = onShowPowerBalance,
   )
+
+  renderOperatingSettings(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      state = state,
+      showNotificationSettings = showNotificationSettings,
+      onDisableBatteryOptimizations = onOpenBatterySettings,
+      onNotificationPermissionRequest = onRequestNotificationPermission,
+  )
+
+  item(
+      contentType = StatusLoadedContentTypes.SPACER,
+  ) {
+    Spacer(
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
+    )
+  }
 
   renderTweaks(
       itemModifier = itemModifier,
@@ -168,6 +168,21 @@ internal fun LazyListScope.renderLoadedContent(
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
       onToggleSocketTimeout = onToggleSocketTimeout,
+  )
+
+  item(
+      contentType = StatusLoadedContentTypes.SPACER,
+  ) {
+    Spacer(
+        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
+    )
+  }
+
+  renderExpertSettings(
+      itemModifier = itemModifier,
+      isEditable = isEditable,
+      appName = appName,
+      onShowPowerBalance = onShowPowerBalance,
   )
 
   item(

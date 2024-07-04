@@ -71,28 +71,28 @@ private fun rememberDisplayLimits(): List<DisplayLimit> {
           val t = l.coroutineLimit
           when (l) {
             ServerPerformanceLimit.Defaults.UNBOUND -> {
-              title = context.getString(R.string.perf_balance_max_title)
-              description = context.getString(R.string.perf_balance_max_description)
+              title = context.getString(R.string.expert_balance_max_title)
+              description = context.getString(R.string.expert_balance_max_description)
             }
             ServerPerformanceLimit.Defaults.BOUND_N_CPU -> {
-              title = context.getString(R.string.perf_balance_super_save_title)
-              description = context.getString(R.string.perf_balance_super_save_description, t)
+              title = context.getString(R.string.expert_balance_super_save_title)
+              description = context.getString(R.string.expert_balance_super_save_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_2N_CPU -> {
-              title = context.getString(R.string.perf_balance_save_title)
-              description = context.getString(R.string.perf_balance_save_description, t)
+              title = context.getString(R.string.expert_balance_save_title)
+              description = context.getString(R.string.expert_balance_save_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_3N_CPU -> {
-              title = context.getString(R.string.perf_balance_normal_title)
-              description = context.getString(R.string.perf_balance_normal_description, t)
+              title = context.getString(R.string.expert_balance_normal_title)
+              description = context.getString(R.string.expert_balance_normal_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_4N_CPU -> {
-              title = context.getString(R.string.perf_balance_perf_title)
-              description = context.getString(R.string.perf_balance_perf_description, t)
+              title = context.getString(R.string.expert_balance_expert_title)
+              description = context.getString(R.string.expert_balance_expert_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_5N_CPU -> {
-              title = context.getString(R.string.perf_balance_super_perf_title)
-              description = context.getString(R.string.perf_balance_super_perf_description, t)
+              title = context.getString(R.string.expert_balance_super_expert_title)
+              description = context.getString(R.string.expert_balance_super_expert_description, t)
             }
           }
 
