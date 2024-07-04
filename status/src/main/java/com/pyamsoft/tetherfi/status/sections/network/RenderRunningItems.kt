@@ -55,6 +55,7 @@ internal fun LazyListScope.renderRunningItems(
     onShowHotspotError: () -> Unit,
     onShowNetworkError: () -> Unit,
     onJumpToHowTo: () -> Unit,
+    onViewSlowSpeedHelp: () -> Unit,
 ) {
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_HOWTO,
@@ -62,6 +63,7 @@ internal fun LazyListScope.renderRunningItems(
     ViewInstructions(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.content * 2),
         onJumpToHowTo = onJumpToHowTo,
+        onViewSlowSpeedHelp = onViewSlowSpeedHelp,
     )
   }
 
@@ -129,6 +131,7 @@ private fun PreviewRunningItems(
         onJumpToHowTo = {},
         onShowHotspotError = {},
         onTogglePasswordVisibility = {},
+        onViewSlowSpeedHelp = {},
     )
   }
 }

@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AllowedClients {
 
-  @CheckResult fun listenForClients(): Flow<List<TetherClient>>
+  @CheckResult fun listenForClients(): Flow<Collection<TetherClient>>
 
   suspend fun seen(hostNameOrIp: String)
 

@@ -77,6 +77,7 @@ internal fun LazyListScope.renderNetworkInformation(
 
     // Jump links
     onJumpToHowTo: () -> Unit,
+    onViewSlowSpeedHelp: () -> Unit,
 ) {
   item(
       contentType = NetworkStatusWidgetsContentTypes.NETWORK_ERROR,
@@ -135,6 +136,7 @@ internal fun LazyListScope.renderNetworkInformation(
         onShowHotspotError = onShowHotspotError,
         onShowNetworkError = onShowNetworkError,
         onJumpToHowTo = onJumpToHowTo,
+        onViewSlowSpeedHelp = onViewSlowSpeedHelp,
     )
   }
 }
@@ -173,6 +175,7 @@ private fun PreviewNetworkInformation(
         onPasswordChanged = {},
         onShowHotspotError = {},
         onTogglePasswordVisibility = {},
+        onViewSlowSpeedHelp = {},
     )
   }
 }

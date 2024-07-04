@@ -34,6 +34,7 @@ import com.pyamsoft.tetherfi.status.sections.performance.PowerBalanceDialog
 import com.pyamsoft.tetherfi.status.trouble.TroubleshootDialog
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.SlowSpeedsDialog
 
 @Composable
 internal fun StatusDialogs(
@@ -57,6 +58,9 @@ internal fun StatusDialogs(
     // Power Balance
     onHidePowerBalance: () -> Unit,
     onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
+
+    // Jump links
+    onHideSlowSpeedHelp: () -> Unit,
 ) {
   val blockers = state.startBlockers.collectAsStateListWithLifecycle()
 
@@ -74,6 +78,8 @@ internal fun StatusDialogs(
   val isShowingSetupError by state.isShowingSetupError.collectAsStateWithLifecycle()
 
   val isShowingPowerBalance by state.isShowingPowerBalance.collectAsStateWithLifecycle()
+
+  val isShowingSlowSpeedHelp by state.isShowingSlowSpeedHelp.collectAsStateWithLifecycle()
 
   // Show the Required blocks first, and if all required ones are done, show the "skippable" ones
   // even though we don't support skipping yet.
@@ -131,6 +137,15 @@ internal fun StatusDialogs(
         state = state,
         onHidePowerBalance = onHidePowerBalance,
         onUpdatePowerBalance = onUpdatePowerBalance,
+    )
+  }
+
+  AnimatedVisibility(
+      visible = isShowingSlowSpeedHelp,
+  ) {
+    SlowSpeedsDialog(
+        modifier = dialogModifier,
+        onDismiss = onHideSlowSpeedHelp,
     )
   }
 

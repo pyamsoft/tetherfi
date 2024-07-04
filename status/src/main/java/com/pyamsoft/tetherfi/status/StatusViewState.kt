@@ -60,6 +60,7 @@ interface StatusViewState : UiViewState {
   val isShowingBroadcastError: StateFlow<Boolean>
   val isShowingProxyError: StateFlow<Boolean>
   val isShowingPowerBalance: StateFlow<Boolean>
+  val isShowingSlowSpeedHelp: StateFlow<Boolean>
 
   // Tweaks
   val isIgnoreVpn: StateFlow<Boolean>
@@ -103,6 +104,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isShowingBroadcastError = MutableStateFlow(false)
   override val isShowingProxyError = MutableStateFlow(false)
   override val isShowingPowerBalance = MutableStateFlow(false)
+  override val isShowingSlowSpeedHelp = MutableStateFlow(false)
 
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)

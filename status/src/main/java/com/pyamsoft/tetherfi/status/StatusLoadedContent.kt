@@ -92,6 +92,7 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Jump links
     onJumpToHowTo: () -> Unit,
+    onViewSlowSpeedHelp: () -> Unit,
 
     // Power Balance
     onShowPowerBalance: () -> Unit,
@@ -113,6 +114,7 @@ internal fun LazyListScope.renderLoadedContent(
       onShowNetworkError = onShowNetworkError,
       onShowHotspotError = onShowHotspotError,
       onJumpToHowTo = onJumpToHowTo,
+      onViewSlowSpeedHelp = onViewSlowSpeedHelp,
   )
 
   renderOperatingSettings(
@@ -233,6 +235,7 @@ private fun PreviewLoadedContent(
         wiDiStatus = RunningStatus.NotRunning,
         proxyStatus = RunningStatus.NotRunning,
         showNotificationSettings = showNotifications,
+        onViewSlowSpeedHelp = {},
     )
   }
 }

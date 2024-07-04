@@ -1,0 +1,323 @@
+/*
+ * Copyright 2024 pyamsoft
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at:
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.pyamsoft.tetherfi.ui
+
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
+import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
+
+private enum class SlowSpeedsContentTypes {
+  TITLE,
+  ITEM,
+  FAQ,
+}
+
+@Composable
+private fun SlowSpeedsContent(
+    modifier: Modifier = Modifier,
+) {
+  val slowSpeed = stringResource(R.string.hotspot_speed_what)
+  val helpItems = stringArrayResource(R.array.hotspot_speed_items)
+  val itemTextStyle = MaterialTheme.typography.bodyMedium
+
+  LazyColumn(
+      modifier = modifier,
+  ) {
+    item(
+        contentType = SlowSpeedsContentTypes.TITLE,
+    ) {
+      val upsell = stringResource(R.string.hotspot_speed_sad, slowSpeed)
+
+      Text(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+          text = upsell,
+          style = MaterialTheme.typography.titleMedium,
+      )
+    }
+
+    items(
+        items = helpItems,
+        key = { it },
+        contentType = { SlowSpeedsContentTypes.ITEM },
+    ) { text ->
+      Row(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Icon(
+            modifier =
+                Modifier.padding(
+                        vertical = MaterialTheme.keylines.baseline,
+                    )
+                    .padding(
+                        start = MaterialTheme.keylines.typography,
+                        end = MaterialTheme.keylines.content,
+                    )
+                    .size(8.dp),
+            imageVector = Icons.Filled.RadioButtonUnchecked,
+            contentDescription = text,
+        )
+        Text(
+            text = text,
+            style = itemTextStyle,
+        )
+      }
+    }
+
+    item(
+        contentType = SlowSpeedsContentTypes.FAQ,
+    ) {
+      SlowSpeedsLink(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          slowSpeed = slowSpeed,
+          style = itemTextStyle,
+      )
+    }
+  }
+}
+
+@Composable
+private fun SlowSpeedsLink(
+    modifier: Modifier = Modifier,
+    slowSpeed: String,
+    style: TextStyle,
+) {
+  val uriHandler = rememberUriHandler()
+  val linkColor = MaterialTheme.colorScheme.primary
+
+  val rawBlurb = stringResource(R.string.hotspot_speed_faq, slowSpeed)
+  val text =
+      remember(
+          linkColor,
+          rawBlurb,
+          slowSpeed,
+      ) {
+        val slowSpeedIndex = rawBlurb.indexOf(slowSpeed)
+
+        val linkStyle =
+            SpanStyle(
+                color = linkColor,
+                textDecoration = TextDecoration.Underline,
+            )
+
+        val spanStyles =
+            listOf(
+                AnnotatedString.Range(
+                    linkStyle,
+                    start = slowSpeedIndex,
+                    end = slowSpeedIndex + slowSpeed.length,
+                ),
+            )
+
+        val visualString =
+            AnnotatedString(
+                rawBlurb,
+                spanStyles = spanStyles,
+            )
+
+        // Can only add annotations to builders
+        return@remember AnnotatedString.Builder(visualString)
+            .apply {
+              addStringAnnotation(
+                  tag = slowSpeed,
+                  annotation = "https://github.com/pyamsoft/tetherfi/wiki/Slow-Hotspot-Performance",
+                  start = slowSpeedIndex,
+                  end = slowSpeedIndex + slowSpeed.length,
+              )
+            }
+            .toAnnotatedString()
+      }
+
+  ClickableText(
+      modifier = modifier,
+      style =
+          style.copy(
+              color = MaterialTheme.colorScheme.onBackground,
+          ),
+      text = text,
+      onClick = { start ->
+        text
+            .getStringAnnotations(
+                tag = slowSpeed,
+                start = start,
+                end = start + slowSpeed.length,
+            )
+            .firstOrNull()
+            ?.also { uriHandler.openUri(it.item) }
+      },
+  )
+}
+
+@Composable
+public fun SlowSpeedsDialog(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+) {
+  Dialog(
+      properties = rememberDialogProperties(),
+      onDismissRequest = onDismiss,
+  ) {
+    Card(
+        modifier = modifier.padding(MaterialTheme.keylines.content),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.elevatedCardElevation(),
+        colors = CardDefaults.elevatedCardColors(),
+    ) {
+      DialogToolbar(
+          modifier = Modifier.fillMaxWidth(),
+          onClose = onDismiss,
+          title = {
+            // Intentionally blank
+          },
+      )
+      SlowSpeedsContent(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+      )
+    }
+  }
+}
+
+@Composable
+public fun SlowSpeedsUpsell(
+    modifier: Modifier = Modifier,
+    style: TextStyle,
+    onClick: () -> Unit,
+) {
+  val slowSpeed = stringResource(R.string.hotspot_speed_what)
+  val upsell = stringResource(R.string.hotspot_speed_sad, slowSpeed)
+
+  val linkColor = MaterialTheme.colorScheme.primary
+  val text =
+      remember(
+          linkColor,
+          upsell,
+          slowSpeed,
+      ) {
+        val slowSpeedIndex = upsell.indexOf(slowSpeed)
+
+        val linkStyle =
+            SpanStyle(
+                color = linkColor,
+                textDecoration = TextDecoration.Underline,
+            )
+
+        val spanStyles =
+            listOf(
+                AnnotatedString.Range(
+                    linkStyle,
+                    start = slowSpeedIndex,
+                    end = slowSpeedIndex + slowSpeed.length,
+                ),
+            )
+
+        val visualString =
+            AnnotatedString(
+                upsell,
+                spanStyles = spanStyles,
+            )
+
+        // Can only add annotations to builders
+        return@remember AnnotatedString.Builder(visualString)
+            .apply {
+              addStringAnnotation(
+                  tag = slowSpeed,
+                  annotation = "Placeholder, onClick handled in code",
+                  start = slowSpeedIndex,
+                  end = slowSpeedIndex + slowSpeed.length,
+              )
+            }
+            .toAnnotatedString()
+      }
+
+  ClickableText(
+      modifier = modifier,
+      style =
+          style.copy(
+              color = MaterialTheme.colorScheme.onBackground,
+          ),
+      text = text,
+      onClick = { start ->
+        text
+            .getStringAnnotations(
+                tag = slowSpeed,
+                start = start,
+                end = start + slowSpeed.length,
+            )
+            .firstOrNull()
+            ?.also { onClick() }
+      },
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewSlowSpeedsDialog() {
+  SlowSpeedsDialog(
+      onDismiss = {},
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewSlowSpeedsContent() {
+  SlowSpeedsContent()
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewSlowSpeedsLink() {
+  SlowSpeedsLink(
+      slowSpeed = stringResource(R.string.hotspot_speed_what),
+      style = MaterialTheme.typography.bodyMedium,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewSlowSpeedsUpsell() {
+  SlowSpeedsUpsell(
+      style = MaterialTheme.typography.bodyMedium,
+      onClick = {},
+  )
+}

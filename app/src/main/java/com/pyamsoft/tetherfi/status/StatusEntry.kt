@@ -219,5 +219,7 @@ fun StatusEntry(
       onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
       onHidePowerBalance = { viewModel.handleClosePowerBalance() },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
+      onViewSlowSpeedHelp = { viewModel.handleOpenSlowSpeedHelp() },
+      onHideSlowSpeedHelp = { viewModel.handleCloseSlowSpeedHelp() },
   )
 }

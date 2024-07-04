@@ -23,4 +23,21 @@
   <string name="view_information">View Information</string>
   <string name="something_went_wrong">Something went wrong</string>
   <string name="unknown_error">ERROR</string>
+
+  <string name="hotspot_speed_what">Slow Hotspot Performance</string>
+  <string name="hotspot_speed_sad">Experiencing %1$s?</string>
+  <string-array name="hotspot_speed_items">
+    <item>Plug this device into power and make sure it is charging</item>
+    <item>Enable the "Always Alive" tweak (disable Battery Optimization)</item>
+    <item>Try changing the Broadcast Frequency between 2.4GHz and 5GHz</item>
+    <item>Enable both "Wake Locks"</item>
+    <item>Enable the "Idle Timeout" behavior tweak</item>
+    <item>Restart this device and your connecting device</item>
+    <item
+    >Toggle Airplane Mode, Wi-Fi, and Bluetooth on and off multiple times on this device</item>
+  </string-array>
+
+  <string
+    name="hotspot_speed_faq"
+  >Still having slow speeds?\nView the Wiki page for diagnosing %1$s</string>
 </resources>

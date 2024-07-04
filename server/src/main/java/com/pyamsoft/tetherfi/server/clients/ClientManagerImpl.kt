@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -32,16 +31,12 @@ import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -53,7 +48,6 @@ internal constructor(
     private val clock: Clock,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val serverPreferences: ServerPreferences,
-    enforcer: ThreadEnforcer,
 ) :
     BlockedClientTracker,
     BlockedClients,
@@ -62,22 +56,10 @@ internal constructor(
     StartedClients,
     ClientEditor {
 
-  private val blockedClients = MutableStateFlow<Collection<TetherClient>>(mutableSetOf())
-  private val allowedClients = MutableStateFlow<List<TetherClient>>(mutableListOf())
+  private val blockedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
+  private val allowedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
 
-  private val oldClientCheck =
-      TimerTrigger(
-          clock = clock,
-          enforcer = enforcer,
-          timerPeriod = OLD_CLIENT_TIMER_PERIOD,
-      )
-
-  private val noClientCheck =
-      TimerTrigger(
-          clock = clock,
-          enforcer = enforcer,
-          timerPeriod = NO_CLIENTS_TIMER_PERIOD,
-      )
+  private val jobs = MutableStateFlow<Collection<Job>>(emptySet())
 
   @CheckResult
   private fun TetherClient.toHostNameOrIp(): String =
@@ -123,7 +105,7 @@ internal constructor(
 
   @Suppress("UnusedReceiverParameter")
   private fun CoroutineScope.onClientsUpdated(
-      @Suppress("UNUSED_PARAMETER") clients: List<TetherClient>,
+      @Suppress("UNUSED_PARAMETER") clients: Collection<TetherClient>,
   ) {
     // TODO(Peter): Should we restart the watchForNoClients timer here?
     //              This function could be called a bunch and it would cause tons of scopes to be
@@ -167,7 +149,14 @@ internal constructor(
   }
 
   private fun CoroutineScope.watchForOldClients() {
-    oldClientCheck.start(scope = this) { purgeOldClients(it) }
+    val scope = this
+
+    jobs.update {
+      it +
+          scope.launch(context = Dispatchers.Default) {
+            onTimerElapsed(OLD_CLIENT_TIMER_PERIOD) { purgeOldClients(it) }
+          }
+    }
   }
 
   @CheckResult
@@ -176,6 +165,8 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.watchForNoClients() {
+    val scope = this
+
     // Remember when we started watching
     //
     // We do this weird check because in development I noticed when starting the server
@@ -183,22 +174,21 @@ internal constructor(
     // the app to break since Broadcast started but Proxy never started
     val startedAt = LocalDateTime.now(clock)
 
-    // Stop old
-    noClientCheck.cancel()
-
     // Start new if needed
     if (isShutdownWithNoClientsEnabled()) {
       Timber.d { "Watch client count and shutdown if none" }
 
-      noClientCheck.start(
-          scope = this,
-          initialDelay = NO_CLIENTS_TIMER_PERIOD,
-      ) { cutoff ->
-        if (startedAt >= cutoff) {
-          Timber.w { "Shutdown check received but client started AFTER cutoff - invalid" }
-        } else {
-          shutdownWithNoClients()
-        }
+      jobs.update {
+        it +
+            scope.launch(context = Dispatchers.Default) {
+              onTimerElapsed(NO_CLIENTS_TIMER_PERIOD) { cutoff ->
+                if (startedAt >= cutoff) {
+                  Timber.w { "Shutdown check received but client started AFTER cutoff - invalid" }
+                } else {
+                  shutdownWithNoClients()
+                }
+              }
+            }
       }
     }
   }
@@ -347,14 +337,12 @@ internal constructor(
   override fun clear() {
     Timber.d { "Clear client tracker" }
 
-    allowedClients.value = emptyList()
+    allowedClients.value = emptySet()
     blockedClients.value = emptySet()
-
-    oldClientCheck.cancel()
-    noClientCheck.cancel()
+    jobs.value = emptySet()
   }
 
-  override fun listenForClients(): Flow<List<TetherClient>> {
+  override fun listenForClients(): Flow<Collection<TetherClient>> {
     return allowedClients
   }
 
@@ -362,57 +350,17 @@ internal constructor(
     return blockedClients
   }
 
-  private class TimerTrigger(
-      private val clock: Clock,
-      private val enforcer: ThreadEnforcer,
-      private val timerPeriod: Duration,
-  ) {
+  private suspend inline fun onTimerElapsed(period: Duration, block: (LocalDateTime) -> Unit) {
+    try {
+      while (true) {
+        delay(period)
+        val cutoffTime = LocalDateTime.now(clock).minusMinutes(period.inWholeMinutes)
 
-    private var job: Job? = null
-
-    @CheckResult
-    private fun timerFlow(
-        periodInMillis: Duration,
-        initialDelay: Duration,
-    ): Flow<Unit> =
-        flow {
-              enforcer.assertOffMainThread()
-              val ctx = currentCoroutineContext()
-
-              delay(initialDelay)
-
-              while (ctx.isActive) {
-                emit(Unit)
-                delay(periodInMillis)
-              }
-            }
-            .flowOn(context = Dispatchers.IO)
-
-    fun start(
-        scope: CoroutineScope,
-        initialDelay: Duration = Duration.ZERO,
-        onTrigger: suspend (LocalDateTime) -> Unit,
-    ) {
-      job =
-          job
-              ?: timerFlow(timerPeriod, initialDelay).let { f ->
-                scope.launch(context = Dispatchers.IO) {
-                  f.collect {
-                    // Cutoff time is X minutes ago
-                    val cutoffTime =
-                        LocalDateTime.now(clock).minusMinutes(timerPeriod.inWholeMinutes)
-                    onTrigger(cutoffTime)
-                  }
-                }
-              }
-    }
-
-    fun cancel() {
-      job?.also {
-        Timber.d { "Stopping timer flow $timerPeriod" }
-        it.cancel()
+        Timber.d { "Timer elapsed. Cutoff: $cutoffTime" }
+        block(cutoffTime)
       }
-      job = null
+    } finally {
+      Timber.d { "Timer completed." }
     }
   }
 

@@ -47,6 +47,7 @@ import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.common.StatusItem
 import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.SlowSpeedsUpsell
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
@@ -178,6 +179,7 @@ internal fun ViewSsid(
 internal fun ViewInstructions(
     modifier: Modifier = Modifier,
     onJumpToHowTo: () -> Unit,
+    onViewSlowSpeedHelp: () -> Unit,
 ) {
   val linkColor = MaterialTheme.colorScheme.primary
 
@@ -243,5 +245,10 @@ internal fun ViewInstructions(
             .firstOrNull()
             ?.also { onJumpToHowTo() }
       },
+  )
+
+  SlowSpeedsUpsell(
+      style = MaterialTheme.typography.bodyMedium,
+      onClick = onViewSlowSpeedHelp,
   )
 }

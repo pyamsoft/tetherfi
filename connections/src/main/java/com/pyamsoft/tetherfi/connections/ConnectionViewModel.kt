@@ -43,7 +43,7 @@ internal constructor(
   fun bind(scope: CoroutineScope) {
     scope.launch(context = Dispatchers.Default) {
       allowedClients.listenForClients().collect { clients ->
-        val list = clients.toList().sortedBy { it.key() }
+        val list = clients.sortedBy { it.key() }
         state.connections.value = list
       }
     }

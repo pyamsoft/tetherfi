@@ -115,6 +115,8 @@ fun StatusScreen(
 
     // Jump links
     onJumpToHowTo: () -> Unit,
+    onViewSlowSpeedHelp: () -> Unit,
+    onHideSlowSpeedHelp: () -> Unit,
 
     // Power Balance
     onShowPowerBalance: () -> Unit,
@@ -253,6 +255,7 @@ fun StatusScreen(
             onJumpToHowTo = onJumpToHowTo,
             onShowPowerBalance = onShowPowerBalance,
             onToggleSocketTimeout = onToggleSocketTimeout,
+            onViewSlowSpeedHelp = onViewSlowSpeedHelp,
         )
       }
     }
@@ -273,6 +276,7 @@ fun StatusScreen(
       onHideBroadcastError = onHideBroadcastError,
       onHidePowerBalance = onHidePowerBalance,
       onUpdatePowerBalance = onUpdatePowerBalance,
+      onHideSlowSpeedHelp = onHideSlowSpeedHelp,
   )
 }
 
@@ -329,6 +333,8 @@ private fun PreviewStatusScreen(
       onHidePowerBalance = {},
       onShowPowerBalance = {},
       onToggleSocketTimeout = {},
+      onViewSlowSpeedHelp = {},
+      onHideSlowSpeedHelp = {},
   )
 }
 

@@ -301,7 +301,7 @@ internal constructor(
 
             // TODO(Peter): Old preference was default OFF in 43, new preference in 45 is default ON
             // "key_tcp_socket_timeout_1"
-            )
+        )
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
