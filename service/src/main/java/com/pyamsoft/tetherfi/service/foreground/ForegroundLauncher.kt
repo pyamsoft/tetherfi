@@ -16,14 +16,12 @@
 
 package com.pyamsoft.tetherfi.service.foreground
 
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetwork
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import com.pyamsoft.tetherfi.service.lock.Locker
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
@@ -35,28 +33,24 @@ internal constructor(
     private val network: BroadcastNetwork,
 ) {
 
-  private suspend fun shutdown() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) { locker.release() }
-      }
-
-  private suspend fun lock() = withContext(context = Dispatchers.Default) { locker.acquire() }
+  private suspend fun withLock(block: suspend () -> Unit) {
+    try {
+      locker.acquire()
+      block()
+    } finally {
+      locker.release()
+    }
+  }
 
   suspend fun startProxy() =
       withContext(context = Dispatchers.Default) {
-        Timber.d { "Start WiDi Network" }
-        try {
-          // Claim the wakelock
-          lock()
-
+        withLock {
           // Launch a new scope so this function won't proceed to finally block until the scope is
           // completed/cancelled
           //
           // This will suspend until network.start() completes, which is suspended until the proxy
           // server loop dies
           coroutineScope { network.start() }
-        } finally {
-          shutdown()
         }
       }
 }
