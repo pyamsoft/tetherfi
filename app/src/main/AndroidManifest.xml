@@ -33,10 +33,10 @@
     android:usesCleartextTraffic="true"
   >
     <!--
-      Compose Handles config changes
+          Compose Handles config changes
 
-      https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
-    -->
+          https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
+        -->
     <activity
       android:name=".main.MainActivity"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -52,7 +52,19 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
-      <!-- QS Tile Long Press Activity -->
+      <!--
+            Shortcut
+            https://developer.android.com/develop/ui/views/launch/shortcuts/creating-shortcuts
+            -->
+      <meta-data
+        android:name="android.app.shortcuts"
+        android:resource="@xml/shortcuts"
+      />
+
+      <!--
+            QS Tile Long Press Activity
+            https://developer.android.com/develop/ui/views/quicksettings-tiles
+             -->
       <intent-filter>
         <action
           android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"
@@ -61,10 +73,10 @@
     </activity>
 
     <!--
-      Must run as a ConnectedDevice ForegroundService
+          Must run as a ConnectedDevice ForegroundService
 
-      https://github.com/pyamsoft/tetherfi/issues/250
-    -->
+          https://github.com/pyamsoft/tetherfi/issues/250
+        -->
     <service
       android:name=".foreground.ProxyForegroundService"
       android:enabled="true"
@@ -73,8 +85,8 @@
     />
 
     <!--
-      https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice
-    -->
+          https://developer.android.com/develop/ui/views/quicksettings-tiles#create-declare-tileservice
+        -->
     <service
       android:name=".tile.ProxyTileService"
       android:enabled="true"
@@ -88,16 +100,16 @@
       </intent-filter>
 
       <!--
-        Mark Tile active Tile's make an application a candidate for Foreground
-        starting We mark this as NOT active so that the system binds to us and treats
-        us as foreground!
+              Mark Tile active Tile's make an application a candidate for Foreground
+              starting We mark this as NOT active so that the system binds to us and treats
+              us as foreground!
 
-        https://github.com/pyamsoft/tetherfi/issues/250
+              https://github.com/pyamsoft/tetherfi/issues/250
 
-        <meta-data
-        android:name="android.service.quicksettings.ACTIVE_TILE" android:value="true"
-        />
-        -->
+              <meta-data
+              android:name="android.service.quicksettings.ACTIVE_TILE" android:value="true"
+              />
+              -->
 
       <!-- Tile can be toggled -->
       <meta-data
@@ -107,10 +119,10 @@
     </service>
 
     <!--
-      Compose Handles config changes
+          Compose Handles config changes
 
-      https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
-    -->
+          https://www.reddit.com/r/androiddev/comments/qwu12a/activity_recreation_problem_is_solved_with/
+        -->
     <activity
       android:name=".tile.ProxyTileActivity"
       android:clearTaskOnLaunch="true"

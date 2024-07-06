@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
   ~
@@ -13,7 +14,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<resources>
-  <string name="app_name">TetherFi</string>
-  <string name="toggle_hotspot_shortcut">Toggle TetherFi Hotspot</string>
-</resources>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <shortcut
+    android:enabled="true"
+    android:shortcutId="toggle_hotspot"
+    android:shortcutShortLabel="@string/toggle_hotspot_shortcut"
+  >
+    <intent
+      android:action="android.intent.action.VIEW"
+      android:targetClass="com.pyamsoft.tetherfi.tile.ProxyTileActivity"
+      android:targetPackage="com.pyamsoft.tetherfi"
+    />
+  </shortcut>
+</shortcuts>

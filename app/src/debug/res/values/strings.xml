@@ -15,4 +15,5 @@
   -->
 <resources>
   <string name="app_name">TetherFi (DEV)</string>
+  <string name="toggle_hotspot_shortcut">Toggle TetherFi (DEV) Hotspot</string>
 </resources>
