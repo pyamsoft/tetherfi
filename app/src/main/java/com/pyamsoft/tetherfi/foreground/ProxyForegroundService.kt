@@ -76,7 +76,11 @@ internal class ProxyForegroundService internal constructor() : Service() {
   override fun onCreate() {
     super.onCreate()
     ObjectGraph.ApplicationScope.retrieve(this).plusForeground().create().inject(this)
+
     Timber.d { "Creating service" }
+
+    // Ensure the notification is started
+    startNotification()
   }
 
   /**
