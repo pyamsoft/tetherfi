@@ -156,6 +156,7 @@ internal suspend inline fun setupProxy(
           serverDispatcher = dispatcher,
           socketTagger = socketTagger,
           yoloRepeatDelay = 0.seconds,
+          enforcer = enforcer,
       )
 
   val server =

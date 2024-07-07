@@ -23,6 +23,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ServerStopBroadcaster
 import com.pyamsoft.tetherfi.service.ServiceRunner
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import javax.inject.Inject
@@ -35,8 +36,8 @@ import kotlinx.coroutines.cancel
 internal class ProxyForegroundService internal constructor() : Service() {
 
   @Inject @JvmField internal var notification: NotificationLauncher? = null
-
   @Inject @JvmField internal var runner: ServiceRunner? = null
+  @Inject @JvmField internal var stopper: ServerStopBroadcaster? = null
 
   private var scope: CoroutineScope? = null
 
@@ -102,9 +103,19 @@ internal class ProxyForegroundService internal constructor() : Service() {
     super.onDestroy()
     Timber.d { "Destroying service" }
 
+    // When we have a lot of sockets open, cancelling the coroutine scope can take a very long time.
+    // When this happens, the status does not correctly update, since the coroutine cancel happens
+    // in
+    // a structured but non defined and non controllable order.
+    //
+    // Avoid this UI hang appearance by broadcasting a stopping command first and then tearing down
+    // the scope to run the actual stop code
+    stopper?.stop()
+
     scope?.cancel()
 
     scope = null
     runner = null
+    stopper = null
   }
 }
