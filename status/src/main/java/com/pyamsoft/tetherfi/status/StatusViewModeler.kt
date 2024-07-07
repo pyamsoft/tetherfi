@@ -124,12 +124,12 @@ internal constructor(
     serviceLauncher.startForeground()
   }
 
-  private fun stopProxy() {
+  private suspend fun stopProxy() {
     Timber.d { "Stopping Proxy" }
     serviceLauncher.stopForeground()
   }
 
-  private fun resetError() {
+  private suspend fun resetError() {
     Timber.d { "Resetting Proxy from Error state" }
     serviceLauncher.resetError()
   }

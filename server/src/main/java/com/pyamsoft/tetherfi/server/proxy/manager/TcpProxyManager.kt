@@ -17,11 +17,13 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -55,12 +57,14 @@ internal constructor(
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
     private val yoloRepeatDelay: Duration,
+    serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     enforcer: ThreadEnforcer,
     serverDispatcher: ServerDispatcher
 ) :
     BaseProxyManager<ServerSocket>(
         enforcer = enforcer,
         serverDispatcher = serverDispatcher,
+        serverStopConsumer = serverStopConsumer,
     ) {
 
   /** Keep track of how many times we fail to claim a socket in a row. */
@@ -209,7 +213,8 @@ internal constructor(
 
   override suspend fun runServer(tracker: SocketTracker, server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
-        Timber.d { "Awaiting TCP connections on ${server.localAddress}" }
+        val addr = server.localAddress
+        Timber.d { "Awaiting TCP connections on $addr" }
 
         try {
           // In a loop, we wait for new TCP connections and then offload them to their own routine.
@@ -232,7 +237,7 @@ internal constructor(
             }
           }
         } finally {
-          Timber.d { "Closing TCP server on ${server.localAddress}" }
+          Timber.d { "Closing TCP server $addr" }
         }
       }
 

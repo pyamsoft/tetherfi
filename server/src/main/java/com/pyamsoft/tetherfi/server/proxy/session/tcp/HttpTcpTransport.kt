@@ -74,6 +74,8 @@ internal constructor(
       output: ByteWriteChannel,
       request: ProxyRequest,
   ) {
+    // TODO(Peter): If the output socket is already closed this will fail and throw.
+    //   realistically, will the output socket ever be closed for the initial connection?
     Timber.d { "Rewrote initial HTTP request: ${request.raw} -> ${request.httpRequest}" }
     output.writeFully(writeMessageAndAwaitMore(request.httpRequest))
   }
@@ -156,7 +158,7 @@ internal constructor(
             // we should be okay
             report.update {
               it.copy(
-                  internetToProxy = it.internetToProxy + totalBytes.toULong(),
+                  internetToProxy = it.internetToProxy + totalBytes,
               )
             }
           }
@@ -173,7 +175,7 @@ internal constructor(
       // we should be okay
       report.update {
         it.copy(
-            proxyToInternet = it.proxyToInternet + totalBytes.toULong(),
+            proxyToInternet = it.proxyToInternet + totalBytes,
         )
       }
 

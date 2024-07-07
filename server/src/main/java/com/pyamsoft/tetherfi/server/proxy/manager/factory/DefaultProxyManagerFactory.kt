@@ -17,11 +17,13 @@
 package com.pyamsoft.tetherfi.server.proxy.manager.factory
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -43,6 +45,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
     private val appEnvironment: AppDevEnvironment,
+    private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
 ) : ProxyManager.Factory {
 
   @CheckResult
@@ -63,6 +66,7 @@ internal constructor(
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
         enforcer = enforcer,
+        serverStopConsumer = serverStopConsumer,
     )
   }
 

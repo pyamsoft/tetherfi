@@ -75,15 +75,13 @@ internal constructor(
   override suspend fun create(): ServerDispatcher {
     val primaryLimit = flow.first()
 
-    val halfCpu = ServerPerformanceLimit.Defaults.BOUND_N_CPU.coroutineLimit / 4
-    val sideEffectThreads = 2.coerceAtLeast(halfCpu)
+    // Side effect amount is the number of CPU cores
+    val sideEffectThreads = ServerPerformanceLimit.Defaults.BOUND_N_CPU.coroutineLimit
 
     val dispatcher = newThreadDispatcher()
 
     return DefaultServerDispatchers(
         primary = dispatcher.limitDispatcher(nThreads = primaryLimit.coroutineLimit),
-
-        // TODO: Scale somehow based on primary? or just keep as half_cpu OR 4
         sideEffect = dispatcher.limitDispatcher(nThreads = sideEffectThreads),
     )
   }

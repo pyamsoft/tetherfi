@@ -17,8 +17,10 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
@@ -42,6 +44,7 @@ import kotlinx.coroutines.withContext
 internal abstract class BaseProxyManager<S : ASocket>
 protected constructor(
     private val enforcer: ThreadEnforcer,
+    private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     protected val serverDispatcher: ServerDispatcher,
 ) : ProxyManager {
 
@@ -56,6 +59,31 @@ protected constructor(
     Timber.d { "Clear out old closed sockets Old=${oldSize} New=$newSize" }
   }
 
+  private suspend fun closeAllSockets(
+      scope: CoroutineScope,
+      mutex: Mutex,
+      sockets: MutableCollection<ASocket>
+  ) {
+    mutex.withLock {
+      val waitForClose = mutableSetOf<Deferred<Unit>>()
+
+      for (socket in sockets) {
+        if (!socket.isClosed) {
+          val job =
+              scope.async {
+                val start = System.currentTimeMillis()
+                socket.dispose()
+                val end = System.currentTimeMillis()
+                Timber.d { "Close socket: $socket (${end - start}ms)" }
+              }
+          waitForClose.add(job)
+        }
+      }
+
+      waitForClose.awaitAll()
+    }
+  }
+
   /**
    * Close any sockets that are not already closed.
    *
@@ -63,24 +91,70 @@ protected constructor(
    */
   private suspend fun cleanLeftoverSockets(
       scope: CoroutineScope,
+      mutex: Mutex,
       sockets: MutableCollection<ASocket>
   ) {
-    val waitForClose = mutableSetOf<Deferred<Unit>>()
+    closeAllSockets(
+        scope = scope,
+        mutex = mutex,
+        sockets = sockets,
+    )
 
-    for (socket in sockets) {
-      if (!socket.isClosed) {
-        val job =
-            scope.async {
-              Timber.d { "Close leftover socket: $socket" }
-              socket.dispose()
-            }
-        waitForClose.add(job)
+    mutex.withLock {
+      Timber.d { "All leftover sockets closed: ${sockets.size}" }
+      sockets.clear()
+    }
+  }
+
+  private suspend fun periodicSocketCleanUp(
+      scope: CoroutineScope,
+      mutex: Mutex,
+      sockets: MutableCollection<ASocket>
+  ) {
+    scope.launch(context = serverDispatcher.sideEffect) {
+      while (isActive) {
+        delay(1.minutes)
+
+        mutex.withLock { cleanOldSockets(sockets = sockets) }
       }
     }
+  }
 
-    waitForClose.awaitAll()
-    Timber.d { "All leftover sockets closed: ${sockets.size}" }
-    sockets.clear()
+  private suspend fun listenForStopRequest(
+      scope: CoroutineScope,
+      mutex: Mutex,
+      sockets: MutableCollection<ASocket>,
+  ) {
+    scope.launch(context = serverDispatcher.sideEffect) {
+      serverStopConsumer.also { f ->
+        f.collect {
+          Timber.d { "Received STOP event, close all sockets!" }
+          closeAllSockets(
+              scope = scope,
+              mutex = mutex,
+              sockets = sockets,
+          )
+        }
+      }
+    }
+  }
+
+  private suspend fun trackingSideEffects(
+      scope: CoroutineScope,
+      mutex: Mutex,
+      sockets: MutableCollection<ASocket>
+  ) {
+    periodicSocketCleanUp(
+        scope = scope,
+        mutex = mutex,
+        sockets = sockets,
+    )
+
+    listenForStopRequest(
+        scope = scope,
+        mutex = mutex,
+        sockets = sockets,
+    )
   }
 
   /**
@@ -94,24 +168,21 @@ protected constructor(
     val mutex = Mutex()
     val closeAllServerSockets = mutableSetOf<ASocket>()
 
-    scope.launch(context = serverDispatcher.sideEffect) {
-      while (isActive) {
-        delay(1.minutes)
-
-        mutex.withLock { cleanOldSockets(sockets = closeAllServerSockets) }
-      }
-    }
+    trackingSideEffects(
+        scope = scope,
+        mutex = mutex,
+        sockets = closeAllServerSockets,
+    )
 
     try {
       block { socket -> mutex.withLock { closeAllServerSockets.add(socket) } }
     } finally {
       // Close leftovers
-      mutex.withLock {
-        cleanLeftoverSockets(
-            scope = scope,
-            sockets = closeAllServerSockets,
-        )
-      }
+      cleanLeftoverSockets(
+          scope = scope,
+          mutex = mutex,
+          sockets = closeAllServerSockets,
+      )
     }
   }
 
@@ -158,19 +229,21 @@ protected constructor(
       onClosing: () -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
-        return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
-          // Track the sockets we open so that we can close them later
-          trackSockets(scope = this) { tracker ->
-            openServer(builder = builder).use { server ->
-              onOpened()
-              tracker.track(server)
+        val scope = this
 
+        return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
+          openServer(builder = builder).use { server ->
+            onOpened()
+
+            // Track the sockets we open so that we can close them later
+            trackSockets(scope = scope) { tracker ->
               runServer(
-                  tracker = tracker,
                   server = server,
+                  tracker = tracker,
               )
-              onClosing()
             }
+
+            onClosing()
           }
         }
       }

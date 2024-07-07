@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server
 
+import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -112,10 +113,7 @@ internal suspend inline fun setupProxy(
         override suspend fun reportTransfer(hostNameOrIp: String, report: ByteTransferReport) {}
       }
 
-  val socketTagger =
-      object : SocketTagger {
-        override fun tagSocket() {}
-      }
+  val socketTagger = SocketTagger {}
 
   if (isLoggingEnabled) {
     Timber.plant(
@@ -157,6 +155,7 @@ internal suspend inline fun setupProxy(
           socketTagger = socketTagger,
           yoloRepeatDelay = 0.seconds,
           enforcer = enforcer,
+          serverStopConsumer = DefaultEventBus(),
       )
 
   val server =

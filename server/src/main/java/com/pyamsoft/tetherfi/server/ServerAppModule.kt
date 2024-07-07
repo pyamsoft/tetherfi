@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
+import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuardImpl
 import com.pyamsoft.tetherfi.server.prereq.vpn.AndroidVpnChecker
@@ -71,6 +72,12 @@ abstract class ServerAppModule {
   internal abstract fun bindShutdownConsumer(
       impl: EventBus<ServerShutdownEvent>
   ): EventConsumer<ServerShutdownEvent>
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindStopRequestConsumer(
+      impl: EventBus<ServerStopRequestEvent>
+  ): EventConsumer<ServerStopRequestEvent>
 
   // Prereqs
   @Binds
@@ -149,6 +156,13 @@ abstract class ServerAppModule {
     @JvmStatic
     @Singleton
     internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
+      return DefaultEventBus()
+    }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideStopRequestEventBus(): EventBus<ServerStopRequestEvent> {
       return DefaultEventBus()
     }
   }

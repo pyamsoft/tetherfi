@@ -21,10 +21,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ServerStopBroadcaster
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
 import com.pyamsoft.tetherfi.server.proxy.ProxyStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ServiceLauncher
 @Inject
@@ -33,6 +36,7 @@ internal constructor(
     private val foregroundServiceClass: Class<out Service>,
     private val wiDiStatus: BroadcastStatus,
     private val proxyStatus: ProxyStatus,
+    private val stopper: ServerStopBroadcaster,
 ) {
 
   private val foregroundService by
@@ -45,18 +49,31 @@ internal constructor(
   }
 
   /** Stop the service */
-  fun stopForeground() {
-    Timber.d { "Stop Foreground Service!" }
-    context.stopService(foregroundService)
-  }
+  suspend fun stopForeground() =
+      withContext(context = Dispatchers.Default) {
+        // When we have a lot of sockets open, cancelling the coroutine scope can take a very long
+        // time. When this happens, the status does not correctly update, since the coroutine cancel
+        // happens in a structured but non defined and non controllable order.
+        //
+        // Avoid this UI hang appearance by broadcasting a stopping command first and then tearing
+        // down the scope to run the actual stop code
+        Timber.d { "Prepare service stop" }
+        stopper.stop()
+
+        withContext(context = Dispatchers.Main) {
+          Timber.d { "Stop Foreground Service!" }
+          context.stopService(foregroundService)
+        }
+      }
 
   /** If the hotspot is in error state, we reset it so that it can start again */
-  fun resetError() {
-    stopForeground()
+  suspend fun resetError() =
+      withContext(context = Dispatchers.Default) {
+        stopForeground()
 
-    // Reset status after shutdown
-    Timber.d { "Resetting network Status" }
-    wiDiStatus.set(RunningStatus.NotRunning, clearError = true)
-    proxyStatus.set(RunningStatus.NotRunning, clearError = true)
-  }
+        // Reset status after shutdown
+        Timber.d { "Resetting network Status" }
+        wiDiStatus.set(RunningStatus.NotRunning, clearError = true)
+        proxyStatus.set(RunningStatus.NotRunning, clearError = true)
+      }
 }

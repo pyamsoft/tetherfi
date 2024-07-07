@@ -75,7 +75,7 @@ internal constructor(
     serviceLauncher.startForeground()
   }
 
-  private fun stopProxy() {
+  private suspend fun stopProxy() {
     Timber.d { "Stopping Proxy" }
     serviceLauncher.stopForeground()
   }
