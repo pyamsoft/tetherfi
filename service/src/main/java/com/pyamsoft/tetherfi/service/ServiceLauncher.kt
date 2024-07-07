@@ -39,8 +39,7 @@ internal constructor(
     private val stopper: ServerStopBroadcaster,
 ) {
 
-  private val foregroundService by
-      lazy(LazyThreadSafetyMode.NONE) { Intent(context, foregroundServiceClass) }
+  private val foregroundService by lazy { Intent(context, foregroundServiceClass) }
 
   /** Start the service */
   fun startForeground() {

@@ -36,14 +36,13 @@ internal constructor(
     service: TileService,
 ) : ProxyTileActivityLauncher {
 
-  private val launchMethod by
-      lazy(LazyThreadSafetyMode.NONE) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-          LaunchMethod.NewWay(tileActivityClass, context, service)
-        } else {
-          LaunchMethod.OldWay(tileActivityClass, context, service)
-        }
-      }
+  private val launchMethod by lazy {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      LaunchMethod.NewWay(tileActivityClass, context, service)
+    } else {
+      LaunchMethod.OldWay(tileActivityClass, context, service)
+    }
+  }
 
   override fun launchTileActivity() {
     launchMethod.launchTileActivity()
@@ -60,15 +59,14 @@ internal constructor(
         private val service: TileService,
     ) : LaunchMethod {
 
-      protected val tileActivityIntent by
-          lazy(LazyThreadSafetyMode.NONE) {
-            Intent(context, tileActivityClass).apply {
-              flags =
-                  Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                      Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                      Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-          }
+      protected val tileActivityIntent by lazy {
+        Intent(context, tileActivityClass).apply {
+          flags =
+              Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                  Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                  Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+      }
 
       private inline fun ensureUnlocked(crossinline block: () -> Unit) {
         if (service.isLocked) {
@@ -110,15 +108,14 @@ internal constructor(
         service: TileService,
     ) : Base(tileActivityClass, context, service) {
 
-      private val pendingIntent by
-          lazy(LazyThreadSafetyMode.NONE) {
-            PendingIntent.getActivity(
-                context,
-                REQUEST_CODE_ACTIVITY,
-                tileActivityIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-          }
+      private val pendingIntent by lazy {
+        PendingIntent.getActivity(
+            context,
+            REQUEST_CODE_ACTIVITY,
+            tileActivityIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+      }
 
       @RequiresApi(34)
       override fun onLaunchTileActivity(service: TileService) {

@@ -37,11 +37,10 @@ internal constructor(
         PackageManager.PERMISSION_GRANTED
   }
 
-  override val requiredPermissions: List<String> by
-      lazy(LazyThreadSafetyMode.NONE) {
-        // Always require these WiFi permissions
-        ALWAYS_PERMISSIONS + WIFI_NEARBY_PERMISSIONS
-      }
+  override val requiredPermissions: List<String> by lazy {
+    // Always require these WiFi permissions
+    ALWAYS_PERMISSIONS + WIFI_NEARBY_PERMISSIONS
+  }
 
   override suspend fun canCreateNetwork(): Boolean =
       withContext(context = Dispatchers.Main) {

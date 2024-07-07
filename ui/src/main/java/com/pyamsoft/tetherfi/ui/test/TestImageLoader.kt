@@ -43,8 +43,8 @@ import org.jetbrains.annotations.TestOnly
 private class TestImageLoader(context: Context) : ImageLoader {
 
   private val context = context.applicationContext
-  private val loadingDrawable by lazy(LazyThreadSafetyMode.NONE) { ColorDrawable(Color.BLACK) }
-  private val successDrawable by lazy(LazyThreadSafetyMode.NONE) { ColorDrawable(Color.GREEN) }
+  private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
+  private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
 
   private val disposable =
       object : Disposable {
