@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -28,6 +29,9 @@ import io.ktor.network.sockets.SocketBuilder
 import io.ktor.network.sockets.isClosed
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -37,8 +41,47 @@ import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket>
 protected constructor(
+    private val enforcer: ThreadEnforcer,
     protected val serverDispatcher: ServerDispatcher,
 ) : ProxyManager {
+
+  /** Periodically remove any sockets that are alreaedy closed */
+  private fun cleanOldSockets(sockets: MutableCollection<ASocket>) {
+    enforcer.assertOffMainThread()
+
+    val oldSize = sockets.size
+    sockets.removeIf { it.isClosed }
+    val newSize = sockets.size
+
+    Timber.d { "Clear out old closed sockets Old=${oldSize} New=$newSize" }
+  }
+
+  /**
+   * Close any sockets that are not already closed.
+   *
+   * Dispose all sockets in parallel to avoid a long wait time
+   */
+  private suspend fun cleanLeftoverSockets(
+      scope: CoroutineScope,
+      sockets: MutableCollection<ASocket>
+  ) {
+    val waitForClose = mutableSetOf<Deferred<Unit>>()
+
+    for (socket in sockets) {
+      if (!socket.isClosed) {
+        val job =
+            scope.async {
+              Timber.d { "Close leftover socket: $socket" }
+              socket.dispose()
+            }
+        waitForClose.add(job)
+      }
+    }
+
+    waitForClose.awaitAll()
+    Timber.d { "All leftover sockets closed: ${sockets.size}" }
+    sockets.clear()
+  }
 
   /**
    * Try our best to track every single socket we ever make
@@ -55,13 +98,7 @@ protected constructor(
       while (isActive) {
         delay(1.minutes)
 
-        mutex.withLock {
-          val oldSize = closeAllServerSockets.size
-          closeAllServerSockets.removeIf { it.isClosed }
-          val newSize = closeAllServerSockets.size
-
-          Timber.d { "Clear out old closed sockets Old=${oldSize} New=$newSize" }
-        }
+        mutex.withLock { cleanOldSockets(sockets = closeAllServerSockets) }
       }
     }
 
@@ -70,14 +107,10 @@ protected constructor(
     } finally {
       // Close leftovers
       mutex.withLock {
-        for (socket in closeAllServerSockets) {
-          if (!socket.isClosed) {
-            Timber.d { "Close leftover socket: $socket" }
-            socket.dispose()
-          }
-        }
-
-        closeAllServerSockets.clear()
+        cleanLeftoverSockets(
+            scope = scope,
+            sockets = closeAllServerSockets,
+        )
       }
     }
   }

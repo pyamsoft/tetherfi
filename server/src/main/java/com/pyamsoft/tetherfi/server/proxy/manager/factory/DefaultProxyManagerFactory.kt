@@ -62,6 +62,7 @@ internal constructor(
         serverDispatcher = dispatcher,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
+        enforcer = enforcer,
     )
   }
 

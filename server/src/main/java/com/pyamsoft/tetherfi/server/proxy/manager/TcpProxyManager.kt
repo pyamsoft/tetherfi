@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.manager
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
@@ -54,9 +55,11 @@ internal constructor(
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
     private val yoloRepeatDelay: Duration,
+    enforcer: ThreadEnforcer,
     serverDispatcher: ServerDispatcher
 ) :
     BaseProxyManager<ServerSocket>(
+        enforcer = enforcer,
         serverDispatcher = serverDispatcher,
     ) {
 
