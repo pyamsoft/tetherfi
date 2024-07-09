@@ -17,14 +17,28 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Service
+import androidx.annotation.CheckResult
 import kotlinx.coroutines.CoroutineScope
 
 interface NotificationLauncher {
 
-  fun startForeground(
-      scope: CoroutineScope,
-      service: Service,
-  )
+  /**
+   * Start the Foreground notification
+   *
+   * You should call this method IMMEDIATELY upon starting a service
+   *
+   * This API is different from the other launcher/runner style APIs because we want to call it
+   * immediately instead of waiting for coroutine launches
+   *
+   * Once the notification is started, it returns a [Watcher] interface which can then be coroutine
+   * launched in a non-time-sensitive way to subscribe and watch for notification events
+   */
+  @CheckResult fun startForeground(service: Service): Watcher
 
   suspend fun update()
+
+  fun interface Watcher {
+
+    fun watch(scope: CoroutineScope)
+  }
 }

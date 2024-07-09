@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy
 
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
@@ -56,8 +57,10 @@ internal inline fun <T> Socket.usingConnection(
         return block(reader, writer)
       }
     } catch (e: Throwable) {
-      reader.cancel(e)
-      throw e
+      e.ifNotCancellation {
+        reader.cancel(e)
+        throw e
+      }
     } finally {
       reader.cancel()
     }

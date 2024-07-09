@@ -19,53 +19,18 @@ package com.pyamsoft.tetherfi.foreground
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.service.ServiceRunner
-import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
+import com.pyamsoft.tetherfi.service.ServiceScope
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 
 internal class ProxyForegroundService internal constructor() : Service() {
 
-  @Inject @JvmField internal var notification: NotificationLauncher? = null
-  @Inject @JvmField internal var runner: ServiceRunner? = null
+  @Inject @JvmField internal var serviceScope: ServiceScope? = null
 
-  private var scope: CoroutineScope? = null
-
-  @CheckResult
-  private fun makeScope(): CoroutineScope {
-    return CoroutineScope(
-        context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
-    )
-  }
-
-  @CheckResult
-  private fun ensureScope(): CoroutineScope {
-    return (scope ?: makeScope()).also { scope = it }
-  }
-
-  private fun startRunner() {
-    runner
-        .requireNotNull()
-        .start(
-            scope = ensureScope(),
-        )
-  }
-
-  private fun startNotification() {
-    notification
-        .requireNotNull()
-        .startForeground(
-            scope = ensureScope(),
-            service = this,
-        )
+  private fun start() {
+    serviceScope.requireNotNull().start(service = this)
   }
 
   override fun onBind(intent: Intent?): IBinder? {
@@ -78,20 +43,15 @@ internal class ProxyForegroundService internal constructor() : Service() {
 
     Timber.d { "Creating service" }
 
-    // Ensure the notification is started
-    startNotification()
+    start()
   }
 
   /**
    * If the app is in the background, this will not run unless the app sets Battery Optimization off
    */
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    // Ensure the notification is started
-    startNotification()
-
-    // Each time the service starts/restarts we use the fact that it is tied to the Android OS
-    // lifecycle to restart the launcher which does all the Proxy lifting.
-    startRunner()
+    Timber.d { "Start command received" }
+    start()
 
     // Just start sticky here
     return START_STICKY
@@ -101,9 +61,7 @@ internal class ProxyForegroundService internal constructor() : Service() {
     super.onDestroy()
     Timber.d { "Destroying service" }
 
-    scope?.cancel()
-
-    scope = null
-    runner = null
+    serviceScope?.cancel()
+    serviceScope = null
   }
 }

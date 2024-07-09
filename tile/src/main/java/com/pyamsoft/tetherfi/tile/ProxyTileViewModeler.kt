@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.tile
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.tetherfi.core.AppCoroutineScope
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
@@ -24,10 +25,8 @@ import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.service.tile.TileHandler
 import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class ProxyTileViewModeler
 @Inject
@@ -36,7 +35,7 @@ internal constructor(
     private val handler: TileHandler,
     private val serviceLauncher: ServiceLauncher,
     private val requirements: HotspotRequirements,
-    @Named("app_scope") private val appScope: CoroutineScope,
+    private val appScope: AppCoroutineScope,
 ) : ProxyTileViewState by state, AbstractViewModeler<ProxyTileViewState>(state) {
 
   init {
@@ -75,7 +74,7 @@ internal constructor(
     serviceLauncher.startForeground()
   }
 
-  private suspend fun stopProxy() {
+  private fun stopProxy() {
     Timber.d { "Stopping Proxy" }
     serviceLauncher.stopForeground()
   }

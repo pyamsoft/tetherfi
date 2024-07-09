@@ -30,6 +30,7 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
@@ -265,8 +266,10 @@ internal constructor(
         Timber.d { "New Wi-Fi group connection created!" }
       }
     } catch (e: Throwable) {
-      Timber.e(e) { "Failed to connect Wi-Fi direct group" }
-      throw e
+      e.ifNotCancellation {
+        Timber.e(e) { "Failed to connect Wi-Fi direct group" }
+        throw e
+      }
     }
 
     return channel

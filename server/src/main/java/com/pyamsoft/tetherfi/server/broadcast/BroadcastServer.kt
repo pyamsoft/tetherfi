@@ -128,14 +128,16 @@ protected constructor(
 
             withLockInitializeNetwork(source = source)
           } catch (e: Throwable) {
-            Timber.w { "Error during broadcast startup, stop network" }
+            e.ifNotCancellation {
+              Timber.w { "Error during broadcast startup, stop network" }
 
-            completeStop(this, clearErrorStatus = false) {
-              Timber.w { "Stopping network after startup failed" }
-              shutdownForStatus(
-                  RunningStatus.HotspotError(e),
-                  clearErrorStatus = false,
-              )
+              completeStop(this, clearErrorStatus = false) {
+                Timber.w { "Stopping network after startup failed" }
+                shutdownForStatus(
+                    RunningStatus.HotspotError(e),
+                    clearErrorStatus = false,
+                )
+              }
             }
           }
         }

@@ -66,7 +66,9 @@ internal constructor(
           },
           onShutdownService = {
             Timber.d { "Shutdown event received!" }
-            serviceLauncher.stopForeground()
+
+            // Ensure we are on the main thread
+            withContext(context = Dispatchers.Main) { serviceLauncher.stopForeground() }
           },
       )
     }

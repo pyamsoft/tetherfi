@@ -103,13 +103,11 @@ internal constructor(
       e: Throwable,
       type: SharedProxy.Type,
   ) {
-    e.ifNotCancellation {
-      Timber.e(e) { "Error running server loop: ${type.name}" }
+    Timber.e(e) { "Error running server loop: ${type.name}" }
 
-      reset()
-      status.set(RunningStatus.ProxyError(e))
-      shutdownBus.emit(ServerShutdownEvent)
-    }
+    reset()
+    status.set(RunningStatus.ProxyError(e))
+    shutdownBus.emit(ServerShutdownEvent)
   }
 
   private suspend fun beginProxyLoop(
@@ -136,10 +134,12 @@ internal constructor(
               },
           )
     } catch (e: Throwable) {
-      handleServerLoopError(
-          e = e,
-          type = type,
-      )
+      e.ifNotCancellation {
+        handleServerLoopError(
+            e = e,
+            type = type,
+        )
+      }
     }
   }
 

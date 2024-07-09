@@ -36,7 +36,6 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -199,40 +198,33 @@ internal constructor(
         updateNotification()
       }
 
-  override fun startForeground(
-      scope: CoroutineScope,
-      service: Service,
-  ) {
-    // This happens potentially immediately
+  override fun startForeground(service: Service): NotificationLauncher.Watcher {
     if (showing.compareAndSet(expect = false, update = true)) {
       start(service)
 
-      // Bail out if we are already gone
-      if (!scope.isActive) {
-        Timber.w { "startForeground called but CoroutineScope was already cancelled!" }
-        if (showing.compareAndSet(expect = true, update = false)) {
-          stop(service)
-        }
-        return
-      }
+      return NotificationLauncher.Watcher { scope: CoroutineScope ->
+        scope.launch(context = Dispatchers.Default) {
+          try {
+            Timber.d { "Launch notification watcher" }
+            // Then immediately open a channel to update
+            watchNotification()
 
-      scope.launch(context = Dispatchers.Default) {
-        try {
-          // Then immediately open a channel to update
-          watchNotification()
-
-          // And suspend until we are done
-          Timber.d { "Await notification cancellation..." }
-          awaitCancellation()
-        } finally {
-          withContext(context = NonCancellable) {
-            Timber.d { "Notification scope is done, cancel notification!" }
-            if (showing.compareAndSet(expect = true, update = false)) {
-              withContext(context = Dispatchers.Main) { stop(service) }
+            // And suspend until we are done
+            Timber.d { "Await notification cancellation..." }
+            awaitCancellation()
+          } finally {
+            withContext(context = NonCancellable) {
+              Timber.d { "Notification scope is done, cancel notification!" }
+              if (showing.compareAndSet(expect = true, update = false)) {
+                withContext(context = Dispatchers.Main) { stop(service) }
+              }
             }
           }
         }
       }
+    } else {
+      Timber.w { "Notification is already started, return EMPTY_WATCHER" }
+      return EMPTY_WATCHER
     }
   }
 
@@ -253,5 +245,7 @@ internal constructor(
             title = "TetherFi Proxy",
             description = "TetherFi Proxy Service",
         )
+
+    private val EMPTY_WATCHER = NotificationLauncher.Watcher {}
   }
 }

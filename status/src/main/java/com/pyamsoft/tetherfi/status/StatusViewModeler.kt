@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
+import com.pyamsoft.tetherfi.core.AppCoroutineScope
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -37,7 +38,6 @@ import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import javax.inject.Inject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -63,7 +63,7 @@ internal constructor(
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
     private val requirements: HotspotRequirements,
-    @Named("app_scope") private val appScope: CoroutineScope,
+    private val appScope: AppCoroutineScope,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -124,12 +124,12 @@ internal constructor(
     serviceLauncher.startForeground()
   }
 
-  private suspend fun stopProxy() {
+  private fun stopProxy() {
     Timber.d { "Stopping Proxy" }
     serviceLauncher.stopForeground()
   }
 
-  private suspend fun resetError() {
+  private fun resetError() {
     Timber.d { "Resetting Proxy from Error state" }
     serviceLauncher.resetError()
   }
