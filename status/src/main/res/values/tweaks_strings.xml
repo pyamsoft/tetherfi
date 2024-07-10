@@ -36,6 +36,5 @@
   >For most day-to-day usage, this option should be enabled.
     This allows %1$s to clean up old/dead connections after 1 minute of no activity.
     For large or long downloads, this option should be kept OFF.
-
-    This option will be made default in the next version. (recommended)</string>
+    \n\nThis option will be made default in the next version. (recommended)</string>
 </resources>
