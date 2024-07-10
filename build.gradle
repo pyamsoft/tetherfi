@@ -28,7 +28,7 @@ buildscript {
     coroutines = "1.8.1"
 
     // Us
-    pydroid = "27.0.3"
+    pydroid = "27.0.4"
 
     // Leak Canary
     leakCanary = "2.14"
@@ -46,7 +46,7 @@ buildscript {
     ktor = "2.3.12"
 
     // Testing
-    testRunner = "1.5.2"
+    testRunner = "1.6.1"
   }
 }
 
