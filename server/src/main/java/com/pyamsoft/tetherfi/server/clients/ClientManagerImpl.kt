@@ -96,11 +96,9 @@ internal constructor(
         is HostNameClient -> client.copy(totalBytes = client.mergeReport(report))
       }
 
-  private fun CoroutineScope.onNewClientSeen(client: TetherClient) {
+  private fun onNewClientSeen(client: TetherClient) {
     Timber.d { "First time seeing client: $client" }
     inAppRatingPreferences.markDeviceConnected()
-
-    watchForOldClients()
   }
 
   @Suppress("UnusedReceiverParameter")
@@ -151,9 +149,10 @@ internal constructor(
   private fun CoroutineScope.watchForOldClients() {
     val scope = this
 
-    jobs.update {
-      it +
+    jobs.update { j ->
+      j +
           scope.launch(context = Dispatchers.Default) {
+            Timber.d { "Watch client count and purge old clients" }
             onTimerElapsed(OLD_CLIENT_TIMER_PERIOD) { purgeOldClients(it) }
           }
     }
@@ -167,20 +166,19 @@ internal constructor(
   private suspend fun CoroutineScope.watchForNoClients() {
     val scope = this
 
-    // Remember when we started watching
-    //
-    // We do this weird check because in development I noticed when starting the server
-    // once a random ShutdownWithNoClients was published during startup, which caused
-    // the app to break since Broadcast started but Proxy never started
-    val startedAt = LocalDateTime.now(clock)
-
     // Start new if needed
     if (isShutdownWithNoClientsEnabled()) {
-      Timber.d { "Watch client count and shutdown if none" }
+      // Remember when we started watching
+      //
+      // We do this weird check because in development I noticed when starting the server
+      // once a random ShutdownWithNoClients was published during startup, which caused
+      // the app to break since Broadcast started but Proxy never started
+      val startedAt = LocalDateTime.now(clock)
 
-      jobs.update {
-        it +
+      jobs.update { j ->
+        j +
             scope.launch(context = Dispatchers.Default) {
+              Timber.d { "Watch client count and shutdown if none" }
               onTimerElapsed(NO_CLIENTS_TIMER_PERIOD) { cutoff ->
                 if (startedAt >= cutoff) {
                   Timber.w { "Shutdown check received but client started AFTER cutoff - invalid" }
@@ -235,7 +233,10 @@ internal constructor(
   }
 
   override suspend fun started() =
-      withContext(context = Dispatchers.Default) { watchForNoClients() }
+      withContext(context = Dispatchers.Default) {
+        watchForOldClients()
+        watchForNoClients()
+      }
 
   override fun block(client: TetherClient) {
     blockedClients.update { set ->

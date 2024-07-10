@@ -46,121 +46,113 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    @Inject
-    @JvmField
-    internal var viewModel: ThemeViewModeler? = null
+  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 
-    @Inject
-    @JvmField
-    internal var launcher: ServiceLauncher? = null
+  @Inject @JvmField internal var launcher: ServiceLauncher? = null
 
-    private var pydroid: PYDroidActivityDelegate? = null
+  private var pydroid: PYDroidActivityDelegate? = null
 
-    private fun initializePYDroid() {
-        pydroid =
-            installPYDroid(
-                provider =
+  private fun initializePYDroid() {
+    pydroid =
+        installPYDroid(
+            provider =
                 object : ChangeLogProvider {
 
-                    override val applicationIcon = R.mipmap.ic_launcher
+                  override val applicationIcon = R.mipmap.ic_launcher
 
-                    override val changelog = buildChangeLog {
-                        bugfix("When stopping the hotspot, stop operation happens faster.")
-                        change(
-                            "Wake Locks have been made ON by default. The option to toggle them will be removed in the next version."
-                        )
-                        change(
-                            "The \"Enable Idle Timeout\" tweak will be made a default in the next version"
-                        )
-                        feature("New Shortcut to directly start the hotspot")
-                    }
+                  override val changelog = buildChangeLog {
+                    bugfix("When stopping the hotspot, stop operation happens faster.")
+                    change(
+                        "Wake Locks have been made ON by default. The option to toggle them will be removed in the next version.")
+                    change(
+                        "The \"Enable Idle Timeout\" tweak will be made a default in the next version")
+                    feature("New Shortcut to directly start the hotspot")
+                  }
                 },
-            )
+        )
+  }
+
+  private fun handleShowInAppRating() {
+    pydroid?.loadInAppRating()
+  }
+
+  private fun setupActivity() {
+    // Setup PYDroid first
+    initializePYDroid()
+
+    // Create and initialize the ObjectGraph
+    val component = ObjectGraph.ApplicationScope.retrieve(this).plusMain().create()
+    component.inject(this)
+    ObjectGraph.ActivityScope.install(this, component)
+
+    // Then register for any permissions
+    PermissionManager.createAndRegister(this, component)
+  }
+
+  private fun safeOpenSettingsIntent(action: String) {
+
+    // Try specific first, may fail on some devices
+    try {
+      val intent = Intent(action, "package:${packageName}".toUri())
+      startActivity(intent)
+    } catch (e: Throwable) {
+      Timber.e(e) { "Failed specific intent for $action" }
+      val intent = Intent(action)
+      startActivity(intent)
+    }
+  }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setupActivity()
+
+    val vm = viewModel.requireNotNull()
+    val appName = getString(R.string.app_name)
+
+    setContent {
+      val theme by vm.mode.collectAsStateWithLifecycle()
+      val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
+
+      SaveStateDisposableEffect(vm)
+
+      TetherFiTheme(
+          theme = theme,
+          isMaterialYou = isMaterialYou,
+      ) {
+        SystemBars(
+            isDarkMode = theme.getSystemDarkMode(),
+        )
+        InstallPYDroidExtras(
+            modifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
+            appName = appName,
+        )
+        MainEntry(
+            modifier = Modifier.fillMaxSize(),
+            appName = appName,
+            onShowInAppRating = { handleShowInAppRating() },
+            onUpdateTile = { ProxyTileService.updateTile(this) },
+            onLaunchIntent = { safeOpenSettingsIntent(it) },
+        )
+      }
     }
 
-    private fun handleShowInAppRating() {
-        pydroid?.loadInAppRating()
-    }
+    vm.init(this)
+  }
 
-    private fun setupActivity() {
-        // Setup PYDroid first
-        initializePYDroid()
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+  }
 
-        // Create and initialize the ObjectGraph
-        val component = ObjectGraph.ApplicationScope.retrieve(this).plusMain().create()
-        component.inject(this)
-        ObjectGraph.ActivityScope.install(this, component)
+  override fun onResume() {
+    super.onResume()
+    reportFullyDrawn()
+  }
 
-        // Then register for any permissions
-        PermissionManager.createAndRegister(this, component)
-    }
-
-    private fun safeOpenSettingsIntent(action: String) {
-
-        // Try specific first, may fail on some devices
-        try {
-            val intent = Intent(action, "package:${packageName}".toUri())
-            startActivity(intent)
-        } catch (e: Throwable) {
-            Timber.e(e) { "Failed specific intent for $action" }
-            val intent = Intent(action)
-            startActivity(intent)
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setupActivity()
-
-        val vm = viewModel.requireNotNull()
-        val appName = getString(R.string.app_name)
-
-        setContent {
-            val theme by vm.mode.collectAsStateWithLifecycle()
-            val isMaterialYou by vm.isMaterialYou.collectAsStateWithLifecycle()
-
-            SaveStateDisposableEffect(vm)
-
-            TetherFiTheme(
-                theme = theme,
-                isMaterialYou = isMaterialYou,
-            ) {
-                SystemBars(
-                    isDarkMode = theme.getSystemDarkMode(),
-                )
-                InstallPYDroidExtras(
-                    modifier = Modifier
-                      .fillUpToPortraitSize()
-                      .widthIn(max = LANDSCAPE_MAX_WIDTH),
-                    appName = appName,
-                )
-                MainEntry(
-                    modifier = Modifier.fillMaxSize(),
-                    appName = appName,
-                    onShowInAppRating = { handleShowInAppRating() },
-                    onUpdateTile = { ProxyTileService.updateTile(this) },
-                    onLaunchIntent = { safeOpenSettingsIntent(it) },
-                )
-            }
-        }
-
-        vm.init(this)
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        reportFullyDrawn()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        pydroid = null
-        viewModel = null
-        launcher = null
-    }
+  override fun onDestroy() {
+    super.onDestroy()
+    pydroid = null
+    viewModel = null
+    launcher = null
+  }
 }
