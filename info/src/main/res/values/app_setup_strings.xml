@@ -27,9 +27,6 @@
     name="optionally_configure_hotspot"
   >You can optionally configure the Name, Password, Proxy Port and Broadcast Frequency Band. This is not required, and the defaults will work fine for most people.</string>
   <string
-    name="optionally_configure_wakelock"
-  >You can optionally choose to keep the CPU and/or WiFi awake while the Hotspot is running, which greatly improves performance while the screen is off. If the CPU is not kept awake, you may notice extreme network slowdown while the device screen is off.</string>
-  <string
     name="optionally_configure_power"
   >You can optionally choose to ignore Android\'s system battery optimizations, which will allow %1$s to run at maximum performance at all times. This may use more battery but will significantly enhance your networking experience.</string>
   <string name="start_the_hotspot">Start the %1$s Hotspot.</string>

@@ -30,7 +30,6 @@
     <item>Plug this device into power and make sure it is charging</item>
     <item>Enable the "Always Alive" tweak (disable Battery Optimization)</item>
     <item>Try changing the Broadcast Frequency between 2.4GHz and 5GHz</item>
-    <item>Enable both "Wake Locks"</item>
     <item>Enable the "Idle Timeout" behavior tweak</item>
     <item>Restart this device and your connecting device</item>
     <item

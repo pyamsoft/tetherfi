@@ -35,7 +35,6 @@ private enum class AppSetupContentTypes {
   WIFI,
   INTERNET,
   CONFIG,
-  WAKELOCK,
   BATTERY,
   START,
 }
@@ -107,26 +106,6 @@ internal fun LazyListScope.renderAppSetup(
                 ),
         )
       }
-    }
-  }
-
-  item(
-      contentType = AppSetupContentTypes.WAKELOCK,
-  ) {
-    ThisInstruction(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        small = true,
-    ) {
-      Text(
-          text = stringResource(R.string.optionally_configure_wakelock),
-          style =
-              MaterialTheme.typography.bodyMedium.copy(
-                  color =
-                      MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                          alpha = TypographyDefaults.ALPHA_DISABLED,
-                      ),
-              ),
-      )
     }
   }
 
