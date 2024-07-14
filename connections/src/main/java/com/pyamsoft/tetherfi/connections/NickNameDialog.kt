@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,11 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.ui.CardDialog
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import java.time.Clock
 import org.jetbrains.annotations.TestOnly
@@ -55,51 +52,44 @@ internal fun NickNameDialog(
   // This way we can track changes quickly without needing to update the model
   val (nickName, setNickName) = remember(client) { mutableStateOf(client.nickName) }
 
-  Dialog(
-      properties = rememberDialogProperties(),
-      onDismissRequest = onDismiss,
+  CardDialog(
+      modifier = modifier,
+      onDismiss = onDismiss,
   ) {
-    Card(
-        modifier = modifier.padding(MaterialTheme.keylines.content),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(),
+    Column(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
     ) {
-      Column(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
+      TextField(
+          modifier = Modifier.fillMaxWidth(),
+          value = nickName,
+          onValueChange = { setNickName(it) },
+      )
+
+      Row(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
       ) {
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = nickName,
-            onValueChange = { setNickName(it) },
+        Spacer(
+            modifier = Modifier.weight(1F),
         )
 
-        Row(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-            verticalAlignment = Alignment.CenterVertically,
+        TextButton(
+            onClick = onDismiss,
         ) {
-          Spacer(
-              modifier = Modifier.weight(1F),
+          Text(
+              text = stringResource(android.R.string.cancel),
           )
-
-          TextButton(
-              onClick = onDismiss,
-          ) {
-            Text(
-                text = stringResource(android.R.string.cancel),
-            )
-          }
-          Button(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-              onClick = {
-                onUpdateNickName(nickName)
-                onDismiss()
-              },
-          ) {
-            Text(
-                text = stringResource(android.R.string.ok),
-            )
-          }
+        }
+        Button(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+            onClick = {
+              onUpdateNickName(nickName)
+              onDismiss()
+            },
+        ) {
+          Text(
+              text = stringResource(android.R.string.ok),
+          )
         }
       }
     }

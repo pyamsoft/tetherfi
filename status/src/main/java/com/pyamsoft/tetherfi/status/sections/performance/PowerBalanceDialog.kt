@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -39,13 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.ui.CardDialog
 
 private enum class PowerBalanceDialogContentTypes {
   DIALOG_LIMITS,
@@ -207,44 +204,36 @@ internal fun PowerBalanceDialog(
   val currentLimit by state.powerBalance.collectAsStateWithLifecycle()
   val limits = rememberDisplayLimits()
 
-  Dialog(
-      properties = rememberDialogProperties(),
-      onDismissRequest = onHidePowerBalance,
+  CardDialog(
+      modifier = modifier,
+      onDismiss = onHidePowerBalance,
   ) {
-    Card(
-        modifier = modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-        elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(),
-        shape = MaterialTheme.shapes.medium,
-    ) {
-      LazyColumn {
-        items(
-            items = limits,
-            key = { it.key },
-            contentType = { PowerBalanceDialogContentTypes.DIALOG_LIMITS },
-        ) { limit ->
-          PowerBalanceLimit(
-              modifier = Modifier.fillMaxWidth(),
-              current = currentLimit,
-              limit = limit.limit,
-              title = limit.title,
-              description = limit.description,
-              onSelect = {
-                onUpdatePowerBalance(it)
-                onHidePowerBalance()
-              },
-          )
-        }
+    LazyColumn {
+      items(
+          items = limits,
+          key = { it.key },
+          contentType = { PowerBalanceDialogContentTypes.DIALOG_LIMITS },
+      ) { limit ->
+        PowerBalanceLimit(
+            modifier = Modifier.fillMaxWidth(),
+            current = currentLimit,
+            limit = limit.limit,
+            title = limit.title,
+            description = limit.description,
+            onSelect = {
+              onUpdatePowerBalance(it)
+              onHidePowerBalance()
+            },
+        )
+      }
 
-        item(
-            contentType = PowerBalanceDialogContentTypes.DIALOG_ACTIONS,
-        ) {
-          DialogClose(
-              modifier =
-                  Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content),
-              onHidePowerBalance = onHidePowerBalance,
-          )
-        }
+      item(
+          contentType = PowerBalanceDialogContentTypes.DIALOG_ACTIONS,
+      ) {
+        DialogClose(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content),
+            onHidePowerBalance = onHidePowerBalance,
+        )
       }
     }
   }

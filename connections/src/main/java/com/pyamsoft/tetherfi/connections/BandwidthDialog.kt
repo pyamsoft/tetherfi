@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -45,16 +43,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.PopupProperties
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
 import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.ui.CardDialog
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import java.time.Clock
 import org.jetbrains.annotations.TestOnly
@@ -107,150 +104,143 @@ private fun BandwidthDialog(
 
   val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
 
-  Dialog(
-      properties = rememberDialogProperties(),
-      onDismissRequest = onDismiss,
+  CardDialog(
+      modifier = modifier,
+      onDismiss = onDismiss,
   ) {
-    Card(
-        modifier = modifier.padding(MaterialTheme.keylines.content),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(),
+    Column(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
     ) {
-      Column(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
+      Row(
+          verticalAlignment = Alignment.CenterVertically,
       ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Text(
+            modifier = Modifier.weight(1F),
+            text = stringResource(R.string.bandwidth_label),
+            style = MaterialTheme.typography.titleSmall,
+            color =
+                if (enabled) {
+                  MaterialTheme.colorScheme.onSurface
+                } else {
+                  MaterialTheme.colorScheme.onSurfaceVariant
+                })
+
+        Switch(
+            checked = enabled,
+            onCheckedChange = { newEnabled ->
+              if (newEnabled) {
+                hapticManager?.toggleOn()
+              } else {
+                hapticManager?.toggleOff()
+              }
+              setEnabled(newEnabled)
+            },
+        )
+      }
+
+      Row(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        TextField(
+            modifier = Modifier.weight(1F),
+            value = amount,
+            onValueChange = { setAmount(it) },
+            enabled = enabled,
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                ),
+            isError = isError,
+        )
+
+        Column(
+            modifier =
+                Modifier.padding(
+                    start = MaterialTheme.keylines.baseline,
+                ),
         ) {
           Text(
-              modifier = Modifier.weight(1F),
-              text = stringResource(R.string.bandwidth_label),
-              style = MaterialTheme.typography.titleSmall,
-              color =
-                  if (enabled) {
-                    MaterialTheme.colorScheme.onSurface
-                  } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                  })
-
-          Switch(
-              checked = enabled,
-              onCheckedChange = { newEnabled ->
-                if (newEnabled) {
-                  hapticManager?.toggleOn()
-                } else {
-                  hapticManager?.toggleOff()
-                }
-                setEnabled(newEnabled)
-              },
-          )
-        }
-
-        Row(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          TextField(
-              modifier = Modifier.weight(1F),
-              value = amount,
-              onValueChange = { setAmount(it) },
-              enabled = enabled,
-              keyboardOptions =
-                  KeyboardOptions(
-                      keyboardType = KeyboardType.Number,
-                  ),
-              isError = isError,
-          )
-
-          Column(
               modifier =
-                  Modifier.padding(
-                      start = MaterialTheme.keylines.baseline,
-                  ),
-          ) {
-            Text(
-                modifier =
-                    Modifier.run {
-                          if (!enabled) {
-                            this
-                          } else {
-                            border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = MaterialTheme.shapes.small,
-                            )
-                          }
+                  Modifier.run {
+                        if (!enabled) {
+                          this
+                        } else {
+                          border(
+                              width = 1.dp,
+                              color = MaterialTheme.colorScheme.primary,
+                              shape = MaterialTheme.shapes.small,
+                          )
                         }
-                        .padding(
-                            horizontal = MaterialTheme.keylines.content,
-                            vertical = MaterialTheme.keylines.baseline,
-                        )
-                        .clickable(enabled = enabled) { setShowDropdown(true) },
-                text = limitUnit.displayName,
-                style = MaterialTheme.typography.bodySmall,
-                color =
-                    MaterialTheme.colorScheme.onSurfaceVariant.run {
-                      if (enabled) {
-                        this
-                      } else {
-                        copy(alpha = TypographyDefaults.ALPHA_DISABLED)
                       }
-                    },
-            )
-
-            BandwidthMenu(
-                current = limitUnit,
-                enabled = enabled,
-                showDropdown = showDropdown,
-                onDismiss = { handleDismissDropdown() },
-                onSelect = { u ->
-                  hapticManager?.actionButtonPress()
-                  setLimitUnit(u)
-                  handleDismissDropdown()
-                },
-            )
-          }
-        }
-
-        Row(
-            modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Spacer(
-              modifier = Modifier.weight(1F),
+                      .padding(
+                          horizontal = MaterialTheme.keylines.content,
+                          vertical = MaterialTheme.keylines.baseline,
+                      )
+                      .clickable(enabled = enabled) { setShowDropdown(true) },
+              text = limitUnit.displayName,
+              style = MaterialTheme.typography.bodySmall,
+              color =
+                  MaterialTheme.colorScheme.onSurfaceVariant.run {
+                    if (enabled) {
+                      this
+                    } else {
+                      copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                    }
+                  },
           )
 
-          TextButton(
-              onClick = onDismiss,
-          ) {
-            Text(
-                text = stringResource(android.R.string.cancel),
-            )
-          }
-          Button(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-              enabled = canSave,
-              onClick = {
-                val limit =
-                    if (enabled) {
-                      amountValue?.let { v ->
-                        BandwidthLimit(
-                            amount = v,
-                            unit = limitUnit,
-                        )
-                      }
-                    } else {
-                      null
-                    }
-                onUpdateBandwidthLimit(limit)
-                onDismiss()
+          BandwidthMenu(
+              current = limitUnit,
+              enabled = enabled,
+              showDropdown = showDropdown,
+              onDismiss = { handleDismissDropdown() },
+              onSelect = { u ->
+                hapticManager?.actionButtonPress()
+                setLimitUnit(u)
+                handleDismissDropdown()
               },
-          ) {
-            Text(
-                text = stringResource(android.R.string.ok),
-            )
-          }
+          )
+        }
+      }
+
+      Row(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Spacer(
+            modifier = Modifier.weight(1F),
+        )
+
+        TextButton(
+            onClick = onDismiss,
+        ) {
+          Text(
+              text = stringResource(android.R.string.cancel),
+          )
+        }
+        Button(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+            enabled = canSave,
+            onClick = {
+              val limit =
+                  if (enabled) {
+                    amountValue?.let { v ->
+                      BandwidthLimit(
+                          amount = v,
+                          unit = limitUnit,
+                      )
+                    }
+                  } else {
+                    null
+                  }
+              onUpdateBandwidthLimit(limit)
+              onDismiss()
+            },
+        ) {
+          Text(
+              text = stringResource(android.R.string.ok),
+          )
         }
       }
     }

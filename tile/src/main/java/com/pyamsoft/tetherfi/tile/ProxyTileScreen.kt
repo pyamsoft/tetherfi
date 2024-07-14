@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
@@ -51,6 +48,7 @@ import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.CardDialog
 import kotlinx.coroutines.delay
 
 private val CONNECTOR_SIZE = 16.dp
@@ -132,45 +130,39 @@ fun ProxyTileScreen(
   )
 
   if (isShowing) {
-    Dialog(
-        onDismissRequest = onDismissed,
+    CardDialog(
+        modifier = modifier,
+        onDismiss = onDismissed,
         properties =
             rememberDialogProperties(
                 dismissOnBackPress = isInitialStatusError,
                 dismissOnClickOutside = isInitialStatusError,
             ),
     ) {
-      Card(
-          modifier = modifier.padding(MaterialTheme.keylines.content),
-          shape = MaterialTheme.shapes.medium,
-          elevation = CardDefaults.elevatedCardElevation(),
-          colors = CardDefaults.elevatedCardColors(),
+      Column(
+          modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
       ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
-        ) {
-          StatusText(
-              modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
-              status = status,
-          )
-          ProgressStepper(
-              modifier = Modifier.fillMaxWidth(),
-              isError = isError,
-              isMiddleStep = isMiddleStep,
-              isFinalStep = isFinalStep,
-          )
+        StatusText(
+            modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
+            status = status,
+        )
+        ProgressStepper(
+            modifier = Modifier.fillMaxWidth(),
+            isError = isError,
+            isMiddleStep = isMiddleStep,
+            isFinalStep = isFinalStep,
+        )
 
-          if (isError) {
-            Text(
-                modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.baseline),
-                textAlign = TextAlign.Center,
-                text = stringResource(R.string.error_try_again, appName),
-                style =
-                    MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.error,
-                    ),
-            )
-          }
+        if (isError) {
+          Text(
+              modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.baseline),
+              textAlign = TextAlign.Center,
+              text = stringResource(R.string.error_try_again, appName),
+              style =
+                  MaterialTheme.typography.bodyLarge.copy(
+                      color = MaterialTheme.colorScheme.error,
+                  ),
+          )
         }
       }
     }

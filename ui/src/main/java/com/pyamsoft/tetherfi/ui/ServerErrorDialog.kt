@@ -106,7 +106,7 @@ fun ServerErrorDialog(
 ) {
   Dialog(
       properties = rememberDialogProperties(),
-      onDismissRequest = { onDismiss() },
+      onDismissRequest = onDismiss,
   ) {
     Column(
         modifier =

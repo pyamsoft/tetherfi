@@ -24,8 +24,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,9 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 
@@ -190,36 +186,29 @@ private fun SlowSpeedsLink(
 }
 
 @Composable
-public fun SlowSpeedsDialog(
+fun SlowSpeedsDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
 ) {
-  Dialog(
-      properties = rememberDialogProperties(),
-      onDismissRequest = onDismiss,
+  CardDialog(
+      modifier = modifier,
+      onDismiss = onDismiss,
   ) {
-    Card(
-        modifier = modifier.padding(MaterialTheme.keylines.content),
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(),
-    ) {
-      DialogToolbar(
-          modifier = Modifier.fillMaxWidth(),
-          onClose = onDismiss,
-          title = {
-            // Intentionally blank
-          },
-      )
-      SlowSpeedsContent(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
-      )
-    }
+    DialogToolbar(
+        modifier = Modifier.fillMaxWidth(),
+        onClose = onDismiss,
+        title = {
+          // Intentionally blank
+        },
+    )
+    SlowSpeedsContent(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
+    )
   }
 }
 
 @Composable
-public fun SlowSpeedsUpsell(
+fun SlowSpeedsUpsell(
     modifier: Modifier = Modifier,
     style: TextStyle,
     onClick: () -> Unit,

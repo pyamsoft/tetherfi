@@ -53,6 +53,7 @@ import com.pyamsoft.tetherfi.ui.qr.QRCodeViewState
 import com.pyamsoft.tetherfi.ui.test.createNewTestImageLoader
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.jetbrains.annotations.TestOnly
 
 internal class QRCodeInjector(
     private val ssid: String,
@@ -177,6 +178,7 @@ private fun QRCodeDialog(
   }
 }
 
+@TestOnly
 @Composable
 private fun PreviewQRCodeDialog(bitmap: Bitmap?) {
   QRCodeDialog(
