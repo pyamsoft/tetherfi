@@ -32,5 +32,5 @@
   <string name="start_the_hotspot">Start the %1$s Hotspot.</string>
   <string
     name="check_hotspot_green"
-  >Check that the Broadcast, Proxy, and Hotspot status are all green and running.</string>
+  >Check that the Broadcast, Proxy, and Hotspot status are all up and running.</string>
 </resources>
