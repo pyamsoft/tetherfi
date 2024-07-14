@@ -21,13 +21,15 @@
   <string
     name="perf_wake_lock_description"
   >Wake Locks keep %1$s performance fast even when the screen is off and the system is in a low power mode.\n\nYour device may need one or both of these options enabled for good network performance, but some devices do not. You may notice increased battery usage with these options enabled.
-  \n\nBoth of these options will be made default in the next version.</string>
+  \n\nBoth of these options have been made default, and will be removed in the next version.</string>
   <string name="perf_wifi_lock_title">Keep WiFi Awake</string>
   <string
     name="perf_wifi_lock_description"
-  >You should try this option first if Internet speed is slow on speed-tests while the screen is off.</string>
+  >You should try this option first if Internet speed is slow on speed-tests while the screen is off.
+  \n\nThis setting was made default, and will be removed in the next version.</string>
   <string name="perf_cpu_lock_title">Keep CPU Awake</string>
   <string
     name="perf_cpu_lock_description"
-  >If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.</string>
+  >If WiFi is kept awake, and Internet speed is still slow on tests, you may need this option.
+  \n\nThis setting was made default, and will be removed in the next version.</string>
 </resources>

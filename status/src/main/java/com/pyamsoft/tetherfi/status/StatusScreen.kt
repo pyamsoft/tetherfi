@@ -93,10 +93,6 @@ fun StatusScreen(
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
 
-    // Wake lock
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
-
     // Errors
     onHideSetupError: () -> Unit,
     onShowNetworkError: () -> Unit,
@@ -245,8 +241,6 @@ fun StatusScreen(
             onTogglePasswordVisibility = onTogglePasswordVisibility,
             onShowQRCode = onShowQRCode,
             onRefreshConnection = onRefreshConnection,
-            onToggleKeepWakeLock = onToggleKeepWakeLock,
-            onToggleKeepWifiLock = onToggleKeepWifiLock,
             onShowHotspotError = onShowHotspotError,
             onShowNetworkError = onShowNetworkError,
             onToggleIgnoreVpn = onToggleIgnoreVpn,
@@ -301,7 +295,6 @@ private fun PreviewStatusScreen(
       appName = "TEST",
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
-      onToggleKeepWakeLock = {},
       onSelectBand = {},
       onDismissBlocker = {},
       onOpenBatterySettings = {},
@@ -314,7 +307,6 @@ private fun PreviewStatusScreen(
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onRefreshConnection = {},
-      onToggleKeepWifiLock = {},
       onHideHotspotError = {},
       onShowHotspotError = {},
       onShowNetworkError = {},

@@ -33,7 +33,6 @@ import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
-import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
@@ -57,7 +56,6 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
     private val serverPreferences: ServerPreferences,
-    private val servicePreferences: ServicePreferences,
     private val networkStatus: BroadcastNetworkStatus,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
@@ -71,8 +69,6 @@ internal constructor(
       var password: Boolean,
       var port: Boolean,
       var band: Boolean,
-      var wakeLock: Boolean,
-      var wifiLock: Boolean,
       var ignoreVpn: Boolean,
       var shutdownWithNoClients: Boolean,
       var powerBalance: Boolean,
@@ -81,8 +77,6 @@ internal constructor(
 
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port &&
-        config.wifiLock &&
-        config.wakeLock &&
         config.ignoreVpn &&
         config.shutdownWithNoClients &&
         config.ssid &&
@@ -232,8 +226,6 @@ internal constructor(
             password = false,
             port = false,
             band = false,
-            wakeLock = false,
-            wifiLock = false,
             ignoreVpn = false,
             shutdownWithNoClients = false,
             powerBalance = false,
@@ -242,36 +234,6 @@ internal constructor(
 
     // Start loading
     s.loadingState.value = StatusViewState.LoadingState.LOADING
-
-    // Always populate the latest lock value
-    servicePreferences.listenForWakeLockChanges().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { keep ->
-          s.keepWakeLock.value = keep
-
-          // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.wakeLock = true
-            markPreferencesLoaded(config)
-          }
-        }
-      }
-    }
-
-    // Always populate the latest lock value
-    servicePreferences.listenForWiFiLockChanges().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { keep ->
-          s.keepWifiLock.value = keep
-
-          // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.wifiLock = true
-            markPreferencesLoaded(config)
-          }
-        }
-      }
-    }
 
     // Always populate the latest ignore value
     serverPreferences.listenForStartIgnoreVpn().also { f ->
@@ -485,16 +447,6 @@ internal constructor(
 
     val portValue = port.toIntOrNull()
     configPreferences.setPort(portValue ?: 0)
-  }
-
-  fun handleToggleProxyWakeLock() {
-    val newVal = state.keepWakeLock.updateAndGet { !it }
-    servicePreferences.setWakeLock(newVal)
-  }
-
-  fun handleToggleProxyWifiLock() {
-    val newVal = state.keepWifiLock.updateAndGet { !it }
-    servicePreferences.setWiFiLock(newVal)
   }
 
   fun handleChangeBand(band: ServerNetworkBand) {

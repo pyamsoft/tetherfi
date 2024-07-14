@@ -195,8 +195,6 @@ fun StatusEntry(
         }
       },
       onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
-      onToggleKeepWakeLock = { viewModel.handleToggleProxyWakeLock() },
-      onToggleKeepWifiLock = { viewModel.handleToggleProxyWifiLock() },
       onSelectBand = { viewModel.handleChangeBand(it) },
       onRequestNotificationPermission = {
         scope.launch(context = Dispatchers.Default) {

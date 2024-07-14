@@ -78,10 +78,6 @@ internal fun LazyListScope.renderLoadedContent(
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
 
-    // Wakelocks
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
-
     // Errors
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
@@ -137,9 +133,6 @@ internal fun LazyListScope.renderLoadedContent(
       itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
-      state = state,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
-      onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
 
   renderOperatingSettings(
@@ -229,7 +222,6 @@ private fun PreviewLoadedContent(
         serverViewState = makeTestServerState(state),
         appName = "TEST",
         onRequestNotificationPermission = {},
-        onToggleKeepWakeLock = {},
         onSelectBand = {},
         onOpenBatterySettings = {},
         onPasswordChanged = {},
@@ -238,7 +230,6 @@ private fun PreviewLoadedContent(
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
         onRefreshConnection = {},
-        onToggleKeepWifiLock = {},
         onShowHotspotError = {},
         onShowNetworkError = {},
         onToggleIgnoreVpn = {},

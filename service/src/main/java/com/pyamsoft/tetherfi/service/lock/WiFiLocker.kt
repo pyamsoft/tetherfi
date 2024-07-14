@@ -25,13 +25,11 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -42,7 +40,6 @@ internal class WiFiLocker
 internal constructor(
     enforcer: ThreadEnforcer,
     context: Context,
-    private val preferences: ServicePreferences,
 ) : AbstractLocker() {
 
   private val mutex = Mutex()
@@ -85,9 +82,6 @@ internal constructor(
           }
         }
       }
-
-  override suspend fun isEnabled(): Boolean =
-      withContext(context = Dispatchers.Default) { preferences.listenForWiFiLockChanges().first() }
 
   companion object {
 

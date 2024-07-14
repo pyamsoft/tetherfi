@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
 
 private enum class PerformanceSettingsContentTypes {
@@ -34,11 +33,6 @@ internal fun LazyListScope.renderPerformanceSettings(
     itemModifier: Modifier = Modifier,
     isEditable: Boolean,
     appName: String,
-    state: StatusViewState,
-
-    // Wake lock
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
 ) {
   item(
       contentType = PerformanceSettingsContentTypes.LABEL,
@@ -56,8 +50,5 @@ internal fun LazyListScope.renderPerformanceSettings(
       itemModifier = itemModifier,
       isEditable = isEditable,
       appName = appName,
-      state = state,
-      onToggleKeepWakeLock = onToggleKeepWakeLock,
-      onToggleKeepWifiLock = onToggleKeepWifiLock,
   )
 }

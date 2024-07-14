@@ -42,29 +42,26 @@ interface StatusViewState : UiViewState {
   val port: StateFlow<String>
   val band: StateFlow<ServerNetworkBand?>
 
-  // Permissions
+  // Operating Settings
   val hasNotificationPermission: StateFlow<Boolean>
-
-  val startBlockers: StateFlow<Collection<HotspotStartBlocker>>
-
-  // Extras
-  val keepWakeLock: StateFlow<Boolean>
-  val keepWifiLock: StateFlow<Boolean>
   val isBatteryOptimizationsIgnored: StateFlow<Boolean>
+
+  // Tweaks
+  val isIgnoreVpn: StateFlow<Boolean>
+  val isShutdownWithNoClients: StateFlow<Boolean>
+  val isSocketTimeoutEnabled: StateFlow<Boolean>
+
+  // Expert
   val powerBalance: StateFlow<ServerPerformanceLimit>
 
   // Dialogs
+  val startBlockers: StateFlow<Collection<HotspotStartBlocker>>
   val isShowingSetupError: StateFlow<Boolean>
   val isShowingNetworkError: StateFlow<Boolean>
   val isShowingHotspotError: StateFlow<Boolean>
   val isShowingBroadcastError: StateFlow<Boolean>
   val isShowingProxyError: StateFlow<Boolean>
   val isShowingPowerBalance: StateFlow<Boolean>
-
-  // Tweaks
-  val isIgnoreVpn: StateFlow<Boolean>
-  val isShutdownWithNoClients: StateFlow<Boolean>
-  val isSocketTimeoutEnabled: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -91,8 +88,6 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val startBlockers = MutableStateFlow<Collection<HotspotStartBlocker>>(emptySet())
   override val hasNotificationPermission = MutableStateFlow(false)
 
-  override val keepWakeLock = MutableStateFlow(false)
-  override val keepWifiLock = MutableStateFlow(false)
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
   override val powerBalance =
       MutableStateFlow<ServerPerformanceLimit>(ServerPerformanceLimit.Defaults.BOUND_N_CPU)

@@ -40,7 +40,6 @@ import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
-import com.pyamsoft.tetherfi.service.ServicePreferences
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
@@ -100,8 +99,6 @@ internal interface TetherFiComponent {
     @Binds internal abstract fun bindConfigPreferences(impl: PreferencesImpl): ConfigPreferences
 
     @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
-
-    @Binds internal abstract fun bindServicePreferences(impl: PreferencesImpl): ServicePreferences
 
     @Binds
     internal abstract fun bindInAppRatingPreferences(impl: PreferencesImpl): InAppRatingPreferences

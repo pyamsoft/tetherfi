@@ -27,17 +27,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tweaks.ToggleSwitch
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 import com.pyamsoft.tetherfi.ui.textAlpha
@@ -50,36 +47,15 @@ internal fun LazyListScope.renderWakelocks(
     itemModifier: Modifier = Modifier,
     appName: String,
     isEditable: Boolean,
-    state: StatusViewState,
-    onToggleKeepWakeLock: () -> Unit,
-    onToggleKeepWifiLock: () -> Unit,
 ) {
   item(
       contentType = RenderWakelocksContentTypes.WAKE_LOCKS,
   ) {
-    val keepWakeLock by state.keepWakeLock.collectAsStateWithLifecycle()
-    val keepWifiLock by state.keepWifiLock.collectAsStateWithLifecycle()
-
-    val checkboxState =
-        remember(
-            keepWakeLock,
-            keepWifiLock,
-        ) {
-          if (!keepWakeLock && !keepWifiLock) {
-            ToggleableState.Off
-          } else if (keepWakeLock && keepWifiLock) {
-            ToggleableState.On
-          } else {
-            ToggleableState.Indeterminate
-          }
-        }
-
-    val isChecked = remember(checkboxState) { checkboxState != ToggleableState.Off }
     val cardColor by
         rememberCheckableColor(
             enabled = isEditable,
             label = "Wake Locks",
-            condition = isChecked,
+            condition = true,
             selectedColor = MaterialTheme.colorScheme.primary,
         )
 
@@ -115,7 +91,7 @@ internal fun LazyListScope.renderWakelocks(
           TriStateCheckbox(
               modifier = Modifier.padding(start = MaterialTheme.keylines.content),
               enabled = isEditable,
-              state = checkboxState,
+              state = ToggleableState.On,
               onClick = null,
           )
         }
@@ -139,7 +115,7 @@ internal fun LazyListScope.renderWakelocks(
             rememberCheckableColor(
                 enabled = isEditable,
                 label = "Wi-Fi Lock",
-                condition = keepWifiLock,
+                condition = true,
                 selectedColor = MaterialTheme.colorScheme.primary,
             )
 
@@ -147,17 +123,17 @@ internal fun LazyListScope.renderWakelocks(
             modifier = Modifier.fillMaxWidth(),
             isEditable = isEditable,
             color = wifiLockColor,
-            checked = keepWifiLock,
+            checked = true,
             title = stringResource(R.string.perf_wifi_lock_title),
             description = stringResource(R.string.perf_wifi_lock_description),
-            onClick = onToggleKeepWifiLock,
+            onClick = {},
         )
 
         val wakeLockColor by
             rememberCheckableColor(
                 enabled = isEditable,
                 label = "CPU Lock",
-                condition = keepWakeLock,
+                condition = true,
                 selectedColor = MaterialTheme.colorScheme.primary,
             )
 
@@ -165,10 +141,10 @@ internal fun LazyListScope.renderWakelocks(
             modifier = Modifier.fillMaxWidth(),
             isEditable = isEditable,
             color = wakeLockColor,
-            checked = keepWakeLock,
+            checked = true,
             title = stringResource(R.string.perf_cpu_lock_title),
             description = stringResource(R.string.perf_cpu_lock_description),
-            onClick = onToggleKeepWakeLock,
+            onClick = {},
         )
       }
     }

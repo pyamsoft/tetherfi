@@ -32,7 +32,6 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import com.pyamsoft.tetherfi.service.ServicePreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -52,7 +51,7 @@ internal class PreferencesImpl
 internal constructor(
     private val enforcer: ThreadEnforcer,
     context: Context,
-) : ServerPreferences, ServicePreferences, InAppRatingPreferences, ConfigPreferences {
+) : ServerPreferences, InAppRatingPreferences, ConfigPreferences {
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
@@ -108,16 +107,6 @@ internal constructor(
     this.edit(commit = commit) { putString(PASSWORD, password) }
   }
 
-  override fun listenForWakeLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WAKE_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
-
-  override fun setWakeLock(keep: Boolean) = setPreference { putBoolean(WAKE_LOCK, keep) }
-
-  override fun listenForWiFiLockChanges(): Flow<Boolean> =
-      preferenceBooleanFlow(WIFI_LOCK, true) { preferences }.flowOn(context = Dispatchers.IO)
-
-  override fun setWiFiLock(keep: Boolean) = setPreference { putBoolean(WIFI_LOCK, keep) }
-
   override fun listenForSsidChanges(): Flow<String> =
       preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
           .flowOn(context = Dispatchers.IO)
@@ -170,7 +159,7 @@ internal constructor(
   }
 
   override fun listenForTimeoutEnabled(): Flow<Boolean> =
-      preferenceBooleanFlow(TCP_SOCKET_TIMEOUT, false) { preferences }
+      preferenceBooleanFlow(TCP_SOCKET_TIMEOUT, true) { preferences }
           .flowOn(context = Dispatchers.IO)
 
   override fun setTimeoutEnabled(enabled: Boolean) = setPreference {
@@ -299,17 +288,22 @@ internal constructor(
             // YOLO_MODE: Made default in 41, removed in 42
             "key_proxy_yolo_mode_1",
 
-            // TODO(Peter): Old preference was default OFF in 43, new preference in 45 is default ON
-            // "key_tcp_socket_timeout_1"
+            // TCP socket timeout was default OFF in <44
+            // Made default ON in 44 and replaced key with _2
+            "key_tcp_socket_timeout_1",
+
+            // Removed wake lock and wifi lock in version 45
+            "key_wake_lock_1",
+            "key_wifi_lock_1",
+
+            // TODO(Peter): Removed TCP socket timeout in version 45
+            // "key_tcp_socket_timeout_2",
         )
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
     private const val PORT = "key_port_1"
     private const val NETWORK_BAND = "key_network_band_1"
-
-    private const val WAKE_LOCK = "key_wake_lock_1"
-    private const val WIFI_LOCK = "key_wifi_lock_1"
 
     private const val IN_APP_HOTSPOT_USED = "key_in_app_hotspot_used_1"
     private const val IN_APP_DEVICES_CONNECTED = "key_in_app_devices_connected_1"
@@ -322,8 +316,6 @@ internal constructor(
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
 
-    // TODO(Peter): Remove v1 in 45 and replace with v2
-    private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_1"
-    // private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_2"
+    private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_2"
   }
 }
