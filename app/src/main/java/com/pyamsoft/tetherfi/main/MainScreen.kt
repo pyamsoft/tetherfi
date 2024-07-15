@@ -25,6 +25,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,7 +79,9 @@ fun MainScreen(
                   // So this basically doesn't do anything since we handle the padding ourselves
                   // BUT, we don't just want to consume it because we DO actually care when using
                   // Modifier.navigationBarsPadding()
-                  .heightIn(min = pv.calculateBottomPadding()),
+                  .heightIn(
+                      min = remember(pv) { pv.calculateBottomPadding() },
+                  ),
           appName = appName,
           pagerState = pagerState,
           state = state,
