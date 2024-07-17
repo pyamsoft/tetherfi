@@ -42,7 +42,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,7 +52,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 
 @Composable
 @CheckResult
-fun rememberAllTabs(): SnapshotStateList<MainView> {
+fun rememberAllTabs(): List<MainView> {
   return remember { MainView.entries.toMutableStateList() }
 }
 
@@ -63,7 +62,7 @@ fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
     pagerState: PagerState,
-    allTabs: SnapshotStateList<MainView>,
+    allTabs: List<MainView>,
     onSettingsOpen: () -> Unit,
     onTabChanged: (MainView) -> Unit,
 ) {

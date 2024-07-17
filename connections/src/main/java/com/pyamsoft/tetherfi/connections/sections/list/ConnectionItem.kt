@@ -37,7 +37,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -75,7 +74,7 @@ private val FIRST_SEEN_DATE_FORMATTER =
 @Composable
 internal fun ConnectionItem(
     modifier: Modifier = Modifier,
-    blocked: SnapshotStateList<TetherClient>,
+    blocked: List<TetherClient>,
     client: TetherClient,
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,

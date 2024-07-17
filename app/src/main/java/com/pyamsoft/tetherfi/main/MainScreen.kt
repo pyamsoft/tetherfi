@@ -26,7 +26,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.util.rememberAsStateList
@@ -43,7 +42,7 @@ fun MainScreen(
     appName: String,
     state: ServerViewState,
     pagerState: PagerState,
-    allTabs: SnapshotStateList<MainView>,
+    allTabs: List<MainView>,
 
     // Settings
     onTabChanged: (MainView) -> Unit,

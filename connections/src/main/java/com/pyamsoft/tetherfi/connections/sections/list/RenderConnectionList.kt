@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -41,8 +40,8 @@ private enum class RenderConnectionListContentTypes {
 internal fun LazyListScope.renderConnectionList(
     modifier: Modifier = Modifier,
     group: BroadcastNetworkStatus.GroupInfo,
-    clients: SnapshotStateList<TetherClient>,
-    blocked: SnapshotStateList<TetherClient>,
+    clients: List<TetherClient>,
+    blocked: List<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
     onManageBandwidthLimit: (TetherClient) -> Unit,
@@ -91,8 +90,8 @@ private fun LazyListScope.renderRunningNoClients(
 
 private fun LazyListScope.renderRunningWithClients(
     itemModifier: Modifier = Modifier,
-    clients: SnapshotStateList<TetherClient>,
-    blocked: SnapshotStateList<TetherClient>,
+    clients: List<TetherClient>,
+    blocked: List<TetherClient>,
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
     onManageBandwidthLimit: (TetherClient) -> Unit,

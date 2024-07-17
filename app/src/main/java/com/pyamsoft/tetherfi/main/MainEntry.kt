@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -75,7 +74,7 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 @OptIn(ExperimentalFoundationApi::class)
 private fun WatchTabSwipe(
     pagerState: PagerState,
-    allTabs: SnapshotStateList<MainView>,
+    allTabs: List<MainView>,
 ) {
   val hapticManager = LocalHapticManager.current
 
@@ -110,7 +109,7 @@ private fun WatchTabSwipe(
 private fun MountHooks(
     viewModel: MainViewModeler,
     pagerState: PagerState,
-    allTabs: SnapshotStateList<MainView>,
+    allTabs: List<MainView>,
     onShowInAppRating: () -> Unit,
 ) {
   val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
