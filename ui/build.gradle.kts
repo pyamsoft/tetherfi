@@ -49,7 +49,7 @@ dependencies {
   kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Lifecycle extensions
-  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
 
   // Compose
   api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
@@ -62,7 +62,7 @@ dependencies {
   debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
 
   // WiFi QR Code
-  api("io.coil-kt:coil-compose-base:2.6.0")
+  api("io.coil-kt:coil-compose-base:2.7.0")
   implementation("io.github.g0dkar:qrcode-kotlin-android:4.2.0")
 
   // PYDroid
