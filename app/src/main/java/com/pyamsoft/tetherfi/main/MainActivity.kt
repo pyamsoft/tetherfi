@@ -39,6 +39,7 @@ import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.service.ServiceLauncher
+import com.pyamsoft.tetherfi.status.tweaks.ScreenOnHandler
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -47,8 +48,8 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
-
   @Inject @JvmField internal var launcher: ServiceLauncher? = null
+  @Inject @JvmField internal var screenOnHandler: ScreenOnHandler? = null
 
   private var pydroid: PYDroidActivityDelegate? = null
 
@@ -87,10 +88,12 @@ class MainActivity : AppCompatActivity() {
 
     // Then register for any permissions
     PermissionManager.createAndRegister(this, component)
+
+    // Watch the hotspot status and keep the screen on if we are allowed
+    screenOnHandler.requireNotNull().bind(this)
   }
 
   private fun safeOpenSettingsIntent(action: String) {
-
     // Try specific first, may fail on some devices
     try {
       val intent = Intent(action, "package:${packageName}".toUri())
@@ -154,5 +157,6 @@ class MainActivity : AppCompatActivity() {
     pydroid = null
     viewModel = null
     launcher = null
+    screenOnHandler = null
   }
 }
