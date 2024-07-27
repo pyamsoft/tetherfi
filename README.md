@@ -14,6 +14,10 @@ Share your Android device's Internet connection with other devices without needi
   src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
   alt="Get it on IzzyOnDroid"
   height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+[<img
+  src="https://www.openapk.net/images/openapk-badge.png"
+  alt="Get it on OpenAPK"
+  height="80">](https://www.openapk.net/tetherfi/com.pyamsoft.tetherfi/)
 
 or get the APK from the
 [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
