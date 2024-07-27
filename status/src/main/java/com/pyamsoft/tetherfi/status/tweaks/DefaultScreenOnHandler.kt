@@ -26,8 +26,6 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.StatusPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
@@ -36,6 +34,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class DefaultScreenOnHandler
@@ -67,6 +67,27 @@ internal constructor(
           }
           .distinctUntilChanged()
 
+  private suspend fun markScreenOn(window: Window) {
+    val isOn = mutex.withLock { isKeepScreenOnFlag(window) }
+    if (!isOn) {
+      mutex.withLock {
+        Timber.d { "Marking Window as KEEP_SCREEN_ON" }
+        withContext(context = Dispatchers.Main) {
+          window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+      }
+    }
+  }
+
+  private suspend fun clearScreenOn(window: Window) {
+    mutex.withLock {
+      Timber.d { "Clearing Window KEEP_SCREEN_ON" }
+      withContext(context = Dispatchers.Main) {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      }
+    }
+  }
+
   private suspend fun setScreenOnState(activity: ComponentActivity, enable: Boolean) {
     val window = getWindow(activity)
     if (window == null) {
@@ -75,22 +96,9 @@ internal constructor(
     }
 
     if (enable) {
-      val isOn = mutex.withLock { isKeepScreenOnFlag(window) }
-      if (!isOn) {
-        mutex.withLock {
-          Timber.d { "Marking Window as KEEP_SCREEN_ON" }
-          withContext(context = Dispatchers.Main) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-          }
-        }
-      } else {
-        mutex.withLock {
-          Timber.d { "Clearing Window KEEP_SCREEN_ON" }
-          withContext(context = Dispatchers.Main) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-          }
-        }
-      }
+      markScreenOn(window)
+    } else {
+      clearScreenOn(window)
     }
   }
 
