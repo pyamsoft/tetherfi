@@ -30,35 +30,4 @@
   <string
     name="perf_cpu_lock_description"
   >如果 WiFi 已經被保持於清醒狀態網路速度還是在網路速度測試中很慢的話，您可能需要使用這個選項。</string>
-
-  <string name="perf_power_balance_title">專業設定：性能平衡設定</string>
-  <string
-    name="perf_power_balance_description"
-  >此設定僅提供給「進階使用者」使用。\n\n您可以透過調整分配給熱點網路的虛擬執行緒數量來調整 %1$s 網路熱點的效能表現跟資源使用量。\n\n更高的執行緒數量通常會促成更高的性能，但也會造成更高的電池電量使用且可能會使您的裝置更熱或更慢。</string>
-  <string name="perf_power_balance_button">調整性能</string>
-
-  <string name="perf_balance_max_title">最大性能</string>
-  <string
-    name="perf_balance_max_description"
-  >無執行緒數量限制。提供最大的性能表現。將電池電量使用顧慮丟出窗外。</string>
-  <string name="perf_balance_super_save_title">最大化節省電池電量使用</string>
-  <string
-    name="perf_balance_super_save_description"
-  >最多建立 %1$d 個執行緒。使用最少的電池電量但只提供最慢的網路熱點性能。</string>
-  <string name="perf_balance_save_title">省電模式</string>
-  <string
-    name="perf_balance_save_description"
-  >最多建立 %1$d 個執行緒。使用較少的電池電量但是提供較慢的網路熱點性能。</string>
-  <string name="perf_balance_normal_title">平衡</string>
-  <string
-    name="perf_balance_normal_description"
-  >最多建立 %1$d 個執行緒。提供電池電量使用與網路熱點性能間的平衡。</string>
-  <string name="perf_balance_perf_title">性能</string>
-  <string
-    name="perf_balance_perf_description"
-  >最多建立 %1$d 個執行緒。以更多電池電量使用為代價提供較佳的網路熱點性能。</string>
-  <string name="perf_balance_super_perf_title">高性能</string>
-  <string
-    name="perf_balance_super_perf_description"
-  >最多建立 %1$d 個執行緒。以更顯著的電池電量使用為代價提供非常好的網路熱點性能。</string>
 </resources>

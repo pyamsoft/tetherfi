@@ -31,8 +31,8 @@
     name="shutdown_no_client_description"
   >如果 %1$s 網路熱點在沒有服務任何客戶端裝置情境下運行超過十分鐘就中止服務。\n\n在未使用情境下自動中止網路熱點服務可以節省電池電量消耗。</string>
 
-  <string name="stubborn_proxy_title">頑固代理服務模式</string>
+  <string name="enable_socket_timeout_title">啟用閒置連線逾時清理功能</string>
   <string
-    name="stubborn_proxy_description"
-  >在某些裝置上 %1$s 會在啟動代理服務時會發生「無效的引數(Invalid Argument)」錯誤無法啟動。在某些情況下，這個錯誤並不實際存在且可以透過頑固地不斷重試的方式恢復正常。\n\n啟用這個設定選項將使 %1$s 無視這些錯誤並不斷重試操作。即「你只能活一次何不試試(YOLO)」模式。\n\n這個設定選項現在已經是預設行為，並會在未來的應用軟體更新中被移除。</string>
+      name="enable_socket_timeout_description"
+      >在日常使用的情境下這個選項應該被啟用。這讓 %1$s 得以在超過一分鐘的無活動後清理老舊/已死亡的連線。在大量或長時間下載的情境中這個選項應該保持「禁用」。（建議使用）</string>
 </resources>

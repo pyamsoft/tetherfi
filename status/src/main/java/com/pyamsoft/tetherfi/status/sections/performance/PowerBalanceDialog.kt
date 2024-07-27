@@ -84,12 +84,12 @@ private fun rememberDisplayLimits(): List<DisplayLimit> {
               description = context.getString(R.string.expert_balance_normal_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_4N_CPU -> {
-              title = context.getString(R.string.expert_balance_expert_title)
-              description = context.getString(R.string.expert_balance_expert_description, t)
+              title = context.getString(R.string.expert_balance_performance_title)
+              description = context.getString(R.string.expert_balance_performance_description, t)
             }
             ServerPerformanceLimit.Defaults.BOUND_5N_CPU -> {
-              title = context.getString(R.string.expert_balance_super_expert_title)
-              description = context.getString(R.string.expert_balance_super_expert_description, t)
+              title = context.getString(R.string.expert_balance_super_performance_title)
+              description = context.getString(R.string.expert_balance_super_performance_description, t)
             }
           }
 

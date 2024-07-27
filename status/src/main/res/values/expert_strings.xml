@@ -15,6 +15,7 @@
   ~ limitations under the License.
   -->
 <resources>
+  <!--  TODO(Help): Need zh-rTW translation-->
   <string name="expert_title">Expert Settings</string>
 
   <string name="expert_power_balance_title">Expert: Power Balance</string>
@@ -39,12 +40,12 @@
   <string
     name="expert_balance_normal_description"
   >%1$d threads. Offers a balance between battery usage and hotspot performance.</string>
-  <string name="expert_balance_expert_title">Performance</string>
+  <string name="expert_balance_performance_title">Performance</string>
   <string
-    name="expert_balance_expert_description"
+    name="expert_balance_performance_description"
   >%1$d threads. Offers better hotspot performance at the cost of more battery usage.</string>
-  <string name="expert_balance_super_expert_title">High Performance</string>
+  <string name="expert_balance_super_performance_title">High Performance</string>
   <string
-    name="expert_balance_super_expert_description"
+    name="expert_balance_super_performance_description"
   >%1$d threads. Offers great hotspot performance at the cost of significant battery usage.</string>
 </resources>

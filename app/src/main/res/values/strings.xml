@@ -15,5 +15,7 @@
   -->
 <resources>
   <string name="app_name">TetherFi</string>
+
+  <!-- TODO(Help): Need zh-rTW translation -->
   <string name="toggle_hotspot_shortcut">Toggle TetherFi Hotspot</string>
 </resources>
