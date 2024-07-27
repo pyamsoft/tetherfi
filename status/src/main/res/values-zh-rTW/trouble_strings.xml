@@ -21,14 +21,10 @@
     name="trouble_description"
   >這「不是」本應用軟體的錯誤，而是%1$s的錯誤。</string>
 
-  <string
-    name="trouble_err_type_both"
-  >您裝置與裝置設定</string>
+  <string name="trouble_err_type_both">您裝置與裝置設定</string>
   <string name="trouble_err_type_proxy">您設定</string>
   <string name="trouble_err_type_broadcast">您裝置</string>
-  <string
-    name="trouble_double_check"
-  >請檢查這些問題並再試一次：</string>
+  <string name="trouble_double_check">請檢查這些問題並再試一次：</string>
   <string
     name="trouble_broadcast_wifi_on"
   >• Wi-Fi 功能必須被啟用以啟動網路熱點</string>

@@ -42,6 +42,8 @@ import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
+import com.pyamsoft.tetherfi.status.StatusAppModule
+import com.pyamsoft.tetherfi.status.StatusPreferences
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
@@ -67,6 +69,7 @@ import kotlinx.coroutines.CoroutineScope
             WifiDirectAppModule::class,
             TileAppModule::class,
             CoreAppModule::class,
+            StatusAppModule::class,
         ],
 )
 internal interface TetherFiComponent {
@@ -99,6 +102,8 @@ internal interface TetherFiComponent {
     @Binds internal abstract fun bindConfigPreferences(impl: PreferencesImpl): ConfigPreferences
 
     @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
+
+    @Binds internal abstract fun bindStatusPreferences(impl: PreferencesImpl): StatusPreferences
 
     @Binds
     internal abstract fun bindInAppRatingPreferences(impl: PreferencesImpl): InAppRatingPreferences

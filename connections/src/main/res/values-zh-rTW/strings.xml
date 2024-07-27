@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
   ~ Copyright 2024 林博仁(Buo-ren, Lin)
@@ -15,32 +15,31 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-    <string name="connection_last_seen">上次發現時間：</string>
-    <string name="connection_options">連線選項</string>
-    <string
-        name="connection_total_to_internet"
-        >傳送至網際網路的資料總量：%1$s</string>
-    <string
-        name="connection_total_from_internet"
-        >接收自網際網路的資料總量：%1$s</string>
-    <string name="bandwidth_label">頻寬限制</string>
-    <string name="bandwidth_limit">%1$s：%2$s</string>
-    <string
-        name="connection_excuse"
-        >我們正在積極地研究一個更友善的解決方案。</string>
-    <string
-        name="connection_sorry"
-        >先跟您致上歉意。作業系統不讓我查看哪個 IP 地址是對應到哪些已連接設備，所以這個畫面只能夠讓您透過 IP 地址來進行管理。</string>
-    <string name="connection_none">當前還沒有任何連線！</string>
-    <string
-        name="connection_start_before_manage"
-        >啟動網路熱點以查看並管理已連接的裝置。</string>
-    <string
-        name="connection_running_explain"
-        >預設行為下任何連接的客戶端裝置皆允許透過網路熱點訪問網際網路。若您需要自網路阻擋特定的客戶端裝置您可以將您要限制的 IP 地址的開關關掉。</string>
-    <string name="option_set_nickname">設定暱稱</string>
-    <string name="option_set_bandwidth">設定頻寬限制</string>
-    <string name="bandwidth_over_limit">頻寬使用超限：%1$s</string>
+  <string name="connection_last_seen">上次發現時間：</string>
+  <string name="connection_options">連線選項</string>
+  <string
+    name="connection_total_to_internet"
+  >傳送至網際網路的資料總量：%1$s</string>
+  <string
+    name="connection_total_from_internet"
+  >接收自網際網路的資料總量：%1$s</string>
+  <string name="bandwidth_label">頻寬限制</string>
+  <string name="bandwidth_limit">%1$s：%2$s</string>
+  <string
+    name="connection_excuse"
+  >我們正在積極地研究一個更友善的解決方案。</string>
+  <string
+    name="connection_sorry"
+  >先跟您致上歉意。作業系統不讓我查看哪個 IP 地址是對應到哪些已連接設備，所以這個畫面只能夠讓您透過 IP 地址來進行管理。</string>
+  <string name="connection_none">當前還沒有任何連線！</string>
+  <string
+    name="connection_start_before_manage"
+  >啟動網路熱點以查看並管理已連接的裝置。</string>
+  <string
+    name="connection_running_explain"
+  >預設行為下任何連接的客戶端裝置皆允許透過網路熱點訪問網際網路。若您需要自網路阻擋特定的客戶端裝置您可以將您要限制的 IP 地址的開關關掉。</string>
+  <string name="option_set_nickname">設定暱稱</string>
+  <string name="option_set_bandwidth">設定頻寬限制</string>
+  <string name="bandwidth_over_limit">頻寬使用超限：%1$s</string>
 </resources>

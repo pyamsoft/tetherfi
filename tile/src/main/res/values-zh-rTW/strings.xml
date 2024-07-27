@@ -15,14 +15,11 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <resources>
-  <string
-      name="error_try_again"
-      >請打開 %1$s 應用軟體然後再重試一次。</string>
-    <string name="status_error">錯誤</string>
-    <string name="status_stopped">已停止</string>
-    <string name="status_running">正在運行</string>
-    <string name="status_starting">正在啟動……</string>
-    <string name="status_stopping">正在中止……</string>
+  <string name="error_try_again">請打開 %1$s 應用軟體然後再重試一次。</string>
+  <string name="status_error">錯誤</string>
+  <string name="status_stopped">已停止</string>
+  <string name="status_running">正在運行</string>
+  <string name="status_starting">正在啟動……</string>
+  <string name="status_stopping">正在中止……</string>
 </resources>

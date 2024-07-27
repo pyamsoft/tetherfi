@@ -32,9 +32,7 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
+import com.pyamsoft.tetherfi.status.StatusPreferences
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +42,9 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -51,7 +52,7 @@ internal class PreferencesImpl
 internal constructor(
     private val enforcer: ThreadEnforcer,
     context: Context,
-) : ServerPreferences, InAppRatingPreferences, ConfigPreferences {
+) : StatusPreferences, ServerPreferences, InAppRatingPreferences, ConfigPreferences {
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
@@ -165,6 +166,11 @@ internal constructor(
   override fun setTimeoutEnabled(enabled: Boolean) = setPreference {
     putBoolean(TCP_SOCKET_TIMEOUT, enabled)
   }
+
+  override fun listenForKeepScreenOn(): Flow<Boolean> =
+      preferenceBooleanFlow(KEEP_SCREEN_ON, false) { preferences }.flowOn(context = Dispatchers.IO)
+
+  override fun setKeepScreenOn(keep: Boolean) = setPreference { putBoolean(KEEP_SCREEN_ON, keep) }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -317,5 +323,7 @@ internal constructor(
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
 
     private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_2"
+
+    private const val KEEP_SCREEN_ON = "key_keep_screen_on_1"
   }
 }

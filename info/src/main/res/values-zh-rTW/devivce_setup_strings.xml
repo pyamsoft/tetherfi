@@ -16,9 +16,7 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string
-    name="configure_the_proxy_settings"
-  >設定代理服務設定</string>
+  <string name="configure_the_proxy_settings">設定代理服務設定</string>
   <string
     name="http_manual_proxy"
   >使用「手動」模式並設定 HTTP 跟 HTTPS 的代理服務設定。</string>
