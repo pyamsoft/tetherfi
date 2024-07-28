@@ -42,7 +42,6 @@ internal class ProxyForegroundService internal constructor() : Service() {
     ObjectGraph.ApplicationScope.retrieve(this).plusForeground().create().inject(this)
 
     Timber.d { "Creating service" }
-
     start()
   }
 
@@ -53,8 +52,16 @@ internal class ProxyForegroundService internal constructor() : Service() {
     Timber.d { "Start command received" }
     start()
 
-    // Just start sticky here
-    return START_STICKY
+    // Apparently on Android 14, START_STICKY crashes. Great!
+    //
+    // Since START_STICKY only matters if the device completely runs out of memory, I
+    // guess it's not a huge deal here to not be sticky, because if we run out of memory
+    // and the service stops, the hotspot stops too, so meh.
+    //
+    // Avoid crashes, but be slightly more work for users. It's the Android way -_-
+    //
+    // return START_STICKY
+    return START_NOT_STICKY
   }
 
   override fun onDestroy() {
