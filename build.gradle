@@ -20,11 +20,11 @@ buildscript {
   ext {
     // SDK
     minSdk = 24
-    targetSdk = 34
-    compileSdk = 34
+    targetSdk = 35
+    compileSdk = 35
 
     // Kotlin
-    kotlin = "2.0.0"
+    kotlin = "2.0.10"
     coroutines = "1.8.1"
 
     // Us
@@ -34,7 +34,7 @@ buildscript {
     leakCanary = "2.14"
 
     // Dagger
-    dagger = "2.51.1"
+    dagger = "2.52"
 
     // Compose
     compose = "1.6.8"
@@ -81,7 +81,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-1.0.23" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-1.0.24" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
