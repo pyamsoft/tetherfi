@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -45,7 +46,8 @@ internal class ServiceDispatcher
 @Inject
 internal constructor(
     private val context: Context,
-    @Named("main_activity") private val activityClass: Class<out Activity>,
+    @Named("main_activity") private val mainActivityClass: Class<out Activity>,
+    @Named("service") private val serviceClass: Class<out Service>,
     @StringRes @Named("app_name") private val appNameRes: Int,
 ) : NotifyDispatcher<ServerNotificationData> {
 
@@ -57,13 +59,30 @@ internal constructor(
   private fun getActivityPendingIntent(): PendingIntent {
     val appContext = context.applicationContext
     val activityIntent =
-        Intent(appContext, activityClass).apply {
+        Intent(appContext, mainActivityClass).apply {
           flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
     return PendingIntent.getActivity(
         appContext,
         REQUEST_CODE_ACTIVITY,
         activityIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+  }
+
+  @CheckResult
+  private fun getServiceStopPendingIntent(): PendingIntent {
+    val appContext = context.applicationContext
+    val serviceIntent =
+        Intent(appContext, serviceClass).apply {
+          putExtra(
+              NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION,
+              NotificationLauncher.Actions.STOP.name)
+        }
+    return PendingIntent.getService(
+        appContext,
+        REQUEST_CODE_SERVICE,
+        serviceIntent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
   }
@@ -96,6 +115,7 @@ internal constructor(
 
   @CheckResult
   private fun createNotificationBuilder(
+      appName: String,
       channelInfo: NotifyChannelInfo
   ): NotificationCompat.Builder {
     return NotificationCompat.Builder(context.applicationContext, channelInfo.id)
@@ -105,9 +125,14 @@ internal constructor(
         .setOngoing(true)
         .setSilent(true)
         .setPriority(NotificationCompat.PRIORITY_LOW)
-        .setContentIntent(getActivityPendingIntent())
         .setCategory(NotificationCompat.CATEGORY_SERVICE)
         .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+        .setContentIntent(getActivityPendingIntent())
+        .addAction(
+            R.drawable.ic_wifi_tethering_off_24,
+            "Stop $appName Hotspot",
+            getServiceStopPendingIntent(),
+        )
   }
 
   @CheckResult
@@ -132,7 +157,7 @@ internal constructor(
   ): Notification {
     val appName = context.getString(appNameRes)
     guaranteeNotificationChannelExists(channelInfo)
-    return createNotificationBuilder(channelInfo)
+    return createNotificationBuilder(appName, channelInfo)
         .setContentTitle(appName)
         .setContentText(resolveContentText(appName, notification))
         .build()
@@ -145,5 +170,6 @@ internal constructor(
   companion object {
 
     private const val REQUEST_CODE_ACTIVITY = 1337420
+    private const val REQUEST_CODE_SERVICE = 133769
   }
 }

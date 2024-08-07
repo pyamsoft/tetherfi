@@ -150,6 +150,13 @@ internal interface TetherFiComponent {
 
       @Provides
       @JvmStatic
+      @Named("service")
+      internal fun provideProxyForegroundServiceClass(): Class<out Service> {
+        return ProxyForegroundService::class.java
+      }
+
+      @Provides
+      @JvmStatic
       @Named("app_name")
       internal fun provideAppNameRes(): Int {
         return R.string.app_name

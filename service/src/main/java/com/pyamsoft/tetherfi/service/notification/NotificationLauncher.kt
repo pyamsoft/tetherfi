@@ -37,8 +37,18 @@ interface NotificationLauncher {
 
   suspend fun update()
 
+  enum class Actions {
+    STOP
+  }
+
   fun interface Watcher {
 
     fun watch(scope: CoroutineScope)
+  }
+
+  companion object {
+
+    @JvmField
+    val INTENT_EXTRA_SERVICE_ACTION = "${NotificationLauncher::class.java.name}::Service_Action"
   }
 }
