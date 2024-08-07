@@ -23,9 +23,9 @@ import androidx.annotation.CheckResult
 import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.status.StatusPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers

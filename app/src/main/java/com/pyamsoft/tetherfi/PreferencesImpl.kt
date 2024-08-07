@@ -32,7 +32,7 @@ import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
-import com.pyamsoft.tetherfi.status.StatusPreferences
+import com.pyamsoft.tetherfi.server.StatusPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random

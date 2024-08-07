@@ -21,37 +21,77 @@ import android.content.Context
 import android.os.PowerManager
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
-import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.pyamsoft.tetherfi.server.StatusPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WakeLocker
 @Inject
 internal constructor(
-    enforcer: ThreadEnforcer,
     context: Context,
+    private val statusPreferences: StatusPreferences,
 ) : AbstractLocker() {
 
-  private val mutex = Mutex()
-  private val tag = createTag(context.packageName)
-
-  private val lock by lazy {
-    enforcer.assertOffMainThread()
-
-    val powerManager = context.getSystemService<PowerManager>().requireNotNull()
-    return@lazy powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag)
+  private val powerManager by lazy {
+    context.applicationContext.getSystemService<PowerManager>().requireNotNull()
   }
 
+  private val mutex = Mutex()
+  private val tag = createTag(context.applicationContext.packageName)
   private val wakeAcquired = MutableStateFlow(false)
+
+  private var lock: PowerManager.WakeLock? = null
+
+  @CheckResult
+  @Suppress("DEPRECATION")
+  private fun resolveValidBrightWakeLockLevel(): Int {
+    if (powerManager.isWakeLockLevelSupported(PowerManager.SCREEN_BRIGHT_WAKE_LOCK)) {
+      Timber.d { "KeepScreenOn: Create new wake lock with SCREEN_BRIGHT_WAKE_LOCK" }
+      return PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+    } else {
+      Timber.d {
+        "KeepScreenOn: Create new wake lock with PARTIAL_WAKE_LOCK (SCREEN_BRIGHT_WAKE_LOCK unsupported)"
+      }
+      return PowerManager.PARTIAL_WAKE_LOCK
+    }
+  }
+
+  @CheckResult
+  private suspend fun createWakeLock(): PowerManager.WakeLock {
+    val isKeepScreenOn = statusPreferences.listenForKeepScreenOn().first()
+
+    val wakeLockLevel: Int
+    if (isKeepScreenOn) {
+      wakeLockLevel = resolveValidBrightWakeLockLevel()
+    } else {
+      Timber.d { "Create new wake lock with PARTIAL_WAKE_LOCK" }
+      wakeLockLevel = PowerManager.PARTIAL_WAKE_LOCK
+    }
+
+    return powerManager.newWakeLock(wakeLockLevel, tag)
+  }
+
+  @SuppressLint("Wakelock")
+  private fun killOldWakeLock() {
+    lock?.also { l ->
+      Timber.w { "LOCK IS STILL ALIVE. RELEASE OLD LOCK" }
+      try {
+        l.release()
+      } catch (e: Throwable) {
+        Timber.e(e) { "Unable to release old wakelock" }
+      }
+    }
+  }
 
   @SuppressLint("WakelockTimeout")
   override suspend fun acquireLock() =
@@ -62,7 +102,16 @@ internal constructor(
               Timber.d { "####################################" }
               Timber.d { "Acquire CPU wakelock: $tag" }
               Timber.d { "####################################" }
-              lock.acquire()
+              killOldWakeLock()
+              createWakeLock()
+                  .also { lock = it }
+                  .also { l ->
+                    try {
+                      l.acquire()
+                    } catch (e: Throwable) {
+                      Timber.e(e) { "Unable to acquire wakelock" }
+                    }
+                  }
             }
           }
         }
@@ -76,7 +125,14 @@ internal constructor(
               Timber.d { "####################################" }
               Timber.d { "Release CPU wakelock: $tag" }
               Timber.d { "####################################" }
-              lock.release()
+              lock?.also { l ->
+                try {
+                  l.release()
+                } catch (e: Throwable) {
+                  Timber.e(e) { "Unable to release wakelock" }
+                }
+              }
+              lock = null
             }
           }
         }

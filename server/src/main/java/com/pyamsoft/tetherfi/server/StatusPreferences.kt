@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status
+package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
 import kotlinx.coroutines.flow.Flow

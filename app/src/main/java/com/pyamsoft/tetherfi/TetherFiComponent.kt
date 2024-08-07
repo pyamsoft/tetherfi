@@ -38,12 +38,12 @@ import com.pyamsoft.tetherfi.main.MainComponent
 import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.status.StatusAppModule
-import com.pyamsoft.tetherfi.status.StatusPreferences
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
