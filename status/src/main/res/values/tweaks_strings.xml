@@ -36,4 +36,10 @@
   >For most day-to-day usage, this option should be enabled.
     This allows %1$s to clean up old/dead connections after 1 minute of no activity.
     \n\nThis option was made default, and will be removed in the next version. (recommended)</string>
+
+  <string name="keep_screen_on_title">Keep Screen On</string>
+  <string
+    name="keep_screen_on_description"
+  >Due to how the Operating System works, you MUST start the Hotspot from this screen, and
+  you MUST keep this as the "active" application. If you do not, the screen may still turn off.</string>
 </resources>

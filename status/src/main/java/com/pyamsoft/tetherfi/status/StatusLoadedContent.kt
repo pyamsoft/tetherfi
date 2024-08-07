@@ -86,6 +86,7 @@ internal fun LazyListScope.renderLoadedContent(
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
+    onToggleKeepScreenOn: () -> Unit,
 
     // Jump links
     onJumpToHowTo: () -> Unit,
@@ -161,6 +162,7 @@ internal fun LazyListScope.renderLoadedContent(
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
       onToggleSocketTimeout = onToggleSocketTimeout,
+      onToggleKeepScreenOn = onToggleKeepScreenOn,
   )
 
   item(
@@ -242,6 +244,7 @@ private fun PreviewLoadedContent(
         proxyStatus = RunningStatus.NotRunning,
         showNotificationSettings = showNotifications,
         onViewSlowSpeedHelp = {},
+        onToggleKeepScreenOn = {},
     )
   }
 }

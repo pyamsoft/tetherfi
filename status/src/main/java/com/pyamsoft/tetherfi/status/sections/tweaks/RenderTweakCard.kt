@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -48,6 +49,7 @@ internal fun LazyListScope.renderTweakCard(
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
+    onToggleKeepScreenOn: () -> Unit,
 ) {
   item(
       contentType = RenderTweakCardContentTypes.BEHAVIOR_TWEAKS,
@@ -91,63 +93,148 @@ internal fun LazyListScope.renderTweakCard(
                 ),
         )
 
-        val isSocketTimeoutEnabled by state.isSocketTimeoutEnabled.collectAsStateWithLifecycle()
-        val socketTimeoutColor by
-            rememberCheckableColor(
-                enabled = isEditable,
-                label = "Enable Socket Timeout",
-                condition = isSocketTimeoutEnabled,
-                selectedColor = MaterialTheme.colorScheme.primary,
-            )
-
-        ToggleSwitch(
+        SocketTimeoutTweak(
             modifier = Modifier.fillMaxWidth(),
+            appName = appName,
             isEditable = isEditable,
-            color = socketTimeoutColor,
-            checked = isSocketTimeoutEnabled,
-            title = stringResource(R.string.enable_socket_timeout_title),
-            description = stringResource(R.string.enable_socket_timeout_description, appName),
-            onClick = onToggleSocketTimeout,
+            state = state,
+            onToggleSocketTimeout = onToggleSocketTimeout,
         )
 
-        val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
-        val ignoreVpnColor by
-            rememberCheckableColor(
-                enabled = isEditable,
-                label = "Ignore VPN",
-                condition = isIgnoreVpn,
-                selectedColor = MaterialTheme.colorScheme.primary,
-            )
-
-        ToggleSwitch(
+        KeepScreenOnTweak(
             modifier = Modifier.fillMaxWidth(),
             isEditable = isEditable,
-            color = ignoreVpnColor,
-            checked = isIgnoreVpn,
-            title = stringResource(R.string.ignore_vpn_title),
-            description = stringResource(R.string.ignore_vpn_description, appName),
-            onClick = onToggleIgnoreVpn,
+            state = state,
+            onToggleKeepScreenOn = onToggleKeepScreenOn,
         )
 
-        val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
-        val shutdownNoClientsColor by
-            rememberCheckableColor(
-                enabled = isEditable,
-                label = "Shutdown No Clients",
-                condition = isShutdownWithNoClients,
-                selectedColor = MaterialTheme.colorScheme.primary,
-            )
-
-        ToggleSwitch(
+        VPNBlockerTweak(
             modifier = Modifier.fillMaxWidth(),
+            appName = appName,
             isEditable = isEditable,
-            color = shutdownNoClientsColor,
-            checked = isShutdownWithNoClients,
-            title = stringResource(R.string.shutdown_no_client_title),
-            description = stringResource(R.string.shutdown_no_client_description, appName),
-            onClick = onToggleShutdownWithNoClients,
+            state = state,
+            onToggleIgnoreVpn = onToggleIgnoreVpn,
+        )
+
+        StopHotspotTweak(
+            modifier = Modifier.fillMaxWidth(),
+            appName = appName,
+            isEditable = isEditable,
+            state = state,
+            onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
         )
       }
     }
   }
+}
+
+@Composable
+private fun SocketTimeoutTweak(
+    modifier: Modifier = Modifier,
+    appName: String,
+    isEditable: Boolean,
+    state: StatusViewState,
+    onToggleSocketTimeout: () -> Unit,
+) {
+  val isSocketTimeoutEnabled by state.isSocketTimeoutEnabled.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Enable Socket Timeout",
+          condition = isSocketTimeoutEnabled,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isSocketTimeoutEnabled,
+      title = stringResource(R.string.enable_socket_timeout_title),
+      description = stringResource(R.string.enable_socket_timeout_description, appName),
+      onClick = onToggleSocketTimeout,
+  )
+}
+
+@Composable
+private fun VPNBlockerTweak(
+    modifier: Modifier = Modifier,
+    appName: String,
+    isEditable: Boolean,
+    state: StatusViewState,
+    onToggleIgnoreVpn: () -> Unit,
+) {
+  val isIgnoreVpn by state.isIgnoreVpn.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Ignore VPN",
+          condition = isIgnoreVpn,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isIgnoreVpn,
+      title = stringResource(R.string.ignore_vpn_title),
+      description = stringResource(R.string.ignore_vpn_description, appName),
+      onClick = onToggleIgnoreVpn,
+  )
+}
+
+@Composable
+private fun StopHotspotTweak(
+    modifier: Modifier = Modifier,
+    appName: String,
+    isEditable: Boolean,
+    state: StatusViewState,
+    onToggleShutdownWithNoClients: () -> Unit,
+) {
+  val isShutdownWithNoClients by state.isShutdownWithNoClients.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Shutdown No Clients",
+          condition = isShutdownWithNoClients,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isShutdownWithNoClients,
+      title = stringResource(R.string.shutdown_no_client_title),
+      description = stringResource(R.string.shutdown_no_client_description, appName),
+      onClick = onToggleShutdownWithNoClients,
+  )
+}
+
+@Composable
+private fun KeepScreenOnTweak(
+    modifier: Modifier = Modifier,
+    isEditable: Boolean,
+    state: StatusViewState,
+    onToggleKeepScreenOn: () -> Unit,
+) {
+  val isKeepScreenOn by state.isKeepScreenOn.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Keep Screen On",
+          condition = isKeepScreenOn,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isKeepScreenOn,
+      title = stringResource(R.string.keep_screen_on_title),
+      description = stringResource(R.string.keep_screen_on_description),
+      onClick = onToggleKeepScreenOn,
+  )
 }

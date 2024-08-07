@@ -36,7 +36,6 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +46,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -56,6 +56,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
     private val serverPreferences: ServerPreferences,
+    private val statusPreferences: StatusPreferences,
     private val networkStatus: BroadcastNetworkStatus,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
@@ -69,21 +70,23 @@ internal constructor(
       var password: Boolean,
       var port: Boolean,
       var band: Boolean,
-      var ignoreVpn: Boolean,
-      var shutdownWithNoClients: Boolean,
-      var powerBalance: Boolean,
-      var socketTimeout: Boolean,
+      var tweakIgnoreVpn: Boolean,
+      var tweakShutdownWithNoClients: Boolean,
+      var tweakSocketTimeout: Boolean,
+      var tweakKeepScreenOn: Boolean,
+      var expertPowerBalance: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (config.port &&
-        config.ignoreVpn &&
-        config.shutdownWithNoClients &&
+        config.tweakIgnoreVpn &&
+        config.tweakShutdownWithNoClients &&
         config.ssid &&
         config.password &&
         config.band &&
-        config.powerBalance &&
-        config.socketTimeout) {
+        config.expertPowerBalance &&
+        config.tweakSocketTimeout &&
+        config.tweakKeepScreenOn) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
@@ -226,14 +229,24 @@ internal constructor(
             password = false,
             port = false,
             band = false,
-            ignoreVpn = false,
-            shutdownWithNoClients = false,
-            powerBalance = false,
-            socketTimeout = false,
+            tweakIgnoreVpn = false,
+            tweakShutdownWithNoClients = false,
+            expertPowerBalance = false,
+            tweakSocketTimeout = false,
+            tweakKeepScreenOn = false,
         )
 
     // Start loading
     s.loadingState.value = StatusViewState.LoadingState.LOADING
+
+    scope.bindConfigPreferences(config)
+    scope.bindServerPreferences(config)
+    scope.bindStatusPreferences(config)
+  }
+
+  private fun CoroutineScope.bindServerPreferences(config: LoadConfig) {
+    val scope = this
+    val s = state
 
     // Always populate the latest ignore value
     serverPreferences.listenForStartIgnoreVpn().also { f ->
@@ -243,7 +256,7 @@ internal constructor(
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.ignoreVpn = true
+            config.tweakIgnoreVpn = true
             markPreferencesLoaded(config)
           }
         }
@@ -258,22 +271,7 @@ internal constructor(
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.shutdownWithNoClients = true
-            markPreferencesLoaded(config)
-          }
-        }
-      }
-    }
-
-    // Always populate the latest power balance value
-    configPreferences.listenForPerformanceLimits().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { balance ->
-          s.powerBalance.value = balance
-
-          // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.powerBalance = true
+            config.tweakShutdownWithNoClients = true
             markPreferencesLoaded(config)
           }
         }
@@ -288,7 +286,47 @@ internal constructor(
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.socketTimeout = true
+            config.tweakSocketTimeout = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+  }
+
+  private fun CoroutineScope.bindStatusPreferences(config: LoadConfig) {
+    val scope = this
+    val s = state
+
+    // Always populate the latest keep screen on value
+    statusPreferences.listenForKeepScreenOn().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { timeout ->
+          s.isKeepScreenOn.value = timeout
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.tweakKeepScreenOn = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+  }
+
+  private fun CoroutineScope.bindConfigPreferences(config: LoadConfig) {
+    val scope = this
+    val s = state
+
+    // Always populate the latest power balance value
+    configPreferences.listenForPerformanceLimits().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { balance ->
+          s.powerBalance.value = balance
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.expertPowerBalance = true
             markPreferencesLoaded(config)
           }
         }
@@ -516,6 +554,11 @@ internal constructor(
   fun handleToggleSocketTimeout() {
     val newVal = state.isSocketTimeoutEnabled.updateAndGet { !it }
     serverPreferences.setTimeoutEnabled(newVal)
+  }
+
+  fun handleToggleKeepScreenOn() {
+    val newVal = state.isKeepScreenOn.updateAndGet { !it }
+    statusPreferences.setKeepScreenOn(newVal)
   }
 
   companion object {

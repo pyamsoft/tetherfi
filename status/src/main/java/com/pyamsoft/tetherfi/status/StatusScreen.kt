@@ -108,6 +108,7 @@ fun StatusScreen(
     onToggleIgnoreVpn: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
+    onToggleKeepScreenOn: () -> Unit,
 
     // Jump links
     onJumpToHowTo: () -> Unit,
@@ -249,6 +250,7 @@ fun StatusScreen(
             onShowPowerBalance = onShowPowerBalance,
             onToggleSocketTimeout = onToggleSocketTimeout,
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
+            onToggleKeepScreenOn = onToggleKeepScreenOn,
         )
       }
     }
@@ -324,6 +326,7 @@ private fun PreviewStatusScreen(
       onShowPowerBalance = {},
       onToggleSocketTimeout = {},
       onViewSlowSpeedHelp = {},
+      onToggleKeepScreenOn = {},
   )
 }
 

@@ -50,6 +50,7 @@ interface StatusViewState : UiViewState {
   val isIgnoreVpn: StateFlow<Boolean>
   val isShutdownWithNoClients: StateFlow<Boolean>
   val isSocketTimeoutEnabled: StateFlow<Boolean>
+  val isKeepScreenOn: StateFlow<Boolean>
 
   // Expert
   val powerBalance: StateFlow<ServerPerformanceLimit>
@@ -102,4 +103,5 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)
   override val isSocketTimeoutEnabled = MutableStateFlow(false)
+  override val isKeepScreenOn = MutableStateFlow(false)
 }
