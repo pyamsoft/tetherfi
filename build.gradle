@@ -20,8 +20,8 @@ buildscript {
   ext {
     // SDK
     minSdk = 24
-    targetSdk = 35
-    compileSdk = 35
+    targetSdk = 34
+    compileSdk = 34
 
     // Kotlin
     kotlin = "2.0.10"
