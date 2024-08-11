@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
+import com.pyamsoft.tetherfi.status.blockers.LocationBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.status.sections.performance.PowerBalanceDialog
@@ -43,9 +44,12 @@ internal fun StatusDialogs(
     appName: String,
     onDismissBlocker: (HotspotStartBlocker) -> Unit,
 
-    // Location Permission
+    // Permission
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
+
+    // Location
+    onOpenLocationSettings: () -> Unit,
 
     // Errors
     onHideSetupError: () -> Unit,
@@ -103,6 +107,17 @@ internal fun StatusDialogs(
             modifier = dialogModifier,
             appName = appName,
             onDismiss = { onDismissBlocker(blocker) },
+        )
+      }
+
+      AnimatedVisibility(
+          visible = blocker == HotspotStartBlocker.LOCATION,
+      ) {
+        LocationBlocker(
+            modifier = dialogModifier,
+            appName = appName,
+            onDismiss = { onDismissBlocker(blocker) },
+            onOpenLocationSettings = onOpenLocationSettings,
         )
       }
     }

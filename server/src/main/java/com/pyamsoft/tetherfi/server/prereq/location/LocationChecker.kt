@@ -14,26 +14,11 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server
+package com.pyamsoft.tetherfi.server.prereq.location
 
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
 
-interface ServerPreferences {
+interface LocationChecker {
 
-  @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
-
-  fun setStartIgnoreVpn(ignore: Boolean)
-
-  @CheckResult fun listenForStartIgnoreLocation(): Flow<Boolean>
-
-  fun setStartIgnoreLocation(ignore: Boolean)
-
-  @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
-
-  fun setShutdownWithNoClients(shutdown: Boolean)
-
-  @CheckResult fun listenForTimeoutEnabled(): Flow<Boolean>
-
-  fun setTimeoutEnabled(enabled: Boolean)
+  @CheckResult suspend fun isLocationOn(): Boolean
 }

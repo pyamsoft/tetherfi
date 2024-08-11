@@ -84,6 +84,7 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
+    onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
@@ -160,6 +161,7 @@ internal fun LazyListScope.renderLoadedContent(
       appName = appName,
       state = state,
       onToggleIgnoreVpn = onToggleIgnoreVpn,
+      onToggleIgnoreLocation = onToggleIgnoreLocation,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
       onToggleSocketTimeout = onToggleSocketTimeout,
       onToggleKeepScreenOn = onToggleKeepScreenOn,
@@ -245,6 +247,7 @@ private fun PreviewLoadedContent(
         showNotificationSettings = showNotifications,
         onViewSlowSpeedHelp = {},
         onToggleKeepScreenOn = {},
+        onToggleIgnoreLocation = {},
     )
   }
 }

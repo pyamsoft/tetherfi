@@ -82,9 +82,12 @@ fun StatusScreen(
     // Blockers
     onDismissBlocker: (HotspotStartBlocker) -> Unit,
 
-    // Location Permission
+    // Permission
     onOpenPermissionSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
+
+    // Location
+    onOpenLocationSettings: () -> Unit,
 
     // Notification
     onRequestNotificationPermission: () -> Unit,
@@ -106,6 +109,7 @@ fun StatusScreen(
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
+    onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
@@ -245,6 +249,7 @@ fun StatusScreen(
             onShowHotspotError = onShowHotspotError,
             onShowNetworkError = onShowNetworkError,
             onToggleIgnoreVpn = onToggleIgnoreVpn,
+            onToggleIgnoreLocation = onToggleIgnoreLocation,
             onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onJumpToHowTo = onJumpToHowTo,
             onShowPowerBalance = onShowPowerBalance,
@@ -263,6 +268,7 @@ fun StatusScreen(
       appName = appName,
       onDismissBlocker = onDismissBlocker,
       onOpenPermissionSettings = onOpenPermissionSettings,
+      onOpenLocationSettings = onOpenLocationSettings,
       onRequestPermissions = onRequestPermissions,
       onHideNetworkError = onHideNetworkError,
       onHideHotspotError = onHideHotspotError,
@@ -301,6 +307,7 @@ private fun PreviewStatusScreen(
       onDismissBlocker = {},
       onOpenBatterySettings = {},
       onOpenPermissionSettings = {},
+      onOpenLocationSettings = {},
       onPasswordChanged = {},
       onPortChanged = {},
       onRequestPermissions = {},
@@ -315,6 +322,7 @@ private fun PreviewStatusScreen(
       onHideNetworkError = {},
       onHideSetupError = {},
       onToggleIgnoreVpn = {},
+      onToggleIgnoreLocation = {},
       onToggleShutdownWithNoClients = {},
       onJumpToHowTo = {},
       onShowBroadcastError = {},

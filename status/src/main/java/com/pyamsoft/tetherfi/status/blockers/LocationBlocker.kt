@@ -16,11 +16,13 @@
 
 package com.pyamsoft.tetherfi.status.blockers
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,16 +36,18 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.CardDialog
 
-private enum class VpnBlockerContentTypes {
+private enum class LocationBlockerContentTypes {
   NOTE,
   RESOLVE,
+  OPEN_SETTINGS,
   PRIVACY_POLICY
 }
 
 @Composable
-internal fun VpnBlocker(
+internal fun LocationBlocker(
     modifier: Modifier = Modifier,
     appName: String,
+    onOpenLocationSettings: () -> Unit,
     onDismiss: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
@@ -56,7 +60,7 @@ internal fun VpnBlocker(
         modifier =
             Modifier.padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content),
-        text = stringResource(R.string.block_vpn_title),
+        text = stringResource(R.string.block_location_title),
         style = MaterialTheme.typography.headlineSmall,
     )
     LazyColumn(
@@ -67,32 +71,55 @@ internal fun VpnBlocker(
             ),
     ) {
       item(
-          contentType = VpnBlockerContentTypes.NOTE,
+          contentType = LocationBlockerContentTypes.NOTE,
       ) {
         Text(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.block_vpn_description, appName),
+            text = stringResource(R.string.block_location_description, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
 
       item(
-          contentType = VpnBlockerContentTypes.RESOLVE,
+          contentType = LocationBlockerContentTypes.RESOLVE,
       ) {
-        val tweak = stringResource(R.string.ignore_vpn_title)
+        val tweak = stringResource(R.string.ignore_location_title)
         Text(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.block_vpn_instruction, tweak, appName),
+            text = stringResource(R.string.block_location_instruction, tweak, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
 
       item(
-          contentType = VpnBlockerContentTypes.PRIVACY_POLICY,
+          contentType = LocationBlockerContentTypes.OPEN_SETTINGS,
+      ) {
+        Box(
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(top = MaterialTheme.keylines.content)
+                    .fillParentMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+          Button(
+              onClick = {
+                hapticManager?.confirmButtonPress()
+                onOpenLocationSettings()
+              },
+          ) {
+            Text(
+                text = stringResource(R.string.block_location_open_settings),
+            )
+          }
+        }
+      }
+
+      item(
+          contentType = LocationBlockerContentTypes.PRIVACY_POLICY,
       ) {
         ViewPrivacyPolicy(
             modifier =
@@ -127,9 +154,10 @@ internal fun VpnBlocker(
 
 @Preview
 @Composable
-private fun PreviewVpnBlocker() {
-  VpnBlocker(
+private fun PreviewLocationBlocker() {
+  LocationBlocker(
       appName = "TEST",
       onDismiss = {},
+      onOpenLocationSettings = {},
   )
 }

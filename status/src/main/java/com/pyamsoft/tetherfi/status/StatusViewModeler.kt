@@ -72,6 +72,7 @@ internal constructor(
       var port: Boolean,
       var band: Boolean,
       var tweakIgnoreVpn: Boolean,
+      var tweakIgnoreLocation: Boolean,
       var tweakShutdownWithNoClients: Boolean,
       var tweakSocketTimeout: Boolean,
       var tweakKeepScreenOn: Boolean,
@@ -231,6 +232,7 @@ internal constructor(
             port = false,
             band = false,
             tweakIgnoreVpn = false,
+            tweakIgnoreLocation = false,
             tweakShutdownWithNoClients = false,
             expertPowerBalance = false,
             tweakSocketTimeout = false,
@@ -258,6 +260,21 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.tweakIgnoreVpn = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest ignore value
+    serverPreferences.listenForStartIgnoreLocation().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { ignore ->
+          s.isIgnoreLocation.value = ignore
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.tweakIgnoreLocation = true
             markPreferencesLoaded(config)
           }
         }
@@ -540,6 +557,11 @@ internal constructor(
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
     serverPreferences.setStartIgnoreVpn(newVal)
+  }
+
+  fun handleToggleIgnoreLocation() {
+    val newVal = state.isIgnoreLocation.updateAndGet { !it }
+    serverPreferences.setStartIgnoreLocation(newVal)
   }
 
   fun handleToggleShutdownNoClients() {

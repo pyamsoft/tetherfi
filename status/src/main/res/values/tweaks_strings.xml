@@ -42,4 +42,13 @@
   <string
     name="keep_screen_on_description"
   >Keep the screen on while the Hotspot is running. Once the Hotspot is stopped, the screen will be allowed to turn off again. This tweak is not supported on every device.</string>
+
+  <!-- TODO(Help): Need zh-rTW translation -->
+  <string name="ignore_location_title">Avoid Location Blocker Dialog</string>
+  <string name="ignore_location_description">
+        In order to use Wi-Fi Direct, %1$s may require Location turned on. Not
+        every device needs Location on to use Wi-Fi Direct however.\n\nIf you
+        KNOW your device does NOT need Location to use Wi-Fi Direct, turn this
+        option on to avoid the blocking dialog.
+        \n\nPermission for Location/Nearby Devices will still be required for Wi-Fi Direct.</string>
 </resources>

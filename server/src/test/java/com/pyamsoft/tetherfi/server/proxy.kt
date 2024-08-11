@@ -60,6 +60,12 @@ internal suspend inline fun setupProxy(
 
         override fun setStartIgnoreVpn(ignore: Boolean) {}
 
+        override fun listenForStartIgnoreLocation(): Flow<Boolean> {
+          return flowOf(false)
+        }
+
+        override fun setStartIgnoreLocation(ignore: Boolean) {}
+
         override fun listenForShutdownWithNoClients(): Flow<Boolean> {
           return flowOf(false)
         }

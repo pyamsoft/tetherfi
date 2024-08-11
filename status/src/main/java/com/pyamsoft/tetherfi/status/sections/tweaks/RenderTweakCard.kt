@@ -47,6 +47,7 @@ internal fun LazyListScope.renderTweakCard(
     isEditable: Boolean,
     state: StatusViewState,
     onToggleIgnoreVpn: () -> Unit,
+    onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleSocketTimeout: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
@@ -108,6 +109,14 @@ internal fun LazyListScope.renderTweakCard(
             onToggleKeepScreenOn = onToggleKeepScreenOn,
         )
 
+        LocationBlockerTweak(
+            modifier = Modifier.fillMaxWidth(),
+            appName = appName,
+            isEditable = isEditable,
+            state = state,
+            onToggleIgnoreLocation = onToggleIgnoreLocation,
+        )
+
         VPNBlockerTweak(
             modifier = Modifier.fillMaxWidth(),
             appName = appName,
@@ -153,6 +162,34 @@ private fun SocketTimeoutTweak(
       title = stringResource(R.string.enable_socket_timeout_title),
       description = stringResource(R.string.enable_socket_timeout_description, appName),
       onClick = onToggleSocketTimeout,
+  )
+}
+
+@Composable
+private fun LocationBlockerTweak(
+    modifier: Modifier = Modifier,
+    appName: String,
+    isEditable: Boolean,
+    state: StatusViewState,
+    onToggleIgnoreLocation: () -> Unit,
+) {
+  val isIgnoreLocation by state.isIgnoreLocation.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Ignore Location",
+          condition = isIgnoreLocation,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isIgnoreLocation,
+      title = stringResource(R.string.ignore_location_title),
+      description = stringResource(R.string.ignore_location_description, appName),
+      onClick = onToggleIgnoreLocation,
   )
 }
 

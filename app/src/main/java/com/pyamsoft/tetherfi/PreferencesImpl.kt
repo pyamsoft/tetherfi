@@ -151,6 +151,14 @@ internal constructor(
     putBoolean(START_IGNORE_VPN, ignore)
   }
 
+  override fun listenForStartIgnoreLocation(): Flow<Boolean> =
+      preferenceBooleanFlow(START_IGNORE_LOCATION, false) { preferences }
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setStartIgnoreLocation(ignore: Boolean) = setPreference {
+    putBoolean(START_IGNORE_LOCATION, ignore)
+  }
+
   override fun listenForShutdownWithNoClients(): Flow<Boolean> =
       preferenceBooleanFlow(SHUTDOWN_NO_CLIENTS, false) { preferences }
           .flowOn(context = Dispatchers.IO)
@@ -318,6 +326,7 @@ internal constructor(
     private const val IN_APP_RATING_SHOWN_VERSION = "key_in_app_rating_shown_version"
 
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
+    private const val START_IGNORE_LOCATION = "key_start_ignore_location_1"
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"

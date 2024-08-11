@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.prereq.vpn
+package com.pyamsoft.tetherfi.server.prereq.location
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.location.LocationManager
 import androidx.core.content.getSystemService
+import androidx.core.location.LocationManagerCompat
 import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import javax.inject.Inject
@@ -30,32 +31,33 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @Singleton
-internal class AndroidVpnChecker
+internal class AndroidLocationChecker
 @Inject
 internal constructor(
     private val context: Context,
     private val preferences: ServerPreferences,
-) : VpnChecker {
+) : LocationChecker {
 
   private val manager by lazy {
-    context.applicationContext.getSystemService<ConnectivityManager>().requireNotNull()
+    context.applicationContext.getSystemService<LocationManager>().requireNotNull()
   }
 
-  override suspend fun isUsingVpn(): Boolean =
+  override suspend fun isLocationOn(): Boolean =
       withContext(context = Dispatchers.Default) {
-        if (preferences.listenForStartIgnoreVpn().first()) {
-          Timber.w { "Ignore VPN start blocker" }
-          return@withContext false
+        if (preferences.listenForStartIgnoreLocation().first()) {
+          Timber.w { "Ignore Location start blocker" }
+          return@withContext true
         }
 
-        val network = manager.activeNetwork
-        val capabilities = manager.getNetworkCapabilities(network)
-
-        if (capabilities == null) {
-          Timber.w { "Could not retrieve NetworkCapabilities" }
-          return@withContext false
+        try {
+          return@withContext LocationManagerCompat.isLocationEnabled(manager)
+        } catch (e: Throwable) {
+          e.ifNotCancellation {
+            // Something went wrong, we are on a low API device (<20?) and do not
+            // have location permission? What?
+            Timber.e(e) { "Error trying to access isLocationEnabled" }
+            return@withContext false
+          }
         }
-
-        return@withContext capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
       }
 }

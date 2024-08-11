@@ -31,6 +31,8 @@ import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.prereq.location.AndroidLocationChecker
+import com.pyamsoft.tetherfi.server.prereq.location.LocationChecker
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuardImpl
 import com.pyamsoft.tetherfi.server.prereq.vpn.AndroidVpnChecker
@@ -85,6 +87,10 @@ abstract class ServerAppModule {
   internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
 
   @Binds @CheckResult internal abstract fun bindVpnChecker(impl: AndroidVpnChecker): VpnChecker
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindLocationChecker(impl: AndroidLocationChecker): LocationChecker
 
   // OS level
   @Binds

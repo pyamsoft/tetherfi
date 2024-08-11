@@ -21,5 +21,8 @@ enum class HotspotStartBlocker(val required: Boolean) {
   PERMISSION(required = true),
 
   /** In the future, the user can "agree" to "try anyway" */
-  VPN(required = false)
+  VPN(required = false),
+
+  /** In the future, the user can "agree" to "try anyway" */
+  LOCATION(required = false)
 }

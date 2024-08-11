@@ -206,6 +206,7 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Notification)
         }
       },
+      onOpenLocationSettings = { onLaunchIntent(Settings.ACTION_LOCATION_SOURCE_SETTINGS) },
       onStatusUpdated = onUpdateTile,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
       onShowNetworkError = { viewModel.handleOpenNetworkError() },
@@ -214,6 +215,7 @@ fun StatusEntry(
       onHideHotspotError = { viewModel.handleCloseHotspotError() },
       onHideSetupError = { viewModel.handleCloseSetupError() },
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
+      onToggleIgnoreLocation = { viewModel.handleToggleIgnoreLocation() },
       onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
       onToggleSocketTimeout = { viewModel.handleToggleSocketTimeout() },
       onToggleKeepScreenOn = { viewModel.handleToggleKeepScreenOn() },

@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service.prereq
 
+import com.pyamsoft.tetherfi.server.prereq.location.LocationChecker
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.prereq.vpn.VpnChecker
 import javax.inject.Inject
@@ -27,6 +28,7 @@ internal class AndroidHotspotRequirements
 internal constructor(
     private val permission: PermissionGuard,
     private val vpnChecker: VpnChecker,
+    private val locationChecker: LocationChecker,
 ) : HotspotRequirements {
 
   override suspend fun blockers(): Collection<HotspotStartBlocker> =
@@ -39,6 +41,10 @@ internal constructor(
 
         if (vpnChecker.isUsingVpn()) {
           blockers.add(HotspotStartBlocker.VPN)
+        }
+
+        if (!locationChecker.isLocationOn()) {
+          blockers.add(HotspotStartBlocker.LOCATION)
         }
 
         return@withContext blockers
