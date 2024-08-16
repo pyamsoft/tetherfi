@@ -92,6 +92,12 @@ internal fun TroubleshootUnableToStart(
 
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          text = stringResource(R.string.trouble_location_service),
+          style = MaterialTheme.typography.bodyLarge,
+      )
+
+      Text(
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
           text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
           style = MaterialTheme.typography.bodyLarge,
       )

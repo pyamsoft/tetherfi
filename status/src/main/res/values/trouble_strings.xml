@@ -49,4 +49,9 @@
   <string
     name="trouble_proxy_port"
   >• The Hotspot port number must be between 1025 and 65000</string>
+
+  <!-- TODO(Help): Need zh-rTW translation -->
+  <string
+    name="trouble_location_service"
+  >• Location Services must be turned ON</string>
 </resources>
