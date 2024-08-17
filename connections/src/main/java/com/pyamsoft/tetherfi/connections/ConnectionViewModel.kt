@@ -19,7 +19,7 @@ package com.pyamsoft.tetherfi.connections
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
-import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
+import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientEditor
@@ -69,12 +69,12 @@ internal constructor(
     state.managingNickName.value = null
   }
 
-  fun handleOpenManageBandwidthLimit(client: TetherClient) {
-    state.managingBandwidthLimit.value = client
+  fun handleOpenManageTransferLimit(client: TetherClient) {
+    state.managingTransferLimit.value = client
   }
 
-  fun handleCloseManageBandwidthLimit() {
-    state.managingBandwidthLimit.value = null
+  fun handleCloseManageTransferLimit() {
+    state.managingTransferLimit.value = null
   }
 
   fun handleUpdateNickName(scope: CoroutineScope, nickName: String) {
@@ -90,8 +90,8 @@ internal constructor(
     }
   }
 
-  fun handleUpdateBandwidthLimit(scope: CoroutineScope, limit: BandwidthLimit?) {
-    val client = state.managingBandwidthLimit.value
+  fun handleUpdateTransferLimit(scope: CoroutineScope, limit: TransferAmount?) {
+    val client = state.managingTransferLimit.value
     if (client == null) {
       Timber.w { "Cannot update limit, no client" }
       return
@@ -99,7 +99,7 @@ internal constructor(
 
     scope.launch(context = Dispatchers.Default) {
       Timber.d { "Update client limit: $client $limit" }
-      clientEditor.updateBandwidthLimit(client, limit)
+      clientEditor.updateTransferLimit(client, limit)
     }
   }
 }

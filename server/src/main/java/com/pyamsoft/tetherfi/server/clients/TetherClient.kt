@@ -32,41 +32,41 @@ private val UNIT_JUMP = 1024UL
 sealed class TetherClient(
     open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
-    open val limit: BandwidthLimit?,
+    open val limit: TransferAmount?,
     protected open val totalBytes: ByteTransferReport,
 ) {
 
-  val transferToInternet by lazy { parseBandwidth(totalBytes.proxyToInternet) }
-  val transferFromInternet by lazy { parseBandwidth(totalBytes.internetToProxy) }
+  val transferToInternet by lazy { parseTransfer(totalBytes.proxyToInternet) }
+  val transferFromInternet by lazy { parseTransfer(totalBytes.internetToProxy) }
 
   @CheckResult
-  private fun parseBandwidth(total: ULong): BandwidthLimit {
+  private fun parseTransfer(total: ULong): TransferAmount {
     var amount = total
-    var suffix = BandwidthUnit.BYTE
+    var suffix = TransferUnit.BYTE
     while (amount > UNIT_JUMP) {
       suffix = mapSuffixToNextLargest(amount, suffix)
       amount /= UNIT_JUMP
     }
 
-    return BandwidthLimit(
+    return TransferAmount(
         amount = amount,
         unit = suffix,
     )
   }
 
   @CheckResult
-  private fun mapSuffixToNextLargest(amount: ULong, suffix: BandwidthUnit): BandwidthUnit =
+  private fun mapSuffixToNextLargest(amount: ULong, suffix: TransferUnit): TransferUnit =
       when (suffix) {
-        BandwidthUnit.BYTE -> BandwidthUnit.KB
-        BandwidthUnit.KB -> BandwidthUnit.MB
-        BandwidthUnit.MB -> BandwidthUnit.GB
-        BandwidthUnit.GB -> BandwidthUnit.TB
-        BandwidthUnit.TB -> BandwidthUnit.PB
+        TransferUnit.BYTE -> TransferUnit.KB
+        TransferUnit.KB -> TransferUnit.MB
+        TransferUnit.MB -> TransferUnit.GB
+        TransferUnit.GB -> TransferUnit.TB
+        TransferUnit.TB -> TransferUnit.PB
         else -> throw IllegalStateException("Bytes payload too big: $amount$suffix")
       }
 
   @CheckResult
-  private fun BandwidthLimit.isOver(limit: BandwidthLimit): Boolean {
+  private fun TransferAmount.isOver(limit: TransferAmount): Boolean {
     // If unit is larger than other unit, we are over
     if (this.unit > limit.unit) {
       return false
@@ -122,7 +122,7 @@ sealed class TetherClient(
   }
 
   @CheckResult
-  fun isOverBandwidthLimit(): Boolean {
+  fun isOverTransferLimit(): Boolean {
     // No limit, we are fine
     val l = limit ?: return false
 
@@ -153,7 +153,7 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String,
-        limit: BandwidthLimit?,
+        limit: TransferAmount?,
         totalBytes: ByteTransferReport,
     ): TetherClient {
       return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
@@ -180,7 +180,7 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String = "",
-        limit: BandwidthLimit? = null,
+        limit: TransferAmount? = null,
     ): TetherClient {
       return create(
           hostNameOrIp = hostNameOrIp,
@@ -198,7 +198,7 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String,
-        limit: BandwidthLimit?,
+        limit: TransferAmount?,
         totalBytes: ByteTransferReport,
     ): TetherClient {
       return create(

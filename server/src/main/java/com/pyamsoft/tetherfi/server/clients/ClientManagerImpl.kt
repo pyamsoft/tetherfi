@@ -83,7 +83,7 @@ internal constructor(
       }
 
   @CheckResult
-  private fun editBandwidthLimit(client: TetherClient, limit: BandwidthLimit?): TetherClient =
+  private fun editTransferLimit(client: TetherClient, limit: TransferAmount?): TetherClient =
       when (client) {
         is IpAddressClient -> client.copy(limit = limit)
         is HostNameClient -> client.copy(limit = limit)
@@ -198,14 +198,14 @@ internal constructor(
   }
 
   @CheckResult
-  private inline fun isBandwidthLimitedClient(checker: (TetherClient) -> Boolean): TetherClient? {
+  private inline fun isTransferLimitedClient(checker: (TetherClient) -> Boolean): TetherClient? {
     val allowed = allowedClients.value
 
     // Find a client
     val client = allowed.firstOrNull(checker) ?: return null
 
     // Check if the client is over the limit
-    if (client.isOverBandwidthLimit()) {
+    if (client.isOverTransferLimit()) {
       return client
     }
 
@@ -222,10 +222,10 @@ internal constructor(
       return true
     }
 
-    // Check we are not over the bandwidth limit
-    blocked = isBandwidthLimitedClient(checker)
+    // Check we are not over the transfer limit
+    blocked = isTransferLimitedClient(checker)
     if (blocked != null) {
-      Timber.w { "Bandwidth limited client: $blocked" }
+      Timber.w { "Transfer limited client: $blocked" }
       return true
     }
 
@@ -319,11 +319,11 @@ internal constructor(
         )
       }
 
-  override suspend fun updateBandwidthLimit(client: TetherClient, limit: BandwidthLimit?) =
+  override suspend fun updateTransferLimit(client: TetherClient, limit: TransferAmount?) =
       withContext(context = Dispatchers.Default) {
         handleClientUpdate(
             hostNameOrIp = client.toHostNameOrIp(),
-            onClientUpdated = { editBandwidthLimit(it, limit) },
+            onClientUpdated = { editTransferLimit(it, limit) },
         )
       }
 

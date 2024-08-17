@@ -29,7 +29,7 @@ interface ConnectionViewState : UiViewState {
   val blocked: StateFlow<Collection<TetherClient>>
 
   val managingNickName: StateFlow<TetherClient?>
-  val managingBandwidthLimit: StateFlow<TetherClient?>
+  val managingTransferLimit: StateFlow<TetherClient?>
 }
 
 @Stable
@@ -37,6 +37,6 @@ class MutableConnectionViewState @Inject internal constructor() : ConnectionView
   override val connections = MutableStateFlow(emptyList<TetherClient>())
   override val blocked = MutableStateFlow<Collection<TetherClient>>(emptySet())
 
-  override val managingBandwidthLimit = MutableStateFlow<TetherClient?>(null)
+  override val managingTransferLimit = MutableStateFlow<TetherClient?>(null)
   override val managingNickName = MutableStateFlow<TetherClient?>(null)
 }

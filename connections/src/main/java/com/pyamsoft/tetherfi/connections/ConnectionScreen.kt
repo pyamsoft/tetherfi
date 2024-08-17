@@ -32,10 +32,10 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.tetherfi.connections.sections.list.renderConnectionList
 import com.pyamsoft.tetherfi.connections.sections.renderExcuse
-import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
-import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.clients.TransferAmount
+import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
@@ -43,9 +43,9 @@ import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
-import java.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
+import java.time.Clock
 
 private enum class ConnectionScreenContentTypes {
   BOTTOM_SPACER,
@@ -61,16 +61,16 @@ fun ConnectionScreen(
     onOpenManageNickName: (TetherClient) -> Unit,
     onCloseManageNickName: () -> Unit,
     onUpdateNickName: (String) -> Unit,
-    onOpenManageBandwidthLimit: (TetherClient) -> Unit,
-    onCloseManageBandwidthLimit: () -> Unit,
-    onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
+    onOpenManageTransferLimit: (TetherClient) -> Unit,
+    onCloseManageTransferLimit: () -> Unit,
+    onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val clients = state.connections.collectAsStateListWithLifecycle()
   val blocked = state.blocked.collectAsStateListWithLifecycle()
 
   val manageNickName by state.managingNickName.collectAsStateWithLifecycle()
-  val manageBandwidth by state.managingBandwidthLimit.collectAsStateWithLifecycle()
+  val manageTransfer by state.managingTransferLimit.collectAsStateWithLifecycle()
 
   LazyColumn(
       modifier = modifier,
@@ -87,7 +87,7 @@ fun ConnectionScreen(
         clients = clients,
         blocked = blocked,
         onManageNickName = onOpenManageNickName,
-        onManageBandwidthLimit = onOpenManageBandwidthLimit,
+        onManageTransferLimit = onOpenManageTransferLimit,
         onToggleBlock = onToggleBlock,
     )
 
@@ -117,11 +117,11 @@ fun ConnectionScreen(
     )
   }
 
-  manageBandwidth?.also { manage ->
-    BandwidthDialog(
+  manageTransfer?.also { manage ->
+    TransferDialog(
         client = manage,
-        onUpdateBandwidthLimit = onUpdateBandwidthLimit,
-        onDismiss = { onCloseManageBandwidthLimit() },
+        onUpdateTransferLimit = onUpdateTransferLimit,
+        onDismiss = { onCloseManageTransferLimit() },
     )
   }
 }
@@ -131,7 +131,7 @@ fun ConnectionScreen(
 private fun PreviewConnectionScreen(
     serverViewState: TestServerState,
     nickName: TetherClient?,
-    bandwidth: TetherClient?,
+    transfer: TetherClient?,
     clientCount: Int,
 ) {
   ConnectionScreen(
@@ -175,16 +175,16 @@ private fun PreviewConnectionScreen(
                     },
                 )
             override val managingNickName = MutableStateFlow(nickName)
-            override val managingBandwidthLimit = MutableStateFlow(bandwidth)
+            override val managingTransferLimit = MutableStateFlow(transfer)
           },
       serverViewState = makeTestServerState(serverViewState),
       onCloseManageNickName = {},
       onUpdateNickName = {},
-      onUpdateBandwidthLimit = {},
-      onCloseManageBandwidthLimit = {},
+      onUpdateTransferLimit = {},
+      onCloseManageTransferLimit = {},
       onToggleBlock = {},
       onOpenManageNickName = {},
-      onOpenManageBandwidthLimit = {},
+      onOpenManageTransferLimit = {},
   )
 }
 
@@ -193,7 +193,7 @@ private fun PreviewConnectionScreen(
 private fun PreviewConnectionScreenEmpty() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth = null,
+      transfer = null,
       clientCount = 0,
       serverViewState = TestServerState.EMPTY,
   )
@@ -211,7 +211,7 @@ private fun PreviewConnectionScreenEmptyManageNickName() {
               limit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
-      bandwidth = null,
+      transfer = null,
       clientCount = 0,
       serverViewState = TestServerState.EMPTY,
   )
@@ -219,15 +219,15 @@ private fun PreviewConnectionScreenEmptyManageNickName() {
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionScreenEmptyManageBandwidth() {
+private fun PreviewConnectionScreenEmptyManageTransfer() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth =
+      transfer =
           TetherClient.testCreate(
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+              limit = TransferAmount(10UL, TransferUnit.MB),
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
@@ -240,7 +240,7 @@ private fun PreviewConnectionScreenEmptyManageBandwidth() {
 private fun PreviewConnectionScreenActiveNoClients() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth = null,
+      transfer = null,
       clientCount = 0,
       serverViewState = TestServerState.CONNECTED,
   )
@@ -258,7 +258,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
               limit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
-      bandwidth = null,
+      transfer = null,
       clientCount = 0,
       serverViewState = TestServerState.CONNECTED,
   )
@@ -266,15 +266,15 @@ private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionScreenActiveNoClientsManageBandwidth() {
+private fun PreviewConnectionScreenActiveNoClientsManageTransfer() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth =
+      transfer =
           TetherClient.testCreate(
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+              limit = TransferAmount(10UL, TransferUnit.MB),
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
@@ -287,7 +287,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageBandwidth() {
 private fun PreviewConnectionScreenActiveWithClients() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth = null,
+      transfer = null,
       clientCount = 5,
       serverViewState = TestServerState.CONNECTED,
   )
@@ -305,7 +305,7 @@ private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
               limit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
-      bandwidth = null,
+      transfer = null,
       clientCount = 5,
       serverViewState = TestServerState.CONNECTED,
   )
@@ -313,15 +313,15 @@ private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionScreenActiveWithClientsManageBandwidth() {
+private fun PreviewConnectionScreenActiveWithClientsManageTransfer() {
   PreviewConnectionScreen(
       nickName = null,
-      bandwidth =
+      transfer =
           TetherClient.testCreate(
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+              limit = TransferAmount(10UL, TransferUnit.MB),
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 5,

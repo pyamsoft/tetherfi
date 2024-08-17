@@ -23,7 +23,7 @@ internal constructor(
     val ip: String,
     override val nickName: String,
     override val mostRecentlySeen: LocalDateTime,
-    override val limit: BandwidthLimit?,
+    override val limit: TransferAmount?,
     override val totalBytes: ByteTransferReport,
 ) :
     TetherClient(
@@ -38,7 +38,7 @@ internal constructor(
     val hostname: String,
     override val nickName: String,
     override val mostRecentlySeen: LocalDateTime,
-    override val limit: BandwidthLimit?,
+    override val limit: TransferAmount?,
     override val totalBytes: ByteTransferReport,
 ) :
     TetherClient(

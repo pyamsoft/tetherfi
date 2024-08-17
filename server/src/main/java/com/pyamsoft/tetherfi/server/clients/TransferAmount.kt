@@ -21,14 +21,14 @@ import androidx.compose.runtime.Stable
 
 @Stable
 @Immutable
-data class BandwidthLimit(
+data class TransferAmount(
     val amount: ULong,
-    val unit: BandwidthUnit,
+    val unit: TransferUnit,
 ) {
   val display by lazy { "$amount ${unit.displayName}" }
 }
 
-enum class BandwidthUnit(val displayName: String) {
+enum class TransferUnit(val displayName: String) {
   BYTE("bytes"),
   KB("KB"),
   MB("MB"),

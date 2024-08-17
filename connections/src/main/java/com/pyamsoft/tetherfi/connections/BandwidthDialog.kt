@@ -47,366 +47,435 @@ import androidx.compose.ui.window.PopupProperties
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
-import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.clients.TransferAmount
+import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.ui.CardDialog
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
-import java.time.Clock
 import org.jetbrains.annotations.TestOnly
+import java.time.Clock
 
 @Composable
-internal fun BandwidthDialog(
+internal fun TransferDialog(
     modifier: Modifier = Modifier,
     client: TetherClient,
     onDismiss: () -> Unit,
-    onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
+    onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
-  BandwidthDialog(
-      modifier = modifier,
-      client = client,
-      showMenu = false,
-      onDismiss = onDismiss,
-      onUpdateBandwidthLimit = onUpdateBandwidthLimit,
-  )
+    TransferDialog(
+        modifier = modifier,
+        client = client,
+        showMenu = false,
+        allowLargeSizes = true,
+        onDismiss = onDismiss,
+        onUpdateTransferLimit = onUpdateTransferLimit,
+    )
 }
 
 @Composable
-private fun BandwidthDialog(
+internal fun BandwidthLimitDialog(
+    modifier: Modifier = Modifier,
+    client: TetherClient,
+    onDismiss: () -> Unit,
+    onUpdateTransferLimit: (TransferAmount?) -> Unit,
+) {
+    TransferDialog(
+        modifier = modifier,
+        client = client,
+        showMenu = false,
+        allowLargeSizes = false,
+        onDismiss = onDismiss,
+        onUpdateTransferLimit = onUpdateTransferLimit,
+    )
+}
+
+@Composable
+private fun TransferDialog(
     modifier: Modifier = Modifier,
     client: TetherClient,
     showMenu: Boolean,
+    allowLargeSizes: Boolean,
     onDismiss: () -> Unit,
-    onUpdateBandwidthLimit: (BandwidthLimit?) -> Unit,
+    onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
-  val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
+    val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
 
-  // Initialize this to the current name
-  // This way we can track changes quickly without needing to update the model
-  val (enabled, setEnabled) = remember(client) { mutableStateOf(client.limit != null) }
-  val (amount, setAmount) =
-      remember(client) { mutableStateOf(client.limit?.amount?.toString().orEmpty()) }
-  val (limitUnit, setLimitUnit) =
-      remember(client) { mutableStateOf(client.limit?.unit ?: BandwidthUnit.KB) }
+    // Initialize this to the current name
+    // This way we can track changes quickly without needing to update the model
+    val (enabled, setEnabled) = remember(client) { mutableStateOf(client.limit != null) }
+    val (amount, setAmount) =
+        remember(client) { mutableStateOf(client.limit?.amount?.toString().orEmpty()) }
+    val (limitUnit, setLimitUnit) =
+        remember(client) { mutableStateOf(client.limit?.unit ?: TransferUnit.KB) }
 
-  val hapticManager = LocalHapticManager.current
-  val amountValue = remember(amount) { amount.toULongOrNull() }
-  val canSave =
-      remember(amountValue, enabled) {
-        if (!enabled) {
-          return@remember true
-        } else {
-          return@remember amountValue != null
+    val hapticManager = LocalHapticManager.current
+    val amountValue = remember(amount) { amount.toULongOrNull() }
+    val canSave =
+        remember(amountValue, enabled) {
+            if (!enabled) {
+                return@remember true
+            } else {
+                return@remember amountValue != null
+            }
         }
-      }
-  val isError = remember(canSave) { !canSave }
+    val isError = remember(canSave) { !canSave }
 
-  val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
+    val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
 
-  CardDialog(
-      modifier = modifier,
-      onDismiss = onDismiss,
-  ) {
-    Column(
-        modifier = Modifier.padding(MaterialTheme.keylines.content),
+    CardDialog(
+        modifier = modifier,
+        onDismiss = onDismiss,
     ) {
-      Row(
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        Text(
-            modifier = Modifier.weight(1F),
-            text = stringResource(R.string.bandwidth_label),
-            style = MaterialTheme.typography.titleSmall,
-            color =
-                if (enabled) {
-                  MaterialTheme.colorScheme.onSurface
-                } else {
-                  MaterialTheme.colorScheme.onSurfaceVariant
-                })
-
-        Switch(
-            checked = enabled,
-            onCheckedChange = { newEnabled ->
-              if (newEnabled) {
-                hapticManager?.toggleOn()
-              } else {
-                hapticManager?.toggleOff()
-              }
-              setEnabled(newEnabled)
-            },
-        )
-      }
-
-      Row(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        TextField(
-            modifier = Modifier.weight(1F),
-            value = amount,
-            onValueChange = { setAmount(it) },
-            enabled = enabled,
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                ),
-            isError = isError,
-        )
-
         Column(
-            modifier =
-                Modifier.padding(
-                    start = MaterialTheme.keylines.baseline,
-                ),
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
         ) {
-          Text(
-              modifier =
-                  Modifier.run {
-                        if (!enabled) {
-                          this
-                        } else {
-                          border(
-                              width = 1.dp,
-                              color = MaterialTheme.colorScheme.primary,
-                              shape = MaterialTheme.shapes.small,
-                          )
-                        }
-                      }
-                      .padding(
-                          horizontal = MaterialTheme.keylines.content,
-                          vertical = MaterialTheme.keylines.baseline,
-                      )
-                      .clickable(enabled = enabled) { setShowDropdown(true) },
-              text = limitUnit.displayName,
-              style = MaterialTheme.typography.bodySmall,
-              color =
-                  MaterialTheme.colorScheme.onSurfaceVariant.run {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    modifier = Modifier.weight(1F),
+                    text = stringResource(R.string.transfer_label),
+                    style = MaterialTheme.typography.titleSmall,
+                    color =
                     if (enabled) {
-                      this
+                        MaterialTheme.colorScheme.onSurface
                     } else {
-                      copy(alpha = TypographyDefaults.ALPHA_DISABLED)
-                    }
-                  },
-          )
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
 
-          BandwidthMenu(
-              current = limitUnit,
-              enabled = enabled,
-              showDropdown = showDropdown,
-              onDismiss = { handleDismissDropdown() },
-              onSelect = { u ->
-                hapticManager?.actionButtonPress()
-                setLimitUnit(u)
-                handleDismissDropdown()
-              },
-          )
-        }
-      }
+                Switch(
+                    checked = enabled,
+                    onCheckedChange = { newEnabled ->
+                        if (newEnabled) {
+                            hapticManager?.toggleOn()
+                        } else {
+                            hapticManager?.toggleOff()
+                        }
+                        setEnabled(newEnabled)
+                    },
+                )
+            }
 
-      Row(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-          verticalAlignment = Alignment.CenterVertically,
-      ) {
-        Spacer(
-            modifier = Modifier.weight(1F),
-        )
+            Row(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextField(
+                    modifier = Modifier.weight(1F),
+                    value = amount,
+                    onValueChange = { setAmount(it) },
+                    enabled = enabled,
+                    keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                    ),
+                    isError = isError,
+                )
 
-        TextButton(
-            onClick = onDismiss,
-        ) {
-          Text(
-              text = stringResource(android.R.string.cancel),
-          )
+                Column(
+                    modifier =
+                    Modifier.padding(
+                        start = MaterialTheme.keylines.baseline,
+                    ),
+                ) {
+                    Text(
+                        modifier =
+                        Modifier
+                            .run {
+                                if (!enabled) {
+                                    this
+                                } else {
+                                    border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = MaterialTheme.shapes.small,
+                                    )
+                                }
+                            }
+                            .padding(
+                                horizontal = MaterialTheme.keylines.content,
+                                vertical = MaterialTheme.keylines.baseline,
+                            )
+                            .clickable(enabled = enabled) { setShowDropdown(true) },
+                        text = limitUnit.displayName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.run {
+                            if (enabled) {
+                                this
+                            } else {
+                                copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                            }
+                        },
+                    )
+
+                    TransferMenu(
+                        current = limitUnit,
+                        enabled = enabled,
+                        showDropdown = showDropdown,
+                        onDismiss = { handleDismissDropdown() },
+                        allowLargeSizes = allowLargeSizes,
+                        onSelect = { u ->
+                            hapticManager?.actionButtonPress()
+                            setLimitUnit(u)
+                            handleDismissDropdown()
+                        },
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Spacer(
+                    modifier = Modifier.weight(1F),
+                )
+
+                TextButton(
+                    onClick = onDismiss,
+                ) {
+                    Text(
+                        text = stringResource(android.R.string.cancel),
+                    )
+                }
+                Button(
+                    modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+                    enabled = canSave,
+                    onClick = {
+                        val limit =
+                            if (enabled) {
+                                amountValue?.let { v ->
+                                    TransferAmount(
+                                        amount = v,
+                                        unit = limitUnit,
+                                    )
+                                }
+                            } else {
+                                null
+                            }
+                        onUpdateTransferLimit(limit)
+                        onDismiss()
+                    },
+                ) {
+                    Text(
+                        text = stringResource(android.R.string.ok),
+                    )
+                }
+            }
         }
-        Button(
-            modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-            enabled = canSave,
-            onClick = {
-              val limit =
-                  if (enabled) {
-                    amountValue?.let { v ->
-                      BandwidthLimit(
-                          amount = v,
-                          unit = limitUnit,
-                      )
-                    }
-                  } else {
-                    null
-                  }
-              onUpdateBandwidthLimit(limit)
-              onDismiss()
-            },
-        ) {
-          Text(
-              text = stringResource(android.R.string.ok),
-          )
-        }
-      }
     }
-  }
 }
 
 @Composable
-private fun BandwidthMenu(
+private fun TransferMenu(
     modifier: Modifier = Modifier,
     enabled: Boolean,
-    current: BandwidthUnit,
+    current: TransferUnit,
+    allowLargeSizes: Boolean,
     showDropdown: Boolean,
-    onSelect: (BandwidthUnit) -> Unit,
+    onSelect: (TransferUnit) -> Unit,
     onDismiss: () -> Unit,
 ) {
-  DropdownMenu(
-      modifier = modifier,
-      expanded = showDropdown,
-      properties = remember { PopupProperties(focusable = true) },
-      onDismissRequest = onDismiss,
-  ) {
-    BandwidthMenuItems(
-        enabled = enabled,
-        current = current,
-        onSelect = onSelect,
-    )
-  }
+    DropdownMenu(
+        modifier = modifier,
+        expanded = showDropdown,
+        properties = remember { PopupProperties(focusable = true) },
+        onDismissRequest = onDismiss,
+    ) {
+        TransferMenuItems(
+            enabled = enabled,
+            current = current,
+            allowLargeSizes = allowLargeSizes,
+            onSelect = onSelect,
+        )
+    }
 }
 
 @Composable
-private fun BandwidthMenuItems(
+private fun TransferMenuItems(
     enabled: Boolean,
-    current: BandwidthUnit,
-    onSelect: (BandwidthUnit) -> Unit,
+    allowLargeSizes: Boolean,
+    current: TransferUnit,
+    onSelect: (TransferUnit) -> Unit,
 ) {
-  // Don't let people pick bytes, who wants to limit bytes?
-  val availableUnits = remember { BandwidthUnit.entries.filterNot { it == BandwidthUnit.BYTE } }
+    // Don't let people pick bytes, who wants to limit bytes?
+    val availableUnits = remember(allowLargeSizes) {
+        var available = TransferUnit.entries.filterNot { it == TransferUnit.BYTE }
+        if (allowLargeSizes) {
+            available =
+                available.filterNot { it == TransferUnit.GB }.filterNot { it == TransferUnit.TB }
+                    .filterNot { it == TransferUnit.PB }
+        }
+        return@remember available
+    }
 
-  availableUnits.forEach { u ->
-    DropdownMenuItem(
-        onClick = { onSelect(u) },
-        text = {
-          val isSelected = remember(current, u) { u == current }
+    availableUnits.forEach { u ->
+        DropdownMenuItem(
+            onClick = { onSelect(u) },
+            text = {
+                val isSelected = remember(current, u) { u == current }
 
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
-          ) {
-            RadioButton(
-                enabled = enabled,
-                selected = isSelected,
-                onClick = { onSelect(u) },
-            )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        enabled = enabled,
+                        selected = isSelected,
+                        onClick = { onSelect(u) },
+                    )
 
-            Text(
-                modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                text = u.displayName,
-                style = MaterialTheme.typography.bodySmall,
-                color =
-                    MaterialTheme.colorScheme.onSurfaceVariant.run {
-                      if (enabled) {
-                        this
-                      } else {
-                        copy(alpha = TypographyDefaults.ALPHA_DISABLED)
-                      }
-                    },
-            )
-          }
-        },
-    )
-  }
+                    Text(
+                        modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                        text = u.displayName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color =
+                        MaterialTheme.colorScheme.onSurfaceVariant.run {
+                            if (enabled) {
+                                this
+                            } else {
+                                copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                            }
+                        },
+                    )
+                }
+            },
+        )
+    }
 }
 
 @TestOnly
 @Composable
-private fun PreviewBandwidthDialog(
-    limit: BandwidthLimit?,
+private fun PreviewTransferDialog(
+    limit: TransferAmount?,
     showMenu: Boolean,
 ) {
-  BandwidthDialog(
-      client =
-          TetherClient.testCreate(
-              hostNameOrIp = TEST_HOSTNAME,
-              clock = Clock.systemDefaultZone(),
-              nickName = "",
-              limit = limit,
-              totalBytes = ByteTransferReport.EMPTY,
-          ),
-      showMenu = showMenu,
-      onDismiss = {},
-      onUpdateBandwidthLimit = {},
-  )
+    TransferDialog(
+        client =
+        TetherClient.testCreate(
+            hostNameOrIp = TEST_HOSTNAME,
+            clock = Clock.systemDefaultZone(),
+            nickName = "",
+            limit = limit,
+            totalBytes = ByteTransferReport.EMPTY,
+        ),
+        allowLargeSizes = true,
+        showMenu = showMenu,
+        onDismiss = {},
+        onUpdateTransferLimit = {},
+    )
 }
 
 @Preview
 @Composable
-private fun PreviewBandwidthDialogEmpty() {
-  PreviewBandwidthDialog(
-      limit = null,
-      showMenu = false,
-  )
+private fun PreviewTransferDialogEmpty() {
+    PreviewTransferDialog(
+        limit = null,
+        showMenu = false,
+    )
 }
 
 @Preview
 @Composable
-private fun PreviewBandwidthDialogEnabled() {
-  PreviewBandwidthDialog(
-      limit =
-          BandwidthLimit(
-              10UL,
-              BandwidthUnit.MB,
-          ),
-      showMenu = false,
-  )
+private fun PreviewTransferDialogEnabled() {
+    PreviewTransferDialog(
+        limit =
+        TransferAmount(
+            10UL,
+            TransferUnit.MB,
+        ),
+        showMenu = false,
+    )
 }
 
 @Preview
 @Composable
-private fun PreviewBandwidthDialogOpen() {
-  PreviewBandwidthDialog(
-      limit =
-          BandwidthLimit(
-              10UL,
-              BandwidthUnit.MB,
-          ),
-      showMenu = true,
-  )
+private fun PreviewTransferDialogOpen() {
+    PreviewTransferDialog(
+        limit =
+        TransferAmount(
+            10UL,
+            TransferUnit.MB,
+        ),
+        showMenu = true,
+    )
 }
 
 @TestOnly
 @Composable
-private fun PreviewBandwidthMenuItems(
+private fun PreviewTransferMenuItems(
     enabled: Boolean,
-    current: BandwidthUnit,
+    current: TransferUnit,
+    allowLargeSizes: Boolean,
 ) {
-  Column {
-    BandwidthMenuItems(
-        enabled = enabled,
-        current = current,
-        onSelect = {},
+    Column {
+        TransferMenuItems(
+            enabled = enabled,
+            current = current,
+            onSelect = {},
+            allowLargeSizes = allowLargeSizes,
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTransferMenuItemsLargeEnabled() {
+    PreviewTransferMenuItems(
+        enabled = true,
+        current = TransferUnit.KB,
+        allowLargeSizes = true,
     )
-  }
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewBandwidthMenuItemsEnabled() {
-  PreviewBandwidthMenuItems(
-      enabled = true,
-      current = BandwidthUnit.KB,
-  )
+private fun PreviewTransferMenuItemsLargeDisabled() {
+    PreviewTransferMenuItems(
+        enabled = false,
+        current = TransferUnit.KB,
+        allowLargeSizes = true,
+    )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewBandwidthMenuItemsDisabled() {
-  PreviewBandwidthMenuItems(
-      enabled = false,
-      current = BandwidthUnit.KB,
-  )
+private fun PreviewTransferMenuItemsLargePicked() {
+    PreviewTransferMenuItems(
+        enabled = true,
+        current = TransferUnit.MB,
+        allowLargeSizes = true,
+    )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewBandwidthMenuItemsPicked() {
-  PreviewBandwidthMenuItems(
-      enabled = true,
-      current = BandwidthUnit.GB,
-  )
+private fun PreviewTransferMenuItemsSmallEnabled() {
+    PreviewTransferMenuItems(
+        enabled = true,
+        current = TransferUnit.KB,
+        allowLargeSizes = false,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTransferMenuItemsSmallDisabled() {
+    PreviewTransferMenuItems(
+        enabled = false,
+        current = TransferUnit.KB,
+        allowLargeSizes = false,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTransferMenuItemsSmallPicked() {
+    PreviewTransferMenuItems(
+        enabled = true,
+        current = TransferUnit.GB,
+        allowLargeSizes = false,
+    )
 }

@@ -49,16 +49,16 @@ import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.HapticManager
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.connections.R
-import com.pyamsoft.tetherfi.server.clients.BandwidthLimit
-import com.pyamsoft.tetherfi.server.clients.BandwidthUnit
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.clients.TransferAmount
+import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
+import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import org.jetbrains.annotations.TestOnly
 
 private val FIRST_SEEN_DATE_FORMATTER =
     object : ThreadLocal<DateTimeFormatter>() {
@@ -78,7 +78,7 @@ internal fun ConnectionItem(
     client: TetherClient,
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
-    onManageBandwidthLimit: (TetherClient) -> Unit,
+    onManageTransferLimit: (TetherClient) -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
   val key = remember(client) { client.key() }
@@ -86,7 +86,7 @@ internal fun ConnectionItem(
       remember(client) {
         FIRST_SEEN_DATE_FORMATTER.get().requireNotNull().format(client.mostRecentlySeen)
       }
-  val isOverLimit = remember(client) { client.isOverBandwidthLimit() }
+  val isOverLimit = remember(client) { client.isOverTransferLimit() }
 
   val isNotBlocked =
       remember(
@@ -124,7 +124,7 @@ internal fun ConnectionItem(
               client = client,
               hapticManager = hapticManager,
               onManageNickName = onManageNickName,
-              onManageBandwidthLimit = onManageBandwidthLimit,
+              onManageTransferLimit = onManageTransferLimit,
           )
 
           Switch(
@@ -149,7 +149,7 @@ internal fun ConnectionItem(
                 ),
         )
 
-        Bandwidth(
+        Transfer(
             client = client,
             isOverLimit = isOverLimit,
         )
@@ -163,7 +163,7 @@ private fun OptionsMenu(
     client: TetherClient,
     hapticManager: HapticManager?,
     onManageNickName: (TetherClient) -> Unit,
-    onManageBandwidthLimit: (TetherClient) -> Unit,
+    onManageTransferLimit: (TetherClient) -> Unit,
 ) {
   val (show, setShow) = remember { mutableStateOf(false) }
 
@@ -193,9 +193,9 @@ private fun OptionsMenu(
           onManageNickName(client)
           handleDismiss()
         },
-        onManageBandwidthLimit = {
+        onManageTransferLimit = {
           hapticManager?.actionButtonPress()
-          onManageBandwidthLimit(client)
+          onManageTransferLimit(client)
           handleDismiss()
         },
     )
@@ -205,7 +205,7 @@ private fun OptionsMenu(
 @Composable
 private fun OptionsMenuItems(
     onManageNickName: () -> Unit,
-    onManageBandwidthLimit: () -> Unit,
+    onManageTransferLimit: () -> Unit,
 ) {
   DropdownMenuItem(
       onClick = onManageNickName,
@@ -218,10 +218,10 @@ private fun OptionsMenuItems(
   )
 
   DropdownMenuItem(
-      onClick = onManageBandwidthLimit,
+      onClick = onManageTransferLimit,
       text = {
         Text(
-            text = stringResource(R.string.option_set_bandwidth),
+            text = stringResource(R.string.option_set_transfer),
             style = MaterialTheme.typography.bodyMedium,
         )
       },
@@ -254,7 +254,7 @@ private fun Name(
 }
 
 @Composable
-private fun Bandwidth(
+private fun Transfer(
     client: TetherClient,
     isOverLimit: Boolean,
 ) {
@@ -267,7 +267,7 @@ private fun Bandwidth(
             limit,
         ) {
           if (isOverLimit) {
-            context.getString(R.string.bandwidth_over_limit, limit.display)
+            context.getString(R.string.transfer_over_limit, limit.display)
           } else {
             limit.display
           }
@@ -285,8 +285,8 @@ private fun Bandwidth(
     Text(
         text =
             stringResource(
-                R.string.bandwidth_limit,
-                stringResource(R.string.bandwidth_label),
+                R.string.transfer_limit,
+                stringResource(R.string.transfer_label),
                 displayLimit,
             ),
         style =
@@ -326,7 +326,7 @@ private fun Bandwidth(
 @Composable
 private fun PreviewConnectionItem(
     nickName: String,
-    limit: BandwidthLimit?,
+    limit: TransferAmount?,
     totalBytes: ByteTransferReport,
 ) {
   ConnectionItem(
@@ -340,7 +340,7 @@ private fun PreviewConnectionItem(
               totalBytes = totalBytes,
           ),
       onToggleBlock = {},
-      onManageBandwidthLimit = {},
+      onManageTransferLimit = {},
       onManageNickName = {},
   )
 }
@@ -370,7 +370,7 @@ private fun PreviewConnectionItemWithName() {
 private fun PreviewConnectionItemWithLimit() {
   PreviewConnectionItem(
       nickName = "",
-      limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+      limit = TransferAmount(10UL, TransferUnit.MB),
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -380,7 +380,7 @@ private fun PreviewConnectionItemWithLimit() {
 private fun PreviewConnectionItemUnderLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      limit = BandwidthLimit(10UL, BandwidthUnit.MB),
+      limit = TransferAmount(10UL, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
               internetToProxy = 5UL,
@@ -394,7 +394,7 @@ private fun PreviewConnectionItemUnderLimit() {
 private fun PreviewConnectionItemOverLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      limit = BandwidthLimit(5UL, BandwidthUnit.MB),
+      limit = TransferAmount(5UL, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
               internetToProxy = (10UL * 1024UL * 1024UL),
@@ -409,7 +409,7 @@ private fun PreviewConnectionItemOptionsMenuItems() {
   Column {
     OptionsMenuItems(
         onManageNickName = {},
-        onManageBandwidthLimit = {},
+        onManageTransferLimit = {},
     )
   }
 }
