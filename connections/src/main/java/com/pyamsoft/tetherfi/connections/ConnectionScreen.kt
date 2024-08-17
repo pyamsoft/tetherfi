@@ -43,9 +43,9 @@ import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import java.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
-import java.time.Clock
 
 private enum class ConnectionScreenContentTypes {
   BOTTOM_SPACER,
@@ -147,7 +147,8 @@ private fun PreviewConnectionScreen(
                                 hostNameOrIp = "127.0.0.${2 + i}",
                                 clock = Clock.systemDefaultZone(),
                                 nickName = "TEST ${i + 1}",
-                                limit = null,
+                                transferLimit = null,
+                                bandwidthLimit = null,
                                 totalBytes = ByteTransferReport.EMPTY,
                             )
                         add(client)
@@ -167,7 +168,8 @@ private fun PreviewConnectionScreen(
                                 hostNameOrIp = "127.0.0.${2 + i}",
                                 clock = Clock.systemDefaultZone(),
                                 nickName = "TEST ${i + 1}",
-                                limit = null,
+                                transferLimit = null,
+                                bandwidthLimit = null,
                                 totalBytes = ByteTransferReport.EMPTY,
                             )
                         add(client)
@@ -208,7 +210,8 @@ private fun PreviewConnectionScreenEmptyManageNickName() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
-              limit = null,
+              transferLimit = null,
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       transfer = null,
@@ -227,7 +230,8 @@ private fun PreviewConnectionScreenEmptyManageTransfer() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = TransferAmount(10UL, TransferUnit.MB),
+              transferLimit = null,
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
@@ -255,7 +259,8 @@ private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
-              limit = null,
+              transferLimit = null,
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       transfer = null,
@@ -274,7 +279,8 @@ private fun PreviewConnectionScreenActiveNoClientsManageTransfer() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = TransferAmount(10UL, TransferUnit.MB),
+              transferLimit = TransferAmount(10UL, TransferUnit.MB),
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
@@ -302,7 +308,8 @@ private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "TEST",
-              limit = null,
+              transferLimit = null,
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       transfer = null,
@@ -321,7 +328,8 @@ private fun PreviewConnectionScreenActiveWithClientsManageTransfer() {
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = "",
-              limit = TransferAmount(10UL, TransferUnit.MB),
+              transferLimit = TransferAmount(10UL, TransferUnit.MB),
+              bandwidthLimit = null,
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 5,

@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
+import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import io.ktor.utils.io.ByteReadChannel
@@ -37,5 +38,6 @@ internal interface TcpSessionTransport {
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
+      client: TetherClient,
   ): ByteTransferReport?
 }

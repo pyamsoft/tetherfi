@@ -55,10 +55,10 @@ import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
-import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import org.jetbrains.annotations.TestOnly
 
 private val FIRST_SEEN_DATE_FORMATTER =
     object : ThreadLocal<DateTimeFormatter>() {
@@ -258,7 +258,7 @@ private fun Transfer(
     client: TetherClient,
     isOverLimit: Boolean,
 ) {
-  client.limit?.also { limit ->
+  client.transferLimit?.also { limit ->
     val context = LocalContext.current
     val displayLimit =
         remember(
@@ -326,7 +326,7 @@ private fun Transfer(
 @Composable
 private fun PreviewConnectionItem(
     nickName: String,
-    limit: TransferAmount?,
+    transferLimit: TransferAmount?,
     totalBytes: ByteTransferReport,
 ) {
   ConnectionItem(
@@ -336,7 +336,8 @@ private fun PreviewConnectionItem(
               hostNameOrIp = TEST_HOSTNAME,
               clock = Clock.systemDefaultZone(),
               nickName = nickName,
-              limit = limit,
+              transferLimit = transferLimit,
+              bandwidthLimit = null,
               totalBytes = totalBytes,
           ),
       onToggleBlock = {},
@@ -350,7 +351,7 @@ private fun PreviewConnectionItem(
 private fun PreviewConnectionItemDefault() {
   PreviewConnectionItem(
       nickName = "",
-      limit = null,
+      transferLimit = null,
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -360,7 +361,7 @@ private fun PreviewConnectionItemDefault() {
 private fun PreviewConnectionItemWithName() {
   PreviewConnectionItem(
       nickName = "TEST",
-      limit = null,
+      transferLimit = null,
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -370,7 +371,7 @@ private fun PreviewConnectionItemWithName() {
 private fun PreviewConnectionItemWithLimit() {
   PreviewConnectionItem(
       nickName = "",
-      limit = TransferAmount(10UL, TransferUnit.MB),
+      transferLimit = TransferAmount(10UL, TransferUnit.MB),
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -380,7 +381,7 @@ private fun PreviewConnectionItemWithLimit() {
 private fun PreviewConnectionItemUnderLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      limit = TransferAmount(10UL, TransferUnit.MB),
+      transferLimit = TransferAmount(10UL, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
               internetToProxy = 5UL,
@@ -394,7 +395,7 @@ private fun PreviewConnectionItemUnderLimit() {
 private fun PreviewConnectionItemOverLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      limit = TransferAmount(5UL, TransferUnit.MB),
+      transferLimit = TransferAmount(5UL, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
               internetToProxy = (10UL * 1024UL * 1024UL),

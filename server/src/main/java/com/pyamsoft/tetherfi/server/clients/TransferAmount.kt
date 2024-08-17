@@ -16,16 +16,61 @@
 
 package com.pyamsoft.tetherfi.server.clients
 
+import androidx.annotation.CheckResult
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 
 @Stable
 @Immutable
 data class TransferAmount(
+    val bytes: ULong,
     val amount: ULong,
     val unit: TransferUnit,
 ) {
+
   val display by lazy { "$amount ${unit.displayName}" }
+
+  constructor(
+      amount: ULong,
+      unit: TransferUnit
+  ) : this(
+      bytes = toBytes(amount, unit),
+      amount = amount,
+      unit = unit,
+  )
+
+  companion object {
+
+    private const val UNIT_JUMP = 1024UL
+
+    @CheckResult
+    private fun toBytes(amount: ULong, unit: TransferUnit): ULong {
+      var total = amount
+      var suffix = unit
+      while (suffix != TransferUnit.BYTE) {
+        suffix = suffix.previousSmallest()
+        total *= UNIT_JUMP
+      }
+
+      return total
+    }
+
+    @CheckResult
+    internal fun fromBytes(total: ULong): TransferAmount {
+      var amount = total
+      var suffix = TransferUnit.BYTE
+      while (amount > UNIT_JUMP) {
+        suffix = suffix.nextLargest()
+        amount /= UNIT_JUMP
+      }
+
+      return TransferAmount(
+          bytes = total,
+          amount = amount,
+          unit = suffix,
+      )
+    }
+  }
 }
 
 enum class TransferUnit(val displayName: String) {
@@ -34,5 +79,27 @@ enum class TransferUnit(val displayName: String) {
   MB("MB"),
   GB("GB"),
   TB("TB"),
-  PB("PB"),
+  PB("PB");
+
+  @CheckResult
+  fun nextLargest(): TransferUnit =
+      when (this) {
+        TransferUnit.PB -> TransferUnit.TB
+        TransferUnit.TB -> TransferUnit.GB
+        TransferUnit.GB -> TransferUnit.MB
+        TransferUnit.MB -> TransferUnit.KB
+        TransferUnit.KB -> TransferUnit.BYTE
+        else -> throw IllegalStateException("Bytes payload too small: $this")
+      }
+
+  @CheckResult
+  fun previousSmallest(): TransferUnit =
+      when (this) {
+        TransferUnit.BYTE -> TransferUnit.KB
+        TransferUnit.KB -> TransferUnit.MB
+        TransferUnit.MB -> TransferUnit.GB
+        TransferUnit.GB -> TransferUnit.TB
+        TransferUnit.TB -> TransferUnit.PB
+        else -> throw IllegalStateException("Bytes payload too big: $this")
+      }
 }

@@ -21,65 +21,22 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.LocalDateTime
-import org.jetbrains.annotations.TestOnly
-
-private val UNIT_JUMP = 1024UL
 
 @Stable
 @Immutable
 sealed class TetherClient(
     open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
-    open val limit: TransferAmount?,
+    open val transferLimit: TransferAmount?,
+    open val bandwidthLimit: TransferAmount?,
     protected open val totalBytes: ByteTransferReport,
 ) {
 
-  val transferToInternet by lazy { parseTransfer(totalBytes.proxyToInternet) }
-  val transferFromInternet by lazy { parseTransfer(totalBytes.internetToProxy) }
-
-  @CheckResult
-  private fun parseTransfer(total: ULong): TransferAmount {
-    var amount = total
-    var suffix = TransferUnit.BYTE
-    while (amount > UNIT_JUMP) {
-      suffix = mapSuffixToNextLargest(amount, suffix)
-      amount /= UNIT_JUMP
-    }
-
-    return TransferAmount(
-        amount = amount,
-        unit = suffix,
-    )
-  }
-
-  @CheckResult
-  private fun mapSuffixToNextLargest(amount: ULong, suffix: TransferUnit): TransferUnit =
-      when (suffix) {
-        TransferUnit.BYTE -> TransferUnit.KB
-        TransferUnit.KB -> TransferUnit.MB
-        TransferUnit.MB -> TransferUnit.GB
-        TransferUnit.GB -> TransferUnit.TB
-        TransferUnit.TB -> TransferUnit.PB
-        else -> throw IllegalStateException("Bytes payload too big: $amount$suffix")
-      }
-
-  @CheckResult
-  private fun TransferAmount.isOver(limit: TransferAmount): Boolean {
-    // If unit is larger than other unit, we are over
-    if (this.unit > limit.unit) {
-      return false
-    }
-
-    // If units are the same, count the amount
-    if (this.unit == limit.unit) {
-      return this.amount > limit.amount
-    }
-
-    // Otherwise, I guess we are good
-    return false
-  }
+  val transferToInternet by lazy { TransferAmount.fromBytes(totalBytes.proxyToInternet) }
+  val transferFromInternet by lazy { TransferAmount.fromBytes(totalBytes.internetToProxy) }
 
   @CheckResult
   fun matches(o: TetherClient): Boolean {
@@ -124,14 +81,14 @@ sealed class TetherClient(
   @CheckResult
   fun isOverTransferLimit(): Boolean {
     // No limit, we are fine
-    val l = limit ?: return false
+    val l = transferLimit ?: return false
 
     // Our transfer unit is larger than our limit
-    if (transferToInternet.isOver(l)) {
+    if (transferToInternet.bytes >= l.bytes) {
       return true
     }
 
-    if (transferFromInternet.isOver(l)) {
+    if (transferFromInternet.bytes >= l.bytes) {
       return true
     }
 
@@ -153,7 +110,8 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String,
-        limit: TransferAmount?,
+        transferLimit: TransferAmount?,
+        bandwidthLimit: TransferAmount?,
         totalBytes: ByteTransferReport,
     ): TetherClient {
       return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
@@ -161,7 +119,8 @@ sealed class TetherClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = nickName,
-            limit = limit,
+            transferLimit = transferLimit,
+            bandwidthLimit = bandwidthLimit,
             totalBytes = totalBytes,
         )
       } else {
@@ -169,7 +128,8 @@ sealed class TetherClient(
             hostname = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = nickName,
-            limit = limit,
+            transferLimit = transferLimit,
+            bandwidthLimit = bandwidthLimit,
             totalBytes = totalBytes,
         )
       }
@@ -180,13 +140,15 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String = "",
-        limit: TransferAmount? = null,
+        transferLimit: TransferAmount? = null,
+        bandwidthLimit: TransferAmount? = null,
     ): TetherClient {
       return create(
           hostNameOrIp = hostNameOrIp,
           clock = clock,
           nickName = nickName,
-          limit = limit,
+          bandwidthLimit = bandwidthLimit,
+          transferLimit = transferLimit,
           totalBytes = ByteTransferReport.EMPTY,
       )
     }
@@ -198,14 +160,16 @@ sealed class TetherClient(
         hostNameOrIp: String,
         clock: Clock,
         nickName: String,
-        limit: TransferAmount?,
+        transferLimit: TransferAmount? = null,
+        bandwidthLimit: TransferAmount? = null,
         totalBytes: ByteTransferReport,
     ): TetherClient {
       return create(
           hostNameOrIp = hostNameOrIp,
           clock = clock,
           nickName = nickName,
-          limit = limit,
+          transferLimit = transferLimit,
+          bandwidthLimit = bandwidthLimit,
           totalBytes = totalBytes,
       )
     }

@@ -24,6 +24,4 @@ interface BlockedClients {
   @CheckResult fun listenForBlocked(): Flow<Collection<TetherClient>>
 
   @CheckResult fun isBlocked(client: TetherClient): Boolean
-
-  @CheckResult fun isBlocked(hostNameOrIp: String): Boolean
 }

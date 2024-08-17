@@ -19,11 +19,11 @@ package com.pyamsoft.tetherfi.connections
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
-import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.BlockedClientTracker
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientEditor
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.key
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope

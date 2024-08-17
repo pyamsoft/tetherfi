@@ -19,13 +19,18 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.clients.TetherClient
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.writeFully
+import kotlinx.coroutines.delay
 
 /** Buffers are 4MB in size */
 private const val BUFFER_MAX_SIZE: Long = 4_194_304
+
+/** Bandwidth is measured per second */
+private const val BANDWIDTH_INTERVAL: Long = 1000
 
 /**
  * Line ending for socket messages
@@ -72,6 +77,7 @@ private suspend fun proxyResponse(output: ByteWriteChannel, response: String) {
 
 @CheckResult
 internal suspend inline fun talk(
+    client: TetherClient,
     input: ByteReadChannel,
     output: ByteWriteChannel,
 ): ULong {
@@ -83,11 +89,19 @@ internal suspend inline fun talk(
   // We want to keep track of how many total bytes we've worked with
   var total = 0UL
 
+  val transferLimit = client.transferLimit
+  val bandwidthLimit = transferLimit?.bytes ?: 0UL
+  val enforceBandwidthLimit = bandwidthLimit >= 0UL
+
+  var startTime = System.currentTimeMillis()
+  var bytesCopied = 0UL
+
   // If nothing is copied, we abandon immediately
   while (!output.isClosedForWrite) {
-    // Use a small buffer size to not overflow the device memory with a single large transaction.
     val copied: Long =
         try {
+          // Use a small buffer size to not overflow the device memory with a single large
+          // transaction.
           input.copyTo(output, BUFFER_MAX_SIZE)
         } catch (e: Throwable) {
           e.ifNotCancellation {
@@ -103,7 +117,28 @@ internal suspend inline fun talk(
       break
     }
 
-    total += copied.toULong()
+    val c = copied.toULong()
+    total += c
+
+    if (enforceBandwidthLimit) {
+      bytesCopied += c
+
+      // If we are over the limit, we need to wait before continuing
+      if (bytesCopied > bandwidthLimit) {
+        val now = System.currentTimeMillis()
+        // It has been more than 1 second, reset the limits
+        val combined = startTime + BANDWIDTH_INTERVAL
+        if (combined >= now) {
+          val amount = combined - now
+          Timber.d { "Delay connection from bandwidth limit: $transferLimit wait ${amount}ms" }
+          delay(amount)
+        }
+
+        // Then reset counter
+        startTime = now
+        bytesCopied = 0UL
+      }
+    }
   }
 
   return total

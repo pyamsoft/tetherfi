@@ -23,6 +23,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
+import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -31,6 +32,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
 import java.io.IOException
+import java.time.Clock
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
@@ -102,10 +104,6 @@ internal suspend inline fun setupProxy(
         override fun isBlocked(client: TetherClient): Boolean {
           return false
         }
-
-        override fun isBlocked(hostNameOrIp: String): Boolean {
-          return false
-        }
       }
 
   val allowed =
@@ -114,9 +112,24 @@ internal suspend inline fun setupProxy(
           return flowOf(emptyList())
         }
 
-        override suspend fun seen(hostNameOrIp: String) {}
+        override suspend fun seen(client: TetherClient) {}
 
-        override suspend fun reportTransfer(hostNameOrIp: String, report: ByteTransferReport) {}
+        override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) {}
+      }
+
+  val resolver =
+      object : ClientResolver {
+
+        private val clients = mutableMapOf<String, TetherClient>()
+
+        override fun ensure(hostNameOrIp: String): TetherClient {
+          return clients.getOrPut(hostNameOrIp) {
+            TetherClient.create(
+                hostNameOrIp,
+                clock = Clock.systemDefaultZone(),
+            )
+          }
+        }
       }
 
   val socketTagger = SocketTagger {}
@@ -151,6 +164,7 @@ internal suspend inline fun setupProxy(
                   enforcer = enforcer,
                   socketTagger = socketTagger,
                   preferences = preferences,
+                  clientResolver = resolver,
               ),
           hostConnection =
               BroadcastNetworkStatus.ConnectionInfo.Connected(

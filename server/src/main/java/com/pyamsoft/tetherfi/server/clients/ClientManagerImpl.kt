@@ -18,6 +18,8 @@ package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.core.requireNotNull
+import com.pyamsoft.pydroid.util.contains
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerPreferences
@@ -54,19 +56,13 @@ internal constructor(
     AllowedClients,
     ClientEraser,
     StartedClients,
+    ClientResolver,
     ClientEditor {
 
   private val blockedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
   private val allowedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
 
   private val jobs = MutableStateFlow<Collection<Job>>(emptySet())
-
-  @CheckResult
-  private fun TetherClient.toHostNameOrIp(): String =
-      when (this) {
-        is IpAddressClient -> ip
-        is HostNameClient -> hostname
-      }
 
   @CheckResult
   private fun markLastSeenNow(client: TetherClient): TetherClient =
@@ -85,8 +81,8 @@ internal constructor(
   @CheckResult
   private fun editTransferLimit(client: TetherClient, limit: TransferAmount?): TetherClient =
       when (client) {
-        is IpAddressClient -> client.copy(limit = limit)
-        is HostNameClient -> client.copy(limit = limit)
+        is IpAddressClient -> client.copy(transferLimit = limit)
+        is HostNameClient -> client.copy(transferLimit = limit)
       }
 
   @CheckResult
@@ -192,44 +188,65 @@ internal constructor(
   }
 
   @CheckResult
-  private inline fun isBlockedClient(checker: (TetherClient) -> Boolean): TetherClient? {
-    val blocked = blockedClients.value
-    return blocked.firstOrNull(checker)
+  private fun isBlockedClient(client: TetherClient): Boolean {
+    return blockedClients.value.contains { it.matches(client) }
   }
 
-  @CheckResult
-  private inline fun isTransferLimitedClient(checker: (TetherClient) -> Boolean): TetherClient? {
-    val allowed = allowedClients.value
+  private suspend inline fun onTimerElapsed(period: Duration, block: (LocalDateTime) -> Unit) {
+    try {
+      while (true) {
+        delay(period)
+        val cutoffTime = LocalDateTime.now(clock).minusMinutes(period.inWholeMinutes)
 
-    // Find a client
-    val client = allowed.firstOrNull(checker) ?: return null
-
-    // Check if the client is over the limit
-    if (client.isOverTransferLimit()) {
-      return client
+        Timber.d { "Timer elapsed. Cutoff: $cutoffTime" }
+        block(cutoffTime)
+      }
+    } finally {
+      Timber.d { "Timer completed." }
     }
-
-    // Otherwise we are good
-    return null
   }
 
   @CheckResult
-  private inline fun checkBlocked(checker: (TetherClient) -> Boolean): Boolean {
+  private fun checkBlocked(client: TetherClient): Boolean {
     // Check Blocklist
-    var blocked: TetherClient? = isBlockedClient(checker)
-    if (blocked != null) {
-      Timber.w { "Hard blocked client: $blocked" }
+    if (isBlockedClient(client)) {
+      Timber.w { "Hard blocked client: $client" }
       return true
     }
 
     // Check we are not over the transfer limit
-    blocked = isTransferLimitedClient(checker)
-    if (blocked != null) {
-      Timber.w { "Transfer limited client: $blocked" }
+    if (client.isOverTransferLimit()) {
+      Timber.w { "Transfer limited client: $client" }
       return true
     }
 
     return false
+  }
+
+  @CheckResult
+  private fun resolve(hostNameOrIp: String): TetherClient? {
+    val allowed = allowedClients.value
+
+    // Find a client
+    return allowed.firstOrNull { it.matches(hostNameOrIp) }
+  }
+
+  private fun CoroutineScope.handleClientUpdate(
+      client: TetherClient,
+      onClientUpdated: (TetherClient) -> TetherClient,
+  ) {
+    val clients =
+        allowedClients.updateAndGet { list ->
+          return@updateAndGet list.map { c ->
+            if (c.matches(client)) {
+              return@map onClientUpdated(c)
+            } else {
+              return@map c
+            }
+          }
+        }
+
+    onClientsUpdated(clients)
   }
 
   override suspend fun started() =
@@ -266,73 +283,28 @@ internal constructor(
     }
   }
 
-  override fun isBlocked(hostNameOrIp: String): Boolean {
-    return checkBlocked { it.matches(hostNameOrIp) }
-  }
-
   override fun isBlocked(client: TetherClient): Boolean {
-    return checkBlocked { it.matches(client) }
+    return checkBlocked(client)
   }
 
-  private fun CoroutineScope.handleClientUpdate(
-      hostNameOrIp: String,
-      onClientUpdated: (TetherClient) -> TetherClient,
-  ) {
-    val clients =
-        allowedClients.updateAndGet { list ->
-          val existing = list.firstOrNull { it.matches(hostNameOrIp) }
-
-          if (existing == null) {
-            val client =
-                TetherClient.create(
-                    hostNameOrIp = hostNameOrIp,
-                    clock = clock,
-                )
-            return@updateAndGet (list + client).also { onNewClientSeen(client) }
-          } else {
-            return@updateAndGet list.map { c ->
-              if (c == existing) {
-                return@map onClientUpdated(c)
-              } else {
-                return@map c
-              }
-            }
-          }
-        }
-
-    onClientsUpdated(clients)
-  }
-
-  override suspend fun seen(hostNameOrIp: String) =
+  override suspend fun seen(client: TetherClient) =
       withContext(context = Dispatchers.Default) {
-        handleClientUpdate(
-            hostNameOrIp = hostNameOrIp,
-            onClientUpdated = { markLastSeenNow(it) },
-        )
+        handleClientUpdate(client) { markLastSeenNow(it) }
       }
 
   override suspend fun updateNickName(client: TetherClient, nickName: String) =
       withContext(context = Dispatchers.Default) {
-        handleClientUpdate(
-            hostNameOrIp = client.toHostNameOrIp(),
-            onClientUpdated = { editNickName(it, nickName) },
-        )
+        handleClientUpdate(client) { editNickName(it, nickName) }
       }
 
   override suspend fun updateTransferLimit(client: TetherClient, limit: TransferAmount?) =
       withContext(context = Dispatchers.Default) {
-        handleClientUpdate(
-            hostNameOrIp = client.toHostNameOrIp(),
-            onClientUpdated = { editTransferLimit(it, limit) },
-        )
+        handleClientUpdate(client) { editTransferLimit(it, limit) }
       }
 
-  override suspend fun reportTransfer(hostNameOrIp: String, report: ByteTransferReport) =
+  override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) =
       withContext(context = Dispatchers.Default) {
-        handleClientUpdate(
-            hostNameOrIp = hostNameOrIp,
-            onClientUpdated = { updateTransferReport(it, report) },
-        )
+        handleClientUpdate(client) { updateTransferReport(it, report) }
       }
 
   override fun clear() {
@@ -351,18 +323,20 @@ internal constructor(
     return blockedClients
   }
 
-  private suspend inline fun onTimerElapsed(period: Duration, block: (LocalDateTime) -> Unit) {
-    try {
-      while (true) {
-        delay(period)
-        val cutoffTime = LocalDateTime.now(clock).minusMinutes(period.inWholeMinutes)
-
-        Timber.d { "Timer elapsed. Cutoff: $cutoffTime" }
-        block(cutoffTime)
-      }
-    } finally {
-      Timber.d { "Timer completed." }
-    }
+  override fun ensure(hostNameOrIp: String): TetherClient {
+    val maybeClient = resolve(hostNameOrIp)
+    return maybeClient
+        ?: allowedClients
+            .updateAndGet {
+              val client =
+                  TetherClient.create(
+                      hostNameOrIp = hostNameOrIp,
+                      clock = clock,
+                  )
+              return@updateAndGet (it + client).also { onNewClientSeen(client) }
+            }
+            .firstOrNull { it.matches(hostNameOrIp) }
+            .requireNotNull { "Unable to ensure TetherClient exists: $hostNameOrIp" }
   }
 
   companion object {

@@ -17,16 +17,8 @@
 package com.pyamsoft.tetherfi.server.clients
 
 import androidx.annotation.CheckResult
-import kotlinx.coroutines.flow.Flow
 
-interface AllowedClients {
+interface ClientResolver {
 
-  @CheckResult fun listenForClients(): Flow<Collection<TetherClient>>
-
-  suspend fun seen(client: TetherClient)
-
-  suspend fun reportTransfer(
-      client: TetherClient,
-      report: ByteTransferReport,
-  )
+  @CheckResult fun ensure(hostNameOrIp: String): TetherClient
 }

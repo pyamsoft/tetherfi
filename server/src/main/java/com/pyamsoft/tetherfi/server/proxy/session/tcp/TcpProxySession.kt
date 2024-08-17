@@ -27,6 +27,8 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
+import com.pyamsoft.tetherfi.server.clients.ClientResolver
+import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -55,6 +57,7 @@ internal constructor(
     private val preferences: ServerPreferences,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
+    private val clientResolver: ClientResolver,
     private val allowedClients: AllowedClients,
     private val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
@@ -79,7 +82,7 @@ internal constructor(
       block: (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
       usingSocketBuilder(serverDispatcher.primary) { builder ->
-        // We dont actually use the socket tls() method here since we are not a TLS server
+        // We don't actually use the socket tls() method here since we are not a TLS server
         // We do the CONNECT based workaround to handle HTTPS connections
         val remote =
             InetSocketAddress(
@@ -111,7 +114,7 @@ internal constructor(
 
   private fun CoroutineScope.handleClientRequestSideEffects(
       serverDispatcher: ServerDispatcher,
-      hostNameOrIp: String,
+      client: TetherClient,
   ) {
     enforcer.assertOffMainThread()
 
@@ -125,20 +128,18 @@ internal constructor(
     //
     // Though, arguably, blocking is only a nice to have. Real network security should be handled
     // via the password.
-    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(hostNameOrIp) }
+    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(client) }
   }
 
   private fun CoroutineScope.handleClientReportSideEffects(
       serverDispatcher: ServerDispatcher,
-      hostNameOrIp: String,
       report: ByteTransferReport,
+      client: TetherClient,
   ) {
     enforcer.assertOffMainThread()
 
     // Track the report for the given client
-    launch(context = serverDispatcher.sideEffect) {
-      allowedClients.reportTransfer(hostNameOrIp, report)
-    }
+    launch(context = serverDispatcher.sideEffect) { allowedClients.reportTransfer(client, report) }
   }
 
   @CheckResult
@@ -148,6 +149,7 @@ internal constructor(
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       socketTracker: SocketTracker,
+      client: TetherClient,
   ): ByteTransferReport? {
     enforcer.assertOffMainThread()
 
@@ -172,6 +174,7 @@ internal constructor(
                 internetInput = internetInput,
                 internetOutput = internetOutput,
                 request = request,
+                client = client,
             )
           }
 
@@ -212,9 +215,12 @@ internal constructor(
       }
     }
 
-    // If the client is blocked we do not process any inpue
-    if (blockedClients.isBlocked(hostNameOrIp)) {
-      Timber.w { "Client is marked blocked: $hostNameOrIp" }
+    // Retrieve the client (or track if it is it new)
+    val client = clientResolver.ensure(hostNameOrIp)
+
+    // If the client is blocked we do not process any input
+    if (blockedClients.isBlocked(client)) {
+      Timber.w { "Client is marked blocked: $client" }
       writeClientBlocked(proxyOutput)
       return
     }
@@ -226,7 +232,7 @@ internal constructor(
     scope.launch(context = serverDispatcher.primary) {
       handleClientRequestSideEffects(
           serverDispatcher = serverDispatcher,
-          hostNameOrIp = hostNameOrIp,
+          client = client,
       )
     }
 
@@ -257,6 +263,7 @@ internal constructor(
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             socketTracker = socketTracker,
+            client = client,
         )
 
     if (report != null) {
@@ -267,8 +274,8 @@ internal constructor(
       scope.launch(context = serverDispatcher.primary) {
         handleClientReportSideEffects(
             serverDispatcher = serverDispatcher,
-            hostNameOrIp = hostNameOrIp,
             report = report,
+            client = client,
         )
       }
     }

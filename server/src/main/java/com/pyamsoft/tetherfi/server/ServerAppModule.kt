@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ClientEditor
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.ClientManagerImpl
+import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
@@ -107,6 +108,10 @@ abstract class ServerAppModule {
   @Binds @CheckResult internal abstract fun bindClientEraser(impl: ClientManagerImpl): ClientEraser
 
   @Binds @CheckResult internal abstract fun bindClientEditor(impl: ClientManagerImpl): ClientEditor
+
+  @Binds
+  @CheckResult
+  internal abstract fun bindClientResolver(impl: ClientManagerImpl): ClientResolver
 
   @Binds
   @CheckResult

@@ -20,6 +20,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
+import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import io.ktor.network.sockets.SocketTimeoutException
@@ -109,6 +110,7 @@ internal constructor(
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
       request: ProxyRequest,
+      client: TetherClient,
   ): ByteTransferReport? {
     enforcer.assertOffMainThread()
 
@@ -149,6 +151,7 @@ internal constructor(
             // Send data from the internet back to the proxy in a different thread
             val totalBytes =
                 talk(
+                    client = client,
                     input = internetInput,
                     output = proxyOutput,
                 )
@@ -166,6 +169,7 @@ internal constructor(
       // Send input from the proxy (clients) to the internet on this thread
       val totalBytes =
           talk(
+              client = client,
               input = proxyInput,
               output = internetOutput,
           )

@@ -53,8 +53,8 @@ import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.ui.CardDialog
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
-import org.jetbrains.annotations.TestOnly
 import java.time.Clock
+import org.jetbrains.annotations.TestOnly
 
 @Composable
 internal fun TransferDialog(
@@ -63,14 +63,14 @@ internal fun TransferDialog(
     onDismiss: () -> Unit,
     onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
-    TransferDialog(
-        modifier = modifier,
-        client = client,
-        showMenu = false,
-        allowLargeSizes = true,
-        onDismiss = onDismiss,
-        onUpdateTransferLimit = onUpdateTransferLimit,
-    )
+  TransferDialog(
+      modifier = modifier,
+      client = client,
+      showMenu = false,
+      allowLargeSizes = true,
+      onDismiss = onDismiss,
+      onUpdateTransferLimit = onUpdateTransferLimit,
+  )
 }
 
 @Composable
@@ -80,14 +80,14 @@ internal fun BandwidthLimitDialog(
     onDismiss: () -> Unit,
     onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
-    TransferDialog(
-        modifier = modifier,
-        client = client,
-        showMenu = false,
-        allowLargeSizes = false,
-        onDismiss = onDismiss,
-        onUpdateTransferLimit = onUpdateTransferLimit,
-    )
+  TransferDialog(
+      modifier = modifier,
+      client = client,
+      showMenu = false,
+      allowLargeSizes = false,
+      onDismiss = onDismiss,
+      onUpdateTransferLimit = onUpdateTransferLimit,
+  )
 }
 
 @Composable
@@ -99,174 +99,173 @@ private fun TransferDialog(
     onDismiss: () -> Unit,
     onUpdateTransferLimit: (TransferAmount?) -> Unit,
 ) {
-    val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
+  val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
 
-    // Initialize this to the current name
-    // This way we can track changes quickly without needing to update the model
-    val (enabled, setEnabled) = remember(client) { mutableStateOf(client.limit != null) }
-    val (amount, setAmount) =
-        remember(client) { mutableStateOf(client.limit?.amount?.toString().orEmpty()) }
-    val (limitUnit, setLimitUnit) =
-        remember(client) { mutableStateOf(client.limit?.unit ?: TransferUnit.KB) }
+  // Initialize this to the current name
+  // This way we can track changes quickly without needing to update the model
+  val (enabled, setEnabled) = remember(client) { mutableStateOf(client.transferLimit != null) }
+  val (amount, setAmount) =
+      remember(client) { mutableStateOf(client.transferLimit?.amount?.toString().orEmpty()) }
+  val (limitUnit, setLimitUnit) =
+      remember(client) { mutableStateOf(client.transferLimit?.unit ?: TransferUnit.KB) }
 
-    val hapticManager = LocalHapticManager.current
-    val amountValue = remember(amount) { amount.toULongOrNull() }
-    val canSave =
-        remember(amountValue, enabled) {
-            if (!enabled) {
-                return@remember true
-            } else {
-                return@remember amountValue != null
-            }
+  val hapticManager = LocalHapticManager.current
+  val amountValue = remember(amount) { amount.toULongOrNull() }
+  val canSave =
+      remember(amountValue, enabled) {
+        if (!enabled) {
+          return@remember true
+        } else {
+          return@remember amountValue != null
         }
-    val isError = remember(canSave) { !canSave }
+      }
+  val isError = remember(canSave) { !canSave }
 
-    val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
+  val handleDismissDropdown by rememberUpdatedState { setShowDropdown(false) }
 
-    CardDialog(
-        modifier = modifier,
-        onDismiss = onDismiss,
+  CardDialog(
+      modifier = modifier,
+      onDismiss = onDismiss,
+  ) {
+    Column(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
     ) {
+      Row(
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text(
+            modifier = Modifier.weight(1F),
+            text = stringResource(R.string.transfer_label),
+            style = MaterialTheme.typography.titleSmall,
+            color =
+                if (enabled) {
+                  MaterialTheme.colorScheme.onSurface
+                } else {
+                  MaterialTheme.colorScheme.onSurfaceVariant
+                },
+        )
+
+        Switch(
+            checked = enabled,
+            onCheckedChange = { newEnabled ->
+              if (newEnabled) {
+                hapticManager?.toggleOn()
+              } else {
+                hapticManager?.toggleOff()
+              }
+              setEnabled(newEnabled)
+            },
+        )
+      }
+
+      Row(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        TextField(
+            modifier = Modifier.weight(1F),
+            value = amount,
+            onValueChange = { setAmount(it) },
+            enabled = enabled,
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                ),
+            isError = isError,
+        )
+
         Column(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            modifier =
+                Modifier.padding(
+                    start = MaterialTheme.keylines.baseline,
+                ),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    modifier = Modifier.weight(1F),
-                    text = stringResource(R.string.transfer_label),
-                    style = MaterialTheme.typography.titleSmall,
-                    color =
-                    if (enabled) {
-                        MaterialTheme.colorScheme.onSurface
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
-
-                Switch(
-                    checked = enabled,
-                    onCheckedChange = { newEnabled ->
-                        if (newEnabled) {
-                            hapticManager?.toggleOn()
+          Text(
+              modifier =
+                  Modifier.run {
+                        if (!enabled) {
+                          this
                         } else {
-                            hapticManager?.toggleOff()
+                          border(
+                              width = 1.dp,
+                              color = MaterialTheme.colorScheme.primary,
+                              shape = MaterialTheme.shapes.small,
+                          )
                         }
-                        setEnabled(newEnabled)
-                    },
-                )
-            }
+                      }
+                      .padding(
+                          horizontal = MaterialTheme.keylines.content,
+                          vertical = MaterialTheme.keylines.baseline,
+                      )
+                      .clickable(enabled = enabled) { setShowDropdown(true) },
+              text = limitUnit.displayName,
+              style = MaterialTheme.typography.bodySmall,
+              color =
+                  MaterialTheme.colorScheme.onSurfaceVariant.run {
+                    if (enabled) {
+                      this
+                    } else {
+                      copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                    }
+                  },
+          )
 
-            Row(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextField(
-                    modifier = Modifier.weight(1F),
-                    value = amount,
-                    onValueChange = { setAmount(it) },
-                    enabled = enabled,
-                    keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                    ),
-                    isError = isError,
-                )
-
-                Column(
-                    modifier =
-                    Modifier.padding(
-                        start = MaterialTheme.keylines.baseline,
-                    ),
-                ) {
-                    Text(
-                        modifier =
-                        Modifier
-                            .run {
-                                if (!enabled) {
-                                    this
-                                } else {
-                                    border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = MaterialTheme.shapes.small,
-                                    )
-                                }
-                            }
-                            .padding(
-                                horizontal = MaterialTheme.keylines.content,
-                                vertical = MaterialTheme.keylines.baseline,
-                            )
-                            .clickable(enabled = enabled) { setShowDropdown(true) },
-                        text = limitUnit.displayName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color =
-                        MaterialTheme.colorScheme.onSurfaceVariant.run {
-                            if (enabled) {
-                                this
-                            } else {
-                                copy(alpha = TypographyDefaults.ALPHA_DISABLED)
-                            }
-                        },
-                    )
-
-                    TransferMenu(
-                        current = limitUnit,
-                        enabled = enabled,
-                        showDropdown = showDropdown,
-                        onDismiss = { handleDismissDropdown() },
-                        allowLargeSizes = allowLargeSizes,
-                        onSelect = { u ->
-                            hapticManager?.actionButtonPress()
-                            setLimitUnit(u)
-                            handleDismissDropdown()
-                        },
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.padding(top = MaterialTheme.keylines.content),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Spacer(
-                    modifier = Modifier.weight(1F),
-                )
-
-                TextButton(
-                    onClick = onDismiss,
-                ) {
-                    Text(
-                        text = stringResource(android.R.string.cancel),
-                    )
-                }
-                Button(
-                    modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-                    enabled = canSave,
-                    onClick = {
-                        val limit =
-                            if (enabled) {
-                                amountValue?.let { v ->
-                                    TransferAmount(
-                                        amount = v,
-                                        unit = limitUnit,
-                                    )
-                                }
-                            } else {
-                                null
-                            }
-                        onUpdateTransferLimit(limit)
-                        onDismiss()
-                    },
-                ) {
-                    Text(
-                        text = stringResource(android.R.string.ok),
-                    )
-                }
-            }
+          TransferMenu(
+              current = limitUnit,
+              enabled = enabled,
+              showDropdown = showDropdown,
+              onDismiss = { handleDismissDropdown() },
+              allowLargeSizes = allowLargeSizes,
+              onSelect = { u ->
+                hapticManager?.actionButtonPress()
+                setLimitUnit(u)
+                handleDismissDropdown()
+              },
+          )
         }
+      }
+
+      Row(
+          modifier = Modifier.padding(top = MaterialTheme.keylines.content),
+          verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Spacer(
+            modifier = Modifier.weight(1F),
+        )
+
+        TextButton(
+            onClick = onDismiss,
+        ) {
+          Text(
+              text = stringResource(android.R.string.cancel),
+          )
+        }
+        Button(
+            modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+            enabled = canSave,
+            onClick = {
+              val limit =
+                  if (enabled) {
+                    amountValue?.let { v ->
+                      TransferAmount(
+                          amount = v,
+                          unit = limitUnit,
+                      )
+                    }
+                  } else {
+                    null
+                  }
+              onUpdateTransferLimit(limit)
+              onDismiss()
+            },
+        ) {
+          Text(
+              text = stringResource(android.R.string.ok),
+          )
+        }
+      }
     }
+  }
 }
 
 @Composable
@@ -279,19 +278,19 @@ private fun TransferMenu(
     onSelect: (TransferUnit) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    DropdownMenu(
-        modifier = modifier,
-        expanded = showDropdown,
-        properties = remember { PopupProperties(focusable = true) },
-        onDismissRequest = onDismiss,
-    ) {
-        TransferMenuItems(
-            enabled = enabled,
-            current = current,
-            allowLargeSizes = allowLargeSizes,
-            onSelect = onSelect,
-        )
-    }
+  DropdownMenu(
+      modifier = modifier,
+      expanded = showDropdown,
+      properties = remember { PopupProperties(focusable = true) },
+      onDismissRequest = onDismiss,
+  ) {
+    TransferMenuItems(
+        enabled = enabled,
+        current = current,
+        allowLargeSizes = allowLargeSizes,
+        onSelect = onSelect,
+    )
+  }
 }
 
 @Composable
@@ -301,49 +300,52 @@ private fun TransferMenuItems(
     current: TransferUnit,
     onSelect: (TransferUnit) -> Unit,
 ) {
-    // Don't let people pick bytes, who wants to limit bytes?
-    val availableUnits = remember(allowLargeSizes) {
+  // Don't let people pick bytes, who wants to limit bytes?
+  val availableUnits =
+      remember(allowLargeSizes) {
         var available = TransferUnit.entries.filterNot { it == TransferUnit.BYTE }
         if (allowLargeSizes) {
-            available =
-                available.filterNot { it == TransferUnit.GB }.filterNot { it == TransferUnit.TB }
-                    .filterNot { it == TransferUnit.PB }
+          available =
+              available
+                  .filterNot { it == TransferUnit.GB }
+                  .filterNot { it == TransferUnit.TB }
+                  .filterNot { it == TransferUnit.PB }
         }
         return@remember available
-    }
+      }
 
-    availableUnits.forEach { u ->
-        DropdownMenuItem(
-            onClick = { onSelect(u) },
-            text = {
-                val isSelected = remember(current, u) { u == current }
+  availableUnits.forEach { u ->
+    DropdownMenuItem(
+        onClick = { onSelect(u) },
+        text = {
+          val isSelected = remember(current, u) { u == current }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        enabled = enabled,
-                        selected = isSelected,
-                        onClick = { onSelect(u) },
-                    )
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            RadioButton(
+                enabled = enabled,
+                selected = isSelected,
+                onClick = { onSelect(u) },
+            )
 
-                    Text(
-                        modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-                        text = u.displayName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color =
-                        MaterialTheme.colorScheme.onSurfaceVariant.run {
-                            if (enabled) {
-                                this
-                            } else {
-                                copy(alpha = TypographyDefaults.ALPHA_DISABLED)
-                            }
-                        },
-                    )
-                }
-            },
-        )
-    }
+            Text(
+                modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                text = u.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant.run {
+                      if (enabled) {
+                        this
+                      } else {
+                        copy(alpha = TypographyDefaults.ALPHA_DISABLED)
+                      }
+                    },
+            )
+          }
+        },
+    )
+  }
 }
 
 @TestOnly
@@ -352,55 +354,56 @@ private fun PreviewTransferDialog(
     limit: TransferAmount?,
     showMenu: Boolean,
 ) {
-    TransferDialog(
-        client =
-        TetherClient.testCreate(
-            hostNameOrIp = TEST_HOSTNAME,
-            clock = Clock.systemDefaultZone(),
-            nickName = "",
-            limit = limit,
-            totalBytes = ByteTransferReport.EMPTY,
-        ),
-        allowLargeSizes = true,
-        showMenu = showMenu,
-        onDismiss = {},
-        onUpdateTransferLimit = {},
-    )
+  TransferDialog(
+      client =
+          TetherClient.testCreate(
+              hostNameOrIp = TEST_HOSTNAME,
+              clock = Clock.systemDefaultZone(),
+              nickName = "",
+              transferLimit = limit,
+              bandwidthLimit = null,
+              totalBytes = ByteTransferReport.EMPTY,
+          ),
+      allowLargeSizes = true,
+      showMenu = showMenu,
+      onDismiss = {},
+      onUpdateTransferLimit = {},
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewTransferDialogEmpty() {
-    PreviewTransferDialog(
-        limit = null,
-        showMenu = false,
-    )
+  PreviewTransferDialog(
+      limit = null,
+      showMenu = false,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewTransferDialogEnabled() {
-    PreviewTransferDialog(
-        limit =
-        TransferAmount(
-            10UL,
-            TransferUnit.MB,
-        ),
-        showMenu = false,
-    )
+  PreviewTransferDialog(
+      limit =
+          TransferAmount(
+              10UL,
+              TransferUnit.MB,
+          ),
+      showMenu = false,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewTransferDialogOpen() {
-    PreviewTransferDialog(
-        limit =
-        TransferAmount(
-            10UL,
-            TransferUnit.MB,
-        ),
-        showMenu = true,
-    )
+  PreviewTransferDialog(
+      limit =
+          TransferAmount(
+              10UL,
+              TransferUnit.MB,
+          ),
+      showMenu = true,
+  )
 }
 
 @TestOnly
@@ -410,72 +413,72 @@ private fun PreviewTransferMenuItems(
     current: TransferUnit,
     allowLargeSizes: Boolean,
 ) {
-    Column {
-        TransferMenuItems(
-            enabled = enabled,
-            current = current,
-            onSelect = {},
-            allowLargeSizes = allowLargeSizes,
-        )
-    }
+  Column {
+    TransferMenuItems(
+        enabled = enabled,
+        current = current,
+        onSelect = {},
+        allowLargeSizes = allowLargeSizes,
+    )
+  }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsLargeEnabled() {
-    PreviewTransferMenuItems(
-        enabled = true,
-        current = TransferUnit.KB,
-        allowLargeSizes = true,
-    )
+  PreviewTransferMenuItems(
+      enabled = true,
+      current = TransferUnit.KB,
+      allowLargeSizes = true,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsLargeDisabled() {
-    PreviewTransferMenuItems(
-        enabled = false,
-        current = TransferUnit.KB,
-        allowLargeSizes = true,
-    )
+  PreviewTransferMenuItems(
+      enabled = false,
+      current = TransferUnit.KB,
+      allowLargeSizes = true,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsLargePicked() {
-    PreviewTransferMenuItems(
-        enabled = true,
-        current = TransferUnit.MB,
-        allowLargeSizes = true,
-    )
+  PreviewTransferMenuItems(
+      enabled = true,
+      current = TransferUnit.MB,
+      allowLargeSizes = true,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsSmallEnabled() {
-    PreviewTransferMenuItems(
-        enabled = true,
-        current = TransferUnit.KB,
-        allowLargeSizes = false,
-    )
+  PreviewTransferMenuItems(
+      enabled = true,
+      current = TransferUnit.KB,
+      allowLargeSizes = false,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsSmallDisabled() {
-    PreviewTransferMenuItems(
-        enabled = false,
-        current = TransferUnit.KB,
-        allowLargeSizes = false,
-    )
+  PreviewTransferMenuItems(
+      enabled = false,
+      current = TransferUnit.KB,
+      allowLargeSizes = false,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewTransferMenuItemsSmallPicked() {
-    PreviewTransferMenuItems(
-        enabled = true,
-        current = TransferUnit.GB,
-        allowLargeSizes = false,
-    )
+  PreviewTransferMenuItems(
+      enabled = true,
+      current = TransferUnit.GB,
+      allowLargeSizes = false,
+  )
 }
