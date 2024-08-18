@@ -23,15 +23,15 @@ import androidx.compose.runtime.Stable
 @Stable
 @Immutable
 data class TransferAmount(
-    val bytes: ULong,
-    val amount: ULong,
+    val bytes: Long,
+    val amount: Long,
     val unit: TransferUnit,
 ) {
 
   val display by lazy { "$amount ${unit.displayName}" }
 
   constructor(
-      amount: ULong,
+      amount: Long,
       unit: TransferUnit
   ) : this(
       bytes = toBytes(amount, unit),
@@ -41,10 +41,10 @@ data class TransferAmount(
 
   companion object {
 
-    private const val UNIT_JUMP = 1024UL
+    private const val UNIT_JUMP = 1024L
 
     @CheckResult
-    private fun toBytes(amount: ULong, unit: TransferUnit): ULong {
+    private fun toBytes(amount: Long, unit: TransferUnit): Long {
       var total = amount
       var suffix = unit
       while (suffix != TransferUnit.BYTE) {
@@ -56,7 +56,7 @@ data class TransferAmount(
     }
 
     @CheckResult
-    internal fun fromBytes(total: ULong): TransferAmount {
+    internal fun fromBytes(total: Long): TransferAmount {
       var amount = total
       var suffix = TransferUnit.BYTE
       while (amount > UNIT_JUMP) {

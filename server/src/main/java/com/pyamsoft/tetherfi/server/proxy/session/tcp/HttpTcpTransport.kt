@@ -28,11 +28,11 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 internal class HttpTcpTransport
 @Inject
@@ -119,8 +119,8 @@ internal constructor(
     val report =
         MutableStateFlow(
             ByteTransferReport(
-                proxyToInternet = 0UL,
-                internetToProxy = 0UL,
+                proxyToInternet = 0L,
+                internetToProxy = 0L,
             ),
         )
 
@@ -159,10 +159,12 @@ internal constructor(
             // Save as report
             // MSF shouldn't need a mutex and this operation touches an exclusive field,
             // we should be okay
-            report.update {
-              it.copy(
-                  internetToProxy = it.internetToProxy + totalBytes,
-              )
+            if (totalBytes > 0L) {
+              report.update {
+                it.copy(
+                    internetToProxy = it.internetToProxy + totalBytes,
+                )
+              }
             }
           }
 
@@ -177,10 +179,12 @@ internal constructor(
       // Save as report
       // MSF shouldn't need a mutex and this operation touches an exclusive field,
       // we should be okay
-      report.update {
-        it.copy(
-            proxyToInternet = it.proxyToInternet + totalBytes,
-        )
+      if (totalBytes > 0L) {
+        report.update {
+          it.copy(
+              proxyToInternet = it.proxyToInternet + totalBytes,
+          )
+        }
       }
 
       // Wait for internet communication to finish

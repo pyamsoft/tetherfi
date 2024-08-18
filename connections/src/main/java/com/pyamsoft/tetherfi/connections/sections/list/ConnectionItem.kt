@@ -371,7 +371,7 @@ private fun PreviewConnectionItemWithName() {
 private fun PreviewConnectionItemWithLimit() {
   PreviewConnectionItem(
       nickName = "",
-      transferLimit = TransferAmount(10UL, TransferUnit.MB),
+      transferLimit = TransferAmount(10L, TransferUnit.MB),
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -381,11 +381,11 @@ private fun PreviewConnectionItemWithLimit() {
 private fun PreviewConnectionItemUnderLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      transferLimit = TransferAmount(10UL, TransferUnit.MB),
+      transferLimit = TransferAmount(10L, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
-              internetToProxy = 5UL,
-              proxyToInternet = 5UL,
+              internetToProxy = 5L,
+              proxyToInternet = 5L,
           ),
   )
 }
@@ -395,11 +395,11 @@ private fun PreviewConnectionItemUnderLimit() {
 private fun PreviewConnectionItemOverLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
-      transferLimit = TransferAmount(5UL, TransferUnit.MB),
+      transferLimit = TransferAmount(5L, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
-              internetToProxy = (10UL * 1024UL * 1024UL),
-              proxyToInternet = (10UL * 1024UL * 1024UL),
+              internetToProxy = (10L * 1024L * 1024L),
+              proxyToInternet = (10L * 1024L * 1024L),
           ),
   )
 }

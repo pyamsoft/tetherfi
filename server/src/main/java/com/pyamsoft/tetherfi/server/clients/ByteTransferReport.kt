@@ -17,16 +17,16 @@
 package com.pyamsoft.tetherfi.server.clients
 
 data class ByteTransferReport(
-    val internetToProxy: ULong,
-    val proxyToInternet: ULong,
+    val internetToProxy: Long,
+    val proxyToInternet: Long,
 ) {
   companion object {
 
     @JvmField
     val EMPTY =
         ByteTransferReport(
-            internetToProxy = 0UL,
-            proxyToInternet = 0UL,
+            internetToProxy = 0L,
+            proxyToInternet = 0L,
         )
   }
 }

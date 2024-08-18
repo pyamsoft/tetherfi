@@ -27,10 +27,10 @@ import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.delay
 
 /** Buffers are 4MB in size */
-private const val BUFFER_MAX_SIZE: Long = 4_194_304
+private const val BUFFER_MAX_SIZE = 4_194_304L
 
 /** Bandwidth is measured per second */
-private const val BANDWIDTH_INTERVAL: Long = 1000
+private const val BANDWIDTH_INTERVAL = 1000L
 
 /**
  * Line ending for socket messages
@@ -76,25 +76,43 @@ private suspend fun proxyResponse(output: ByteWriteChannel, response: String) {
 }
 
 @CheckResult
+private fun decideBufferSize(limit: Long): Long {
+  return if (limit > 0L) {
+    if (limit > BUFFER_MAX_SIZE) {
+      BUFFER_MAX_SIZE
+    } else {
+      limit
+    }
+  } else {
+    BUFFER_MAX_SIZE
+  }
+}
+
+@CheckResult
 internal suspend inline fun talk(
     client: TetherClient,
     input: ByteReadChannel,
     output: ByteWriteChannel,
-): ULong {
+): Long {
   // Should be faster than parsing byte buffers raw
   // input.joinTo(output, closeOnEnd = true)
 
   // https://github.com/pyamsoft/tetherfi/issues/279
   //
   // We want to keep track of how many total bytes we've worked with
-  var total = 0UL
+  var total = 0L
 
   // Rate Limiting (inline for performance)
   val transferLimit = client.transferLimit
-  val bandwidthLimit = transferLimit?.bytes ?: 0UL
-  val enforceBandwidthLimit = bandwidthLimit >= 0UL
+  val bandwidthLimit = transferLimit?.bytes ?: 0L
+  val enforceBandwidthLimit = bandwidthLimit > 0L
   var startTime = System.currentTimeMillis()
-  var bytesCopied = 0UL
+  var bytesCopied = 0L
+
+  // The buffer size is either our default 4M amount,
+  // or the bandwidth limit IFF the limit is smaller than the
+  // default size
+  val bufferSize = decideBufferSize(bandwidthLimit)
 
   // If nothing is copied, we abandon immediately
   while (!output.isClosedForWrite) {
@@ -102,7 +120,7 @@ internal suspend inline fun talk(
         try {
           // Use a small buffer size to not overflow the device memory with a single large
           // transaction.
-          input.copyTo(output, BUFFER_MAX_SIZE)
+          input.copyTo(output, bufferSize)
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error during HTTP talk" }
@@ -118,12 +136,11 @@ internal suspend inline fun talk(
     }
 
     // Reporting
-    val c = copied.toULong()
-    total += c
+    total += copied
 
     // Rate Limiting
     if (enforceBandwidthLimit) {
-      bytesCopied += c
+      bytesCopied += copied
 
       // If we are over the limit, we need to wait before continuing
       if (bytesCopied > bandwidthLimit) {
@@ -132,13 +149,15 @@ internal suspend inline fun talk(
         val combined = startTime + BANDWIDTH_INTERVAL
         if (combined >= now) {
           val amount = combined - now
-          Timber.d { "Delay connection from bandwidth limit: $transferLimit wait ${amount}ms" }
-          delay(amount)
+          if (amount > 0) {
+            Timber.d { "Delay connection from bandwidth limit: $transferLimit wait ${amount}ms" }
+            delay(amount)
+          }
         }
 
         // Then reset counter
         startTime = now
-        bytesCopied = 0UL
+        bytesCopied = 0L
       }
     }
   }

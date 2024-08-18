@@ -110,7 +110,7 @@ private fun TransferDialog(
       remember(client) { mutableStateOf(client.transferLimit?.unit ?: TransferUnit.KB) }
 
   val hapticManager = LocalHapticManager.current
-  val amountValue = remember(amount) { amount.toULongOrNull() }
+  val amountValue = remember(amount) { amount.toLongOrNull() }
   val canSave =
       remember(amountValue, enabled) {
         if (!enabled) {
@@ -386,7 +386,7 @@ private fun PreviewTransferDialogEnabled() {
   PreviewTransferDialog(
       limit =
           TransferAmount(
-              10UL,
+              10L,
               TransferUnit.MB,
           ),
       showMenu = false,
@@ -399,7 +399,7 @@ private fun PreviewTransferDialogOpen() {
   PreviewTransferDialog(
       limit =
           TransferAmount(
-              10UL,
+              10L,
               TransferUnit.MB,
           ),
       showMenu = true,
