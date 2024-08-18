@@ -123,7 +123,7 @@ internal suspend inline fun talk(
           input.copyTo(output, bufferSize)
         } catch (e: Throwable) {
           e.ifNotCancellation {
-            Timber.e(e) { "Error during HTTP talk" }
+            Timber.e(e) { "Error during socket talk $client" }
 
             // Return 0 bytes to stop the talking, BUT
             // we want to still remember all the work we've done up until this point.

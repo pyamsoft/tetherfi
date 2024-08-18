@@ -40,13 +40,13 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class TcpProxySession
@@ -184,9 +184,9 @@ internal constructor(
         // Generally, the Transport should handle SocketTimeoutException itself.
         // We capture here JUST in case
         if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Internet socket timeout! $request" }
+          Timber.w { "Proxy:Internet socket timeout! $request $client" }
         } else {
-          Timber.e(e) { "Error during Internet exchange $request" }
+          Timber.e(e) { "Error during Internet exchange $request $client" }
           writeProxyError(proxyOutput)
         }
       }
@@ -250,7 +250,7 @@ internal constructor(
           }
         }
     if (handler == null) {
-      Timber.w { "Could not parse proxy request" }
+      Timber.w { "Could not parse proxy request $client" }
       writeProxyError(proxyOutput)
       return
     }

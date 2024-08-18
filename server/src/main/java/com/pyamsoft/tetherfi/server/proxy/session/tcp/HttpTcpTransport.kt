@@ -28,11 +28,11 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readUTF8Line
 import io.ktor.utils.io.writeFully
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 internal class HttpTcpTransport
 @Inject
@@ -195,9 +195,9 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Internet socket timeout! $request" }
+          Timber.w { "Proxy:Internet socket timeout! $request $client" }
         } else {
-          Timber.e(e) { "Error occurred during internet exchange: $request" }
+          Timber.e(e) { "Error occurred during internet exchange: $request $client" }
           writeProxyError(proxyOutput)
         }
       }
