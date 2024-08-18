@@ -145,16 +145,14 @@ internal constructor(
   @CheckResult
   private suspend fun CoroutineScope.proxyToInternet(
       serverDispatcher: ServerDispatcher,
-      handler: RequestHandler,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       socketTracker: SocketTracker,
       client: TetherClient,
+      transport: TcpSessionTransport,
+      request: ProxyRequest,
   ): ByteTransferReport? {
     enforcer.assertOffMainThread()
-
-    val request = handler.request
-    val transport = handler.transport
 
     // Given the request, connect to the Web
     try {
@@ -194,23 +192,18 @@ internal constructor(
     }
   }
 
-  private suspend fun handleClientRequest(
-      scope: CoroutineScope,
+  @CheckResult
+  private suspend fun resolveClientOrBlock(
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      socketTracker: SocketTracker,
-      hostNameOrIp: String,
-  ) {
+      hostNameOrIp: String
+  ): TetherClient? {
     // If the host is an IP address, and we are an IP address,
     // check that we fall into the host
     if (hostConnection.isIpAddress) {
       if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
         if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
           Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
-          writeClientBlocked(proxyOutput)
-          return
+          return null
         }
       }
     }
@@ -221,10 +214,22 @@ internal constructor(
     // If the client is blocked we do not process any input
     if (blockedClients.isBlocked(client)) {
       Timber.w { "Client is marked blocked: $client" }
-      writeClientBlocked(proxyOutput)
-      return
+      return null
     }
 
+    return client
+  }
+
+  private suspend fun processRequest(
+      scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
+      client: TetherClient,
+      transport: TcpSessionTransport,
+      request: ProxyRequest,
+  ) {
     // This is launched as its own scope so that the side effect does not slow
     // down the internet traffic processing.
     // Since this context is our own dispatcher which is cachedThreadPool backed,
@@ -236,33 +241,15 @@ internal constructor(
       )
     }
 
-    // We use a string parsing to figure out what this HTTP request wants to do
-    val handler =
-        transports.firstNotNullOfOrNull { transport ->
-          val req = transport.parseRequest(proxyInput)
-          if (req == null) {
-            return@firstNotNullOfOrNull null
-          } else {
-            return@firstNotNullOfOrNull RequestHandler(
-                transport = transport,
-                request = req,
-            )
-          }
-        }
-    if (handler == null) {
-      Timber.w { "Could not parse proxy request $client" }
-      writeProxyError(proxyOutput)
-      return
-    }
-
     // And then we go to the web!
     val report =
         scope.proxyToInternet(
             serverDispatcher = serverDispatcher,
-            handler = handler,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             socketTracker = socketTracker,
+            transport = transport,
+            request = request,
             client = client,
         )
 
@@ -279,6 +266,51 @@ internal constructor(
         )
       }
     }
+  }
+
+  private suspend fun handleClientRequest(
+      scope: CoroutineScope,
+      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      serverDispatcher: ServerDispatcher,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
+      hostNameOrIp: String,
+  ) {
+    val client = resolveClientOrBlock(hostConnection, hostNameOrIp)
+    if (client == null) {
+      writeClientBlocked(proxyOutput)
+      return
+    }
+
+    // We use a string parsing to figure out what this HTTP request wants to do
+    // Inline to avoid new object allocation
+    var transport: TcpSessionTransport? = null
+    var request: ProxyRequest? = null
+    for (t in transports) {
+      val req = t.parseRequest(proxyInput)
+      if (req != null) {
+        transport = t
+        request = req
+        break
+      }
+    }
+    if (transport == null || request == null) {
+      Timber.w { "Could not parse proxy request $client" }
+      writeProxyError(proxyOutput)
+      return
+    }
+
+    processRequest(
+        scope = scope,
+        serverDispatcher = serverDispatcher,
+        proxyInput = proxyInput,
+        proxyOutput = proxyOutput,
+        socketTracker = socketTracker,
+        client = client,
+        transport = transport,
+        request = request,
+    )
   }
 
   override suspend fun exchange(
@@ -306,9 +338,4 @@ internal constructor(
           e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
         }
       }
-
-  private data class RequestHandler(
-      val transport: TcpSessionTransport,
-      val request: ProxyRequest,
-  )
 }
