@@ -143,7 +143,8 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun CoroutineScope.proxyToInternet(
+  private suspend fun proxyToInternet(
+      scope: CoroutineScope,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -165,7 +166,7 @@ internal constructor(
           ) { internetInput, internetOutput ->
             // Communicate between the web connection we've made and back to our client device
             transport.exchangeInternet(
-                scope = this,
+                scope = scope,
                 serverDispatcher = serverDispatcher,
                 proxyInput = proxyInput,
                 proxyOutput = proxyOutput,
@@ -193,7 +194,7 @@ internal constructor(
   }
 
   @CheckResult
-  private suspend fun resolveClientOrBlock(
+  private fun resolveClientOrBlock(
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       hostNameOrIp: String
   ): TetherClient? {
@@ -243,7 +244,8 @@ internal constructor(
 
     // And then we go to the web!
     val report =
-        scope.proxyToInternet(
+        proxyToInternet(
+            scope = scope,
             serverDispatcher = serverDispatcher,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
