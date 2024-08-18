@@ -62,12 +62,19 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix("When stopping the hotspot, stop operation happens faster.")
                     change(
-                        "Wake Locks have been made ON by default. The option to toggle them will be removed in the next version.")
+                        "Wake Locks are now always ON. The UI will be removed in the next version.")
+                    feature("Stop the Hotspot quickly from the Notification")
+                    bugfix(
+                        "The \"Bandwidth Limit\" label was incorrect, this is a Data Transfer Maximum Limit")
+                    feature(
+                        "A real \"Bandwidth Limit\" feature has been added per connected device")
+                    feature(
+                        "A tweak to \"Keep Screen On\" for devices where performance is impacted when the screen turns off")
                     change(
-                        "The \"Enable Idle Timeout\" tweak will be made a default in the next version")
-                    feature("New Shortcut to directly start the hotspot")
+                        "The Hotspot will now require that Location Services are ON before starting")
+                    feature(
+                        "A tweak has been added to ignore the \"Location Services\" requirement for devices that do not need Location to be ON when using Wi-Fi Direct hotspot.")
                   }
                 },
         )

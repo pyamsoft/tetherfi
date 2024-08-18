@@ -89,10 +89,10 @@ internal suspend inline fun talk(
   // We want to keep track of how many total bytes we've worked with
   var total = 0UL
 
+  // Rate Limiting (inline for performance)
   val transferLimit = client.transferLimit
   val bandwidthLimit = transferLimit?.bytes ?: 0UL
   val enforceBandwidthLimit = bandwidthLimit >= 0UL
-
   var startTime = System.currentTimeMillis()
   var bytesCopied = 0UL
 
@@ -117,9 +117,11 @@ internal suspend inline fun talk(
       break
     }
 
+    // Reporting
     val c = copied.toULong()
     total += c
 
+    // Rate Limiting
     if (enforceBandwidthLimit) {
       bytesCopied += c
 
