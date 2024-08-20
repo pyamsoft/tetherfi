@@ -88,37 +88,6 @@ plugins {
   id("com.osacky.doctor") version "0.10.0" apply true
 }
 
-subprojects {
-  // If this project has an Android plugin applied
-  //
-  // Cannot use withType().configureEach {} or else the subproject plugins {} block
-  // won't work
-  plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
-    project.apply plugin: "org.gradle.android.cache-fix"
-    project.apply plugin: "kotlin-android"
-    project.apply plugin: "kotlin-kapt"
-
-    // Configure matching toolchains
-    // https://kotlinlang.org/docs/gradle-configure-project.html#2c42d1dc
-    //
-    // Or maybe don't
-    // https://jakewharton.com/gradle-toolchains-are-rarely-a-good-idea/
-    // kotlin {
-    //   jvmToolchain(17)
-    // }
-    // java {
-    //   toolchain {
-    //     languageVersion.set(JavaLanguageVersion.of(17))
-    //   }
-    // }
-
-    kapt {
-      correctErrorTypes = true
-      keepJavacAnnotationProcessors = true
-    }
-  }
-}
-
 allprojects {
   apply plugin: "com.diffplug.spotless"
   apply plugin: "com.github.ben-manes.versions"

@@ -20,6 +20,9 @@ plugins {
   id("com.android.application")
   id("com.google.devtools.ksp")
   id("org.jetbrains.kotlin.plugin.compose")
+  id("kotlin-android")
+  id("kotlin-kapt")
+  id("org.gradle.android.cache-fix")
 }
 
 android {
@@ -50,7 +53,7 @@ android {
   kotlinOptions { jvmTarget = JavaVersion.VERSION_17.majorVersion }
 
   signingConfigs {
-    getByName("debug") {
+    named("debug") {
       storeFile = file("debug.keystore")
       keyAlias = "androiddebugkey"
       keyPassword = "android"
@@ -127,6 +130,11 @@ android {
             "META-INF/io.netty.versions.properties",
         )
   }
+}
+
+kapt {
+  correctErrorTypes = true
+  keepJavacAnnotationProcessors = true
 }
 
 // Leave at bottom
