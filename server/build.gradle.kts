@@ -58,6 +58,11 @@ android {
   }
 }
 
+kapt {
+  correctErrorTypes = true
+  keepJavacAnnotationProcessors = true
+}
+
 dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
