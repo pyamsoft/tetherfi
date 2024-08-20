@@ -18,7 +18,6 @@ plugins {
   id("com.android.library")
   id("com.google.devtools.ksp")
   id("kotlin-android")
-  id("kotlin-kapt")
   id("org.gradle.android.cache-fix")
 }
 
@@ -48,15 +47,10 @@ android {
   buildFeatures { buildConfig = false }
 }
 
-kapt {
-  correctErrorTypes = true
-  keepJavacAnnotationProcessors = true
-}
-
 dependencies {
   coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
 
-  kapt("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.extra["coroutines"]}")
 

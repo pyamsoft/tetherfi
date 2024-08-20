@@ -40,13 +40,13 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class TcpProxySession
