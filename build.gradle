@@ -46,7 +46,7 @@ buildscript {
     ktor = "2.3.12"
 
     // Testing
-    testRunner = "1.6.1"
+    testRunner = "1.6.2"
   }
 }
 
