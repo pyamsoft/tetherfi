@@ -41,7 +41,7 @@ buildscript {
     composeMaterial3 = "1.2.1"
     composeActivity = "1.9.1"
 
-    desugar = "2.1.0"
+    desugar = "2.1.1"
 
     ktor = "2.3.12"
 
