@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.connections.sections.list
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -79,6 +80,7 @@ internal fun ConnectionItem(
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
     onManageTransferLimit: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
   val key = remember(client) { client.key() }
@@ -125,6 +127,7 @@ internal fun ConnectionItem(
               hapticManager = hapticManager,
               onManageNickName = onManageNickName,
               onManageTransferLimit = onManageTransferLimit,
+              onManageBandwidthLimit = onManageBandwidthLimit,
           )
 
           Switch(
@@ -164,6 +167,7 @@ private fun OptionsMenu(
     hapticManager: HapticManager?,
     onManageNickName: (TetherClient) -> Unit,
     onManageTransferLimit: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
 ) {
   val (show, setShow) = remember { mutableStateOf(false) }
 
@@ -182,6 +186,14 @@ private fun OptionsMenu(
     )
   }
 
+  /*
+  7
+  3
+
+  8
+  2
+   */
+
   DropdownMenu(
       expanded = show,
       properties = remember { PopupProperties(focusable = true) },
@@ -198,6 +210,11 @@ private fun OptionsMenu(
           onManageTransferLimit(client)
           handleDismiss()
         },
+        onManageBandwidthLimit = {
+          hapticManager?.actionButtonPress()
+          onManageBandwidthLimit(client)
+          handleDismiss()
+        },
     )
   }
 }
@@ -206,6 +223,7 @@ private fun OptionsMenu(
 private fun OptionsMenuItems(
     onManageNickName: () -> Unit,
     onManageTransferLimit: () -> Unit,
+    onManageBandwidthLimit: () -> Unit,
 ) {
   DropdownMenuItem(
       onClick = onManageNickName,
@@ -222,6 +240,16 @@ private fun OptionsMenuItems(
       text = {
         Text(
             text = stringResource(R.string.option_set_transfer),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+      },
+  )
+
+  DropdownMenuItem(
+      onClick = onManageBandwidthLimit,
+      text = {
+        Text(
+            text = stringResource(R.string.option_set_bandwidth),
             style = MaterialTheme.typography.bodyMedium,
         )
       },
@@ -255,48 +283,29 @@ private fun Name(
 
 @Composable
 private fun Transfer(
+    itemModifier: Modifier = Modifier,
     client: TetherClient,
     isOverLimit: Boolean,
 ) {
-  client.transferLimit?.also { limit ->
-    val context = LocalContext.current
-    val displayLimit =
-        remember(
-            context,
-            isOverLimit,
-            limit,
-        ) {
-          if (isOverLimit) {
-            context.getString(R.string.transfer_over_limit, limit.display)
-          } else {
-            limit.display
-          }
-        }
+  Limit(
+      modifier = itemModifier,
+      limit = client.bandwidthLimit,
+      label = stringResource(R.string.bandwidth_label),
+      limitLabelResId = R.string.bandwidth_limit,
+      // We don't go OVER a bandwidth limit, we just run into it
+      isOverLimit = false,
+  )
 
-    val color =
-        if (isOverLimit) {
-          MaterialTheme.colorScheme.error
-        } else {
-          MaterialTheme.colorScheme.onSurface.copy(
-              alpha = TypographyDefaults.ALPHA_DISABLED,
-          )
-        }
-
-    Text(
-        text =
-            stringResource(
-                R.string.transfer_limit,
-                stringResource(R.string.transfer_label),
-                displayLimit,
-            ),
-        style =
-            MaterialTheme.typography.bodySmall.copy(
-                color = color,
-            ),
-    )
-  }
+  Limit(
+      modifier = itemModifier,
+      limit = client.transferLimit,
+      label = stringResource(R.string.transfer_label),
+      limitLabelResId = R.string.transfer_limit,
+      isOverLimit = isOverLimit,
+  )
 
   Text(
+      modifier = itemModifier.padding(top = MaterialTheme.keylines.baseline),
       text =
           stringResource(R.string.connection_total_to_internet, client.transferToInternet.display),
       style =
@@ -309,6 +318,7 @@ private fun Transfer(
   )
 
   Text(
+      modifier = itemModifier,
       text =
           stringResource(
               R.string.connection_total_from_internet, client.transferFromInternet.display),
@@ -322,11 +332,61 @@ private fun Transfer(
   )
 }
 
+@Composable
+private fun Limit(
+    modifier: Modifier = Modifier,
+    limit: TransferAmount?,
+    label: String,
+    @StringRes limitLabelResId: Int,
+    isOverLimit: Boolean
+) {
+  limit?.also { target ->
+    val context = LocalContext.current
+    val displayLimit =
+        remember(
+            context,
+            isOverLimit,
+            target,
+            label,
+        ) {
+          if (isOverLimit) {
+            context.getString(R.string.transfer_over_limit, target.display)
+          } else {
+            target.display
+          }
+        }
+
+    val color =
+        if (isOverLimit) {
+          MaterialTheme.colorScheme.error
+        } else {
+          MaterialTheme.colorScheme.onSurface.copy(
+              alpha = TypographyDefaults.ALPHA_DISABLED,
+          )
+        }
+
+    Text(
+        modifier = modifier,
+        text =
+            stringResource(
+                limitLabelResId,
+                label,
+                displayLimit,
+            ),
+        style =
+            MaterialTheme.typography.bodySmall.copy(
+                color = color,
+            ),
+    )
+  }
+}
+
 @TestOnly
 @Composable
 private fun PreviewConnectionItem(
     nickName: String,
     transferLimit: TransferAmount?,
+    bandwidthLimit: TransferAmount?,
     totalBytes: ByteTransferReport,
 ) {
   ConnectionItem(
@@ -337,12 +397,13 @@ private fun PreviewConnectionItem(
               clock = Clock.systemDefaultZone(),
               nickName = nickName,
               transferLimit = transferLimit,
-              bandwidthLimit = null,
+              bandwidthLimit = bandwidthLimit,
               totalBytes = totalBytes,
           ),
       onToggleBlock = {},
       onManageTransferLimit = {},
       onManageNickName = {},
+      onManageBandwidthLimit = {},
   )
 }
 
@@ -352,6 +413,7 @@ private fun PreviewConnectionItemDefault() {
   PreviewConnectionItem(
       nickName = "",
       transferLimit = null,
+      bandwidthLimit = null,
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -362,6 +424,7 @@ private fun PreviewConnectionItemWithName() {
   PreviewConnectionItem(
       nickName = "TEST",
       transferLimit = null,
+      bandwidthLimit = null,
       totalBytes = ByteTransferReport.EMPTY,
   )
 }
@@ -373,6 +436,7 @@ private fun PreviewConnectionItemWithLimit() {
       nickName = "",
       transferLimit = TransferAmount(10L, TransferUnit.MB),
       totalBytes = ByteTransferReport.EMPTY,
+      bandwidthLimit = null,
   )
 }
 
@@ -387,6 +451,7 @@ private fun PreviewConnectionItemUnderLimit() {
               internetToProxy = 5L,
               proxyToInternet = 5L,
           ),
+      bandwidthLimit = null,
   )
 }
 
@@ -396,6 +461,48 @@ private fun PreviewConnectionItemOverLimit() {
   PreviewConnectionItem(
       nickName = "TEST",
       transferLimit = TransferAmount(5L, TransferUnit.MB),
+      totalBytes =
+          ByteTransferReport(
+              internetToProxy = (10L * 1024L * 1024L),
+              proxyToInternet = (10L * 1024L * 1024L),
+          ),
+      bandwidthLimit = null,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemWithLimitWithBandwidth() {
+  PreviewConnectionItem(
+      nickName = "",
+      transferLimit = TransferAmount(10L, TransferUnit.MB),
+      totalBytes = ByteTransferReport.EMPTY,
+      bandwidthLimit = TransferAmount(5L, TransferUnit.MB),
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemUnderLimitWithBandwidth() {
+  PreviewConnectionItem(
+      nickName = "TEST",
+      transferLimit = TransferAmount(10L, TransferUnit.MB),
+      totalBytes =
+          ByteTransferReport(
+              internetToProxy = 5L,
+              proxyToInternet = 5L,
+          ),
+      bandwidthLimit = TransferAmount(5L, TransferUnit.MB),
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewConnectionItemOverLimitWithBandwidth() {
+  PreviewConnectionItem(
+      nickName = "TEST",
+      transferLimit = TransferAmount(5L, TransferUnit.MB),
+      bandwidthLimit = TransferAmount(5L, TransferUnit.MB),
       totalBytes =
           ByteTransferReport(
               internetToProxy = (10L * 1024L * 1024L),
@@ -411,6 +518,7 @@ private fun PreviewConnectionItemOptionsMenuItems() {
     OptionsMenuItems(
         onManageNickName = {},
         onManageTransferLimit = {},
+        onManageBandwidthLimit = {},
     )
   }
 }

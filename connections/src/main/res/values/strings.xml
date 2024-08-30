@@ -23,8 +23,7 @@
   <string
     name="connection_total_from_internet"
   >Total Transferred From Internet: %1$s</string>
-  <string name="transfer_label">Transfer Limit</string>
-  <string name="transfer_limit">%1$s: %2$s</string>
+
   <string
     name="connection_excuse"
   >A more friendly solution is being actively investigated.</string>
@@ -38,7 +37,17 @@
   <string
     name="connection_running_explain"
   >By default, any connecting client is allowed to access the Internet through the Hotspot. If you want to block a client from the network, you can toggle the switch off for the IP address you wish to restrict.</string>
+
   <string name="option_set_nickname">Set Nick Name</string>
-  <string name="option_set_transfer">Set Transfer Limit</string>
+
   <string name="transfer_over_limit">OVER LIMIT: %1$s</string>
+  <string name="transfer_limit">%1$s: %2$s</string>
+
+  <string name="option_set_transfer">Set Transfer Limit</string>
+  <string name="transfer_label">Transfer Limit</string>
+
+  <!-- TODO(Help): Need zh-rTW translation -->
+  <string name="option_set_bandwidth">Set Bandwidth Limit</string>
+  <string name="bandwidth_label">Bandwidth Rate Limit</string>
+  <string name="bandwidth_limit">%1$s: %2$s/sec</string>
 </resources>

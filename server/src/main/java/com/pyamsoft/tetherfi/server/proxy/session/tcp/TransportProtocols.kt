@@ -103,8 +103,7 @@ internal suspend inline fun talk(
   var total = 0L
 
   // Rate Limiting (inline for performance)
-  val transferLimit = client.transferLimit
-  val bandwidthLimit = transferLimit?.bytes ?: 0L
+  val bandwidthLimit = client.bandwidthLimit?.bytes ?: 0L
   val enforceBandwidthLimit = bandwidthLimit > 0L
   var startTime = System.currentTimeMillis()
   var bytesCopied = 0L
@@ -150,7 +149,6 @@ internal suspend inline fun talk(
         if (combined >= now) {
           val amount = combined - now
           if (amount > 0) {
-            Timber.d { "Delay connection from bandwidth limit: $transferLimit wait ${amount}ms" }
             delay(amount)
           }
         }

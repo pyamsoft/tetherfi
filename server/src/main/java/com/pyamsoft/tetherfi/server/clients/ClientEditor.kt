@@ -27,4 +27,9 @@ interface ClientEditor {
       client: TetherClient,
       limit: TransferAmount?,
   )
+
+  suspend fun updateBandwidthLimit(
+      client: TetherClient,
+      limit: TransferAmount?,
+  )
 }

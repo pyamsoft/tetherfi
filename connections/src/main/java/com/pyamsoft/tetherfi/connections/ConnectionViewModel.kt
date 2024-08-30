@@ -69,14 +69,6 @@ internal constructor(
     state.managingNickName.value = null
   }
 
-  fun handleOpenManageTransferLimit(client: TetherClient) {
-    state.managingTransferLimit.value = client
-  }
-
-  fun handleCloseManageTransferLimit() {
-    state.managingTransferLimit.value = null
-  }
-
   fun handleUpdateNickName(scope: CoroutineScope, nickName: String) {
     val client = state.managingNickName.value
     if (client == null) {
@@ -90,16 +82,45 @@ internal constructor(
     }
   }
 
+  fun handleOpenManageTransferLimit(client: TetherClient) {
+    state.managingTransferLimit.value = client
+  }
+
+  fun handleCloseManageTransferLimit() {
+    state.managingTransferLimit.value = null
+  }
+
   fun handleUpdateTransferLimit(scope: CoroutineScope, limit: TransferAmount?) {
     val client = state.managingTransferLimit.value
     if (client == null) {
-      Timber.w { "Cannot update limit, no client" }
+      Timber.w { "Cannot update transfer limit, no client" }
       return
     }
 
     scope.launch(context = Dispatchers.Default) {
       Timber.d { "Update client limit: $client $limit" }
       clientEditor.updateTransferLimit(client, limit)
+    }
+  }
+
+  fun handleOpenManageBandwidthLimit(client: TetherClient) {
+    state.managingBandwidthLimit.value = client
+  }
+
+  fun handleCloseManageBandwidthLimit() {
+    state.managingBandwidthLimit.value = null
+  }
+
+  fun handleUpdateBandwidthLimit(scope: CoroutineScope, limit: TransferAmount?) {
+    val client = state.managingBandwidthLimit.value
+    if (client == null) {
+      Timber.w { "Cannot update bandwidth limit, no client" }
+      return
+    }
+
+    scope.launch(context = Dispatchers.Default) {
+      Timber.d { "Update client brandwidth limit: $client $limit" }
+      clientEditor.updateBandwidthLimit(client, limit)
     }
   }
 }

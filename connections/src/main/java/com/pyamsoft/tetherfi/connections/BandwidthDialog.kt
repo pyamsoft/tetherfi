@@ -47,13 +47,10 @@ import androidx.compose.ui.window.PopupProperties
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.ui.CardDialog
-import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
-import java.time.Clock
 import org.jetbrains.annotations.TestOnly
 
 @Composable
@@ -61,15 +58,16 @@ internal fun TransferDialog(
     modifier: Modifier = Modifier,
     client: TetherClient,
     onDismiss: () -> Unit,
-    onUpdateTransferLimit: (TransferAmount?) -> Unit,
+    onUpdateLimit: (TransferAmount?) -> Unit,
 ) {
   TransferDialog(
       modifier = modifier,
-      client = client,
+      limit = client.transferLimit,
+      label = stringResource(R.string.transfer_label),
       showMenu = false,
-      allowLargeSizes = true,
+      isBandwidth = false,
       onDismiss = onDismiss,
-      onUpdateTransferLimit = onUpdateTransferLimit,
+      onUpdateLimit = onUpdateLimit,
   )
 }
 
@@ -78,36 +76,47 @@ internal fun BandwidthLimitDialog(
     modifier: Modifier = Modifier,
     client: TetherClient,
     onDismiss: () -> Unit,
-    onUpdateTransferLimit: (TransferAmount?) -> Unit,
+    onUpdateLimit: (TransferAmount?) -> Unit,
 ) {
   TransferDialog(
       modifier = modifier,
-      client = client,
+      limit = client.bandwidthLimit,
+      label = stringResource(R.string.bandwidth_label),
       showMenu = false,
-      allowLargeSizes = false,
+      isBandwidth = true,
       onDismiss = onDismiss,
-      onUpdateTransferLimit = onUpdateTransferLimit,
+      onUpdateLimit = onUpdateLimit,
   )
 }
 
 @Composable
 private fun TransferDialog(
     modifier: Modifier = Modifier,
-    client: TetherClient,
+    limit: TransferAmount?,
     showMenu: Boolean,
-    allowLargeSizes: Boolean,
+    label: String,
+    isBandwidth: Boolean,
     onDismiss: () -> Unit,
-    onUpdateTransferLimit: (TransferAmount?) -> Unit,
+    onUpdateLimit: (TransferAmount?) -> Unit,
 ) {
   val (showDropdown, setShowDropdown) = remember(showMenu) { mutableStateOf(showMenu) }
 
   // Initialize this to the current name
   // This way we can track changes quickly without needing to update the model
-  val (enabled, setEnabled) = remember(client) { mutableStateOf(client.transferLimit != null) }
-  val (amount, setAmount) =
-      remember(client) { mutableStateOf(client.transferLimit?.amount?.toString().orEmpty()) }
+  val (enabled, setEnabled) = remember(limit) { mutableStateOf(limit != null) }
+  val (amount, setAmount) = remember(limit) { mutableStateOf(limit?.amount?.toString().orEmpty()) }
+
+  // The default unit depends on the type of Dialog
+  val defaultUnit =
+      remember(isBandwidth) { if (isBandwidth) TransferUnit.BYTE else TransferUnit.KB }
+
   val (limitUnit, setLimitUnit) =
-      remember(client) { mutableStateOf(client.transferLimit?.unit ?: TransferUnit.KB) }
+      remember(
+          limit,
+          defaultUnit,
+      ) {
+        mutableStateOf(limit?.unit ?: defaultUnit)
+      }
 
   val hapticManager = LocalHapticManager.current
   val amountValue = remember(amount) { amount.toLongOrNull() }
@@ -135,7 +144,7 @@ private fun TransferDialog(
       ) {
         Text(
             modifier = Modifier.weight(1F),
-            text = stringResource(R.string.transfer_label),
+            text = label,
             style = MaterialTheme.typography.titleSmall,
             color =
                 if (enabled) {
@@ -215,7 +224,7 @@ private fun TransferDialog(
               enabled = enabled,
               showDropdown = showDropdown,
               onDismiss = { handleDismissDropdown() },
-              allowLargeSizes = allowLargeSizes,
+              isBandwidth = isBandwidth,
               onSelect = { u ->
                 hapticManager?.actionButtonPress()
                 setLimitUnit(u)
@@ -244,7 +253,7 @@ private fun TransferDialog(
             modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
             enabled = canSave,
             onClick = {
-              val limit =
+              val newLimit =
                   if (enabled) {
                     amountValue?.let { v ->
                       TransferAmount(
@@ -255,7 +264,7 @@ private fun TransferDialog(
                   } else {
                     null
                   }
-              onUpdateTransferLimit(limit)
+              onUpdateLimit(newLimit)
               onDismiss()
             },
         ) {
@@ -273,7 +282,7 @@ private fun TransferMenu(
     modifier: Modifier = Modifier,
     enabled: Boolean,
     current: TransferUnit,
-    allowLargeSizes: Boolean,
+    isBandwidth: Boolean,
     showDropdown: Boolean,
     onSelect: (TransferUnit) -> Unit,
     onDismiss: () -> Unit,
@@ -287,7 +296,7 @@ private fun TransferMenu(
     TransferMenuItems(
         enabled = enabled,
         current = current,
-        allowLargeSizes = allowLargeSizes,
+        isBandwidth = isBandwidth,
         onSelect = onSelect,
     )
   }
@@ -296,22 +305,21 @@ private fun TransferMenu(
 @Composable
 private fun TransferMenuItems(
     enabled: Boolean,
-    allowLargeSizes: Boolean,
+    isBandwidth: Boolean,
     current: TransferUnit,
     onSelect: (TransferUnit) -> Unit,
 ) {
-  // Don't let people pick bytes, who wants to limit bytes?
   val availableUnits =
-      remember(allowLargeSizes) {
-        var available = TransferUnit.entries.filterNot { it == TransferUnit.BYTE }
-        if (allowLargeSizes) {
-          available =
-              available
-                  .filterNot { it == TransferUnit.GB }
-                  .filterNot { it == TransferUnit.TB }
-                  .filterNot { it == TransferUnit.PB }
+      remember(isBandwidth) {
+        if (isBandwidth) {
+          // Nothing in existance has a TB or PB rate, don't allow it
+          return@remember TransferUnit.entries
+              .filterNot { it == TransferUnit.TB }
+              .filterNot { it == TransferUnit.PB }
+        } else {
+          // Don't let people pick bytes, who wants to limit bytes?
+          return@remember TransferUnit.entries.filterNot { it == TransferUnit.BYTE }
         }
-        return@remember available
       }
 
   availableUnits.forEach { u ->
@@ -355,19 +363,12 @@ private fun PreviewTransferDialog(
     showMenu: Boolean,
 ) {
   TransferDialog(
-      client =
-          TetherClient.testCreate(
-              hostNameOrIp = TEST_HOSTNAME,
-              clock = Clock.systemDefaultZone(),
-              nickName = "",
-              transferLimit = limit,
-              bandwidthLimit = null,
-              totalBytes = ByteTransferReport.EMPTY,
-          ),
-      allowLargeSizes = true,
+      limit = limit,
+      label = "TEST",
+      isBandwidth = true,
       showMenu = showMenu,
       onDismiss = {},
-      onUpdateTransferLimit = {},
+      onUpdateLimit = {},
   )
 }
 
@@ -418,7 +419,7 @@ private fun PreviewTransferMenuItems(
         enabled = enabled,
         current = current,
         onSelect = {},
-        allowLargeSizes = allowLargeSizes,
+        isBandwidth = allowLargeSizes,
     )
   }
 }

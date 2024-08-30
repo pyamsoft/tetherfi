@@ -64,6 +64,9 @@ fun ConnectionScreen(
     onOpenManageTransferLimit: (TetherClient) -> Unit,
     onCloseManageTransferLimit: () -> Unit,
     onUpdateTransferLimit: (TransferAmount?) -> Unit,
+    onOpenManageBandwidthLimit: (TetherClient) -> Unit,
+    onCloseManageBandwidthLimit: () -> Unit,
+    onUpdateBandwidthLimit: (TransferAmount?) -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val clients = state.connections.collectAsStateListWithLifecycle()
@@ -71,6 +74,7 @@ fun ConnectionScreen(
 
   val manageNickName by state.managingNickName.collectAsStateWithLifecycle()
   val manageTransfer by state.managingTransferLimit.collectAsStateWithLifecycle()
+  val manageBandwidth by state.managingBandwidthLimit.collectAsStateWithLifecycle()
 
   LazyColumn(
       modifier = modifier,
@@ -86,9 +90,10 @@ fun ConnectionScreen(
         group = group,
         clients = clients,
         blocked = blocked,
+        onToggleBlock = onToggleBlock,
         onManageNickName = onOpenManageNickName,
         onManageTransferLimit = onOpenManageTransferLimit,
-        onToggleBlock = onToggleBlock,
+        onManageBandwidthLimit = onOpenManageBandwidthLimit,
     )
 
     renderExcuse(
@@ -120,8 +125,16 @@ fun ConnectionScreen(
   manageTransfer?.also { manage ->
     TransferDialog(
         client = manage,
-        onUpdateTransferLimit = onUpdateTransferLimit,
+        onUpdateLimit = onUpdateTransferLimit,
         onDismiss = { onCloseManageTransferLimit() },
+    )
+  }
+
+  manageBandwidth?.also { manage ->
+    BandwidthLimitDialog(
+        client = manage,
+        onUpdateLimit = onUpdateBandwidthLimit,
+        onDismiss = { onCloseManageBandwidthLimit() },
     )
   }
 }
@@ -132,6 +145,7 @@ private fun PreviewConnectionScreen(
     serverViewState: TestServerState,
     nickName: TetherClient?,
     transfer: TetherClient?,
+    bandwidth: TetherClient?,
     clientCount: Int,
 ) {
   ConnectionScreen(
@@ -178,6 +192,7 @@ private fun PreviewConnectionScreen(
                 )
             override val managingNickName = MutableStateFlow(nickName)
             override val managingTransferLimit = MutableStateFlow(transfer)
+            override val managingBandwidthLimit = MutableStateFlow(bandwidth)
           },
       serverViewState = makeTestServerState(serverViewState),
       onCloseManageNickName = {},
@@ -187,6 +202,9 @@ private fun PreviewConnectionScreen(
       onToggleBlock = {},
       onOpenManageNickName = {},
       onOpenManageTransferLimit = {},
+      onUpdateBandwidthLimit = {},
+      onOpenManageBandwidthLimit = {},
+      onCloseManageBandwidthLimit = {},
   )
 }
 
@@ -196,6 +214,7 @@ private fun PreviewConnectionScreenEmpty() {
   PreviewConnectionScreen(
       nickName = null,
       transfer = null,
+      bandwidth = null,
       clientCount = 0,
       serverViewState = TestServerState.EMPTY,
   )
@@ -215,6 +234,7 @@ private fun PreviewConnectionScreenEmptyManageNickName() {
               totalBytes = ByteTransferReport.EMPTY,
           ),
       transfer = null,
+      bandwidth = null,
       clientCount = 0,
       serverViewState = TestServerState.EMPTY,
   )
@@ -235,6 +255,7 @@ private fun PreviewConnectionScreenEmptyManageTransfer() {
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
+      bandwidth = null,
       serverViewState = TestServerState.EMPTY,
   )
 }
@@ -246,6 +267,7 @@ private fun PreviewConnectionScreenActiveNoClients() {
       nickName = null,
       transfer = null,
       clientCount = 0,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }
@@ -265,6 +287,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageNickName() {
           ),
       transfer = null,
       clientCount = 0,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }
@@ -284,6 +307,7 @@ private fun PreviewConnectionScreenActiveNoClientsManageTransfer() {
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 0,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }
@@ -295,6 +319,7 @@ private fun PreviewConnectionScreenActiveWithClients() {
       nickName = null,
       transfer = null,
       clientCount = 5,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }
@@ -314,6 +339,7 @@ private fun PreviewConnectionScreenActiveWithClientsManageNickName() {
           ),
       transfer = null,
       clientCount = 5,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }
@@ -333,6 +359,7 @@ private fun PreviewConnectionScreenActiveWithClientsManageTransfer() {
               totalBytes = ByteTransferReport.EMPTY,
           ),
       clientCount = 5,
+      bandwidth = null,
       serverViewState = TestServerState.CONNECTED,
   )
 }

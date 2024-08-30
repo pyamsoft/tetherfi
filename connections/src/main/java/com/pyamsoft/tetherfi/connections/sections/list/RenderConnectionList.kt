@@ -45,6 +45,7 @@ internal fun LazyListScope.renderConnectionList(
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
     onManageTransferLimit: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
 ) {
   group.also { gi ->
     if (gi is BroadcastNetworkStatus.GroupInfo.Connected) {
@@ -57,9 +58,10 @@ internal fun LazyListScope.renderConnectionList(
             itemModifier = modifier,
             clients = clients,
             blocked = blocked,
+            onToggleBlock = onToggleBlock,
             onManageNickName = onManageNickName,
             onManageTransferLimit = onManageTransferLimit,
-            onToggleBlock = onToggleBlock,
+            onManageBandwidthLimit = onManageBandwidthLimit,
         )
       }
     } else {
@@ -95,6 +97,7 @@ private fun LazyListScope.renderRunningWithClients(
     onToggleBlock: (TetherClient) -> Unit,
     onManageNickName: (TetherClient) -> Unit,
     onManageTransferLimit: (TetherClient) -> Unit,
+    onManageBandwidthLimit: (TetherClient) -> Unit,
 ) {
   item(
       contentType = RenderConnectionListContentTypes.HEADER,
@@ -122,9 +125,10 @@ private fun LazyListScope.renderRunningWithClients(
         modifier = itemModifier,
         client = client,
         blocked = blocked,
+        onToggleBlock = onToggleBlock,
         onManageNickName = onManageNickName,
         onManageTransferLimit = onManageTransferLimit,
-        onToggleBlock = onToggleBlock,
+        onManageBandwidthLimit = onManageBandwidthLimit,
     )
   }
 }

@@ -80,16 +80,24 @@ fun ConnectionEntry(
       onToggleBlock = { viewModel.handleToggleBlock(it) },
       onOpenManageNickName = { viewModel.handleOpenManageNickName(it) },
       onCloseManageNickName = { viewModel.handleCloseManageNickName() },
-      onOpenManageTransferLimit = { viewModel.handleOpenManageTransferLimit(it) },
-      onCloseManageTransferLimit = { viewModel.handleCloseManageTransferLimit() },
       onUpdateNickName = {
         viewModel.handleUpdateNickName(
             scope = lifecycleScope,
             nickName = it,
         )
       },
+      onOpenManageTransferLimit = { viewModel.handleOpenManageTransferLimit(it) },
+      onCloseManageTransferLimit = { viewModel.handleCloseManageTransferLimit() },
       onUpdateTransferLimit = {
         viewModel.handleUpdateTransferLimit(
+            scope = lifecycleScope,
+            limit = it,
+        )
+      },
+      onOpenManageBandwidthLimit = { viewModel.handleOpenManageBandwidthLimit(it) },
+      onCloseManageBandwidthLimit = { viewModel.handleCloseManageBandwidthLimit() },
+      onUpdateBandwidthLimit = {
+        viewModel.handleUpdateBandwidthLimit(
             scope = lifecycleScope,
             limit = it,
         )

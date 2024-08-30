@@ -84,22 +84,22 @@ enum class TransferUnit(val displayName: String) {
   @CheckResult
   fun nextLargest(): TransferUnit =
       when (this) {
-          BYTE -> KB
-          KB -> MB
-          MB -> GB
-          GB -> TB
-          TB -> PB
-          else -> throw IllegalStateException("Bytes payload too big: $this")
+        BYTE -> KB
+        KB -> MB
+        MB -> GB
+        GB -> TB
+        TB -> PB
+        else -> throw IllegalStateException("Bytes payload too big: $this")
       }
 
   @CheckResult
   fun previousSmallest(): TransferUnit =
       when (this) {
-          PB -> TB
-          TB -> GB
-          GB -> MB
-          MB -> KB
-          KB -> BYTE
-          else -> throw IllegalStateException("Bytes payload too small: $this")
+        PB -> TB
+        TB -> GB
+        GB -> MB
+        MB -> KB
+        KB -> BYTE
+        else -> throw IllegalStateException("Bytes payload too small: $this")
       }
 }
