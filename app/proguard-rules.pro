@@ -37,3 +37,11 @@
 # Keep line numbers for Stack Traces
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
+
+# https://issuetracker.google.com/issues/336842920#comment5
+-if public class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt {
+    public static *** getLocalLifecycleOwner();
+}
+-keep public class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt {
+    public static *** getLocalLifecycleOwner();
+}
