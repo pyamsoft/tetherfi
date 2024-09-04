@@ -38,10 +38,6 @@
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
 
-# https://issuetracker.google.com/issues/336842920#comment5
--if public class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt {
-    public static *** getLocalLifecycleOwner();
-}
--keep public class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt {
-    public static *** getLocalLifecycleOwner();
-}
+# https://issuetracker.google.com/issues/336842920
+# https://issuetracker.google.com/issues/346808608
+-keep class androidx.compose.ui.platform.AndroidCompositionLocals_androidKt { *; }
