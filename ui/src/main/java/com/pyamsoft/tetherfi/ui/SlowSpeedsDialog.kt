@@ -258,7 +258,8 @@ fun SlowSpeedsUpsell(
                   clickable =
                       LinkAnnotation.Clickable(
                           tag = "Placeholder, onClick handled in code",
-                          linkInteractionListener = { handlePlaceholderLinkClicked(it) }),
+                          linkInteractionListener = { handlePlaceholderLinkClicked(it) },
+                      ),
                   start = slowSpeedIndex,
                   end = slowSpeedIndex + slowSpeed.length,
               )
