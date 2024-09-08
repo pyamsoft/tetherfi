@@ -87,6 +87,7 @@ class AppDevEnvironment @Inject constructor() {
   }
 
   @Stable
+  @ConsistentCopyVisibility
   data class GroupInfo
   internal constructor(
       val isEmpty: StateFlow<Boolean>,
@@ -95,6 +96,7 @@ class AppDevEnvironment @Inject constructor() {
   )
 
   @Stable
+  @ConsistentCopyVisibility
   data class ConnectionInfo
   internal constructor(
       val isEmpty: StateFlow<Boolean>,

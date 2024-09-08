@@ -64,8 +64,7 @@ class MainActivity : AppCompatActivity() {
                   override val changelog = buildChangeLog {
                     change(
                         "Idle Timeout Tweak is now always ON. The UI will be removed in the next version.")
-                      change(
-                          "Deprecated Wake Locks UI has been removed")
+                    change("Deprecated Wake Locks UI has been removed")
                   }
                 },
         )

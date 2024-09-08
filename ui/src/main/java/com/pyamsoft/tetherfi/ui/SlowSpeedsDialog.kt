@@ -22,18 +22,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -120,6 +122,12 @@ private fun SlowSpeedsLink(
     style: TextStyle,
 ) {
   val uriHandler = rememberUriHandler()
+  val handleLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Url) {
+      uriHandler.openUri(link.url)
+    }
+  }
+
   val linkColor = MaterialTheme.colorScheme.primary
 
   val rawBlurb = stringResource(R.string.hotspot_speed_faq, slowSpeed)
@@ -155,9 +163,13 @@ private fun SlowSpeedsLink(
         // Can only add annotations to builders
         return@remember AnnotatedString.Builder(visualString)
             .apply {
-              addStringAnnotation(
-                  tag = slowSpeed,
-                  annotation = "https://github.com/pyamsoft/tetherfi/wiki/Slow-Hotspot-Performance",
+              addLink(
+                  url =
+                      LinkAnnotation.Url(
+                          url =
+                              "https://github.com/pyamsoft/tetherfi/wiki/Slow-Hotspot-Performance",
+                          linkInteractionListener = { handleLinkClicked(it) },
+                      ),
                   start = slowSpeedIndex,
                   end = slowSpeedIndex + slowSpeed.length,
               )
@@ -165,23 +177,10 @@ private fun SlowSpeedsLink(
             .toAnnotatedString()
       }
 
-  ClickableText(
+  Text(
       modifier = modifier,
-      style =
-          style.copy(
-              color = MaterialTheme.colorScheme.onBackground,
-          ),
+      style = style,
       text = text,
-      onClick = { start ->
-        text
-            .getStringAnnotations(
-                tag = slowSpeed,
-                start = start,
-                end = start + slowSpeed.length,
-            )
-            .firstOrNull()
-            ?.also { uriHandler.openUri(it.item) }
-      },
   )
 }
 
@@ -216,6 +215,12 @@ fun SlowSpeedsUpsell(
   val slowSpeed = stringResource(R.string.hotspot_speed_what)
   val upsell = stringResource(R.string.hotspot_speed_sad, slowSpeed)
 
+  val handlePlaceholderLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Clickable) {
+      onClick()
+    }
+  }
+
   val linkColor = MaterialTheme.colorScheme.primary
   val text =
       remember(
@@ -249,9 +254,11 @@ fun SlowSpeedsUpsell(
         // Can only add annotations to builders
         return@remember AnnotatedString.Builder(visualString)
             .apply {
-              addStringAnnotation(
-                  tag = slowSpeed,
-                  annotation = "Placeholder, onClick handled in code",
+              addLink(
+                  clickable =
+                      LinkAnnotation.Clickable(
+                          tag = "Placeholder, onClick handled in code",
+                          linkInteractionListener = { handlePlaceholderLinkClicked(it) }),
                   start = slowSpeedIndex,
                   end = slowSpeedIndex + slowSpeed.length,
               )
@@ -259,23 +266,10 @@ fun SlowSpeedsUpsell(
             .toAnnotatedString()
       }
 
-  ClickableText(
+  Text(
       modifier = modifier,
-      style =
-          style.copy(
-              color = MaterialTheme.colorScheme.onBackground,
-          ),
+      style = style,
       text = text,
-      onClick = { start ->
-        text
-            .getStringAnnotations(
-                tag = slowSpeed,
-                start = start,
-                end = start + slowSpeed.length,
-            )
-            .firstOrNull()
-            ?.also { onClick() }
-      },
   )
 }
 

@@ -22,19 +22,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +49,6 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.common.StatusItem
-import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.SlowSpeedsUpsell
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -55,6 +56,7 @@ import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
+import com.pyamsoft.tetherfi.ui.R as R2
 
 @Composable
 internal fun ViewProxy(
@@ -183,6 +185,12 @@ internal fun ViewInstructions(
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
 ) {
+  val handlePlaceholderLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Clickable) {
+      onJumpToHowTo()
+    }
+  }
+
   val linkColor = MaterialTheme.colorScheme.primary
 
   val setupText = stringResource(R.string.viewmode_setup_instructions)
@@ -219,9 +227,11 @@ internal fun ViewInstructions(
         // Can only add annotations to builders
         return@remember AnnotatedString.Builder(visualString)
             .apply {
-              addStringAnnotation(
-                  tag = setupText,
-                  annotation = "Placeholder, onClick handled in code",
+              addLink(
+                  clickable =
+                      LinkAnnotation.Clickable(
+                          tag = "Placeholder, onClick handled in code",
+                          linkInteractionListener = { handlePlaceholderLinkClicked(it) }),
                   start = setupIndex,
                   end = setupIndex + setupText.length,
               )
@@ -234,23 +244,12 @@ internal fun ViewInstructions(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center,
   ) {
-    ClickableText(
+    Text(
         style =
             MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
             ),
         text = text,
-        onClick = { start ->
-          text
-              .getStringAnnotations(
-                  tag = setupText,
-                  start = start,
-                  end = start + setupText.length,
-              )
-              .firstOrNull()
-              ?.also { onJumpToHowTo() }
-        },
     )
 
     SlowSpeedsUpsell(

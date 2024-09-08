@@ -20,6 +20,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 
+@ConsistentCopyVisibility
 internal data class TcpProxyData
 internal constructor(
     internal val proxyInput: ByteReadChannel,

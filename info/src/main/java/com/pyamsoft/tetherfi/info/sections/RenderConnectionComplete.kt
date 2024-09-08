@@ -21,14 +21,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -109,6 +111,11 @@ private fun FullConnectionInstructions(
     modifier: Modifier = Modifier,
 ) {
   val uriHandler = rememberUriHandler()
+  val handleLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Url) {
+      uriHandler.openUri(link.url)
+    }
+  }
 
   val linkColor = MaterialTheme.colorScheme.primary
 
@@ -146,9 +153,12 @@ private fun FullConnectionInstructions(
         // Can only add annotations to builders
         return@remember AnnotatedString.Builder(visualString)
             .apply {
-              addStringAnnotation(
-                  tag = linkText,
-                  annotation = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+              addLink(
+                  url =
+                      LinkAnnotation.Url(
+                          url = "https://github.com/pyamsoft/tetherfi/wiki/Setup-A-Proxy",
+                          linkInteractionListener = { handleLinkClicked(it) },
+                      ),
                   start = linkIndex,
                   end = linkIndex + linkText.length,
               )
@@ -156,7 +166,7 @@ private fun FullConnectionInstructions(
             .toAnnotatedString()
       }
 
-  ClickableText(
+  Text(
       modifier =
           modifier
               .border(
@@ -170,20 +180,7 @@ private fun FullConnectionInstructions(
               )
               .padding(MaterialTheme.keylines.content),
       text = linkBlurb,
-      style =
-          MaterialTheme.typography.bodyLarge.copy(
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-          ),
-      onClick = { offset ->
-        linkBlurb
-            .getStringAnnotations(
-                tag = linkText,
-                start = offset,
-                end = offset + linkText.length,
-            )
-            .firstOrNull()
-            ?.also { uriHandler.openUri(it.item) }
-      },
+      style = MaterialTheme.typography.bodyLarge,
   )
 }
 

@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.broadcast
 sealed interface BroadcastEvent {
 
   /** Connection info has been updated by the broadcast */
+  @ConsistentCopyVisibility
   data class ConnectionChanged
   internal constructor(
       val hostName: String,

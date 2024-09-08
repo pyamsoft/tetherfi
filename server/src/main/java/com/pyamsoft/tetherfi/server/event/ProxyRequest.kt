@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.event
 
 import androidx.annotation.CheckResult
 
+@ConsistentCopyVisibility
 internal data class ProxyRequest
 internal constructor(
     override val method: String,

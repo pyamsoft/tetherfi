@@ -21,14 +21,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,8 +50,14 @@ fun LazyListScope.renderLinks(
   item(
       contentType = LinkContentTypes.FAQ_LINK,
   ) {
-    val linkColor = MaterialTheme.colorScheme.primary
+    val uriHandler = rememberUriHandler()
+    val handleLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+      if (link is LinkAnnotation.Url) {
+        uriHandler.openUri(link.url)
+      }
+    }
 
+    val linkColor = MaterialTheme.colorScheme.primary
     val faqText = stringResource(R.string.faqs)
     val knownNotWorkingText = stringResource(R.string.known_to_not_work)
     val rawBlurb = stringResource(R.string.faq_blurb, appName, faqText, knownNotWorkingText)
@@ -92,16 +101,23 @@ fun LazyListScope.renderLinks(
           return@remember AnnotatedString.Builder(visualString)
               .apply {
                 // FAQ clickable
-                addStringAnnotation(
-                    tag = faqText,
-                    annotation = "https://github.com/pyamsoft/tetherfi/wiki",
+                addLink(
+                    url =
+                        LinkAnnotation.Url(
+                            url = "https://github.com/pyamsoft/tetherfi/wiki",
+                            linkInteractionListener = { handleLinkClicked(it) },
+                        ),
                     start = faqIndex,
                     end = faqIndex + faqText.length,
                 )
+
                 // KNW clickable
-                addStringAnnotation(
-                    tag = knownNotWorkingText,
-                    annotation = "https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working",
+                addLink(
+                    url =
+                        LinkAnnotation.Url(
+                            url = "https://github.com/pyamsoft/tetherfi/wiki/Known-Not-Working",
+                            linkInteractionListener = { handleLinkClicked(it) },
+                        ),
                     start = knwIndex,
                     end = knwIndex + knownNotWorkingText.length,
                 )
@@ -118,33 +134,10 @@ fun LazyListScope.renderLinks(
             ),
         shape = MaterialTheme.shapes.medium,
     ) {
-      val uriHandler = rememberUriHandler()
-      ClickableText(
+      Text(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
           text = faqBlurb,
-          style =
-              MaterialTheme.typography.bodyLarge.copy(
-                  color = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-          onClick = { offset ->
-            faqBlurb
-                .getStringAnnotations(
-                    tag = faqText,
-                    start = offset,
-                    end = offset + faqText.length,
-                )
-                .firstOrNull()
-                ?.also { uriHandler.openUri(it.item) }
-
-            faqBlurb
-                .getStringAnnotations(
-                    tag = knownNotWorkingText,
-                    start = offset,
-                    end = offset + knownNotWorkingText.length,
-                )
-                .firstOrNull()
-                ?.also { uriHandler.openUri(it.item) }
-          },
+          style = MaterialTheme.typography.bodyLarge,
       )
     }
   }
