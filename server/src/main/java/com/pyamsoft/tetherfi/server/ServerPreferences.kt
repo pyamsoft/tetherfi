@@ -32,8 +32,4 @@ interface ServerPreferences {
   @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
 
   fun setShutdownWithNoClients(shutdown: Boolean)
-
-  @CheckResult fun listenForTimeoutEnabled(): Flow<Boolean>
-
-  fun setTimeoutEnabled(enabled: Boolean)
 }

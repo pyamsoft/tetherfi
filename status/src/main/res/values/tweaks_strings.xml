@@ -37,7 +37,7 @@
     name="enable_socket_timeout_description"
   >For most day-to-day usage, this option should be enabled.
     This allows %1$s to clean up old/dead connections after 1 minute of no activity.
-    \n\nThis option was made default, and will be removed in the next version. (recommended)</string>
+    \n\nThis option was made default, and the tweak has been removed. The old UI will be removed in the next version.</string>
 
   <!-- TODO(Help): Need zh-rTW translation -->
   <string name="keep_screen_on_title">Keep Screen On</string>

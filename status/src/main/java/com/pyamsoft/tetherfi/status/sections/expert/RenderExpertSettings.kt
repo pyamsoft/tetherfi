@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.status.sections.performance.renderPowerBalance
 import com.pyamsoft.tetherfi.ui.Label
 
 private enum class ExpertSettingsContentTypes {

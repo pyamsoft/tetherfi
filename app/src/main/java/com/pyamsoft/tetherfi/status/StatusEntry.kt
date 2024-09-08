@@ -37,12 +37,12 @@ import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 internal class StatusInjector : ComposableInjector() {
 
@@ -217,7 +217,6 @@ fun StatusEntry(
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
       onToggleIgnoreLocation = { viewModel.handleToggleIgnoreLocation() },
       onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
-      onToggleSocketTimeout = { viewModel.handleToggleSocketTimeout() },
       onToggleKeepScreenOn = { viewModel.handleToggleKeepScreenOn() },
       onShowProxyError = { viewModel.handleOpenProxyError() },
       onHideProxyError = { viewModel.handleCloseProxyError() },

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections.performance
+package com.pyamsoft.tetherfi.status.sections.expert
 
 import androidx.annotation.CheckResult
 import androidx.compose.foundation.clickable

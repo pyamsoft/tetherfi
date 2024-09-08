@@ -34,7 +34,6 @@ import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.expert.renderExpertSettings
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
 import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
-import com.pyamsoft.tetherfi.status.sections.performance.renderPerformanceSettings
 import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -86,7 +85,6 @@ internal fun LazyListScope.renderLoadedContent(
     onToggleIgnoreVpn: () -> Unit,
     onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleSocketTimeout: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
 
     // Jump links
@@ -131,12 +129,6 @@ internal fun LazyListScope.renderLoadedContent(
     )
   }
 
-  renderPerformanceSettings(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-  )
-
   renderOperatingSettings(
       itemModifier = itemModifier,
       isEditable = isEditable,
@@ -163,7 +155,6 @@ internal fun LazyListScope.renderLoadedContent(
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleIgnoreLocation = onToggleIgnoreLocation,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-      onToggleSocketTimeout = onToggleSocketTimeout,
       onToggleKeepScreenOn = onToggleKeepScreenOn,
   )
 
@@ -240,7 +231,6 @@ private fun PreviewLoadedContent(
         onToggleShutdownWithNoClients = {},
         onJumpToHowTo = {},
         onShowPowerBalance = {},
-        onToggleSocketTimeout = {},
         isEditable = isEditable,
         wiDiStatus = RunningStatus.NotRunning,
         proxyStatus = RunningStatus.NotRunning,

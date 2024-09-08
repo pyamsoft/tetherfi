@@ -38,7 +38,6 @@ internal fun LazyListScope.renderTweaks(
     onToggleIgnoreVpn: () -> Unit,
     onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
-    onToggleSocketTimeout: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
 ) {
   item(
@@ -61,7 +60,6 @@ internal fun LazyListScope.renderTweaks(
       onToggleIgnoreVpn = onToggleIgnoreVpn,
       onToggleIgnoreLocation = onToggleIgnoreLocation,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-      onToggleSocketTimeout = onToggleSocketTimeout,
       onToggleKeepScreenOn = onToggleKeepScreenOn,
   )
 }

@@ -37,7 +37,6 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +47,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -74,7 +74,6 @@ internal constructor(
       var tweakIgnoreVpn: Boolean,
       var tweakIgnoreLocation: Boolean,
       var tweakShutdownWithNoClients: Boolean,
-      var tweakSocketTimeout: Boolean,
       var tweakKeepScreenOn: Boolean,
       var expertPowerBalance: Boolean,
   )
@@ -87,7 +86,6 @@ internal constructor(
         config.password &&
         config.band &&
         config.expertPowerBalance &&
-        config.tweakSocketTimeout &&
         config.tweakKeepScreenOn) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
@@ -235,7 +233,6 @@ internal constructor(
             tweakIgnoreLocation = false,
             tweakShutdownWithNoClients = false,
             expertPowerBalance = false,
-            tweakSocketTimeout = false,
             tweakKeepScreenOn = false,
         )
 
@@ -290,21 +287,6 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.tweakShutdownWithNoClients = true
-            markPreferencesLoaded(config)
-          }
-        }
-      }
-    }
-
-    // Always populate the latest socket timeout value
-    serverPreferences.listenForTimeoutEnabled().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { timeout ->
-          s.isSocketTimeoutEnabled.value = timeout
-
-          // Watch constantly but only update the initial load config if we haven't loaded yet
-          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
-            config.tweakSocketTimeout = true
             markPreferencesLoaded(config)
           }
         }
@@ -572,11 +554,6 @@ internal constructor(
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
     val newVal = state.powerBalance.updateAndGet { limit }
     configPreferences.setServerPerformanceLimit(newVal)
-  }
-
-  fun handleToggleSocketTimeout() {
-    val newVal = state.isSocketTimeoutEnabled.updateAndGet { !it }
-    serverPreferences.setTimeoutEnabled(newVal)
   }
 
   fun handleToggleKeepScreenOn() {
