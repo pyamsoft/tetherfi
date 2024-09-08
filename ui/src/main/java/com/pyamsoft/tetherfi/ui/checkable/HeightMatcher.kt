@@ -29,13 +29,15 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
 
+@ConsistentCopyVisibility
 data class HeightMatcher
 internal constructor(
     val extraHeight: Dp,
     val onSizeChangedModifier: Modifier,
 )
 
-class HeightMatcherGenerator<T : Any>
+@ConsistentCopyVisibility
+data class HeightMatcherGenerator<T : Any>
 internal constructor(
     private val gapHeightGenerator: @Composable (T) -> Dp,
     private val onSizeChangedModifierGenerator: (T) -> Modifier,

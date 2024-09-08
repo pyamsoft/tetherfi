@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.clients
 
 import java.time.LocalDateTime
 
+@ConsistentCopyVisibility
 data class IpAddressClient
 internal constructor(
     val ip: String,
@@ -35,6 +36,7 @@ internal constructor(
         bandwidthLimit = bandwidthLimit,
     )
 
+@ConsistentCopyVisibility
 data class HostNameClient
 internal constructor(
     val hostname: String,

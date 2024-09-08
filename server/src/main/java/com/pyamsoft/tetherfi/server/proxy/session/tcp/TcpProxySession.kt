@@ -22,7 +22,6 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -40,12 +39,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Singleton
 internal class TcpProxySession
@@ -92,8 +91,8 @@ internal constructor(
                 }
                 .also { socketTagger.tagSocket() }
                 .connect(remoteAddress = remote) {
-                    // By default KTOR does not close sockets until "infinity" is reached.
-                    socketTimeout = 1.minutes.inWholeMilliseconds
+                  // By default KTOR does not close sockets until "infinity" is reached.
+                  socketTimeout = 1.minutes.inWholeMilliseconds
                 }
 
         // Track this socket for when we fully shut down

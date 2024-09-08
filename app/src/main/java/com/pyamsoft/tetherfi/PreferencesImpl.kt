@@ -303,7 +303,7 @@ internal constructor(
             "key_wifi_lock_1",
 
             // Removed TCP socket timeout in version 45
-             "key_tcp_socket_timeout_2",
+            "key_tcp_socket_timeout_2",
         )
 
     private const val SSID = "key_ssid_1"

@@ -17,13 +17,16 @@
 package com.pyamsoft.tetherfi.status.blockers
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -37,6 +40,13 @@ internal fun ViewPrivacyPolicy(
     modifier: Modifier = Modifier,
     appName: String,
 ) {
+  val uriHandler = rememberUriHandler()
+  val handleLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Url) {
+      uriHandler.openUri(link.url)
+    }
+  }
+
   Box(
       modifier = modifier,
   ) {
@@ -76,9 +86,12 @@ internal fun ViewPrivacyPolicy(
           // Can only add annotations to builders
           return@remember AnnotatedString.Builder(visualString)
               .apply {
-                addStringAnnotation(
-                    tag = privacyText,
-                    annotation = PRIVACY_POLICY_URL,
+                addLink(
+                    url =
+                        LinkAnnotation.Url(
+                            url = PRIVACY_POLICY_URL,
+                            linkInteractionListener = { handleLinkClicked(it) },
+                        ),
                     start = privacyIndex,
                     end = privacyIndex + privacyText.length,
                 )
@@ -86,24 +99,12 @@ internal fun ViewPrivacyPolicy(
               .toAnnotatedString()
         }
 
-    val uriHandler = rememberUriHandler()
-    ClickableText(
+    Text(
         text = text,
         style =
             MaterialTheme.typography.bodySmall.copy(
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
-        onClick = { start ->
-          text
-              .getStringAnnotations(
-                  tag = privacyText,
-                  start = start,
-                  end = start + privacyText.length,
-              )
-              .firstOrNull()
-              ?.also { uriHandler.openUri(it.item) }
-        },
     )
   }
 }

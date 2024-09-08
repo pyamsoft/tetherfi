@@ -45,6 +45,7 @@ data class WiFiDirectError(
 
     data object Busy : Reason(WifiP2pManager.BUSY, "Busy")
 
+    @ConsistentCopyVisibility
     data class Unknown internal constructor(override val code: Int) : Reason(code, "Unknown")
 
     companion object {

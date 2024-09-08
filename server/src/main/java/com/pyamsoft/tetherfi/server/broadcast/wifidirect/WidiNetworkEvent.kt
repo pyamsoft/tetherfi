@@ -33,6 +33,7 @@ sealed interface WidiNetworkEvent {
 
   data object DiscoveryChanged : WidiNetworkEvent
 
+  @ConsistentCopyVisibility
   data class ConnectionChanged
   internal constructor(
       val hostName: String,
