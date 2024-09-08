@@ -167,14 +167,6 @@ internal constructor(
     putBoolean(SHUTDOWN_NO_CLIENTS, shutdown)
   }
 
-  override fun listenForTimeoutEnabled(): Flow<Boolean> =
-      preferenceBooleanFlow(TCP_SOCKET_TIMEOUT, true) { preferences }
-          .flowOn(context = Dispatchers.IO)
-
-  override fun setTimeoutEnabled(enabled: Boolean) = setPreference {
-    putBoolean(TCP_SOCKET_TIMEOUT, enabled)
-  }
-
   override fun listenForKeepScreenOn(): Flow<Boolean> =
       preferenceBooleanFlow(KEEP_SCREEN_ON, false) { preferences }.flowOn(context = Dispatchers.IO)
 
@@ -310,8 +302,8 @@ internal constructor(
             "key_wake_lock_1",
             "key_wifi_lock_1",
 
-            // TODO(Peter): Removed TCP socket timeout in version 45
-            // "key_tcp_socket_timeout_2",
+            // Removed TCP socket timeout in version 45
+             "key_tcp_socket_timeout_2",
         )
 
     private const val SSID = "key_ssid_1"
@@ -330,8 +322,6 @@ internal constructor(
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
 
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
-
-    private const val TCP_SOCKET_TIMEOUT = "key_tcp_socket_timeout_2"
 
     private const val KEEP_SCREEN_ON = "key_keep_screen_on_1"
   }

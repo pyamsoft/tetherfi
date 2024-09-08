@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections.performance
+package com.pyamsoft.tetherfi.status.sections.expert
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column

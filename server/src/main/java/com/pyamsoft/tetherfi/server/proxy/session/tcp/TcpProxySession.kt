@@ -40,13 +40,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Singleton
 internal class TcpProxySession
@@ -54,18 +53,12 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
-    private val preferences: ServerPreferences,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
     private val allowedClients: AllowedClients,
     private val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
-
-  @CheckResult
-  private suspend fun isTimeoutEnabled(): Boolean {
-    return preferences.listenForTimeoutEnabled().first()
-  }
 
   /**
    * Given the initial proxy request, connect to the Internet from our device via the connected
@@ -90,7 +83,6 @@ internal constructor(
                 port = request.port,
             )
 
-        val enableTimeout = isTimeoutEnabled()
         val socket =
             builder
                 .tcp()
@@ -100,10 +92,8 @@ internal constructor(
                 }
                 .also { socketTagger.tagSocket() }
                 .connect(remoteAddress = remote) {
-                  if (enableTimeout) {
                     // By default KTOR does not close sockets until "infinity" is reached.
                     socketTimeout = 1.minutes.inWholeMilliseconds
-                  }
                 }
 
         // Track this socket for when we fully shut down

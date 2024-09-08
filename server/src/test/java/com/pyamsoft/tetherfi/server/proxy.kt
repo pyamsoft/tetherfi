@@ -31,10 +31,6 @@ import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,6 +41,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newSingleThreadContext
 import timber.log.Timber
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
@@ -54,32 +54,6 @@ internal suspend inline fun setupProxy(
     appEnv: AppDevEnvironment.() -> Unit = {},
     withServer: CoroutineScope.(CoroutineDispatcher) -> Unit,
 ) {
-  val preferences =
-      object : ServerPreferences {
-        override fun listenForStartIgnoreVpn(): Flow<Boolean> {
-          return flowOf(false)
-        }
-
-        override fun setStartIgnoreVpn(ignore: Boolean) {}
-
-        override fun listenForStartIgnoreLocation(): Flow<Boolean> {
-          return flowOf(false)
-        }
-
-        override fun setStartIgnoreLocation(ignore: Boolean) {}
-
-        override fun listenForShutdownWithNoClients(): Flow<Boolean> {
-          return flowOf(false)
-        }
-
-        override fun setShutdownWithNoClients(shutdown: Boolean) {}
-
-        override fun listenForTimeoutEnabled(): Flow<Boolean> {
-          return flowOf(false)
-        }
-
-        override fun setTimeoutEnabled(enabled: Boolean) {}
-      }
   val dispatcher =
       object : ServerDispatcher {
         override val primary = newSingleThreadContext("TEST")
@@ -163,7 +137,6 @@ internal suspend inline fun setupProxy(
                   allowedClients = allowed,
                   enforcer = enforcer,
                   socketTagger = socketTagger,
-                  preferences = preferences,
                   clientResolver = resolver,
               ),
           hostConnection =

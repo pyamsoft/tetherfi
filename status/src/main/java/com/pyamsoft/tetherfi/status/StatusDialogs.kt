@@ -31,7 +31,7 @@ import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.status.blockers.LocationBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
-import com.pyamsoft.tetherfi.status.sections.performance.PowerBalanceDialog
+import com.pyamsoft.tetherfi.status.sections.expert.PowerBalanceDialog
 import com.pyamsoft.tetherfi.status.trouble.TroubleshootDialog
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState

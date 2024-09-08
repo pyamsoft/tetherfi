@@ -23,9 +23,9 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @Stable
 interface StatusViewState : UiViewState {
@@ -50,7 +50,6 @@ interface StatusViewState : UiViewState {
   val isIgnoreVpn: StateFlow<Boolean>
   val isIgnoreLocation: StateFlow<Boolean>
   val isShutdownWithNoClients: StateFlow<Boolean>
-  val isSocketTimeoutEnabled: StateFlow<Boolean>
   val isKeepScreenOn: StateFlow<Boolean>
 
   // Expert
@@ -104,6 +103,5 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isIgnoreLocation = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)
-  override val isSocketTimeoutEnabled = MutableStateFlow(false)
   override val isKeepScreenOn = MutableStateFlow(false)
 }
