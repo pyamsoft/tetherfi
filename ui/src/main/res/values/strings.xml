@@ -28,9 +28,9 @@
   <string name="hotspot_speed_sad">Experiencing %1$s?</string>
   <string-array name="hotspot_speed_items">
     <item>Plug this device into power and make sure it is charging</item>
-    <item>Enable the "Always Alive" tweak (disable Battery Optimization)</item>
+    <item
+    >Enable the &quot;Always Alive&quot; tweak (disable Battery Optimization)</item>
     <item>Try changing the Broadcast Frequency between 2.4GHz and 5GHz</item>
-    <item>Enable the "Idle Timeout" behavior tweak</item>
     <item>Restart this device and your connecting device</item>
     <item
     >Toggle Airplane Mode, Wi-Fi, and Bluetooth on and off multiple times on this device</item>
