@@ -339,13 +339,21 @@ internal constructor(
     val maybeClient = resolve(hostNameOrIp)
     return maybeClient
         ?: allowedClients
-            .updateAndGet {
+            .updateAndGet { list ->
               val client =
                   TetherClient.create(
                       hostNameOrIp = hostNameOrIp,
                       clock = clock,
                   )
-              return@updateAndGet (it + client).also { onNewClientSeen(client) }
+
+              // Don't allow duplicates in the client list
+              // ConnectionScreen crashes on initial state switch from empty to >0 clients
+              // because a Key is double-added briefly
+              if (list.contains { it.matches(client) }) {
+                return@updateAndGet list
+              }
+
+              return@updateAndGet (list + client).also { onNewClientSeen(client) }
             }
             .firstOrNull { it.matches(hostNameOrIp) }
             .requireNotNull { "Unable to ensure TetherClient exists: $hostNameOrIp" }
