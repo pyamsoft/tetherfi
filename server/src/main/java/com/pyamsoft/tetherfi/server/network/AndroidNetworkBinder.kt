@@ -31,52 +31,55 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-internal class AndroidNetworkBinder @Inject internal constructor(
+internal class AndroidNetworkBinder
+@Inject
+internal constructor(
     private val context: Context,
     private val enforcer: ThreadEnforcer,
 ) : NetworkBinder {
 
-    private val connectivityManager by lazy {
-        enforcer.assertOffMainThread()
-        context.getSystemService<ConnectivityManager>().requireNotNull()
-    }
+  private val connectivityManager by lazy {
+    enforcer.assertOffMainThread()
+    context.getSystemService<ConnectivityManager>().requireNotNull()
+  }
 
-    @CheckResult
-    private fun getPreferredNetwork(): Network? {
-        // TODO get preferred network
-        return connectivityManager.activeNetwork
-    }
+  @CheckResult
+  private fun getPreferredNetwork(): Network? {
+    // TODO get preferred network
+    return connectivityManager.activeNetwork
+  }
 
-    private fun bindSocketToNetwork(socket: Socket, network: Network) {
-        if (socket is Selectable) {
-            val channel = socket.channel
-            if (channel is SocketChannel) {
-                Timber.d { "Bind socket to network $channel -> $network" }
-                network.bindSocket(channel.socket())
-            } else {
-                Timber.w { "Cannot attempt bindSocket - Channel is not SocketChannel: $channel" }
-            }
-        } else {
-            Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
-        }
+  private fun bindSocketToNetwork(socket: Socket, network: Network) {
+    if (socket is Selectable) {
+      val channel = socket.channel
+      if (channel is SocketChannel) {
+        Timber.d { "Bind socket to network $channel -> $network" }
+        network.bindSocket(channel.socket())
+      } else {
+        Timber.w { "Cannot attempt bindSocket - Channel is not SocketChannel: $channel" }
+      }
+    } else {
+      Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
     }
+  }
 
-    override suspend fun bindToNetwork(socket: Socket) {
-        // https://github.com/pyamsoft/tetherfi/issues/154
-        // https://github.com/pyamsoft/tetherfi/issues/331
-        if (IS_SOCKET_BIND_ENABLED) {
-            val network = getPreferredNetwork()
-            if (network != null) {
-                bindSocketToNetwork(
-                    socket = socket, network = network,
-                )
-            }
-        }
+  override suspend fun bindToNetwork(socket: Socket) {
+    // https://github.com/pyamsoft/tetherfi/issues/154
+    // https://github.com/pyamsoft/tetherfi/issues/331
+    if (IS_SOCKET_BIND_ENABLED) {
+      val network = getPreferredNetwork()
+      if (network != null) {
+        bindSocketToNetwork(
+            socket = socket,
+            network = network,
+        )
+      }
     }
+  }
 
-    companion object {
-        // KTOR needs to support
-        // https://youtrack.jetbrains.com/issue/KTOR-7452/Question-KTOR-Socket-using-Android-bindSocketgg
-        private const val IS_SOCKET_BIND_ENABLED = false
-    }
+  companion object {
+    // KTOR needs to support
+    // https://youtrack.jetbrains.com/issue/KTOR-7452/Question-KTOR-Socket-using-Android-bindSocketgg
+    private const val IS_SOCKET_BIND_ENABLED = false
+  }
 }

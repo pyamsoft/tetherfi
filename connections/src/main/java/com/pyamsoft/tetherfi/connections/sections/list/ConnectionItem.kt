@@ -56,10 +56,10 @@ import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.TransferUnit
 import com.pyamsoft.tetherfi.server.clients.key
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
-import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import org.jetbrains.annotations.TestOnly
 
 private val FIRST_SEEN_DATE_FORMATTER =
     object : ThreadLocal<DateTimeFormatter>() {
@@ -318,19 +318,18 @@ private fun Transfer(
           ),
   )
 
-    Text(
-        modifier = itemModifier,
-        text =
-        stringResource(R.string.connection_total_to_internet, client.transferToInternet.display),
-        style =
-        MaterialTheme.typography.bodySmall.copy(
-            color =
-            MaterialTheme.colorScheme.onSurface.copy(
-                alpha = TypographyDefaults.ALPHA_DISABLED,
-            ),
-        ),
-    )
-
+  Text(
+      modifier = itemModifier,
+      text =
+          stringResource(R.string.connection_total_to_internet, client.transferToInternet.display),
+      style =
+          MaterialTheme.typography.bodySmall.copy(
+              color =
+                  MaterialTheme.colorScheme.onSurface.copy(
+                      alpha = TypographyDefaults.ALPHA_DISABLED,
+                  ),
+          ),
+  )
 }
 
 @Composable

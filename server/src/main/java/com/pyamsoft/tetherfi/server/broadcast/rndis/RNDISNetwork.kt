@@ -24,19 +24,18 @@ private val RNDIS_SSID by lazy { "rndis-ssid-${UUID.randomUUID()}" }
 private val RNDIS_PASSWD by lazy { "rndis-passwd-${UUID.randomUUID()}" }
 
 private val RNDIS by lazy {
-    BroadcastNetworkStatus.GroupInfo.Connected(
-        ssid = RNDIS_SSID,
-        password = RNDIS_PASSWD,
-    )
+  BroadcastNetworkStatus.GroupInfo.Connected(
+      ssid = RNDIS_SSID,
+      password = RNDIS_PASSWD,
+  )
 }
-
 
 @CheckResult
 fun BroadcastNetworkStatus.GroupInfo.Connected.isRNDISNetwork(): Boolean {
-    return this.ssid == RNDIS_SSID && this.password == RNDIS_PASSWD
+  return this.ssid == RNDIS_SSID && this.password == RNDIS_PASSWD
 }
 
 @CheckResult
 fun useRNDISGroupInfo(): BroadcastNetworkStatus.GroupInfo {
-    return RNDIS
+  return RNDIS
 }

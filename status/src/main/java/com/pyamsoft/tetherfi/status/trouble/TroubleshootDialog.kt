@@ -42,6 +42,7 @@ private enum class TroubleshootDialogContentTypes {
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
     appName: String,
+    isRNDISConnection: Boolean,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
     onDismiss: () -> Unit,
@@ -66,6 +67,7 @@ internal fun TroubleshootDialog(
           TroubleshootUnableToStart(
               modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
               appName = appName,
+              isRNDISConnection = isRNDISConnection,
               isBroadcastError = isBroadcastError,
               isProxyError = isProxyError,
           )
@@ -97,11 +99,13 @@ internal fun TroubleshootDialog(
 
 @Composable
 private fun PreviewTroubleshootDialog(
+    isRNDISConnection: Boolean,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
   TroubleshootDialog(
       appName = "TEST",
+      isRNDISConnection = isRNDISConnection,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
       onDismiss = {},
@@ -112,6 +116,7 @@ private fun PreviewTroubleshootDialog(
 @Composable
 private fun PreviewTroubleshootDialogNone() {
   PreviewTroubleshootDialog(
+      isRNDISConnection = false,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -121,6 +126,7 @@ private fun PreviewTroubleshootDialogNone() {
 @Composable
 private fun PreviewTroubleshootDialogBroadcast() {
   PreviewTroubleshootDialog(
+      isRNDISConnection = false,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -130,6 +136,7 @@ private fun PreviewTroubleshootDialogBroadcast() {
 @Composable
 private fun PreviewTroubleshootDialogProxy() {
   PreviewTroubleshootDialog(
+      isRNDISConnection = false,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -139,6 +146,47 @@ private fun PreviewTroubleshootDialogProxy() {
 @Composable
 private fun PreviewTroubleshootDialogBoth() {
   PreviewTroubleshootDialog(
+      isRNDISConnection = false,
+      isBroadcastError = true,
+      isProxyError = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootRNDISDialogNone() {
+  PreviewTroubleshootDialog(
+      isRNDISConnection = true,
+      isBroadcastError = false,
+      isProxyError = false,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootRNDISDialogBroadcast() {
+  PreviewTroubleshootDialog(
+      isRNDISConnection = true,
+      isBroadcastError = true,
+      isProxyError = false,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootRNDISDialogProxy() {
+  PreviewTroubleshootDialog(
+      isRNDISConnection = true,
+      isBroadcastError = false,
+      isProxyError = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewTroubleshootRNDISDialogBoth() {
+  PreviewTroubleshootDialog(
+      isRNDISConnection = true,
       isBroadcastError = true,
       isProxyError = true,
   )

@@ -35,6 +35,7 @@ import org.jetbrains.annotations.TestOnly
 internal fun TroubleshootUnableToStart(
     modifier: Modifier = Modifier,
     appName: String,
+    isRNDISConnection: Boolean,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
@@ -86,39 +87,47 @@ internal fun TroubleshootUnableToStart(
     if (isBroadcastError) {
       Text(
           modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.trouble_broadcast_wifi_on),
-          style = MaterialTheme.typography.bodyLarge,
-      )
-
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
           text = stringResource(R.string.trouble_location_service),
           style = MaterialTheme.typography.bodyLarge,
       )
 
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
-          style = MaterialTheme.typography.bodyLarge,
-      )
+      if (isRNDISConnection) {
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_rndis),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+      } else {
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_on),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.trouble_broadcast_wifi_restart),
-          style = MaterialTheme.typography.bodyLarge,
-      )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.trouble_broadcast_password_length),
-          style = MaterialTheme.typography.bodyLarge,
-      )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_restart),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-      Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.trouble_broadcast_ssid_name),
-          style = MaterialTheme.typography.bodyLarge,
-      )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_password_length),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_ssid_name),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+      }
     }
 
     if (isProxyError) {
@@ -139,9 +148,14 @@ internal fun TroubleshootUnableToStart(
 
 @TestOnly
 @Composable
-private fun PreviewTroubleshootUnableToStart(isBroadcastError: Boolean, isProxyError: Boolean) {
+private fun PreviewTroubleshootUnableToStart(
+    isRNDISConnection: Boolean,
+    isBroadcastError: Boolean,
+    isProxyError: Boolean,
+) {
   TroubleshootUnableToStart(
       appName = "TEST",
+      isRNDISConnection = isRNDISConnection,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
   )
@@ -151,6 +165,7 @@ private fun PreviewTroubleshootUnableToStart(isBroadcastError: Boolean, isProxyE
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartBroadcast() {
   PreviewTroubleshootUnableToStart(
+      isRNDISConnection = false,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -160,6 +175,7 @@ private fun PreviewTroubleshootUnableToStartBroadcast() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartProxy() {
   PreviewTroubleshootUnableToStart(
+      isRNDISConnection = false,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -169,6 +185,7 @@ private fun PreviewTroubleshootUnableToStartProxy() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartNone() {
   PreviewTroubleshootUnableToStart(
+      isRNDISConnection = false,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -178,6 +195,47 @@ private fun PreviewTroubleshootUnableToStartNone() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartAll() {
   PreviewTroubleshootUnableToStart(
+      isRNDISConnection = false,
+      isBroadcastError = true,
+      isProxyError = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootRNDISUnableToStartBroadcast() {
+  PreviewTroubleshootUnableToStart(
+      isRNDISConnection = true,
+      isBroadcastError = true,
+      isProxyError = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootRNDISUnableToStartProxy() {
+  PreviewTroubleshootUnableToStart(
+      isRNDISConnection = true,
+      isBroadcastError = false,
+      isProxyError = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootRNDISUnableToStartNone() {
+  PreviewTroubleshootUnableToStart(
+      isRNDISConnection = true,
+      isBroadcastError = false,
+      isProxyError = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewTroubleshootRNDISUnableToStartAll() {
+  PreviewTroubleshootUnableToStart(
+      isRNDISConnection = true,
       isBroadcastError = true,
       isProxyError = true,
   )

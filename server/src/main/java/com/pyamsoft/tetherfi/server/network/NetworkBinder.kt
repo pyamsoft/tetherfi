@@ -20,5 +20,5 @@ import io.ktor.network.sockets.Socket
 
 fun interface NetworkBinder {
 
-    suspend fun bindToNetwork(socket: Socket)
+  suspend fun bindToNetwork(socket: Socket)
 }

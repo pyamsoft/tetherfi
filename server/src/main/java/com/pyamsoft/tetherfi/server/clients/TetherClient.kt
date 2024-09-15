@@ -21,9 +21,9 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
-import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.LocalDateTime
+import org.jetbrains.annotations.TestOnly
 
 // TODO for performance and to avoid mass allocation, make all of these vals into vars
 //      and manage the client list via flows.

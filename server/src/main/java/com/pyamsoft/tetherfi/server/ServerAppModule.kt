@@ -131,9 +131,7 @@ abstract class ServerAppModule {
   internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
 
   // Proxy
-  @Binds
-  @CheckResult
-  internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
+  @Binds @CheckResult internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
 
   // Network Binder
   @Binds
