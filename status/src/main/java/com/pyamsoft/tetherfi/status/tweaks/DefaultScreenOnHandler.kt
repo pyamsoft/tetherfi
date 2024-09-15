@@ -25,9 +25,8 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combineTransform
@@ -36,6 +35,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class DefaultScreenOnHandler
@@ -44,6 +45,7 @@ internal constructor(
     private val enforcer: ThreadEnforcer,
     private val preferences: StatusPreferences,
     private val networkStatus: BroadcastNetworkStatus,
+    private val proxy: SharedProxy,
 ) : ScreenOnHandler {
 
   private val mutex = Mutex()
@@ -51,7 +53,7 @@ internal constructor(
   @CheckResult
   private fun resolveRunningFlow(): Flow<Boolean> =
       combineTransform(
-              networkStatus.onProxyStatusChanged(),
+              proxy.onStatusChanged(),
               networkStatus.onStatusChanged(),
               preferences.listenForKeepScreenOn(),
           ) { proxyStatus, wiDiStatus, prefEnabled ->

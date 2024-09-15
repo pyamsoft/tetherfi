@@ -20,17 +20,19 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class TileHandler
 @Inject
 internal constructor(
     private val enforcer: ThreadEnforcer,
     private val networkStatus: BroadcastNetworkStatus,
+    private val proxy: SharedProxy,
 ) {
 
   private fun CoroutineScope.watchStatusUpdates(
@@ -43,7 +45,7 @@ internal constructor(
     launch(context = Dispatchers.Default) {
       enforcer.assertOffMainThread()
 
-      networkStatus.onProxyStatusChanged().also { f ->
+      proxy.onStatusChanged().also { f ->
         launch(context = Dispatchers.Default) {
           enforcer.assertOffMainThread()
 
@@ -83,7 +85,7 @@ internal constructor(
   @CheckResult
   fun getOverallStatus(): RunningStatus {
     val broadcastStatus = networkStatus.getCurrentStatus()
-    val proxyStatus = networkStatus.getCurrentProxyStatus()
+    val proxyStatus = proxy.getCurrentStatus()
 
     // If either piece has a specific error state, return it
     if (broadcastStatus is RunningStatus.Error) {

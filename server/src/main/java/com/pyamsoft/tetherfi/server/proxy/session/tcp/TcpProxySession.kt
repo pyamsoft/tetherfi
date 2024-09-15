@@ -16,13 +16,8 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
 import androidx.annotation.CheckResult
-import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
@@ -34,22 +29,20 @@ import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
+import com.pyamsoft.tetherfi.server.network.NetworkBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
-import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.nio.channels.SocketChannel
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
@@ -60,38 +53,13 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
+    @ServerInternalApi private val networkBinder: NetworkBinder,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
     private val allowedClients: AllowedClients,
     private val enforcer: ThreadEnforcer,
-    context: Context,
 ) : ProxySession<TcpProxyData> {
-
-    private val connectivityManager by lazy {
-        enforcer.assertOffMainThread()
-        context.getSystemService<ConnectivityManager>().requireNotNull()
-    }
-
-    @CheckResult
-    private fun getPreferredNetwork(): Network? {
-        // TODO get preferred network
-        return connectivityManager.activeNetwork
-    }
-
-    private fun bindSocketToNetwork(socket: Socket, network: Network) {
-        if (socket is Selectable) {
-            val channel = socket.channel
-            if (channel is SocketChannel) {
-                Timber.d { "Bind socket to network $channel -> $network" }
-                network.bindSocket(channel.socket())
-            } else {
-                Timber.w { "Cannot attempt bindSocket - Channel is not SocketChannel: $channel" }
-            }
-        } else {
-            Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
-        }
-    }
 
     /**
      * Given the initial proxy request, connect to the Internet from our device via the connected
@@ -132,11 +100,8 @@ internal constructor(
             // Track this socket for when we fully shut down
             socketTracker.track(socket)
 
-            // https://github.com/pyamsoft/tetherfi/issues/154
-            // https://github.com/pyamsoft/tetherfi/issues/331
-            if (IS_SOCKET_BIND_ENABLED) {
-                getPreferredNetwork()?.also { network -> bindSocketToNetwork(socket, network) }
-            }
+            // Bind the socket to a specific network if preferred
+            networkBinder.bindToNetwork(socket)
 
             return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
         }
@@ -369,10 +334,4 @@ internal constructor(
                 e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
             }
         }
-
-    companion object {
-        // KTOR needs to support
-        // https://youtrack.jetbrains.com/issue/KTOR-7452/Question-KTOR-Socket-using-Android-bindSocketgg
-        private const val IS_SOCKET_BIND_ENABLED = false
-    }
 }

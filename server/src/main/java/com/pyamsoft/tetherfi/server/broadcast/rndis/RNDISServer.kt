@@ -22,7 +22,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
@@ -40,7 +39,7 @@ import javax.inject.Singleton
 
 @Singleton
 internal class RNDISServer @Inject internal constructor(
-    @ServerInternalApi private val proxy: SharedProxy,
+    private val proxy: SharedProxy,
     private val inAppRatingPreferences: InAppRatingPreferences,
     appEnvironment: AppDevEnvironment,
     enforcer: ThreadEnforcer,
@@ -87,13 +86,5 @@ internal class RNDISServer @Inject internal constructor(
         launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
 
         launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
-    }
-
-    override fun onProxyStatusChanged(): Flow<RunningStatus> {
-        return proxy.onStatusChanged()
-    }
-
-    override fun getCurrentProxyStatus(): RunningStatus {
-        return proxy.getCurrentStatus()
     }
 }
