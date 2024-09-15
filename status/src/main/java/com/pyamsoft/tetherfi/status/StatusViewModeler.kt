@@ -32,12 +32,12 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -59,6 +60,7 @@ internal constructor(
     private val serverPreferences: ServerPreferences,
     private val statusPreferences: StatusPreferences,
     private val networkStatus: BroadcastNetworkStatus,
+    private val proxy: SharedProxy,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
@@ -190,7 +192,7 @@ internal constructor(
 
     appScope.launch(context = Dispatchers.Default) {
       val broadcastStatus = networkStatus.getCurrentStatus()
-      val proxyStatus = networkStatus.getCurrentProxyStatus()
+      val proxyStatus = proxy.getCurrentStatus()
 
       if (broadcastStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
         // If either is in error, reset network and restart
@@ -393,7 +395,7 @@ internal constructor(
   }
 
   private fun watchStatusUpdates(scope: CoroutineScope) {
-    networkStatus.onProxyStatusChanged().also { f ->
+    proxy.onStatusChanged().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { status ->
           Timber.d { "Proxy Status Changed: $status" }

@@ -59,9 +59,9 @@ import kotlin.coroutines.suspendCoroutine
 internal class WifiDirectNetwork
 @Inject
 internal constructor(
-    @ServerInternalApi private val proxy: SharedProxy,
     @ServerInternalApi private val config: WiDiConfig,
     @ServerInternalApi private val register: WifiDirectRegister,
+    private val proxy: SharedProxy,
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val appContext: Context,
     private val appEnvironment: AppDevEnvironment,
@@ -327,14 +327,6 @@ internal constructor(
     launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
 
     launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
-  }
-
-  override fun onProxyStatusChanged(): Flow<RunningStatus> {
-    return proxy.onStatusChanged()
-  }
-
-  override fun getCurrentProxyStatus(): RunningStatus {
-    return proxy.getCurrentStatus()
   }
 
   companion object {

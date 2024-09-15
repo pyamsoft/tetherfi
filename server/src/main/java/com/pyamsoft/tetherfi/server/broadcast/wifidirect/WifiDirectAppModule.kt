@@ -30,15 +30,15 @@ abstract class WifiDirectAppModule {
 
   @Binds
   @CheckResult
-  internal abstract fun bindWiDiNetwork(impl: WifiDirectNetwork): BroadcastNetwork
+  internal abstract fun bindNetwork(impl: WifiDirectNetwork): BroadcastNetwork
 
   @Binds
   @CheckResult
-  internal abstract fun bindWiDiNetworkStatus(impl: WifiDirectNetwork): BroadcastNetworkStatus
+  internal abstract fun bindNetworkStatus(impl: WifiDirectNetwork): BroadcastNetworkStatus
 
   @Binds
   @CheckResult
-  internal abstract fun bindWiDiNetworkUpdater(impl: WifiDirectNetwork): BroadcastNetworkUpdater
+  internal abstract fun bindNetworkUpdater(impl: WifiDirectNetwork): BroadcastNetworkUpdater
 
   @Binds
   @CheckResult

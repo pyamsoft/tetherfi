@@ -23,7 +23,6 @@ import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.Server
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.flow.Flow
 
 interface BroadcastNetworkStatus : Server {
@@ -31,10 +30,6 @@ interface BroadcastNetworkStatus : Server {
   @CheckResult fun onGroupInfoChanged(): Flow<GroupInfo>
 
   @CheckResult fun onConnectionInfoChanged(): Flow<ConnectionInfo>
-
-  @CheckResult fun getCurrentProxyStatus(): RunningStatus
-
-  @CheckResult fun onProxyStatusChanged(): Flow<RunningStatus>
 
   @Stable
   @Immutable
