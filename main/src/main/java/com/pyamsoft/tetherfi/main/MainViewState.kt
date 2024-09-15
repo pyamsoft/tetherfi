@@ -41,6 +41,9 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
           BroadcastNetworkStatus.ConnectionInfo.Empty)
   override val port = MutableStateFlow(0)
 
+  // TODO RNDIS via preference
+  override val isRNDISConnection = MutableStateFlow(true)
+
   override val isSettingsOpen = MutableStateFlow(false)
 
   override val isShowingQRCodeDialog = MutableStateFlow(false)

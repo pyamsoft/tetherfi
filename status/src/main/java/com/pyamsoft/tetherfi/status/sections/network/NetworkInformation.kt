@@ -26,9 +26,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -82,6 +84,7 @@ internal fun LazyListScope.renderNetworkInformation(
   item(
       contentType = NetworkStatusWidgetsContentTypes.NETWORK_ERROR,
   ) {
+    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
     val showErrorHintMessage =
@@ -109,6 +112,7 @@ internal fun LazyListScope.renderNetworkInformation(
         TroubleshootUnableToStart(
             modifier = Modifier.fillMaxWidth(),
             appName = appName,
+            isRNDISConnection = isRNDISConnection,
             isBroadcastError = isBroadcastError,
             isProxyError = isProxyError,
         )

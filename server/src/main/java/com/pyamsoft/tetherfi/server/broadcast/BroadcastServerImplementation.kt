@@ -22,32 +22,33 @@ import kotlinx.coroutines.flow.Flow
 
 internal interface BroadcastServerImplementation<T> {
 
-    /**
-     * Connect data source for implementation
-     *
-     * At the point this function is run, we already claim the lock
-     */
-    @CheckResult
-    suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (T) -> DelegatingBroadcastServer.UpdateResult): T
+  /**
+   * Connect data source for implementation
+   *
+   * At the point this function is run, we already claim the lock
+   */
+  @CheckResult
+  suspend fun withLockStartBroadcast(
+      updateNetworkInfo: suspend (T) -> DelegatingBroadcastServer.UpdateResult
+  ): T
 
-    /**
-     * Connect data source for implementation
-     *
-     * At the point this function is run, we already claim the lock
-     */
-    suspend fun withLockStopBroadcast(source: T)
+  /**
+   * Connect data source for implementation
+   *
+   * At the point this function is run, we already claim the lock
+   */
+  suspend fun withLockStopBroadcast(source: T)
 
-    /** Resolve connection info for implementation */
-    @CheckResult
-    suspend fun resolveCurrentConnectionInfo(source: T): BroadcastNetworkStatus.ConnectionInfo
+  /** Resolve connection info for implementation */
+  @CheckResult
+  suspend fun resolveCurrentConnectionInfo(source: T): BroadcastNetworkStatus.ConnectionInfo
 
-    /** Resolve group info for implementation */
-    @CheckResult
-    suspend fun resolveCurrentGroupInfo(source: T): BroadcastNetworkStatus.GroupInfo
+  /** Resolve group info for implementation */
+  @CheckResult suspend fun resolveCurrentGroupInfo(source: T): BroadcastNetworkStatus.GroupInfo
 
-    /** Side effects ran from this function should have their own launch {} */
-    fun onNetworkStarted(
-        scope: CoroutineScope,
-        connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
-    )
+  /** Side effects ran from this function should have their own launch {} */
+  fun onNetworkStarted(
+      scope: CoroutineScope,
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+  )
 }

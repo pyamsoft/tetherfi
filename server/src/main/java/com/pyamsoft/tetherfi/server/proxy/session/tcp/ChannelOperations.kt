@@ -20,15 +20,13 @@ import androidx.annotation.CheckResult
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 
-
 private val DEFAULT_POOL by lazy {
-    @Suppress("DEPRECATION")
-    io.ktor.utils.io.core.internal.ChunkBuffer.Pool
+  @Suppress("DEPRECATION") io.ktor.utils.io.core.internal.ChunkBuffer.Pool
 }
 
 /**
- * A duplicate of [ByteReadChannel.copyToImpl] but with a callback fired AFTER the
- * read but BEFORE the write operation
+ * A duplicate of [ByteReadChannel.copyToImpl] but with a callback fired AFTER the read but BEFORE
+ * the write operation
  */
 @CheckResult
 internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
@@ -36,35 +34,35 @@ internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
     limit: Long,
     onBeforeWrite: (Int) -> Unit,
 ): Long {
-    val buffer = DEFAULT_POOL.borrow()
-    val dstNeedsFlush = !dst.autoFlush
+  val buffer = DEFAULT_POOL.borrow()
+  val dstNeedsFlush = !dst.autoFlush
 
-    try {
-        var copied = 0L
+  try {
+    var copied = 0L
 
-        while (true) {
-            val remaining = limit - copied
-            if (remaining == 0L) break
-            buffer.resetForWrite(minOf(buffer.capacity.toLong(), remaining).toInt())
+    while (true) {
+      val remaining = limit - copied
+      if (remaining == 0L) break
+      buffer.resetForWrite(minOf(buffer.capacity.toLong(), remaining).toInt())
 
-            val size = readAvailable(buffer)
-            if (size == -1) break
+      val size = readAvailable(buffer)
+      if (size == -1) break
 
-            // The one line we added
-            onBeforeWrite(size)
+      // The one line we added
+      onBeforeWrite(size)
 
-            dst.writeFully(buffer)
-            copied += size
+      dst.writeFully(buffer)
+      copied += size
 
-            if (dstNeedsFlush && availableForRead == 0) {
-                dst.flush()
-            }
-        }
-        return copied
-    } catch (t: Throwable) {
-        dst.close(t)
-        throw t
-    } finally {
-        buffer.release(DEFAULT_POOL)
+      if (dstNeedsFlush && availableForRead == 0) {
+        dst.flush()
+      }
     }
+    return copied
+  } catch (t: Throwable) {
+    dst.close(t)
+    throw t
+  } finally {
+    buffer.release(DEFAULT_POOL)
+  }
 }

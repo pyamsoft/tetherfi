@@ -21,63 +21,66 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
+import java.net.NetworkInterface
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import java.net.NetworkInterface
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
-internal class RNDISServer @Inject internal constructor(
-) : BroadcastServerImplementation<String> {
+internal class RNDISServer @Inject internal constructor() : BroadcastServerImplementation<String> {
 
-    @CheckResult
-    private suspend fun resolveRNDISNetwork(): String = withContext(context = Dispatchers.IO) {
+  @CheckResult
+  private suspend fun resolveRNDISNetwork(): String =
+      withContext(context = Dispatchers.IO) {
         val allIfaces = NetworkInterface.getNetworkInterfaces()
         for (iface in allIfaces) {
-            if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
-                for (address in iface.inetAddresses) {
-                    val hostName = address.hostName.orEmpty()
-                    if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
-                        return@withContext hostName
-                    }
-                }
+          if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
+            for (address in iface.inetAddresses) {
+              val hostName = address.hostName.orEmpty()
+              if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
+                return@withContext hostName
+              }
             }
+          }
         }
 
         // Couldn't find RNDIS
         throw IllegalStateException("Could not find USB Tethering connection")
-    }
+      }
 
-    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (String) -> DelegatingBroadcastServer.UpdateResult): String {
-        return resolveRNDISNetwork()
-    }
+  override suspend fun withLockStartBroadcast(
+      updateNetworkInfo: suspend (String) -> DelegatingBroadcastServer.UpdateResult
+  ): String {
+    return resolveRNDISNetwork()
+  }
 
-    @SuppressLint("VisibleForTests")
-    override suspend fun resolveCurrentConnectionInfo(source: String): BroadcastNetworkStatus.ConnectionInfo {
-        return BroadcastNetworkStatus.ConnectionInfo.Connected(
-            hostName = source,
-        )
-    }
+  @SuppressLint("VisibleForTests")
+  override suspend fun resolveCurrentConnectionInfo(
+      source: String
+  ): BroadcastNetworkStatus.ConnectionInfo {
+    return BroadcastNetworkStatus.ConnectionInfo.Connected(
+        hostName = source,
+    )
+  }
 
-    override suspend fun resolveCurrentGroupInfo(source: String): BroadcastNetworkStatus.GroupInfo {
-        return useRNDISGroupInfo()
-    }
+  override suspend fun resolveCurrentGroupInfo(source: String): BroadcastNetworkStatus.GroupInfo {
+    return useRNDISGroupInfo()
+  }
 
-    override suspend fun withLockStopBroadcast(source: String) {
-        // TODO what do?
-    }
+  override suspend fun withLockStopBroadcast(source: String) {
+    // TODO what do?
+  }
 
-    override fun onNetworkStarted(
-        scope: CoroutineScope,
-        connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
-    ) {
-    }
+  override fun onNetworkStarted(
+      scope: CoroutineScope,
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+  ) {}
 
-    companion object {
-        private const val EXPECTED_RNDIS_NAME_PREFIX = "rndis"
-        private const val EXPECTED_RNDIS_IP_PREFIX = "192.168."
-    }
+  companion object {
+    private const val EXPECTED_RNDIS_NAME_PREFIX = "rndis"
+    private const val EXPECTED_RNDIS_IP_PREFIX = "192.168."
+  }
 }

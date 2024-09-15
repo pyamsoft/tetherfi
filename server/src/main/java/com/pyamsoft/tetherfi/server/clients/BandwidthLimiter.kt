@@ -23,17 +23,18 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 @ConsistentCopyVisibility
-internal data class BandwidthLimiter internal constructor(
+internal data class BandwidthLimiter
+internal constructor(
     private val mutex: Mutex = Mutex(),
     private val amount: MutableStateFlow<Long> = MutableStateFlow(0L),
 ) {
 
-    @CheckResult
-    suspend fun updateAndGet(count: Int): Long {
-        return mutex.withLock { amount.updateAndGet { it + count } }
-    }
+  @CheckResult
+  suspend fun updateAndGet(count: Int): Long {
+    return mutex.withLock { amount.updateAndGet { it + count } }
+  }
 
-    suspend fun reset() {
-        mutex.withLock { amount.value = 0L }
-    }
+  suspend fun reset() {
+    mutex.withLock { amount.value = 0L }
+  }
 }
