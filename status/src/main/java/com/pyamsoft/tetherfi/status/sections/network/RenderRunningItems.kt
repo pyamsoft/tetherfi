@@ -22,8 +22,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -70,21 +72,29 @@ internal fun LazyListScope.renderRunningItems(
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_SSID,
   ) {
-    ViewSsid(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        serverViewState = serverViewState,
-    )
+    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+
+    if (!isRNDISConnection) {
+      ViewSsid(
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          serverViewState = serverViewState,
+      )
+    }
   }
 
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_PASSWD,
   ) {
-    ViewPassword(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        serverViewState = serverViewState,
-        onTogglePasswordVisibility = onTogglePasswordVisibility,
-    )
+    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+
+    if (!isRNDISConnection) {
+      ViewPassword(
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          state = state,
+          serverViewState = serverViewState,
+          onTogglePasswordVisibility = onTogglePasswordVisibility,
+      )
+    }
   }
 
   item(

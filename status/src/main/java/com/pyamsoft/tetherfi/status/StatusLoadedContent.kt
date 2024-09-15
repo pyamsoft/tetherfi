@@ -118,6 +118,7 @@ internal fun LazyListScope.renderLoadedContent(
       itemModifier = itemModifier,
       isEditable = isEditable,
       state = state,
+      serverViewState = serverViewState,
       onSelectBand = onSelectBand,
   )
 

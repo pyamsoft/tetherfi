@@ -22,15 +22,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
+import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
 private enum class RenderEditableItemsContentTypes {
@@ -42,6 +47,7 @@ private enum class RenderEditableItemsContentTypes {
 internal fun LazyListScope.renderEditableItems(
     modifier: Modifier = Modifier,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
@@ -50,22 +56,30 @@ internal fun LazyListScope.renderEditableItems(
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_SSID,
   ) {
-    EditSsid(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        onSsidChanged = onSsidChanged,
-    )
+    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+
+    if (!isRNDISConnection) {
+      EditSsid(
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          state = state,
+          onSsidChanged = onSsidChanged,
+      )
+    }
   }
 
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_PASSWD,
   ) {
-    EditPassword(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        onTogglePasswordVisibility = onTogglePasswordVisibility,
-        onPasswordChanged = onPasswordChanged,
-    )
+    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+
+    if (!isRNDISConnection) {
+      EditPassword(
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          state = state,
+          onTogglePasswordVisibility = onTogglePasswordVisibility,
+          onPasswordChanged = onPasswordChanged,
+      )
+    }
   }
 
   item(
@@ -99,6 +113,7 @@ private fun PreviewEditableItems(
         onSsidChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},
+        serverViewState = makeTestServerState(TestServerState.EMPTY),
     )
   }
 }
