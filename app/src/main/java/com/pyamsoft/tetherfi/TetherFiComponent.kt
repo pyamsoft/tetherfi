@@ -39,7 +39,7 @@ import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerAppModule
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
-import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectAppModule
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
@@ -66,7 +66,7 @@ import kotlinx.coroutines.CoroutineScope
             TetherFiComponent.Provider::class,
             ServerAppModule::class,
             ServiceAppModule::class,
-            WifiDirectAppModule::class,
+            BroadcastServerAppModule::class,
             TileAppModule::class,
             CoreAppModule::class,
             StatusAppModule::class,

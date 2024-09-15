@@ -17,46 +17,19 @@
 package com.pyamsoft.tetherfi.server.broadcast.rndis
 
 import android.annotation.SuppressLint
-import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.ThreadEnforcer
-import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.core.InAppRatingPreferences
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServer
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastStatus
-import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 internal class RNDISServer @Inject internal constructor(
-    private val proxy: SharedProxy,
-    private val inAppRatingPreferences: InAppRatingPreferences,
-    appEnvironment: AppDevEnvironment,
-    enforcer: ThreadEnforcer,
-    shutdownBus: EventBus<ServerShutdownEvent>,
-    permissionGuard: PermissionGuard,
-    clock: Clock,
-    status: BroadcastStatus,
-) : BroadcastServer<String>(
-    shutdownBus,
-    permissionGuard,
-    appEnvironment,
-    enforcer,
-    clock,
-    status,
-) {
+) : BroadcastServerImplementation<String> {
 
-    override suspend fun withLockStartBroadcast(): String {
+    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (String) -> BroadcastServer.UpdateResult): String {
         // TODO resolve the RNDIS IP address from user preferences
         return "192.168.whatisthis.1"
     }
@@ -76,15 +49,9 @@ internal class RNDISServer @Inject internal constructor(
         // TODO what do?
     }
 
-    override fun CoroutineScope.onNetworkStarted(
+    override fun onNetworkStarted(
+        scope: CoroutineScope,
         connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
     ) {
-        // Need to mark the network as running so that the Proxy network can start
-        Timber.d { "RNDIS is fully set up!" }
-        status.set(RunningStatus.Running)
-
-        launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
-
-        launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
     }
 }
