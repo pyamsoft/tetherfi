@@ -21,9 +21,9 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.LocalDateTime
-import org.jetbrains.annotations.TestOnly
 
 @Stable
 @Immutable
@@ -32,6 +32,7 @@ sealed class TetherClient(
     open val mostRecentlySeen: LocalDateTime,
     open val transferLimit: TransferAmount?,
     open val bandwidthLimit: TransferAmount?,
+    internal open val limiter: BandwidthLimiter,
     protected open val totalBytes: ByteTransferReport,
 ) {
 
@@ -119,18 +120,24 @@ sealed class TetherClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = nickName,
+            // Transfer
             transferLimit = transferLimit,
-            bandwidthLimit = bandwidthLimit,
             totalBytes = totalBytes,
+            // Bandwidth
+            bandwidthLimit = bandwidthLimit,
+            limiter = BandwidthLimiter(),
         )
       } else {
         HostNameClient(
             hostname = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),
             nickName = nickName,
+            // Transfer
             transferLimit = transferLimit,
-            bandwidthLimit = bandwidthLimit,
             totalBytes = totalBytes,
+            // Bandwidth
+            bandwidthLimit = bandwidthLimit,
+            limiter = BandwidthLimiter(),
         )
       }
     }

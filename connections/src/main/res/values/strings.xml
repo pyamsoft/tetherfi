@@ -17,12 +17,8 @@
 <resources>
   <string name="connection_last_seen">Last seen: %1$s</string>
   <string name="connection_options">Connection Options</string>
-  <string
-    name="connection_total_to_internet"
-  >Total Transferred To Internet: %1$s</string>
-  <string
-    name="connection_total_from_internet"
-  >Total Transferred From Internet: %1$s</string>
+  <string name="connection_total_to_internet">Total Uploaded: %1$s</string>
+  <string name="connection_total_from_internet">Total Downloaded: %1$s</string>
 
   <string
     name="connection_excuse"
