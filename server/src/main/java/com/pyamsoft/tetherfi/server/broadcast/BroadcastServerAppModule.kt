@@ -14,32 +14,36 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.broadcast.wifidirect
+package com.pyamsoft.tetherfi.server.broadcast
 
+import android.net.wifi.p2p.WifiP2pManager.Channel
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetwork
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WiDiConfig
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WiDiConfigImpl
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectNetwork
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectReceiver
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectRegister
 import dagger.Binds
 import dagger.Module
+import javax.inject.Named
 
 @Module
-abstract class WifiDirectAppModule {
+abstract class BroadcastServerAppModule {
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetwork(impl: WifiDirectNetwork): BroadcastNetwork
+  internal abstract fun bindNetwork(impl: BroadcastServer): BroadcastNetwork
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetworkStatus(impl: WifiDirectNetwork): BroadcastNetworkStatus
+  internal abstract fun bindNetworkStatus(impl: BroadcastServer): BroadcastNetworkStatus
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetworkUpdater(impl: WifiDirectNetwork): BroadcastNetworkUpdater
+  internal abstract fun bindNetworkUpdater(impl: BroadcastServer): BroadcastNetworkUpdater
 
+  // Wifi direct
   @Binds
   @CheckResult
   internal abstract fun bindBroadcastObserver(impl: WifiDirectReceiver): BroadcastObserver
@@ -47,10 +51,10 @@ abstract class WifiDirectAppModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
+  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WifiDirectRegister
 
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindWidiReceiverRegister(impl: WifiDirectReceiver): WifiDirectRegister
+  internal abstract fun bindConfig(impl: WiDiConfigImpl): WiDiConfig
 }
