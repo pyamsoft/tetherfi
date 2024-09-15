@@ -25,15 +25,23 @@ import org.jetbrains.annotations.TestOnly
 import java.time.Clock
 import java.time.LocalDateTime
 
+// TODO for performance and to avoid mass allocation, make all of these vals into vars
+//      and manage the client list via flows.
+//      Otherwise we allocate so frequently for time updates and for bandwidth updates
+//      Instead we can just update variables, and only when the connection screen
+//      is displayed we can periodically poll for updates.
 @Stable
 @Immutable
 sealed class TetherClient(
     open val nickName: String,
     open val mostRecentlySeen: LocalDateTime,
     open val transferLimit: TransferAmount?,
-    open val bandwidthLimit: TransferAmount?,
-    internal open val limiter: BandwidthLimiter,
     protected open val totalBytes: ByteTransferReport,
+
+    // Bandwidth limit amount
+    open val bandwidthLimit: TransferAmount?,
+    // State tracker for the actual limit
+    internal open val limiter: BandwidthLimiter,
 ) {
 
   val transferToInternet by lazy { TransferAmount.fromBytes(totalBytes.proxyToInternet) }
