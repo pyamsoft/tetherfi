@@ -24,7 +24,8 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
-import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectNetwork
+import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISServer
+import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectServer
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
@@ -51,9 +52,8 @@ import kotlin.time.Duration.Companion.milliseconds
 typealias ServerDataType = Any
 
 @Singleton
-internal class BroadcastServer
+internal class DelegatingBroadcastServer
 @Inject internal constructor(
-    private val wifiDirect: WifiDirectNetwork,
     private val proxy: SharedProxy,
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
@@ -61,6 +61,8 @@ internal class BroadcastServer
     private val appEnvironment: AppDevEnvironment,
     private val enforcer: ThreadEnforcer,
     private val clock: Clock,
+    private val wifiDirectImplementation: WifiDirectServer,
+    private val rndisImplementation: RNDISServer,
     status: BroadcastStatus,
 ) : BaseServer(status), BroadcastNetwork, BroadcastNetworkStatus, BroadcastNetworkUpdater,
     BroadcastServerImplementation<ServerDataType> {
@@ -434,8 +436,10 @@ internal class BroadcastServer
 
     @CheckResult
     private suspend fun resolveImplementation(): BroadcastServerImplementation<Any> {
+        val impl: Any = rndisImplementation
+
         @Suppress("UNCHECKED_CAST")
-        return wifiDirect as BroadcastServerImplementation<Any>
+        return impl as BroadcastServerImplementation<Any>
     }
 
 

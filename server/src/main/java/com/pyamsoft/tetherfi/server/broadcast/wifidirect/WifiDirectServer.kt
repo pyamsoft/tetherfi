@@ -35,8 +35,8 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastServer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
+import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +48,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-internal class WifiDirectNetwork
+internal class WifiDirectServer
 @Inject
 internal constructor(
     @ServerInternalApi private val config: WiDiConfig,
@@ -207,7 +207,7 @@ internal constructor(
     @CheckResult
     private suspend fun attemptReUseConnection(
         channel: Channel,
-        updateNetworkInfo: suspend (Channel) -> BroadcastServer.UpdateResult
+        updateNetworkInfo: suspend (Channel) -> DelegatingBroadcastServer.UpdateResult
     ): Boolean {
         // Sometimes, if the system has not closed down the Wifi group (because an old version of the
         // app made a group and a new one was then installed before the group was shut down) we can
@@ -223,7 +223,7 @@ internal constructor(
         return result.connection && result.group
     }
 
-    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (Channel) -> BroadcastServer.UpdateResult): Channel {
+    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (Channel) -> DelegatingBroadcastServer.UpdateResult): Channel {
         val channel = createChannel()
         if (channel == null) {
             Timber.w { "Failed to create a Wi-Fi direct channel" }
