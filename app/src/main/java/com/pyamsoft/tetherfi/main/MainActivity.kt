@@ -65,6 +65,10 @@ class MainActivity : AppCompatActivity() {
                     change(
                         "Idle Timeout Tweak is now always ON. The UI will be removed in the next version.")
                     change("Deprecated Wake Locks UI has been removed")
+                    bugfix("Hopefully for real this time - implement a per-client Bandwidth Limit")
+                    bugfix("Fix a crash that would happen if the Connection screen was visited before the first device connected in specific cases.")
+                    change("Reduce memory allocation")
+                    feature("Support for RNDIS tethering proxy support instead of requiring Wi-Fi Direct")
                   }
                 },
         )

@@ -44,16 +44,16 @@ import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 @Singleton
 internal class WifiDirectNetwork
@@ -328,8 +328,6 @@ internal constructor(
 
     launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
   }
-
-  override fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean) {}
 
   override fun onProxyStatusChanged(): Flow<RunningStatus> {
     return proxy.onStatusChanged()
