@@ -27,6 +27,7 @@ internal constructor(
     override val transferLimit: TransferAmount?,
     override val bandwidthLimit: TransferAmount?,
     override val totalBytes: ByteTransferReport,
+    override val limiter: BandwidthLimiter,
 ) :
     TetherClient(
         nickName = nickName,
@@ -34,6 +35,7 @@ internal constructor(
         totalBytes = totalBytes,
         transferLimit = transferLimit,
         bandwidthLimit = bandwidthLimit,
+        limiter = limiter,
     )
 
 @ConsistentCopyVisibility
@@ -45,6 +47,7 @@ internal constructor(
     override val transferLimit: TransferAmount?,
     override val bandwidthLimit: TransferAmount?,
     override val totalBytes: ByteTransferReport,
+    override val limiter: BandwidthLimiter,
 ) :
     TetherClient(
         nickName = nickName,
@@ -52,4 +55,5 @@ internal constructor(
         totalBytes = totalBytes,
         transferLimit = transferLimit,
         bandwidthLimit = bandwidthLimit,
+        limiter = limiter,
     )

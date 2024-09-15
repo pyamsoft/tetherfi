@@ -128,19 +128,12 @@ abstract class ServerAppModule {
   @ServerInternalApi
   internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
 
-  // Session transports
-  @Binds
-  @IntoSet
-  @CheckResult
-  @ServerInternalApi
-  internal abstract fun bindTcpHttpTransport(impl: HttpTcpTransport): TcpSessionTransport
-
+  // Proxy
   @Binds
   @CheckResult
   @ServerInternalApi
   internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
 
-  // Proxy
   @Binds
   @CheckResult
   @ServerInternalApi
@@ -154,6 +147,13 @@ abstract class ServerAppModule {
   internal abstract fun bindProxyManagerFactory(
       impl: DefaultProxyManagerFactory
   ): ProxyManager.Factory
+
+  // TCP
+  @Binds
+  @IntoSet
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindTcpHttpTransport(impl: HttpTcpTransport): TcpSessionTransport
 
   @Binds
   @CheckResult

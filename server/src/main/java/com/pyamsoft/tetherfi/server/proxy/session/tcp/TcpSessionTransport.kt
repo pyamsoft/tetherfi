@@ -27,17 +27,18 @@ import kotlinx.coroutines.CoroutineScope
 
 internal interface TcpSessionTransport {
 
-  @CheckResult suspend fun parseRequest(input: ByteReadChannel): ProxyRequest?
+    @CheckResult
+    suspend fun parseRequest(input: ByteReadChannel): ProxyRequest?
 
-  @CheckResult
-  suspend fun exchangeInternet(
-      scope: CoroutineScope,
-      serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      internetInput: ByteReadChannel,
-      internetOutput: ByteWriteChannel,
-      request: ProxyRequest,
-      client: TetherClient,
-  ): ByteTransferReport?
+    suspend fun exchangeInternet(
+        scope: CoroutineScope,
+        serverDispatcher: ServerDispatcher,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        internetInput: ByteReadChannel,
+        internetOutput: ByteWriteChannel,
+        request: ProxyRequest,
+        client: TetherClient,
+        onReport: suspend (ByteTransferReport) -> Unit,
+    )
 }
