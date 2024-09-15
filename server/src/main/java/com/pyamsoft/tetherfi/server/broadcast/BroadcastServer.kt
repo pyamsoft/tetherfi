@@ -167,8 +167,6 @@ protected constructor(
     connectionInfoChannel.value = BroadcastNetworkStatus.ConnectionInfo.Empty
     groupInfoChannel.value = BroadcastNetworkStatus.GroupInfo.Empty
 
-    scope.launch(context = Dispatchers.Default) { onNetworkStopped(clearErrorStatus) }
-
     onStopped()
   }
 
@@ -477,9 +475,6 @@ protected constructor(
   protected abstract fun CoroutineScope.onNetworkStarted(
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   )
-
-  /** Side effects ran from this function should have their own launch {} */
-  protected abstract fun CoroutineScope.onNetworkStopped(clearErrorStatus: Boolean)
 
   /**
    * Connect data source for implementation
