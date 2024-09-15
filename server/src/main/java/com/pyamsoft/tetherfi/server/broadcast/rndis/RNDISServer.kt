@@ -17,11 +17,15 @@
 package com.pyamsoft.tetherfi.server.broadcast.rndis
 
 import android.annotation.SuppressLint
+import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastServer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
+import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import java.net.NetworkInterface
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,9 +33,26 @@ import javax.inject.Singleton
 internal class RNDISServer @Inject internal constructor(
 ) : BroadcastServerImplementation<String> {
 
-    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (String) -> BroadcastServer.UpdateResult): String {
-        // TODO resolve the RNDIS IP address from user preferences
-        return "192.168.whatisthis.1"
+    @CheckResult
+    private suspend fun resolveRNDISNetwork(): String = withContext(context = Dispatchers.IO) {
+        val allIfaces = NetworkInterface.getNetworkInterfaces()
+        for (iface in allIfaces) {
+            if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
+                for (address in iface.inetAddresses) {
+                    val hostName = address.hostName.orEmpty()
+                    if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
+                        return@withContext hostName
+                    }
+                }
+            }
+        }
+
+        // Couldn't find RNDIS
+        throw IllegalStateException("Could not find USB Tethering connection")
+    }
+
+    override suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (String) -> DelegatingBroadcastServer.UpdateResult): String {
+        return resolveRNDISNetwork()
     }
 
     @SuppressLint("VisibleForTests")
@@ -53,5 +74,10 @@ internal class RNDISServer @Inject internal constructor(
         scope: CoroutineScope,
         connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
     ) {
+    }
+
+    companion object {
+        private const val EXPECTED_RNDIS_NAME_PREFIX = "rndis"
+        private const val EXPECTED_RNDIS_IP_PREFIX = "192.168."
     }
 }

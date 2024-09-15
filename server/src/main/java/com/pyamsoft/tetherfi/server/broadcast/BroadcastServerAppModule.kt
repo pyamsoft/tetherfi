@@ -16,32 +16,29 @@
 
 package com.pyamsoft.tetherfi.server.broadcast
 
-import android.net.wifi.p2p.WifiP2pManager.Channel
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WiDiConfig
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WiDiConfigImpl
-import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectNetwork
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectReceiver
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectRegister
 import dagger.Binds
 import dagger.Module
-import javax.inject.Named
 
 @Module
 abstract class BroadcastServerAppModule {
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetwork(impl: BroadcastServer): BroadcastNetwork
+  internal abstract fun bindNetwork(impl: DelegatingBroadcastServer): BroadcastNetwork
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetworkStatus(impl: BroadcastServer): BroadcastNetworkStatus
+  internal abstract fun bindNetworkStatus(impl: DelegatingBroadcastServer): BroadcastNetworkStatus
 
   @Binds
   @CheckResult
-  internal abstract fun bindNetworkUpdater(impl: BroadcastServer): BroadcastNetworkUpdater
+  internal abstract fun bindNetworkUpdater(impl: DelegatingBroadcastServer): BroadcastNetworkUpdater
 
   // Wifi direct
   @Binds

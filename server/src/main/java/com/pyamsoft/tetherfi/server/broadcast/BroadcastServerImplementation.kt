@@ -28,7 +28,7 @@ internal interface BroadcastServerImplementation<T> {
      * At the point this function is run, we already claim the lock
      */
     @CheckResult
-    suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (T) -> BroadcastServer.UpdateResult): T
+    suspend fun withLockStartBroadcast(updateNetworkInfo: suspend (T) -> DelegatingBroadcastServer.UpdateResult): T
 
     /**
      * Connect data source for implementation
