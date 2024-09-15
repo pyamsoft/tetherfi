@@ -42,7 +42,7 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val port = MutableStateFlow(0)
 
   // TODO RNDIS via preference
-  override val isRNDISConnection = MutableStateFlow(true)
+  override val isRNDISConnection = MutableStateFlow(false)
 
   override val isSettingsOpen = MutableStateFlow(false)
 

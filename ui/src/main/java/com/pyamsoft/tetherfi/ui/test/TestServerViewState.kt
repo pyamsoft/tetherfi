@@ -49,6 +49,8 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
             override val port = MutableStateFlow(TEST_PORT)
+            // TODO support RNDIS
+            override val isRNDISConnection = MutableStateFlow(false)
           }
       TestServerState.CONNECTED ->
           object : ServerViewState {
@@ -62,6 +64,8 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
             override val port = MutableStateFlow(TEST_PORT)
+            // TODO support RNDIS
+            override val isRNDISConnection = MutableStateFlow(false)
           }
       TestServerState.ERROR ->
           object : ServerViewState {
@@ -74,5 +78,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                     BroadcastNetworkStatus.ConnectionInfo.Error(
                         error = RuntimeException("Test Connection Error")))
             override val port = MutableStateFlow(TEST_PORT)
+            // TODO support RNDIS
+            override val isRNDISConnection = MutableStateFlow(false)
           }
     }

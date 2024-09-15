@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private enum class RenderBroadcastFrequencyContentTypes {
   BANDS
@@ -31,6 +32,7 @@ private enum class RenderBroadcastFrequencyContentTypes {
 internal fun LazyListScope.renderBroadcastFrequency(
     itemModifier: Modifier = Modifier,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     isEditable: Boolean,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
@@ -41,6 +43,7 @@ internal fun LazyListScope.renderBroadcastFrequency(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
         isEditable = isEditable,
         state = state,
+        serverViewState = serverViewState,
         onSelectBand = onSelectBand,
     )
   }

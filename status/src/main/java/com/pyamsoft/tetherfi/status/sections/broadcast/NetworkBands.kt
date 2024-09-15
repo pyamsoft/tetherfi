@@ -41,6 +41,7 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.checkable.CheckableCard
 import com.pyamsoft.tetherfi.ui.checkable.rememberHeightMatcherGenerator
 import com.pyamsoft.tetherfi.ui.surfaceAlpha
@@ -50,8 +51,16 @@ internal fun NetworkBands(
     modifier: Modifier = Modifier,
     isEditable: Boolean,
     state: StatusViewState,
+    serverViewState: ServerViewState,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
+  val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+
+  if (isRNDISConnection) {
+    // Render Nothing
+    return
+  }
+
   val band by state.band.collectAsStateWithLifecycle()
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val hapticManager = LocalHapticManager.current
