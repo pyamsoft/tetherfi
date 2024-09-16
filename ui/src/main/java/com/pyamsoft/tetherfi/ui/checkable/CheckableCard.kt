@@ -22,8 +22,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -40,12 +38,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.defaults.ImageDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
-import com.pyamsoft.pydroid.ui.theme.ZeroSize
+import com.pyamsoft.tetherfi.ui.rememberCheckableIconColor
 import com.pyamsoft.tetherfi.ui.surfaceAlpha
 import com.pyamsoft.tetherfi.ui.textAlpha
 
@@ -76,27 +73,6 @@ fun rememberCheckableColor(
   )
 }
 
-@Composable
-@CheckResult
-internal fun rememberCheckableIconColor(
-    enabled: Boolean,
-    condition: Boolean,
-): Color {
-  val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
-  val selectedColor = MaterialTheme.colorScheme.primary
-  return remember(
-      enabled,
-      condition,
-      unselectedColor,
-      selectedColor,
-  ) {
-    val c = if (condition) selectedColor else unselectedColor
-    return@remember c.copy(
-        alpha = surfaceAlpha(enabled),
-    )
-  }
-}
-
 /** Fancy checkable with Material Design ish elements */
 @Composable
 fun CheckableCard(
@@ -106,8 +82,6 @@ fun CheckableCard(
     title: String,
     description: String,
     onClick: () -> Unit,
-    /** Hack to make two different cards the same size based on their content */
-    extraHeight: Dp = ZeroSize,
 ) {
   CheckableCard(
       modifier = modifier,
@@ -117,7 +91,6 @@ fun CheckableCard(
       description = description,
       titleColor = MaterialTheme.colorScheme.primary,
       borderColor = MaterialTheme.colorScheme.primaryContainer,
-      extraHeight = extraHeight,
       onClick = onClick,
   )
 }
@@ -131,7 +104,6 @@ private fun CheckableCard(
     description: String,
     titleColor: Color,
     borderColor: Color,
-    extraHeight: Dp,
     onClick: () -> Unit,
 ) {
   val iconColor = rememberCheckableIconColor(isEditable, condition)
@@ -180,13 +152,6 @@ private fun CheckableCard(
             imageVector = checkIcon,
             contentDescription = title,
             tint = iconColor,
-        )
-      }
-
-      // Align with the largest card
-      if (extraHeight > ZeroSize) {
-        Spacer(
-            modifier = Modifier.height(extraHeight),
         )
       }
 

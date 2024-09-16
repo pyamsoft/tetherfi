@@ -32,6 +32,7 @@ import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
@@ -561,6 +562,10 @@ internal constructor(
   fun handleToggleKeepScreenOn() {
     val newVal = state.isKeepScreenOn.updateAndGet { !it }
     statusPreferences.setKeepScreenOn(newVal)
+  }
+
+  fun handleUpdateBroadcastType(type: BroadcastType) {
+    serverPreferences.setBroadcastType(type)
   }
 
   companion object {

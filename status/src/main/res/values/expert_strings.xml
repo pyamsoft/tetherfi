@@ -17,8 +17,9 @@
 <resources>
   <!--  TODO(Help): Need zh-rTW translation-->
   <string name="expert_title">Expert Settings</string>
+  <string name="expert_description">This is for Advanced Users.\n\nAdjusting these options may completely change how %s1$s performs, proceed at your own risk. Many users will NOT need to change these settings.</string>
 
-  <string name="expert_power_balance_title">Expert: Power Balance</string>
+  <string name="expert_power_balance_title">Power Balance</string>
   <string
     name="expert_power_balance_description"
   >This is for Advanced Users.\n\nYou can adjust the performance and resource usage of the %1$s Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.\n\nMore Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.</string>
@@ -50,4 +51,22 @@
   <string
     name="expert_balance_super_performance_description"
   >%1$d threads. Offers great hotspot performance at the cost of significant battery usage.</string>
+
+  <!--  TODO(Help): Need zh-rTW translation-->
+  <string name="expert_broadcast_title">Hotspot Type</string>
+  <string name="expert_broadcast_description">Change how %1$s creates a Hotspot connection</string>
+
+  <string name="expert_broadcast_type_wifi_direct_title">Wi-Fi Direct</string>
+  <string name="expert_broadcast_type_wifi_direct_description">
+    Using Wi-Fi direct, create a mobile hotspot for multiple devices to connect to.
+    \n\nThis relies on your device\'s ability to successfully use Wi-Fi Direct, which may not be supported on
+    all devices.
+  </string>
+
+  <string name="expert_broadcast_type_rndis_title">USB Tethering</string>
+  <string name="expert_broadcast_type_rndis_description">
+    Using USB Tethering (RNDIS), create a connection for a single device via USB cable.
+    \n\nThis relies on your device\'s ability to successfully use USB Tethering, which may not be supported on
+    all devices.
+  </string>
 </resources>

@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
@@ -45,6 +46,7 @@ internal constructor(
     private val broadcastObserver: BroadcastObserver,
     private val configPreferences: ConfigPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
+    private val serverPreferences: ServerPreferences,
 ) : MainViewState by state, AbstractViewModeler<MainViewState>(state) {
 
   private val isNetworkCurrentlyRunning =
@@ -130,6 +132,11 @@ internal constructor(
           }
         }
       }
+    }
+
+    // Broadcast type
+    serverPreferences.listenForBroadcastType().also { f ->
+      scope.launch(context = Dispatchers.Default) { f.collect { s.broadcastType.value = it } }
     }
   }
 

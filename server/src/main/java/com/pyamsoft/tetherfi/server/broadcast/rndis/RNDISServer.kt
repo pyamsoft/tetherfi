@@ -48,7 +48,7 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         }
 
         // Couldn't find RNDIS
-        throw IllegalStateException("Could not find USB Tethering connection")
+        throw IllegalStateException("Missing USB Tethering connection")
       }
 
   override suspend fun withLockStartBroadcast(

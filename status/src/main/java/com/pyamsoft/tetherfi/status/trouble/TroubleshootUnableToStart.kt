@@ -36,7 +36,7 @@ import org.jetbrains.annotations.TestOnly
 internal fun TroubleshootUnableToStart(
     modifier: Modifier = Modifier,
     appName: String,
-    broadcastType: BroadcastType,
+    broadcastType: BroadcastType?,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
@@ -92,45 +92,42 @@ internal fun TroubleshootUnableToStart(
           style = MaterialTheme.typography.bodyLarge,
       )
 
-      when (broadcastType) {
-        BroadcastType.WIFI_DIRECT -> {
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_wifi_on),
-              style = MaterialTheme.typography.bodyLarge,
-          )
+      if (broadcastType == BroadcastType.WIFI_DIRECT) {
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_on),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
-              style = MaterialTheme.typography.bodyLarge,
-          )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_wifi_restart),
-              style = MaterialTheme.typography.bodyLarge,
-          )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_wifi_restart),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_password_length),
-              style = MaterialTheme.typography.bodyLarge,
-          )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_password_length),
+            style = MaterialTheme.typography.bodyLarge,
+        )
 
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_ssid_name),
-              style = MaterialTheme.typography.bodyLarge,
-          )
-        }
-        BroadcastType.RNDIS -> {
-          Text(
-              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-              text = stringResource(R.string.trouble_broadcast_rndis),
-              style = MaterialTheme.typography.bodyLarge,
-          )
-        }
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_ssid_name),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+      } else if (broadcastType == BroadcastType.RNDIS) {
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_broadcast_rndis),
+            style = MaterialTheme.typography.bodyLarge,
+        )
       }
     }
 

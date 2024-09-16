@@ -42,8 +42,7 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
           BroadcastNetworkStatus.ConnectionInfo.Empty)
   override val port = MutableStateFlow(0)
 
-  // TODO RNDIS via preference
-  override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
+  override val broadcastType = MutableStateFlow<BroadcastType?>(null)
 
   override val isSettingsOpen = MutableStateFlow(false)
 

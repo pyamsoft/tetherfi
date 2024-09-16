@@ -74,7 +74,10 @@ internal fun LazyListScope.renderTweakCard(
             style =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W700,
-                    color = MaterialTheme.colorScheme.primary,
+                    color =
+                        MaterialTheme.colorScheme.primary.copy(
+                            alpha = textAlpha(isEditable),
+                        ),
                 ),
         )
 
