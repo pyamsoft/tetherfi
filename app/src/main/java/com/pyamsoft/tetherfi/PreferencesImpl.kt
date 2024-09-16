@@ -33,6 +33,7 @@ import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -171,6 +172,15 @@ internal constructor(
       preferenceBooleanFlow(KEEP_SCREEN_ON, false) { preferences }.flowOn(context = Dispatchers.IO)
 
   override fun setKeepScreenOn(keep: Boolean) = setPreference { putBoolean(KEEP_SCREEN_ON, keep) }
+
+  override fun listenForBroadcastType(): Flow<BroadcastType> =
+      preferenceStringFlow(BROADCAST_TYPE, BroadcastType.WIFI_DIRECT.name) { preferences }
+          .map { BroadcastType.valueOf(it) }
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setBroadcastType(type: BroadcastType) = setPreference {
+    putString(BROADCAST_TYPE, type.name)
+  }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -324,5 +334,7 @@ internal constructor(
     private const val SERVER_LIMITS = "key_server_perf_limit_1"
 
     private const val KEEP_SCREEN_ON = "key_keep_screen_on_1"
+
+    private const val BROADCAST_TYPE = "key_broadcast_type_1"
   }
 }

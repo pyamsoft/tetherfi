@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.ui
+package com.pyamsoft.tetherfi.server.broadcast
 
-import androidx.compose.runtime.Stable
-import com.pyamsoft.pydroid.arch.UiViewState
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import kotlinx.coroutines.flow.StateFlow
-
-/** Activity global view state for server variables */
-@Stable
-interface ServerViewState : UiViewState {
-  val group: StateFlow<BroadcastNetworkStatus.GroupInfo>
-  val connection: StateFlow<BroadcastNetworkStatus.ConnectionInfo>
-  val port: StateFlow<Int>
-  val broadcastType: StateFlow<BroadcastType>
+enum class BroadcastType {
+  WIFI_DIRECT,
+  RNDIS
 }

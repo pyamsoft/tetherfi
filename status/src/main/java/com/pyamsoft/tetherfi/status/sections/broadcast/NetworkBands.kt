@@ -38,6 +38,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
@@ -54,16 +55,16 @@ internal fun NetworkBands(
     serverViewState: ServerViewState,
     onSelectBand: (ServerNetworkBand) -> Unit,
 ) {
-  val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
-
-  if (isRNDISConnection) {
-    // Render Nothing
-    return
-  }
 
   val band by state.band.collectAsStateWithLifecycle()
   val canUseCustomConfig = remember { ServerDefaults.canUseCustomConfig() }
   val hapticManager = LocalHapticManager.current
+  val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
+
+  // Render only if Wifi Direct
+  if (broadcastType != BroadcastType.WIFI_DIRECT) {
+    return
+  }
 
   Column(
       modifier = modifier,

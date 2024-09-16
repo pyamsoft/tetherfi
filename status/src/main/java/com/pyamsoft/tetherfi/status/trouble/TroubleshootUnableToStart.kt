@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.R
 import org.jetbrains.annotations.TestOnly
 
@@ -35,7 +36,7 @@ import org.jetbrains.annotations.TestOnly
 internal fun TroubleshootUnableToStart(
     modifier: Modifier = Modifier,
     appName: String,
-    isRNDISConnection: Boolean,
+    broadcastType: BroadcastType,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
@@ -91,42 +92,45 @@ internal fun TroubleshootUnableToStart(
           style = MaterialTheme.typography.bodyLarge,
       )
 
-      if (isRNDISConnection) {
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_rndis),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-      } else {
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_wifi_on),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+      when (broadcastType) {
+        BroadcastType.WIFI_DIRECT -> {
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_wifi_on),
+              style = MaterialTheme.typography.bodyLarge,
+          )
 
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
+              style = MaterialTheme.typography.bodyLarge,
+          )
 
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_wifi_restart),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_wifi_restart),
+              style = MaterialTheme.typography.bodyLarge,
+          )
 
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_password_length),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_password_length),
+              style = MaterialTheme.typography.bodyLarge,
+          )
 
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_ssid_name),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_ssid_name),
+              style = MaterialTheme.typography.bodyLarge,
+          )
+        }
+        BroadcastType.RNDIS -> {
+          Text(
+              modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+              text = stringResource(R.string.trouble_broadcast_rndis),
+              style = MaterialTheme.typography.bodyLarge,
+          )
+        }
       }
     }
 
@@ -149,13 +153,13 @@ internal fun TroubleshootUnableToStart(
 @TestOnly
 @Composable
 private fun PreviewTroubleshootUnableToStart(
-    isRNDISConnection: Boolean,
+    broadcastType: BroadcastType,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
   TroubleshootUnableToStart(
       appName = "TEST",
-      isRNDISConnection = isRNDISConnection,
+      broadcastType = broadcastType,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
   )
@@ -165,7 +169,7 @@ private fun PreviewTroubleshootUnableToStart(
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartBroadcast() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -175,7 +179,7 @@ private fun PreviewTroubleshootUnableToStartBroadcast() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartProxy() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -185,7 +189,7 @@ private fun PreviewTroubleshootUnableToStartProxy() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartNone() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -195,7 +199,7 @@ private fun PreviewTroubleshootUnableToStartNone() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootUnableToStartAll() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = true,
       isProxyError = true,
   )
@@ -205,7 +209,7 @@ private fun PreviewTroubleshootUnableToStartAll() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootRNDISUnableToStartBroadcast() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -215,7 +219,7 @@ private fun PreviewTroubleshootRNDISUnableToStartBroadcast() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootRNDISUnableToStartProxy() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -225,7 +229,7 @@ private fun PreviewTroubleshootRNDISUnableToStartProxy() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootRNDISUnableToStartNone() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -235,7 +239,7 @@ private fun PreviewTroubleshootRNDISUnableToStartNone() {
 @Preview(showBackground = true)
 private fun PreviewTroubleshootRNDISUnableToStartAll() {
   PreviewTroubleshootUnableToStart(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = true,
       isProxyError = true,
   )

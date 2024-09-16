@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.tiiles.RunningTiles
@@ -72,9 +73,9 @@ internal fun LazyListScope.renderRunningItems(
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_SSID,
   ) {
-    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
-    if (!isRNDISConnection) {
+    if (broadcastType == BroadcastType.WIFI_DIRECT) {
       ViewSsid(
           modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
           serverViewState = serverViewState,
@@ -85,9 +86,9 @@ internal fun LazyListScope.renderRunningItems(
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_PASSWD,
   ) {
-    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
-    if (!isRNDISConnection) {
+    if (broadcastType == BroadcastType.WIFI_DIRECT) {
       ViewPassword(
           modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
           state = state,

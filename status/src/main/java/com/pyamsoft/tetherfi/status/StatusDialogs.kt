@@ -126,14 +126,14 @@ internal fun StatusDialogs(
   AnimatedVisibility(
       visible = isShowingSetupError,
   ) {
-    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
     TroubleshootDialog(
         modifier = dialogModifier,
         appName = appName,
-        isRNDISConnection = isRNDISConnection,
+        broadcastType = broadcastType,
         isBroadcastError = isBroadcastError,
         isProxyError = isProxyError,
         onDismiss = onHideSetupError,
