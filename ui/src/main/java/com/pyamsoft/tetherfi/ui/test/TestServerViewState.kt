@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.ui.test
 import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
@@ -50,7 +51,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
             override val port = MutableStateFlow(TEST_PORT)
             // TODO support RNDIS
-            override val isRNDISConnection = MutableStateFlow(false)
+            override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }
       TestServerState.CONNECTED ->
           object : ServerViewState {
@@ -65,7 +66,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
             override val port = MutableStateFlow(TEST_PORT)
             // TODO support RNDIS
-            override val isRNDISConnection = MutableStateFlow(false)
+            override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }
       TestServerState.ERROR ->
           object : ServerViewState {
@@ -79,6 +80,6 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                         error = RuntimeException("Test Connection Error")))
             override val port = MutableStateFlow(TEST_PORT)
             // TODO support RNDIS
-            override val isRNDISConnection = MutableStateFlow(false)
+            override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }
     }

@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -56,9 +57,9 @@ internal fun LazyListScope.renderEditableItems(
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_SSID,
   ) {
-    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
-    if (!isRNDISConnection) {
+    if (broadcastType == BroadcastType.WIFI_DIRECT) {
       EditSsid(
           modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
           state = state,
@@ -70,9 +71,9 @@ internal fun LazyListScope.renderEditableItems(
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_PASSWD,
   ) {
-    val isRNDISConnection by serverViewState.isRNDISConnection.collectAsStateWithLifecycle()
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
-    if (!isRNDISConnection) {
+    if (broadcastType == BroadcastType.WIFI_DIRECT) {
       EditPassword(
           modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
           state = state,

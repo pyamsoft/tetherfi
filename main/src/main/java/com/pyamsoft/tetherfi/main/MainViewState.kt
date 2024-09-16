@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.main
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +43,7 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val port = MutableStateFlow(0)
 
   // TODO RNDIS via preference
-  override val isRNDISConnection = MutableStateFlow(false)
+  override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
 
   override val isSettingsOpen = MutableStateFlow(false)
 

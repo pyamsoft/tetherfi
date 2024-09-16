@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import kotlinx.coroutines.flow.Flow
 
 interface ServerPreferences {
@@ -32,4 +33,8 @@ interface ServerPreferences {
   @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
 
   fun setShutdownWithNoClients(shutdown: Boolean)
+
+  @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
+
+  fun setBroadcastType(type: BroadcastType)
 }

@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.ui.CardDialog
 
 private enum class TroubleshootDialogContentTypes {
@@ -42,7 +43,7 @@ private enum class TroubleshootDialogContentTypes {
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
     appName: String,
-    isRNDISConnection: Boolean,
+    broadcastType: BroadcastType,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
     onDismiss: () -> Unit,
@@ -67,7 +68,7 @@ internal fun TroubleshootDialog(
           TroubleshootUnableToStart(
               modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.keylines.content),
               appName = appName,
-              isRNDISConnection = isRNDISConnection,
+              broadcastType = broadcastType,
               isBroadcastError = isBroadcastError,
               isProxyError = isProxyError,
           )
@@ -99,13 +100,13 @@ internal fun TroubleshootDialog(
 
 @Composable
 private fun PreviewTroubleshootDialog(
-    isRNDISConnection: Boolean,
+    broadcastType: BroadcastType,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
 ) {
   TroubleshootDialog(
       appName = "TEST",
-      isRNDISConnection = isRNDISConnection,
+      broadcastType = broadcastType,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
       onDismiss = {},
@@ -116,7 +117,7 @@ private fun PreviewTroubleshootDialog(
 @Composable
 private fun PreviewTroubleshootDialogNone() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -126,7 +127,7 @@ private fun PreviewTroubleshootDialogNone() {
 @Composable
 private fun PreviewTroubleshootDialogBroadcast() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -136,7 +137,7 @@ private fun PreviewTroubleshootDialogBroadcast() {
 @Composable
 private fun PreviewTroubleshootDialogProxy() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -146,7 +147,7 @@ private fun PreviewTroubleshootDialogProxy() {
 @Composable
 private fun PreviewTroubleshootDialogBoth() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = false,
+      broadcastType = BroadcastType.WIFI_DIRECT,
       isBroadcastError = true,
       isProxyError = true,
   )
@@ -156,7 +157,7 @@ private fun PreviewTroubleshootDialogBoth() {
 @Composable
 private fun PreviewTroubleshootRNDISDialogNone() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = false,
       isProxyError = false,
   )
@@ -166,7 +167,7 @@ private fun PreviewTroubleshootRNDISDialogNone() {
 @Composable
 private fun PreviewTroubleshootRNDISDialogBroadcast() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = true,
       isProxyError = false,
   )
@@ -176,7 +177,7 @@ private fun PreviewTroubleshootRNDISDialogBroadcast() {
 @Composable
 private fun PreviewTroubleshootRNDISDialogProxy() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = false,
       isProxyError = true,
   )
@@ -186,7 +187,7 @@ private fun PreviewTroubleshootRNDISDialogProxy() {
 @Composable
 private fun PreviewTroubleshootRNDISDialogBoth() {
   PreviewTroubleshootDialog(
-      isRNDISConnection = true,
+      broadcastType = BroadcastType.RNDIS,
       isBroadcastError = true,
       isProxyError = true,
   )

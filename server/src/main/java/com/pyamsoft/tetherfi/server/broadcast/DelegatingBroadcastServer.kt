@@ -24,17 +24,13 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
+import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISServer
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectServer
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -44,10 +40,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 typealias ServerDataType = Any
 
@@ -56,6 +58,7 @@ internal class DelegatingBroadcastServer
 @Inject
 internal constructor(
     private val proxy: SharedProxy,
+    private val serverPreferences: ServerPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val permissionGuard: PermissionGuard,
@@ -441,7 +444,12 @@ internal constructor(
 
   @CheckResult
   private suspend fun resolveImplementation(): BroadcastServerImplementation<Any> {
-    val impl: Any = rndisImplementation
+    val broadcastType = serverPreferences.listenForBroadcastType().first()
+    val impl: ServerDataType =
+        when (broadcastType) {
+          BroadcastType.WIFI_DIRECT -> wifiDirectImplementation
+          BroadcastType.RNDIS -> rndisImplementation
+        }
 
     @Suppress("UNCHECKED_CAST") return impl as BroadcastServerImplementation<Any>
   }
