@@ -28,5 +28,5 @@ interface ServerViewState : UiViewState {
   val group: StateFlow<BroadcastNetworkStatus.GroupInfo>
   val connection: StateFlow<BroadcastNetworkStatus.ConnectionInfo>
   val port: StateFlow<Int>
-  val broadcastType: StateFlow<BroadcastType>
+  val broadcastType: StateFlow<BroadcastType?>
 }

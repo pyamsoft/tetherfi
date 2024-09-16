@@ -20,39 +20,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.status.R
-import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private enum class ExpertSettingsContentTypes {
-  LABEL,
+  SETTINGS,
 }
 
 internal fun LazyListScope.renderExpertSettings(
     itemModifier: Modifier = Modifier,
+    serverViewState: ServerViewState,
     isEditable: Boolean,
     appName: String,
 
     // Power Balance
     onShowPowerBalance: () -> Unit,
+
+    // Broadcast type
+    onSelectBroadcastType: (BroadcastType) -> Unit,
 ) {
   item(
-      contentType = ExpertSettingsContentTypes.LABEL,
+      contentType = ExpertSettingsContentTypes.SETTINGS,
   ) {
-    Label(
-        modifier =
-            itemModifier
-                .padding(top = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.baseline),
-        text = stringResource(R.string.expert_title),
+    ExpertSettings(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        serverViewState = serverViewState,
+        isEditable = isEditable,
+        appName = appName,
+        onShowPowerBalance = onShowPowerBalance,
+        onSelectBroadcastType = onSelectBroadcastType,
     )
   }
-
-  renderPowerBalance(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-      onShowPowerBalance = onShowPowerBalance,
-  )
 }

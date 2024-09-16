@@ -43,7 +43,7 @@ private enum class TroubleshootDialogContentTypes {
 internal fun TroubleshootDialog(
     modifier: Modifier = Modifier,
     appName: String,
-    broadcastType: BroadcastType,
+    broadcastType: BroadcastType?,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
     onDismiss: () -> Unit,

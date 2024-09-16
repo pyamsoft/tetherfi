@@ -225,5 +225,6 @@ fun StatusEntry(
       onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
       onHidePowerBalance = { viewModel.handleClosePowerBalance() },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
+      onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
   )
 }

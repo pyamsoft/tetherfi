@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.expert.renderExpertSettings
@@ -93,6 +94,9 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Power Balance
     onShowPowerBalance: () -> Unit,
+
+    // Broadcast type
+    onSelectBroadcastType: (BroadcastType) -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = itemModifier,
@@ -169,9 +173,11 @@ internal fun LazyListScope.renderLoadedContent(
 
   renderExpertSettings(
       itemModifier = itemModifier,
+      serverViewState = serverViewState,
       isEditable = isEditable,
       appName = appName,
       onShowPowerBalance = onShowPowerBalance,
+      onSelectBroadcastType = onSelectBroadcastType,
   )
 
   item(
@@ -239,6 +245,7 @@ private fun PreviewLoadedContent(
         onViewSlowSpeedHelp = {},
         onToggleKeepScreenOn = {},
         onToggleIgnoreLocation = {},
+        onSelectBroadcastType = {},
     )
   }
 }
