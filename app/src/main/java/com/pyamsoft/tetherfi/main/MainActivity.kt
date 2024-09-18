@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
 
                   override val changelog = buildChangeLog {
                     change(
+                      "Power Balance expert setting has been deprecated and will be removed in the next release. This expert setting was made largely obsolete by new, more efficient code.")
+                    change(
                         "Idle Timeout Tweak is now always ON. The UI will be removed in the next version.")
                     change("Deprecated Wake Locks UI has been removed")
                     bugfix("Hopefully for real this time - implement a per-client Bandwidth Limit")

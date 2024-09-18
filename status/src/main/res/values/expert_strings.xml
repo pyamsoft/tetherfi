@@ -22,7 +22,8 @@
   <string name="expert_power_balance_title">Power Balance</string>
   <string
     name="expert_power_balance_description"
-  >This is for Advanced Users.\n\nYou can adjust the performance and resource usage of the %1$s Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.\n\nMore Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.</string>
+  >This is for Advanced Users.\n\nYou can adjust the performance and resource usage of the %1$s Hotspot, which will adjust the number of virtual threads allocated to the Hotspot Network.\n\nMore Threads will result in usually faster performance, but higher battery usage and may heat up or slow down your device.
+  \n\nThis option has been deprecated and will be removed in the next release. It caused unpredictable behavior in some situations and was largely made obsolete by new, more efficient code.</string>
   <string name="expert_power_balance_button">Adjust Power Balance</string>
 
   <string name="expert_balance_max_title">Max Performance</string>
