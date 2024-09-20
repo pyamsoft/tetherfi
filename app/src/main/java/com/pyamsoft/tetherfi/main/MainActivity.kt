@@ -62,17 +62,17 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
+                    feature(
+                      "Support for RNDIS tethering proxy support instead of requiring Wi-Fi Direct")
+                    bugfix("Hopefully for real this time - implement a per-client Bandwidth Limit")
+                    bugfix(
+                      "Fix a crash that would happen if the Connection screen was visited before the first device connected in specific cases.")
                     change(
                       "Power Balance expert setting has been deprecated and will be removed in the next release. This expert setting was made largely obsolete by new, more efficient code.")
                     change(
                         "Idle Timeout Tweak is now always ON. The UI will be removed in the next version.")
                     change("Deprecated Wake Locks UI has been removed")
-                    bugfix("Hopefully for real this time - implement a per-client Bandwidth Limit")
-                    bugfix(
-                        "Fix a crash that would happen if the Connection screen was visited before the first device connected in specific cases.")
                     change("Reduce memory allocation")
-                    feature(
-                        "Support for RNDIS tethering proxy support instead of requiring Wi-Fi Direct")
                   }
                 },
         )
