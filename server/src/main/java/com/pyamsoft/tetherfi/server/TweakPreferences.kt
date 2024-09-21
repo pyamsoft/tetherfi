@@ -19,25 +19,17 @@ package com.pyamsoft.tetherfi.server
 import androidx.annotation.CheckResult
 import kotlinx.coroutines.flow.Flow
 
-interface ConfigPreferences {
+interface TweakPreferences {
 
-  @CheckResult fun listenForSsidChanges(): Flow<String>
+  @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
 
-  fun setSsid(ssid: String)
+  fun setStartIgnoreVpn(ignore: Boolean)
 
-  @CheckResult fun listenForPasswordChanges(): Flow<String>
+  @CheckResult fun listenForStartIgnoreLocation(): Flow<Boolean>
 
-  fun setPassword(password: String)
+  fun setStartIgnoreLocation(ignore: Boolean)
 
-  @CheckResult fun listenForPortChanges(): Flow<Int>
+  @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
 
-  fun setPort(port: Int)
-
-  @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
-
-  fun setNetworkBand(band: ServerNetworkBand)
-
-  @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
-
-  fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
+  fun setShutdownWithNoClients(shutdown: Boolean)
 }

@@ -112,6 +112,7 @@ private fun PreviewMainScreen(
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
         override val port = MutableStateFlow(0)
+
         // TODO support RNDIS
         override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
       }

@@ -27,13 +27,16 @@ import com.pyamsoft.pydroid.util.preferenceIntFlow
 import com.pyamsoft.pydroid.util.preferenceStringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
+import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
@@ -53,7 +56,13 @@ internal class PreferencesImpl
 internal constructor(
     private val enforcer: ThreadEnforcer,
     context: Context,
-) : StatusPreferences, ServerPreferences, InAppRatingPreferences, ConfigPreferences {
+) :
+    StatusPreferences,
+    ProxyPreferences,
+    InAppRatingPreferences,
+    TweakPreferences,
+    ExpertPreferences,
+    WifiPreferences {
 
   private val preferences by lazy {
     enforcer.assertOffMainThread()
@@ -180,6 +189,15 @@ internal constructor(
 
   override fun setBroadcastType(type: BroadcastType) = setPreference {
     putString(BROADCAST_TYPE, type.name)
+  }
+
+  override fun listenForPreferredNetwork(): Flow<PreferredNetwork> =
+      preferenceStringFlow(PREFERRED_NETWORK, PreferredNetwork.NONE.name) { preferences }
+          .map { PreferredNetwork.valueOf(it) }
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setPreferredNetwork(network: PreferredNetwork) = setPreference {
+    putString(PREFERRED_NETWORK, network.name)
   }
 
   override fun listenShowInAppRating(): Flow<Boolean> =
@@ -336,5 +354,7 @@ internal constructor(
     private const val KEEP_SCREEN_ON = "key_keep_screen_on_1"
 
     private const val BROADCAST_TYPE = "key_broadcast_type_1"
+
+    private const val PREFERRED_NETWORK = "key_preferred_network_1"
   }
 }

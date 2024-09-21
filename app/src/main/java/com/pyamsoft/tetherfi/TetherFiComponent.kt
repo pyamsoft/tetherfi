@@ -35,10 +35,12 @@ import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
 import com.pyamsoft.tetherfi.foreground.ProxyForegroundService
 import com.pyamsoft.tetherfi.main.MainActivity
 import com.pyamsoft.tetherfi.main.MainComponent
-import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerAppModule
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
+import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.status.PermissionRequests
@@ -99,9 +101,13 @@ internal interface TetherFiComponent {
   @Module
   abstract class Provider {
 
-    @Binds internal abstract fun bindConfigPreferences(impl: PreferencesImpl): ConfigPreferences
+    @Binds internal abstract fun bindTweakPreferences(impl: PreferencesImpl): TweakPreferences
 
-    @Binds internal abstract fun bindServerPreferences(impl: PreferencesImpl): ServerPreferences
+    @Binds internal abstract fun bindWifiPreferences(impl: PreferencesImpl): WifiPreferences
+
+    @Binds internal abstract fun bindExpertPreferences(impl: PreferencesImpl): ExpertPreferences
+
+    @Binds internal abstract fun bindProxyPreferences(impl: PreferencesImpl): ProxyPreferences
 
     @Binds internal abstract fun bindStatusPreferences(impl: PreferencesImpl): StatusPreferences
 

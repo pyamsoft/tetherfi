@@ -17,24 +17,19 @@
 package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import kotlinx.coroutines.flow.Flow
 
-interface ServerPreferences {
+interface WifiPreferences {
 
-  @CheckResult fun listenForStartIgnoreVpn(): Flow<Boolean>
+  @CheckResult fun listenForSsidChanges(): Flow<String>
 
-  fun setStartIgnoreVpn(ignore: Boolean)
+  fun setSsid(ssid: String)
 
-  @CheckResult fun listenForStartIgnoreLocation(): Flow<Boolean>
+  @CheckResult fun listenForPasswordChanges(): Flow<String>
 
-  fun setStartIgnoreLocation(ignore: Boolean)
+  fun setPassword(password: String)
 
-  @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
+  @CheckResult fun listenForNetworkBandChanges(): Flow<ServerNetworkBand>
 
-  fun setShutdownWithNoClients(shutdown: Boolean)
-
-  @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
-
-  fun setBroadcastType(type: BroadcastType)
+  fun setNetworkBand(band: ServerNetworkBand)
 }

@@ -37,6 +37,7 @@ import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -118,13 +119,12 @@ fun StatusScreen(
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
 
-    // Power Balance
+    // Expert
     onShowPowerBalance: () -> Unit,
     onHidePowerBalance: () -> Unit,
     onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
-
-    // Broadcast type
     onSelectBroadcastType: (BroadcastType) -> Unit,
+    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
@@ -259,6 +259,7 @@ fun StatusScreen(
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
             onToggleKeepScreenOn = onToggleKeepScreenOn,
             onSelectBroadcastType = onSelectBroadcastType,
+            onSelectPreferredNetwork = onSelectPreferredNetwork,
         )
       }
     }
@@ -338,6 +339,7 @@ private fun PreviewStatusScreen(
       onViewSlowSpeedHelp = {},
       onToggleKeepScreenOn = {},
       onSelectBroadcastType = {},
+      onSelectPreferredNetwork = {},
   )
 }
 

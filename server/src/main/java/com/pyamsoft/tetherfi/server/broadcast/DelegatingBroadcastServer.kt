@@ -24,7 +24,7 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISServer
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectServer
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
@@ -58,7 +58,7 @@ internal class DelegatingBroadcastServer
 @Inject
 internal constructor(
     private val proxy: SharedProxy,
-    private val serverPreferences: ServerPreferences,
+    private val expertPreferences: ExpertPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val permissionGuard: PermissionGuard,
@@ -444,7 +444,7 @@ internal constructor(
 
   @CheckResult
   private suspend fun resolveImplementation(): BroadcastServerImplementation<Any> {
-    val broadcastType = serverPreferences.listenForBroadcastType().first()
+    val broadcastType = expertPreferences.listenForBroadcastType().first()
     val impl: ServerDataType =
         when (broadcastType) {
           BroadcastType.WIFI_DIRECT -> wifiDirectImplementation

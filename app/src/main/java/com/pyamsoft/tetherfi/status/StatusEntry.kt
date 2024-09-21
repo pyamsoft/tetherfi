@@ -226,5 +226,6 @@ fun StatusEntry(
       onHidePowerBalance = { viewModel.handleClosePowerBalance() },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
       onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
+      onSelectPreferredNetwork = { viewModel.handleUpdatePreferredNetwork(it) },
   )
 }

@@ -22,7 +22,8 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.contains
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import java.time.Clock
 import java.time.LocalDateTime
@@ -49,7 +50,8 @@ internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val clock: Clock,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
-    private val serverPreferences: ServerPreferences,
+    private val proxyPreferences: ProxyPreferences,
+    private val tweakPreferences: TweakPreferences,
 ) :
     BlockedClientTracker,
     BlockedClients,
@@ -163,7 +165,7 @@ internal constructor(
 
   @CheckResult
   private suspend fun isShutdownWithNoClientsEnabled(): Boolean {
-    return serverPreferences.listenForShutdownWithNoClients().first()
+    return tweakPreferences.listenForShutdownWithNoClients().first()
   }
 
   private suspend fun CoroutineScope.watchForNoClients() {

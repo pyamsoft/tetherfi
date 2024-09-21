@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.ui
+package com.pyamsoft.tetherfi.server
 
-import androidx.compose.runtime.Stable
-import com.pyamsoft.pydroid.arch.UiViewState
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
-/** Activity global view state for server variables */
-@Stable
-interface ServerViewState : UiViewState {
-  val group: StateFlow<BroadcastNetworkStatus.GroupInfo>
-  val connection: StateFlow<BroadcastNetworkStatus.ConnectionInfo>
+interface ExpertPreferences {
 
-  val port: StateFlow<Int>
+  @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
 
-  val broadcastType: StateFlow<BroadcastType?>
-  val preferredNetwork: StateFlow<PreferredNetwork?>
+  fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
+
+  @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
+
+  fun setBroadcastType(type: BroadcastType)
+
+  @CheckResult fun listenForPreferredNetwork(): Flow<PreferredNetwork>
+
+  fun setPreferredNetwork(network: PreferredNetwork)
 }

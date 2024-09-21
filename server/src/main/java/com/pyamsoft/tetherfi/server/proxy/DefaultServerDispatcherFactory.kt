@@ -18,14 +18,13 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
@@ -34,7 +33,7 @@ import kotlinx.coroutines.flow.first
 class DefaultServerDispatcherFactory
 @Inject
 internal constructor(
-    preferences: ConfigPreferences,
+    preferences: ExpertPreferences,
 ) : ServerDispatcher.Factory {
 
   private val flow by lazy { preferences.listenForPerformanceLimits() }
@@ -56,7 +55,6 @@ internal constructor(
   }
 
   @CheckResult
-  @OptIn(ExperimentalCoroutinesApi::class)
   private fun CoroutineDispatcher.limitDispatcher(nThreads: Int): CoroutineDispatcher {
     val isUnlimited = nThreads <= 0
     return run {
