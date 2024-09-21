@@ -23,7 +23,7 @@ import androidx.core.location.LocationManagerCompat
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ internal class AndroidLocationChecker
 @Inject
 internal constructor(
     private val context: Context,
-    private val preferences: ServerPreferences,
+    private val preferences: TweakPreferences,
 ) : LocationChecker {
 
   private val manager by lazy {

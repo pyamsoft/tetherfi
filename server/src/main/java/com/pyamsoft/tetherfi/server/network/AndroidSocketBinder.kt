@@ -27,13 +27,15 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ExpertPreferences
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import java.nio.channels.SocketChannel
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -41,30 +43,32 @@ import javax.inject.Singleton
 internal class AndroidSocketBinder
 @Inject
 internal constructor(
+    private val preferences: ExpertPreferences,
     private val context: Context,
     private val enforcer: ThreadEnforcer,
-) : SocketBinder, SocketBinder.NetworkBinder {
+) : SocketBinder {
 
   private val connectivityManager by lazy {
     enforcer.assertOffMainThread()
     context.getSystemService<ConnectivityManager>().requireNotNull()
   }
 
-  private val mobileDataNetwork = MutableStateFlow<Network?>(null)
-
   @CheckResult
-  private fun createMobileDataNetworkCallback(): NetworkCallback {
+  private fun createMobileDataNetworkCallback(
+      preferredNetwork: PreferredNetwork,
+      networkState: MutableStateFlow<Network?>,
+  ): NetworkCallback {
     return object : NetworkCallback() {
       override fun onAvailable(network: Network) {
         super.onAvailable(network)
-        Timber.d { "Mobile Data network available: $network" }
-        mobileDataNetwork.value = network
+        Timber.d { "Preferred network available: $network ($preferredNetwork)" }
+        networkState.value = network
       }
 
       override fun onUnavailable() {
         super.onUnavailable()
-        Timber.w { "Mobile Data network not available!" }
-        mobileDataNetwork.value = null
+        Timber.w { "Preferred network not available! ($preferredNetwork)" }
+        networkState.value = null
       }
     }
   }
@@ -75,65 +79,86 @@ internal constructor(
    * https://stackoverflow.com/questions/73413465/android-transport-cellular-network-not-available-if-wifi-is-connected-how-do-we
    * https://developer.android.com/reference/android/net/ConnectivityManager#requestNetwork(android.net.NetworkRequest,%20android.net.ConnectivityManager.NetworkCallback)
    */
-  private fun requestMobileDataNetwork(callback: NetworkCallback) {
+  private fun requestMobileDataNetwork(
+      preferredNetwork: PreferredNetwork,
+      callback: NetworkCallback
+  ) {
     val request =
         NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .run {
+              when (preferredNetwork) {
+                PreferredNetwork.NONE -> {
+                  Timber.w {
+                    "requestMobileDataNetwork called with PreferredNetwork.NONE. This should not happen!"
+                  }
+                  return@run this
+                }
+                PreferredNetwork.WIFI -> {
+                  Timber.d { "Prefer Wi-Fi connection for transport" }
+                  return@run addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                }
+                PreferredNetwork.CELLULAR -> {
+                  Timber.d { "Prefer Cellular Data connection for transport" }
+                  return@run addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                }
+              }
+            }
             .build()
+
+    Timber.d { "Resolving preferred network for transport: $preferredNetwork" }
     connectivityManager.requestNetwork(request, callback)
   }
 
   @CheckResult
-  private suspend fun isBindSocketToMobileEnabled(): Boolean {
-    // TODO preference
-    return IS_SOCKET_BIND_ENABLED
+  private suspend fun getPreferredNetwork(): PreferredNetwork {
+    enforcer.assertOffMainThread()
+    return preferences.listenForPreferredNetwork().first()
   }
 
   override suspend fun withMobileDataNetworkActive(
       block: suspend (SocketBinder.NetworkBinder) -> Unit
   ) {
-    if (isBindSocketToMobileEnabled()) {
-      val callback = createMobileDataNetworkCallback()
+    val preferred = getPreferredNetwork()
+    if (preferred == PreferredNetwork.NONE) {
+      // User does not want to bind, do absolutely nothing
+      Timber.d { "Using currently active network for proxy connections..." }
+      block(NOOP_BOUND)
+    } else {
+      val networkState = MutableStateFlow<Network?>(null)
+      val callback = createMobileDataNetworkCallback(preferred, networkState)
       try {
         // Request first to keep the network alive
-        Timber.d { "Open MobileData network for binding sockets..." }
-        requestMobileDataNetwork(callback)
+        Timber.d { "Open preferred network for binding sockets... ($preferred)" }
+        requestMobileDataNetwork(preferred, callback)
 
         // We are the bound network now
-        block(this)
+        block(PreferredNetworkBinder(networkState))
       } finally {
         // Once done we unregister
-        Timber.d { "Close mobile data network" }
+        Timber.d { "Close preferred network ($preferred)" }
         connectivityManager.unregisterNetworkCallback(callback)
       }
-    } else {
-      // User does not want to bind, do absolutely nothing
-      block(NOOP_BOUND)
     }
   }
 
-  private fun bindToNetwork(channel: SocketChannel, network: Network) {
-    try {
-      network.bindSocket(channel.socket())
-    } catch (e: Throwable) {
-      Timber.e(e) { "Error binding socket to network $network, continue anyway!" }
-    }
-  }
+  private data class PreferredNetworkBinder(private val preferredNetwork: StateFlow<Network?>) :
+      SocketBinder.NetworkBinder {
 
-  override suspend fun bindToNetwork(socket: Socket) {
-    if (socket is Selectable) {
-      val channel = socket.channel
-      if (channel is SocketChannel) {
-        val network = mobileDataNetwork.first()
-        if (network != null) {
-          bindToNetwork(channel, network)
+    override suspend fun bindToNetwork(socket: Socket) {
+      if (socket is Selectable) {
+        val channel = socket.channel
+        if (channel is SocketChannel) {
+          val network = preferredNetwork.first()
+          if (network != null) {
+            bindToNetwork(channel, network)
+          }
+        } else {
+          Timber.w { "Cannot attempt bindSocket - Channel is not SocketChannel: $channel" }
         }
       } else {
-        Timber.w { "Cannot attempt bindSocket - Channel is not SocketChannel: $channel" }
+        Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
       }
-    } else {
-      Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
     }
   }
 
@@ -147,5 +172,14 @@ internal constructor(
 
     private val NOOP_BOUND: SocketBinder.NetworkBinder =
         SocketBinder.NetworkBinder { Timber.d { "Not binding to any socket" } }
+
+    @JvmStatic
+    private fun bindToNetwork(channel: SocketChannel, network: Network) {
+      try {
+        network.bindSocket(channel.socket())
+      } catch (e: Throwable) {
+        Timber.e(e) { "Error binding socket to network $network, continue anyway!" }
+      }
+    }
   }
 }

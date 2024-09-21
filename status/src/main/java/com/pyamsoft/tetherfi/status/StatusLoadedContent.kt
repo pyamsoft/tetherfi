@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
 import com.pyamsoft.tetherfi.status.sections.expert.renderExpertSettings
@@ -92,11 +93,10 @@ internal fun LazyListScope.renderLoadedContent(
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
 
-    // Power Balance
+    // Expert
     onShowPowerBalance: () -> Unit,
-
-    // Broadcast type
     onSelectBroadcastType: (BroadcastType) -> Unit,
+    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = itemModifier,
@@ -148,7 +148,7 @@ internal fun LazyListScope.renderLoadedContent(
       contentType = StatusLoadedContentTypes.SPACER,
   ) {
     Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
+        modifier = itemModifier.height(MaterialTheme.keylines.content * 2),
     )
   }
 
@@ -163,14 +163,6 @@ internal fun LazyListScope.renderLoadedContent(
       onToggleKeepScreenOn = onToggleKeepScreenOn,
   )
 
-  item(
-      contentType = StatusLoadedContentTypes.SPACER,
-  ) {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
-    )
-  }
-
   renderExpertSettings(
       itemModifier = itemModifier,
       serverViewState = serverViewState,
@@ -178,6 +170,7 @@ internal fun LazyListScope.renderLoadedContent(
       appName = appName,
       onShowPowerBalance = onShowPowerBalance,
       onSelectBroadcastType = onSelectBroadcastType,
+      onSelectPreferredNetwork = onSelectPreferredNetwork,
   )
 
   item(
@@ -246,6 +239,7 @@ private fun PreviewLoadedContent(
         onToggleKeepScreenOn = {},
         onToggleIgnoreLocation = {},
         onSelectBroadcastType = {},
+        onSelectPreferredNetwork = {},
     )
   }
 }

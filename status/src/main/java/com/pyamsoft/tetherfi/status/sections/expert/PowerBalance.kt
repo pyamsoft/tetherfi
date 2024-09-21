@@ -43,7 +43,7 @@ internal fun PowerBalance(
     Text(
         text = stringResource(R.string.expert_power_balance_title),
         style =
-            MaterialTheme.typography.bodyLarge.copy(
+            MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.W700,
                 color =
                     MaterialTheme.colorScheme.primary.copy(

@@ -24,15 +24,18 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.core.AppCoroutineScope
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
-import com.pyamsoft.tetherfi.server.ServerPreferences
 import com.pyamsoft.tetherfi.server.StatusPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
+import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
@@ -57,9 +60,11 @@ internal constructor(
     override val state: MutableStatusViewState,
     private val notificationRefreshBus: EventBus<NotificationRefreshEvent>,
     private val enforcer: ThreadEnforcer,
-    private val configPreferences: ConfigPreferences,
-    private val serverPreferences: ServerPreferences,
+    private val tweakPreferences: TweakPreferences,
+    private val expertPreferences: ExpertPreferences,
+    private val proxyPreferences: ProxyPreferences,
     private val statusPreferences: StatusPreferences,
+    private val wifiPreferences: WifiPreferences,
     private val networkStatus: BroadcastNetworkStatus,
     private val proxy: SharedProxy,
     private val notifyGuard: NotifyGuard,
@@ -252,7 +257,7 @@ internal constructor(
     val s = state
 
     // Always populate the latest ignore value
-    serverPreferences.listenForStartIgnoreVpn().also { f ->
+    tweakPreferences.listenForStartIgnoreVpn().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { ignore ->
           s.isIgnoreVpn.value = ignore
@@ -267,7 +272,7 @@ internal constructor(
     }
 
     // Always populate the latest ignore value
-    serverPreferences.listenForStartIgnoreLocation().also { f ->
+    tweakPreferences.listenForStartIgnoreLocation().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { ignore ->
           s.isIgnoreLocation.value = ignore
@@ -282,7 +287,7 @@ internal constructor(
     }
 
     // Always populate the latest shutdown value
-    serverPreferences.listenForShutdownWithNoClients().also { f ->
+    tweakPreferences.listenForShutdownWithNoClients().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { shutdown ->
           s.isShutdownWithNoClients.value = shutdown
@@ -322,7 +327,7 @@ internal constructor(
     val s = state
 
     // Always populate the latest power balance value
-    configPreferences.listenForPerformanceLimits().also { f ->
+    expertPreferences.listenForPerformanceLimits().also { f ->
       scope.launch(context = Dispatchers.Default) {
         f.collect { balance ->
           s.powerBalance.value = balance
@@ -337,7 +342,7 @@ internal constructor(
     }
 
     // Only pull once since after this point, the state will be driven by the input
-    configPreferences.listenForPortChanges().also { f ->
+    proxyPreferences.listenForPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
         val p = f.first()
         s.port.value = if (p == 0) "" else "$p"
@@ -349,7 +354,7 @@ internal constructor(
 
     if (ServerDefaults.canUseCustomConfig()) {
       // Only pull once since after this point, the state will be driven by the input
-      configPreferences.listenForSsidChanges().also { f ->
+      wifiPreferences.listenForSsidChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           s.ssid.value = f.first()
 
@@ -359,7 +364,7 @@ internal constructor(
       }
 
       // Only pull once since after this point, the state will be driven by the input
-      configPreferences.listenForPasswordChanges().also { f ->
+      wifiPreferences.listenForPasswordChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           s.password.value = f.first()
 
@@ -368,7 +373,7 @@ internal constructor(
         }
       }
 
-      configPreferences.listenForNetworkBandChanges().also { f ->
+      wifiPreferences.listenForNetworkBandChanges().also { f ->
         scope.launch(context = Dispatchers.Default) {
           f.collect { band ->
             s.band.value = band
@@ -475,24 +480,24 @@ internal constructor(
 
   fun handleSsidChanged(ssid: String) {
     state.ssid.value = ssid
-    configPreferences.setSsid(ssid)
+    wifiPreferences.setSsid(ssid)
   }
 
   fun handlePasswordChanged(password: String) {
     state.password.value = password
-    configPreferences.setPassword(password)
+    wifiPreferences.setPassword(password)
   }
 
   fun handlePortChanged(port: String) {
     state.port.value = port
 
     val portValue = port.toIntOrNull()
-    configPreferences.setPort(portValue ?: 0)
+    proxyPreferences.setPort(portValue ?: 0)
   }
 
   fun handleChangeBand(band: ServerNetworkBand) {
     state.band.value = band
-    configPreferences.setNetworkBand(band)
+    wifiPreferences.setNetworkBand(band)
   }
 
   fun handleTogglePasswordVisibility() {
@@ -541,22 +546,22 @@ internal constructor(
 
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
-    serverPreferences.setStartIgnoreVpn(newVal)
+    tweakPreferences.setStartIgnoreVpn(newVal)
   }
 
   fun handleToggleIgnoreLocation() {
     val newVal = state.isIgnoreLocation.updateAndGet { !it }
-    serverPreferences.setStartIgnoreLocation(newVal)
+    tweakPreferences.setStartIgnoreLocation(newVal)
   }
 
   fun handleToggleShutdownNoClients() {
     val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
-    serverPreferences.setShutdownWithNoClients(newVal)
+    tweakPreferences.setShutdownWithNoClients(newVal)
   }
 
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
     val newVal = state.powerBalance.updateAndGet { limit }
-    configPreferences.setServerPerformanceLimit(newVal)
+    expertPreferences.setServerPerformanceLimit(newVal)
   }
 
   fun handleToggleKeepScreenOn() {
@@ -565,7 +570,11 @@ internal constructor(
   }
 
   fun handleUpdateBroadcastType(type: BroadcastType) {
-    serverPreferences.setBroadcastType(type)
+    expertPreferences.setBroadcastType(type)
+  }
+
+  fun handleUpdatePreferredNetwork(network: PreferredNetwork) {
+    expertPreferences.setPreferredNetwork(network)
   }
 
   companion object {

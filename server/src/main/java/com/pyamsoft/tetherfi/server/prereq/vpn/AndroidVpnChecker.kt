@@ -22,7 +22,7 @@ import android.net.NetworkCapabilities
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +34,7 @@ internal class AndroidVpnChecker
 @Inject
 internal constructor(
     private val context: Context,
-    private val preferences: ServerPreferences,
+    private val preferences: TweakPreferences,
 ) : VpnChecker {
 
   private val manager by lazy {

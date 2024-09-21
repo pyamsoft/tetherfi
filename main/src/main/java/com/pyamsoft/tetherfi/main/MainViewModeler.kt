@@ -20,8 +20,8 @@ import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ConfigPreferences
-import com.pyamsoft.tetherfi.server.ServerPreferences
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
@@ -44,9 +44,9 @@ internal constructor(
     private val networkStatus: BroadcastNetworkStatus,
     private val networkUpdater: BroadcastNetworkUpdater,
     private val broadcastObserver: BroadcastObserver,
-    private val configPreferences: ConfigPreferences,
     private val inAppRatingPreferences: InAppRatingPreferences,
-    private val serverPreferences: ServerPreferences,
+    private val proxyPreferences: ProxyPreferences,
+    private val expertPreferences: ExpertPreferences,
 ) : MainViewState by state, AbstractViewModeler<MainViewState>(state) {
 
   private val isNetworkCurrentlyRunning =
@@ -113,7 +113,7 @@ internal constructor(
     }
 
     // Port is its own thing, not part of group info
-    configPreferences.listenForPortChanges().also { f ->
+    proxyPreferences.listenForPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.port.value = it } }
     }
 
@@ -135,8 +135,13 @@ internal constructor(
     }
 
     // Broadcast type
-    serverPreferences.listenForBroadcastType().also { f ->
+    expertPreferences.listenForBroadcastType().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.broadcastType.value = it } }
+    }
+
+    // Preferred Network
+    expertPreferences.listenForPreferredNetwork().also { f ->
+      scope.launch(context = Dispatchers.Default) { f.collect { s.preferredNetwork.value = it } }
     }
   }
 

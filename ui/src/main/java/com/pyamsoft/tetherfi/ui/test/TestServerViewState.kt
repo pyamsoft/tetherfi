@@ -50,6 +50,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
             override val port = MutableStateFlow(TEST_PORT)
+
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }
@@ -65,6 +66,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
             override val port = MutableStateFlow(TEST_PORT)
+
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }
@@ -79,6 +81,7 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
                     BroadcastNetworkStatus.ConnectionInfo.Error(
                         error = RuntimeException("Test Connection Error")))
             override val port = MutableStateFlow(TEST_PORT)
+
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
           }

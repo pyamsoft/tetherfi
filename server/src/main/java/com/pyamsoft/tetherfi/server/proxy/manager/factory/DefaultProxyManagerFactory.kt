@@ -20,7 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.server.ConfigPreferences
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
@@ -45,7 +45,7 @@ internal constructor(
     @ServerInternalApi private val socketBinder: SocketBinder,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
-    private val configPreferences: ConfigPreferences,
+    private val preferences: ProxyPreferences,
     private val appEnvironment: AppDevEnvironment,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
 ) : ProxyManager.Factory {
@@ -57,7 +57,7 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = configPreferences.listenForPortChanges().first()
+    val port = preferences.listenForPortChanges().first()
 
     return TcpProxyManager(
         socketTagger = socketTagger,

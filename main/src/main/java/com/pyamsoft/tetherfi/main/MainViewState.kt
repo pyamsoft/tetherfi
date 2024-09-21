@@ -20,6 +20,7 @@ import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,7 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
   override val port = MutableStateFlow(0)
 
   override val broadcastType = MutableStateFlow<BroadcastType?>(null)
+  override val preferredNetwork = MutableStateFlow<PreferredNetwork?>(null)
 
   override val isSettingsOpen = MutableStateFlow(false)
 

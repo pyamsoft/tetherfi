@@ -16,16 +16,23 @@
 
 package com.pyamsoft.tetherfi.status.sections.expert
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private enum class ExpertSettingsContentTypes {
   SETTINGS,
+  POWER_BALANCE,
+  BROADCAST_TYPE,
+  PREFERRED_NETWORK,
 }
 
 internal fun LazyListScope.renderExpertSettings(
@@ -33,23 +40,82 @@ internal fun LazyListScope.renderExpertSettings(
     serverViewState: ServerViewState,
     isEditable: Boolean,
     appName: String,
-
-    // Power Balance
     onShowPowerBalance: () -> Unit,
-
-    // Broadcast type
     onSelectBroadcastType: (BroadcastType) -> Unit,
+    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   item(
       contentType = ExpertSettingsContentTypes.SETTINGS,
   ) {
     ExpertSettings(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
-        serverViewState = serverViewState,
+        modifier = itemModifier.padding(vertical = MaterialTheme.keylines.content),
         isEditable = isEditable,
         appName = appName,
-        onShowPowerBalance = onShowPowerBalance,
-        onSelectBroadcastType = onSelectBroadcastType,
     )
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.POWER_BALANCE,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      PowerBalance(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          appName = appName,
+          onShowPowerBalance = onShowPowerBalance,
+      )
+    }
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.BROADCAST_TYPE,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      BroadcastTypeSelection(
+          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
+          serverViewState = serverViewState,
+          appName = appName,
+          isEditable = isEditable,
+          onSelectBroadcastType = onSelectBroadcastType,
+      )
+    }
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.PREFERRED_NETWORK,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      PreferredNetworkSelection(
+          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
+          serverViewState = serverViewState,
+          appName = appName,
+          isEditable = isEditable,
+          onSelectPreferredNetwork = onSelectPreferredNetwork,
+      )
+    }
   }
 }

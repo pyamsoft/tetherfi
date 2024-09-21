@@ -3,21 +3,20 @@ TetherFi
 
 Share your Android device's Internet connection with other devices without needing Root.
 
-
 ### Get TetherFi
 
 [<img
-  src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
-  alt="Get it on Google Play"
-  height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
+src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+alt="Get it on Google Play"
+height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
 [<img
-  src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-  alt="Get it on IzzyOnDroid"
-  height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
+alt="Get it on IzzyOnDroid"
+height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
 [<img
-  src="https://www.openapk.net/images/openapk-badge.png"
-  alt="Get it on OpenAPK"
-  height="80">](https://www.openapk.net/tetherfi/com.pyamsoft.tetherfi/)
+src="https://www.openapk.net/images/openapk-badge.png"
+alt="Get it on OpenAPK"
+height="80">](https://www.openapk.net/tetherfi/com.pyamsoft.tetherfi/)
 
 or get the APK from the
 [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
@@ -25,44 +24,48 @@ or get the APK from the
 ### Screenshots
 
 #### Hotspot Status
+
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png"
-  alt="Light Mode: Hotspot Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png"
+alt="Light Mode: Hotspot Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png)
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png"
-  alt="Light Mode: Hotspot Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png"
+alt="Light Mode: Hotspot Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png)
 
 #### Setup Instructions
+
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png"
-  alt="Light Mode: Instructions Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png"
+alt="Light Mode: Instructions Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png)
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png"
-  alt="Light Mode: Instructions Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png"
+alt="Light Mode: Instructions Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png)
 
 #### Manage Connections
+
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png"
-  alt="Light Mode: Connections Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png"
+alt="Light Mode: Connections Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png)
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png"
-  alt="Light Mode: Connections Screen"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png"
+alt="Light Mode: Connections Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png)
 
 #### Hotspot Active
+
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png"
-  alt="Light Mode: Hotspot Active"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png"
+alt="Light Mode: Hotspot Active"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png)
 [<img
-  src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png"
-  alt="Light Mode: Hotspot Active"
-  height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png"
+alt="Light Mode: Hotspot Active"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png)
 
 ### What is TetherFi
 
@@ -105,10 +108,9 @@ will never track you, or sell or share your data. TetherFi offers in-app purchas
 which you may purchase to support the developer. These purchases are never
 required to use the application or any features.
 
-
 ### Development
 
-TetherFi is developed in the open on GitHub at:  
+TetherFi is developed in the open on GitHub at:
 
 [https://github.com/pyamsoft/tetherfi](https://github.com/pyamsoft/tetherfi)
 
