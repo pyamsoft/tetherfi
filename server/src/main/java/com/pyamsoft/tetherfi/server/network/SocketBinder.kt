@@ -18,7 +18,11 @@ package com.pyamsoft.tetherfi.server.network
 
 import io.ktor.network.sockets.Socket
 
-fun interface NetworkBinder {
+fun interface SocketBinder {
 
-  suspend fun bindToNetwork(socket: Socket)
+  suspend fun withMobileDataNetworkActive(block: suspend (NetworkBinder) -> Unit)
+
+  fun interface NetworkBinder {
+    suspend fun bindToNetwork(socket: Socket)
+  }
 }

@@ -43,4 +43,7 @@
 
   <!-- For VpnChecker -->
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+  <!-- To bind to mobile networks even when mobile data is not active because of a Wi-Fi connection -->
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 </manifest>

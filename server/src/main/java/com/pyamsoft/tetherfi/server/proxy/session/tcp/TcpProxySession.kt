@@ -29,7 +29,7 @@ import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.event.ProxyRequest
-import com.pyamsoft.tetherfi.server.network.NetworkBinder
+import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -40,12 +40,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class TcpProxySession
@@ -53,7 +53,6 @@ internal class TcpProxySession
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
     @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
-    @ServerInternalApi private val networkBinder: NetworkBinder,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
@@ -69,6 +68,7 @@ internal constructor(
    * leak
    */
   private suspend inline fun <T> connectToInternet(
+      socketbinder: SocketBinder.NetworkBinder,
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: ProxyRequest,
@@ -92,16 +92,20 @@ internal constructor(
                   reusePort = true
                 }
                 .also { socketTagger.tagSocket() }
-                .connect(remoteAddress = remote) {
-                  // By default KTOR does not close sockets until "infinity" is reached.
-                  socketTimeout = 1.minutes.inWholeMilliseconds
-                }
+                // This function uses our custom build of KTOR
+                // which adds the [onBeforeConnect] hook to allow us
+                // to use the socket created BEFORE connection starts.
+                .connectWithConfiguration(
+                    remoteAddress = remote,
+                    configure = {
+                      // By default KTOR does not close sockets until "infinity" is reached.
+                      socketTimeout = 1.minutes.inWholeMilliseconds
+                    },
+                    onBeforeConnect = { socketbinder.bindToNetwork(it) },
+                )
 
         // Track this socket for when we fully shut down
         socketTracker.track(socket)
-
-        // Bind the socket to a specific network if preferred
-        networkBinder.bindToNetwork(socket)
 
         return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
       }
@@ -138,6 +142,7 @@ internal constructor(
 
   private suspend fun proxyToInternet(
       scope: CoroutineScope,
+      socketbinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -153,6 +158,7 @@ internal constructor(
     try {
       connectToInternet(
           autoFlush = true,
+          socketbinder = socketbinder,
           serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,
           request = request,
@@ -214,6 +220,7 @@ internal constructor(
 
   private suspend fun processRequest(
       scope: CoroutineScope,
+      socketbinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -236,6 +243,7 @@ internal constructor(
     // And then we go to the web!
     proxyToInternet(
         scope = scope,
+        socketbinder = socketbinder,
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -260,6 +268,7 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
+      socketbinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
@@ -293,6 +302,7 @@ internal constructor(
 
     processRequest(
         scope = scope,
+        socketbinder = socketbinder,
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -305,6 +315,7 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      socketbinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -317,6 +328,7 @@ internal constructor(
         try {
           handleClientRequest(
               scope = this,
+              socketbinder = socketbinder,
               hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,

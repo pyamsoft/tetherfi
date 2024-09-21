@@ -25,7 +25,6 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
-import com.pyamsoft.tetherfi.server.network.NetworkBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
@@ -119,8 +118,6 @@ internal suspend inline fun setupProxy(
         })
   }
 
-  val networkBinder = NetworkBinder {}
-
   val manager =
       TcpProxyManager(
           appEnvironment = AppDevEnvironment().apply(appEnv),
@@ -141,7 +138,6 @@ internal suspend inline fun setupProxy(
                   enforcer = enforcer,
                   socketTagger = socketTagger,
                   clientResolver = resolver,
-                  networkBinder = networkBinder,
               ),
           hostConnection =
               BroadcastNetworkStatus.ConnectionInfo.Connected(

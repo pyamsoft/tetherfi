@@ -32,8 +32,8 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
-import com.pyamsoft.tetherfi.server.network.AndroidNetworkBinder
-import com.pyamsoft.tetherfi.server.network.NetworkBinder
+import com.pyamsoft.tetherfi.server.network.AndroidSocketBinder
+import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.prereq.location.AndroidLocationChecker
 import com.pyamsoft.tetherfi.server.prereq.location.LocationChecker
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
@@ -137,7 +137,7 @@ abstract class ServerAppModule {
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindNetworkBinder(impl: AndroidNetworkBinder): NetworkBinder
+  internal abstract fun bindNetworkBinder(impl: AndroidSocketBinder): SocketBinder
 
   @Binds
   @CheckResult

@@ -68,10 +68,13 @@ class ProxyPerformanceTest {
                       usingSocketBuilder(dispatcher) { builder ->
                         builder
                             .tcp()
-                            .connect(remoteAddress = PROXY_REMOTE) {
-                              reuseAddress = true
-                              reusePort = true
-                            }
+                            .connect(
+                                remoteAddress = PROXY_REMOTE,
+                                configure = {
+                                  reuseAddress = true
+                                  reusePort = true
+                                },
+                            )
                             .usingConnection(autoFlush = true) { read, write ->
                               write.writeStringUtf8(GET_REQUEST)
 
