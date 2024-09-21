@@ -23,8 +23,11 @@
 
   <!--  TODO(Help): Need zh-rTW translation-->
   <string name="network_bands_legacy_title">2.4GHz</string>
-  <string name="network_bands_legacy_description">Slower but compatible with every device.</string>
+  <string
+    name="network_bands_legacy_description"
+  >Slower but compatible with every device.</string>
   <string name="network_bands_modern_title">5GHz</string>
-  <string name="network_bands_modern_description">Faster but not compatible with every device.</string>
-
+  <string
+    name="network_bands_modern_description"
+  >Faster but not compatible with every device.</string>
 </resources>

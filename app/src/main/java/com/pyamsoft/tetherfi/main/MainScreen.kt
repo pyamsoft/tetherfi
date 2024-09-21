@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.util.rememberAsStateList
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,7 +99,6 @@ fun MainScreen(
 
 @TestOnly
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainScreen(
     isSettingsOpen: Boolean,
     isShowingQr: Boolean,
@@ -112,6 +112,8 @@ private fun PreviewMainScreen(
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
         override val port = MutableStateFlow(0)
+        // TODO support RNDIS
+        override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
       }
   val allTabs = MainView.entries.rememberAsStateList()
 

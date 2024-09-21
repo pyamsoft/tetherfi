@@ -24,6 +24,7 @@ import com.pyamsoft.tetherfi.server.ConfigPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -41,6 +42,7 @@ internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
     @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
+    @ServerInternalApi private val socketBinder: SocketBinder,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val configPreferences: ConfigPreferences,
@@ -67,6 +69,7 @@ internal constructor(
         yoloRepeatDelay = 3.seconds,
         enforcer = enforcer,
         serverStopConsumer = serverStopConsumer,
+        socketBinder = socketBinder,
     )
   }
 

@@ -24,6 +24,7 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -51,6 +52,7 @@ import kotlinx.coroutines.withContext
 
 internal class TcpProxyManager
 internal constructor(
+    private val socketBinder: SocketBinder,
     private val appEnvironment: AppDevEnvironment,
     private val socketTagger: SocketTagger,
     private val session: ProxySession<TcpProxyData>,
@@ -82,6 +84,7 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.handleProxyConnection(
+      socketbinder: SocketBinder.NetworkBinder,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
@@ -96,6 +99,7 @@ internal constructor(
 
     session.exchange(
         scope = this,
+        socketbinder = socketbinder,
         hostConnection = hostConnection,
         serverDispatcher = serverDispatcher,
         socketTracker = socketTracker,
@@ -114,6 +118,7 @@ internal constructor(
    */
   private suspend fun runSession(
       scope: CoroutineScope,
+      socketbinder: SocketBinder.NetworkBinder,
       connection: Socket,
       socketTracker: SocketTracker,
   ) {
@@ -123,6 +128,7 @@ internal constructor(
       // Catch the error and continue
       connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
         scope.handleProxyConnection(
+            socketbinder = socketbinder,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             hostNameOrIp = hostNameOrIp,
@@ -216,28 +222,38 @@ internal constructor(
         val addr = server.localAddress
         Timber.d { "Awaiting TCP connections on $addr" }
 
-        try {
-          // In a loop, we wait for new TCP connections and then offload them to their own routine.
-          while (!server.isClosed) {
-            // We must close the connection in the launch{} after exchange is over
-            //
-            // If this function throws, the server will stop
-            val connection = ensureAcceptedConnection(server)
+        socketBinder.withMobileDataNetworkActive { networkBinder ->
+          try {
+            // In a loop, we wait for new TCP connections and then offload them to their own
+            // routine.
+            while (!server.isClosed) {
+              // We must close the connection in the launch{} after exchange is over
+              //
+              // If this function throws, the server will stop
+              val connection = ensureAcceptedConnection(server)
 
-            // Track this socket to close it later
-            tracker.track(connection)
+              // Run this server loop off thread so we can handle multiple connections at once.
+              launch(context = serverDispatcher.primary) {
+                try {
+                  // Track this socket to close it later
+                  tracker.track(connection)
 
-            // Run this server loop off thread so we can handle multiple connections at once.
-            launch(context = serverDispatcher.primary) {
-              runSession(
-                  scope = this,
-                  connection = connection,
-                  socketTracker = tracker,
-              )
+                  runSession(
+                      scope = this,
+                      socketbinder = networkBinder,
+                      connection = connection,
+                      socketTracker = tracker,
+                  )
+                } catch (e: Throwable) {
+                  e.ifNotCancellation { Timber.e(e) { "Error during server socket accept" } }
+                } finally {
+                  connection.dispose()
+                }
+              }
             }
+          } finally {
+            Timber.d { "Closing TCP server $addr" }
           }
-        } finally {
-          Timber.d { "Closing TCP server $addr" }
         }
       }
 
