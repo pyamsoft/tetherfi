@@ -23,12 +23,12 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.theme.Theming
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class ThemeViewModeler
 @Inject
@@ -52,13 +52,13 @@ internal constructor(
     val s = state
     registry
         .consumeRestored(KEY_THEME_MODE)
-        ?.let { it as String }
+        ?.let { it.cast<String>() }
         ?.let { Theming.Mode.valueOf(it) }
         ?.also { s.mode.value = it }
 
     registry
         .consumeRestored(KEY_THEME_MATERIAL_YOU)
-        ?.let { it as Boolean }
+        ?.let { it.cast<Boolean>() }
         ?.also { s.isMaterialYou.value = it }
   }
 
