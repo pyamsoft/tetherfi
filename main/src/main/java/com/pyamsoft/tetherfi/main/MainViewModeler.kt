@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
+import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
@@ -27,7 +28,6 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 class MainViewModeler
 @Inject
@@ -165,17 +166,17 @@ internal constructor(
     val s = state
     registry
         .consumeRestored(KEY_IS_SETTINGS_OPEN)
-        ?.let { it as Boolean }
+        ?.let { it.cast<Boolean>() }
         ?.also { s.isSettingsOpen.value = it }
 
     registry
         .consumeRestored(KEY_IS_SHOWING_QR)
-        ?.let { it as Boolean }
+        ?.let { it.cast<Boolean>() }
         ?.also { s.isShowingQRCodeDialog.value = it }
 
     registry
         .consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)
-        ?.let { it as Boolean }
+        ?.let { it.cast<Boolean>() }
         ?.also { state.isShowingSlowSpeedHelp.value = it }
   }
 
