@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.main
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +37,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,

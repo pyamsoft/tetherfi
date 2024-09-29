@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -71,7 +70,6 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun WatchTabSwipe(
     pagerState: PagerState,
     allTabs: List<MainView>,
@@ -137,7 +135,6 @@ private fun MountHooks(
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun MainEntry(
     modifier: Modifier = Modifier,
     appName: String,

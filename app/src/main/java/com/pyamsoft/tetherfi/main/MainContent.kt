@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.main
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -30,7 +29,6 @@ import com.pyamsoft.tetherfi.status.StatusEntry
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 fun MainContent(
     modifier: Modifier = Modifier,
     appName: String,
