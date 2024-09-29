@@ -17,7 +17,6 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.annotation.CheckResult
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -57,7 +56,7 @@ fun rememberAllTabs(): List<MainView> {
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun MainTopBar(
     modifier: Modifier = Modifier,
     appName: String,
@@ -173,7 +172,6 @@ private fun MainTab(
 
 @Preview
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun PreviewMainTopBar() {
   val allTabs = rememberAllTabs()
   MainTopBar(
