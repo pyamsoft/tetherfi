@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
@@ -53,6 +54,10 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
 
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
+
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
           }
       TestServerState.CONNECTED ->
           object : ServerViewState {
@@ -69,6 +74,10 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
 
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
+
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
           }
       TestServerState.ERROR ->
           object : ServerViewState {
@@ -84,5 +93,9 @@ fun makeTestServerState(state: TestServerState): ServerViewState =
 
             // TODO support RNDIS
             override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
+
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
           }
     }

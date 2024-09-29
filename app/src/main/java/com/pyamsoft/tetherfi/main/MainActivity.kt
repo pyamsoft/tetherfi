@@ -47,9 +47,10 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-  @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
+  @Inject @JvmField internal var themeViewModeler: ThemeViewModeler? = null
   @Inject @JvmField internal var launcher: ServiceLauncher? = null
   @Inject @JvmField internal var screenOnHandler: ScreenOnHandler? = null
+  @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
 
   private var pydroid: PYDroidActivityDelegate? = null
 
@@ -110,11 +111,17 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  private fun handleOpenedWithIntent(intent: Intent) {
+    if (intent.action === Intent.ACTION_APPLICATION_PREFERENCES) {
+      mainViewModel.requireNotNull().handleOpenSettings()
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setupActivity()
 
-    val vm = viewModel.requireNotNull()
+    val vm = themeViewModeler.requireNotNull()
     val appName = getString(R.string.app_name)
 
     setContent {
@@ -145,11 +152,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     vm.init(this)
+    handleOpenedWithIntent(intent)
   }
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     setIntent(intent)
+    handleOpenedWithIntent(intent)
   }
 
   override fun onResume() {
@@ -160,8 +169,9 @@ class MainActivity : AppCompatActivity() {
   override fun onDestroy() {
     super.onDestroy()
     pydroid = null
-    viewModel = null
+    themeViewModeler = null
     launcher = null
     screenOnHandler = null
+    mainViewModel = null
   }
 }

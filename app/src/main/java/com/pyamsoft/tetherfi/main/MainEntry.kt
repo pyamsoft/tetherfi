@@ -105,7 +105,6 @@ private fun WatchTabSwipe(
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun MountHooks(
     viewModel: MainViewModeler,
     pagerState: PagerState,
