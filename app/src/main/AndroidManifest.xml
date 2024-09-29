@@ -52,6 +52,12 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
 
+      <!-- "Configure" shortcut -->
+      <intent-filter>
+        <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+
       <!--
                   Shortcut
                   https://developer.android.com/develop/ui/views/launch/shortcuts/creating-shortcuts
