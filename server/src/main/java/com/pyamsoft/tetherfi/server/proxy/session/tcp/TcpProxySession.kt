@@ -89,7 +89,8 @@ internal constructor(
                 .tcp()
                 .configure {
                   reuseAddress = true
-                  reusePort = true
+                  // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                  // reusePort = true
                 }
                 .also { socketTagger.tagSocket() }
                 // This function uses our custom build of KTOR

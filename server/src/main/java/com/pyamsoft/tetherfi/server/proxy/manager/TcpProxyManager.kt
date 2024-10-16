@@ -160,7 +160,8 @@ internal constructor(
             .tcp()
             .configure {
               reuseAddress = true
-              reusePort = true
+              // As of KTOR-3.0.0, this is not supported and crashes at runtime
+              // reusePort = true
             }
             .also { socketTagger.tagSocket() }
             .bind(localAddress = localAddress)

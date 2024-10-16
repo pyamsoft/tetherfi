@@ -30,7 +30,7 @@ internal constructor(
 ) {
 
   @CheckResult
-  suspend fun updateAndGet(count: Int): Long {
+  suspend fun updateAndGet(count: Long): Long {
     return mutex.withLock { amount.updateAndGet { it + count } }
   }
 

@@ -19,50 +19,44 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 import androidx.annotation.CheckResult
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-
-private val DEFAULT_POOL by lazy {
-  @Suppress("DEPRECATION") io.ktor.utils.io.core.internal.ChunkBuffer.Pool
-}
+import io.ktor.utils.io.InternalAPI
+import io.ktor.utils.io.close
+import io.ktor.utils.io.core.remaining
 
 /**
- * A duplicate of [ByteReadChannel.copyToImpl] but with a callback fired AFTER the read but BEFORE
- * the write operation
+ * A duplicate of [ByteReadChannel.copyTo] but with a callback fired AFTER the read but BEFORE the
+ * write operation
  */
 @CheckResult
+@OptIn(InternalAPI::class)
 internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
-    dst: ByteWriteChannel,
+    channel: ByteWriteChannel,
     limit: Long,
-    onBeforeWrite: (Int) -> Unit,
+    onBeforeWrite: (Long) -> Unit,
 ): Long {
-  val buffer = DEFAULT_POOL.borrow()
-  val dstNeedsFlush = !dst.autoFlush
-
+  var remaining = limit
   try {
-    var copied = 0L
+    while (!isClosedForRead && remaining > 0) {
+      if (readBuffer.exhausted()) awaitContent()
+      val count = minOf(remaining, readBuffer.remaining)
 
-    while (true) {
-      val remaining = limit - copied
-      if (remaining == 0L) break
-      buffer.resetForWrite(minOf(buffer.capacity.toLong(), remaining).toInt())
+      // This line was AFTER readBuffer.readTo but we move it BEFORE
+      remaining -= count
 
-      val size = readAvailable(buffer)
-      if (size == -1) break
+      // We add this single line
+      onBeforeWrite(limit - remaining)
 
-      // The one line we added
-      onBeforeWrite(size)
-
-      dst.writeFully(buffer)
-      copied += size
-
-      if (dstNeedsFlush && availableForRead == 0) {
-        dst.flush()
-      }
+      // This line was BEFORE remaining -= count but we moved it AFTER
+      readBuffer.readTo(channel.writeBuffer, count)
+      channel.flush()
     }
-    return copied
-  } catch (t: Throwable) {
-    dst.close(t)
-    throw t
+  } catch (cause: Throwable) {
+    cancel(cause)
+    channel.close(cause)
+    throw cause
   } finally {
-    buffer.release(DEFAULT_POOL)
+    channel.flush()
   }
+
+  return limit - remaining
 }
