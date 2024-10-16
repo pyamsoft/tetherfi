@@ -149,6 +149,7 @@ internal suspend inline fun setupProxy(
           yoloRepeatDelay = 0.seconds,
           enforcer = enforcer,
           serverStopConsumer = DefaultEventBus(),
+          socketBinder = {},
       )
 
   val server =
@@ -167,9 +168,12 @@ internal suspend inline fun setupProxy(
         }
       }
 
-  delay(1.seconds)
+  println("Start TetherFi proxy $HOSTNAME $PROXY_PORT")
+  delay(3.seconds)
 
+  println("Run with TetherFi proxy")
   scope.withServer(dispatcher.primary)
 
+  println("Done TetherFi proxy")
   server.cancel()
 }

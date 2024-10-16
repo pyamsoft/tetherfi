@@ -20,13 +20,13 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
-import io.ktor.server.application.call
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.utils.io.pool.ByteBufferPool
+import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.seconds
@@ -79,11 +79,16 @@ internal suspend inline fun setupServer(
           factory = Netty,
           port = SERVER_PORT,
           host = HOSTNAME,
-          module = { routing { get("/") { call.respondText(RESPONSE_TEXT) } } })
+          module = { routing { get("/") { call.respondText(RESPONSE_TEXT) } } },
+      )
 
-  val thread = thread { ktor.start(wait = true) }
+  val thread = thread {
+    println("Start KTOR server: ${Thread.currentThread().name} $SERVER_REMOTE")
+    ktor.start(wait = true)
+  }
 
-  delay(1.seconds)
+  // Wait a bit to start
+  delay(2.seconds)
 
   if (testServer) {
     usingSocketBuilder(newSingleThreadContext("KTOR")) { b ->
@@ -110,9 +115,15 @@ internal suspend inline fun setupServer(
     }
   }
 
+  println("Run test with live server")
   scope.withServer()
 
+  println("Shut down KTOR server")
   ktor.stop()
 
-  withContext(Dispatchers.IO) { thread.join() }
+  withContext(Dispatchers.IO) {
+    println("Await KTOR thread join")
+    thread.join()
+    println("KTOR thread completed")
+  }
 }

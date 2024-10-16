@@ -1,9 +1,11 @@
 package com.pyamsoft.tetherfi.server
 
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.utils.io.pool.ByteBufferPool
+import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -66,33 +68,43 @@ class ProxyPerformanceTest {
                 val job =
                     async(context = Dispatchers.IO) {
                       usingSocketBuilder(dispatcher) { builder ->
-                        builder
-                            .tcp()
-                            .connect(
-                                remoteAddress = PROXY_REMOTE,
-                                configure = {
-                                  reuseAddress = true
-                                  reusePort = true
-                                },
-                            )
-                            .usingConnection(autoFlush = true) { read, write ->
-                              write.writeStringUtf8(GET_REQUEST)
+                        try {
+                          builder
+                              .tcp()
+                              .connect(
+                                  remoteAddress = PROXY_REMOTE,
+                                  configure = {
+                                    reuseAddress = true
+                                    // As of KTOR-3.0.0, this is not supported and crashes at
+                                    // runtime
+                                    // reusePort = true
+                                  },
+                              )
+                              .usingConnection(autoFlush = true) { read, write ->
+                                write.writeStringUtf8(GET_REQUEST)
 
-                              val dst = pool.borrow()
-                              try {
-                                val amt = read.readAvailable(dst)
+                                val dst = pool.borrow()
+                                try {
+                                  val amt = read.readAvailable(dst)
 
-                                val res =
-                                    String(dst.array(), 0, amt, Charsets.UTF_8)
-                                        // Correct all the CRLF newlines to normal newlines
-                                        // This is just for test correctness.
-                                        .replace(SOCKET_EOL, System.lineSeparator())
+                                  val res =
+                                      String(dst.array(), 0, amt, Charsets.UTF_8)
+                                          // Correct all the CRLF newlines to normal newlines
+                                          // This is just for test correctness.
+                                          .replace(SOCKET_EOL, System.lineSeparator())
 
-                                assertEquals(GET_EXPECT_RESPONSE, res)
-                              } finally {
-                                pool.recycle(dst)
+                                  assertEquals(GET_EXPECT_RESPONSE, res)
+                                } finally {
+                                  pool.recycle(dst)
+                                }
                               }
-                            }
+                        } catch (e: Throwable) {
+                          e.ifNotCancellation {
+                            println("Error connecting proxy: $PROXY_REMOTE")
+                            e.printStackTrace()
+                            throw e
+                          }
+                        }
                       }
                     }
 
