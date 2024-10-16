@@ -27,9 +27,6 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 
-/** KTOR default buffer size, so we do too */
-private const val BUFFER_SIZE = 4096L
-
 /** Bandwidth is measured per second */
 private val BANDWIDTH_INTERVAL_NANOS = 1.seconds.inWholeNanoseconds
 

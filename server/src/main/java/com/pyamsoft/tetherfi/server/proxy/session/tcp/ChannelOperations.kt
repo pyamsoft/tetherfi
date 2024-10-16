@@ -23,6 +23,9 @@ import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.close
 import io.ktor.utils.io.core.remaining
 
+/** KTOR default buffer size, so we do too */
+const val BUFFER_SIZE = 4096L
+
 /**
  * A duplicate of [ByteReadChannel.copyTo] but with a callback fired AFTER the read but BEFORE the
  * write operation
@@ -30,7 +33,7 @@ import io.ktor.utils.io.core.remaining
 @CheckResult
 @OptIn(InternalAPI::class)
 internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
-    channel: ByteWriteChannel,
+    dst: ByteWriteChannel,
     limit: Long,
     onBeforeWrite: (Long) -> Unit,
 ): Long {
@@ -40,22 +43,27 @@ internal suspend inline fun ByteReadChannel.copyToWithActionBeforeWrite(
       if (readBuffer.exhausted()) awaitContent()
       val count = minOf(remaining, readBuffer.remaining)
 
-      // This line was AFTER readBuffer.readTo but we move it BEFORE
+      // TODO(Peter): This is not very exact or reliable
+      //
+      // Because of how fast and optimized this readTo function is,
+      // we don't really have a way to read->wait->write, so instead we
+      // wait->readwrite
+      //
+      // We could instead implement our own read->wait->write using a bytearraypool
+      // and reading to array buffers and then waiting, but this only gives around 75% of
+      // the total performance, so we'd rather be fast at the cost of exact bandwidth correctness.
+      onBeforeWrite(count)
+
+      readBuffer.readTo(dst.writeBuffer, count)
       remaining -= count
-
-      // We add this single line
-      onBeforeWrite(limit - remaining)
-
-      // This line was BEFORE remaining -= count but we moved it AFTER
-      readBuffer.readTo(channel.writeBuffer, count)
-      channel.flush()
+      dst.flush()
     }
   } catch (cause: Throwable) {
     cancel(cause)
-    channel.close(cause)
+    dst.close(cause)
     throw cause
   } finally {
-    channel.flush()
+    dst.flush()
   }
 
   return limit - remaining
