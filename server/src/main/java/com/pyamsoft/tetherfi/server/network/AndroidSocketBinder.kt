@@ -28,7 +28,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
 import java.nio.channels.SocketChannel
@@ -44,7 +43,7 @@ import kotlinx.coroutines.flow.first
 internal class AndroidSocketBinder
 @Inject
 internal constructor(
-    @ServerInternalApi private val noOp: PassthroughSocketBinder,
+    private val passthrough: PassthroughSocketBinder,
     private val preferences: ExpertPreferences,
     private val context: Context,
     private val enforcer: ThreadEnforcer,
@@ -124,7 +123,7 @@ internal constructor(
     val preferred = getPreferredNetwork()
     if (preferred == PreferredNetwork.NONE) {
       // User does not want to bind, do absolutely nothing
-      noOp.withMobileDataNetworkActive(block)
+      passthrough.withMobileDataNetworkActive(block)
     } else {
       val networkState = MutableStateFlow<Network?>(null)
       val callback = createMobileDataNetworkCallback(preferred, networkState)
