@@ -61,6 +61,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -155,9 +156,8 @@ abstract class ServerAppModule {
 
   // TCP
   @Binds
-  @IntoSet
   @CheckResult
-  @ServerInternalApi
+  @Named("http")
   internal abstract fun bindTcpHttpTransport(impl: HttpTcpTransport): TcpSessionTransport
 
   @Binds

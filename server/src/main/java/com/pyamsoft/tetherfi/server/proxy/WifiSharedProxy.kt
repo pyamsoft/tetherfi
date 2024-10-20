@@ -68,16 +68,16 @@ internal constructor(
   private val overallState =
       MutableStateFlow(
           ProxyState(
-              tcp = false,
-              udp = false,
+              http = false,
+              socks = false,
           ),
       )
 
   private fun adjustState(type: SharedProxy.Type, ready: Boolean) {
     overallState.update { s ->
       when (type) {
-        SharedProxy.Type.TCP -> s.copy(tcp = ready)
-        SharedProxy.Type.UDP -> s.copy(udp = ready)
+        SharedProxy.Type.HTTP -> s.copy(http = ready)
+        SharedProxy.Type.SOCKS -> s.copy(socks = ready)
       }
     }
   }
@@ -93,8 +93,8 @@ internal constructor(
   private fun resetState() {
     overallState.update {
       it.copy(
-          tcp = false,
-          udp = false,
+          http = false,
+          socks = false,
       )
     }
   }
@@ -160,16 +160,16 @@ internal constructor(
 
     launch(context = Dispatchers.Default) {
       beginProxyLoop(
-          type = SharedProxy.Type.TCP,
+          type = SharedProxy.Type.HTTP,
           info = info,
           serverDispatcher = serverDispatcher,
       )
     }
 
-    if (featureFlags.isUdpProxyEnabled) {
+    if (featureFlags.isSocksProxyEnabled) {
       launch(context = Dispatchers.Default) {
         beginProxyLoop(
-            type = SharedProxy.Type.UDP,
+            type = SharedProxy.Type.SOCKS,
             info = info,
             serverDispatcher = serverDispatcher,
         )
@@ -347,18 +347,21 @@ internal constructor(
         }
       }
 
-  private data class ProxyState(
-      val tcp: Boolean,
-      val udp: Boolean,
-  ) {
+  private data class ProxyState(val http: Boolean, val socks: Boolean) {
 
     @CheckResult
     fun isReady(featureFlags: FeatureFlags): Boolean {
-      if (!tcp) {
+      if (!http) {
         return false
       }
 
-      return if (featureFlags.isUdpProxyEnabled) udp else true
+      if (featureFlags.isSocksProxyEnabled) {
+        if (!socks) {
+          return false
+        }
+      }
+
+      return true
     }
   }
 }

@@ -27,9 +27,7 @@ interface SharedProxy : Server {
   )
 
   enum class Type {
-    TCP,
-
-    /** Not supported yet */
-    UDP
+    HTTP,
+    SOCKS,
   }
 }

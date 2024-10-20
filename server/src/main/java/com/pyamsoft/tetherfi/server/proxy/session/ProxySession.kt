@@ -21,12 +21,14 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import kotlinx.coroutines.CoroutineScope
 
 internal interface ProxySession<T : ProxyData> {
 
   suspend fun exchange(
       scope: CoroutineScope,
+      transport: TcpSessionTransport,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,

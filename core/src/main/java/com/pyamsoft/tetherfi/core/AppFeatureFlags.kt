@@ -27,7 +27,7 @@ internal constructor(
     // @Named("debug") private val debug: Boolean,
 ) : FeatureFlags {
 
-  override val isUdpProxyEnabled = flag { false }
+  override val isSocksProxyEnabled = flag { false }
 
   companion object {
 

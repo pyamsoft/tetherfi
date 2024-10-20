@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.writeProxyError
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import io.ktor.network.sockets.InetSocketAddress
@@ -59,6 +60,7 @@ internal constructor(
     private val hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
     private val port: Int,
     private val yoloRepeatDelay: Duration,
+    private val transport: TcpSessionTransport,
     serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     enforcer: ThreadEnforcer,
     serverDispatcher: ServerDispatcher
@@ -89,6 +91,7 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
       socketTracker: SocketTracker,
+      transport: TcpSessionTransport,
   ) {
     // Resolve the client as an IP or hostname
     if (hostNameOrIp.isBlank()) {
@@ -103,6 +106,7 @@ internal constructor(
         hostConnection = hostConnection,
         serverDispatcher = serverDispatcher,
         socketTracker = socketTracker,
+        transport = transport,
         data =
             TcpProxyData(
                 proxyInput = proxyInput,
@@ -121,6 +125,7 @@ internal constructor(
       networkBinder: SocketBinder.NetworkBinder,
       connection: Socket,
       socketTracker: SocketTracker,
+      transport: TcpSessionTransport,
   ) {
     val hostNameOrIp = resolveHostNameOrIpAddress(connection)
     try {
@@ -133,6 +138,7 @@ internal constructor(
             proxyOutput = proxyOutput,
             hostNameOrIp = hostNameOrIp,
             socketTracker = socketTracker,
+            transport = transport,
         )
       }
     } catch (e: Throwable) {
@@ -244,6 +250,7 @@ internal constructor(
                       networkBinder = networkBinder,
                       connection = connection,
                       socketTracker = tracker,
+                      transport = transport,
                   )
                 } catch (e: Throwable) {
                   e.ifNotCancellation { Timber.e(e) { "Error during server socket accept" } }

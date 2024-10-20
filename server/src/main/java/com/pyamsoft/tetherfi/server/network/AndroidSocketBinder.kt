@@ -30,12 +30,12 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import java.nio.channels.SocketChannel
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -171,7 +171,9 @@ internal constructor(
         // TetherFi in your VPN settings
         network.bindSocket(channel.socket())
       } catch (e: Throwable) {
-        Timber.w { "Error binding socket to network $network, continue anyway!: ${e.message.orEmpty()}" }
+        Timber.w {
+          "Error binding socket to network $network, continue anyway!: ${e.message.orEmpty()}"
+        }
       }
     }
   }

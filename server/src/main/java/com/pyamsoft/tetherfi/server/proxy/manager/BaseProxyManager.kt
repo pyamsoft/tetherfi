@@ -106,7 +106,7 @@ protected constructor(
     }
   }
 
-  private suspend fun periodicSocketCleanUp(
+  private fun periodicSocketCleanUp(
       scope: CoroutineScope,
       mutex: Mutex,
       sockets: MutableCollection<ASocket>
@@ -134,7 +134,7 @@ protected constructor(
     onServerClosing()
   }
 
-  private suspend fun listenForStopRequest(
+  private fun listenForStopRequest(
       scope: CoroutineScope,
       mutex: Mutex,
       sockets: MutableCollection<ASocket>,
