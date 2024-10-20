@@ -27,7 +27,7 @@ internal interface ProxySession<T : ProxyData> {
 
   suspend fun exchange(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
