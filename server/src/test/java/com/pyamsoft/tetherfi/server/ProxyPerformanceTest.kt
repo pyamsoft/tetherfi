@@ -7,6 +7,11 @@ import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -15,11 +20,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 private val GET_REQUEST =
     listOf(

@@ -17,14 +17,12 @@
 package com.pyamsoft.tetherfi.server.network
 
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
 @Singleton
-@ServerInternalApi
 internal class PassthroughSocketBinder @Inject internal constructor() : SocketBinder {
 
   override suspend fun withMobileDataNetworkActive(
