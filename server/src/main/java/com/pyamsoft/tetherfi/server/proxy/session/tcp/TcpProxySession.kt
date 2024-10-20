@@ -68,7 +68,7 @@ internal constructor(
    * leak
    */
   private suspend inline fun <T> connectToInternet(
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: ProxyRequest,
@@ -102,7 +102,7 @@ internal constructor(
                       // By default KTOR does not close sockets until "infinity" is reached.
                       socketTimeout = 1.minutes.inWholeMilliseconds
                     },
-                    onBeforeConnect = { socketbinder.bindToNetwork(it) },
+                    onBeforeConnect = { networkBinder.bindToNetwork(it) },
                 )
 
         // Track this socket for when we fully shut down
@@ -143,7 +143,7 @@ internal constructor(
 
   private suspend fun proxyToInternet(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -159,7 +159,7 @@ internal constructor(
     try {
       connectToInternet(
           autoFlush = true,
-          socketbinder = socketbinder,
+          networkBinder = networkBinder,
           serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,
           request = request,
@@ -221,7 +221,7 @@ internal constructor(
 
   private suspend fun processRequest(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
@@ -244,7 +244,7 @@ internal constructor(
     // And then we go to the web!
     proxyToInternet(
         scope = scope,
-        socketbinder = socketbinder,
+        networkBinder = networkBinder,
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -269,7 +269,7 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
@@ -303,7 +303,7 @@ internal constructor(
 
     processRequest(
         scope = scope,
-        socketbinder = socketbinder,
+        networkBinder = networkBinder,
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
@@ -316,7 +316,7 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -329,7 +329,7 @@ internal constructor(
         try {
           handleClientRequest(
               scope = this,
-              socketbinder = socketbinder,
+              networkBinder = networkBinder,
               hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,
               proxyInput = proxyInput,

@@ -84,7 +84,7 @@ internal constructor(
   }
 
   private suspend fun CoroutineScope.handleProxyConnection(
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
@@ -99,7 +99,7 @@ internal constructor(
 
     session.exchange(
         scope = this,
-        socketbinder = socketbinder,
+        networkBinder = networkBinder,
         hostConnection = hostConnection,
         serverDispatcher = serverDispatcher,
         socketTracker = socketTracker,
@@ -118,7 +118,7 @@ internal constructor(
    */
   private suspend fun runSession(
       scope: CoroutineScope,
-      socketbinder: SocketBinder.NetworkBinder,
+      networkBinder: SocketBinder.NetworkBinder,
       connection: Socket,
       socketTracker: SocketTracker,
   ) {
@@ -128,7 +128,7 @@ internal constructor(
       // Catch the error and continue
       connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
         scope.handleProxyConnection(
-            socketbinder = socketbinder,
+            networkBinder = networkBinder,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
             hostNameOrIp = hostNameOrIp,
@@ -241,7 +241,7 @@ internal constructor(
 
                   runSession(
                       scope = this,
-                      socketbinder = networkBinder,
+                      networkBinder = networkBinder,
                       connection = connection,
                       socketTracker = tracker,
                   )
