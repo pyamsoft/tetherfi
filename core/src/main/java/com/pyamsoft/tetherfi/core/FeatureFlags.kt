@@ -19,9 +19,9 @@ package com.pyamsoft.tetherfi.core
 interface FeatureFlags {
 
   /**
-   * Support proxy for UDP
+   * SOCKS proxy
    *
-   * UDP support is currently incomplete so this is flagged off in all non-dev builds
+   * Adapted from https://github.com/torsm/ktor-socks
    */
-  val isUdpProxyEnabled: Boolean
+  val isSocksProxyEnabled: Boolean
 }

@@ -32,7 +32,9 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -48,10 +50,35 @@ internal constructor(
     private val preferences: ProxyPreferences,
     private val appEnvironment: AppDevEnvironment,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
+    @Named("http") private val httpTransport: TcpSessionTransport,
 ) : ProxyManager.Factory {
 
   @CheckResult
-  private suspend fun createTcp(
+  private fun createTcp(
+      transport: TcpSessionTransport,
+      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      dispatcher: ServerDispatcher,
+      port: Int,
+  ): ProxyManager {
+    enforcer.assertOffMainThread()
+
+    return TcpProxyManager(
+        socketTagger = socketTagger,
+        session = tcpSession,
+        appEnvironment = appEnvironment,
+        yoloRepeatDelay = 3.seconds,
+        enforcer = enforcer,
+        serverStopConsumer = serverStopConsumer,
+        socketBinder = socketBinder,
+        hostConnection = info,
+        port = port,
+        serverDispatcher = dispatcher,
+        transport = transport,
+    )
+  }
+
+  @CheckResult
+  private suspend fun createHttp(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       dispatcher: ServerDispatcher,
   ): ProxyManager {
@@ -59,17 +86,11 @@ internal constructor(
 
     val port = preferences.listenForPortChanges().first()
 
-    return TcpProxyManager(
-        socketTagger = socketTagger,
-        session = tcpSession,
-        hostConnection = info,
+    return createTcp(
+        info = info,
+        dispatcher = dispatcher,
         port = port,
-        serverDispatcher = dispatcher,
-        appEnvironment = appEnvironment,
-        yoloRepeatDelay = 3.seconds,
-        enforcer = enforcer,
-        serverStopConsumer = serverStopConsumer,
-        socketBinder = socketBinder,
+        transport = httpTransport,
     )
   }
 
@@ -80,12 +101,12 @@ internal constructor(
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
         return@withContext when (type) {
-          SharedProxy.Type.TCP ->
-              createTcp(
+          SharedProxy.Type.HTTP ->
+              createHttp(
                   info = info,
                   dispatcher = serverDispatcher,
               )
-          SharedProxy.Type.UDP ->
+          SharedProxy.Type.SOCKS ->
               throw IllegalArgumentException("Proxy type $type not supported yet!")
         }
       }

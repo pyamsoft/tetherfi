@@ -21,7 +21,6 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
-import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -51,8 +50,6 @@ import kotlinx.coroutines.withContext
 internal class TcpProxySession
 @Inject
 internal constructor(
-    /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
-    @ServerInternalApi private val transports: MutableSet<TcpSessionTransport>,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
@@ -269,6 +266,7 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
+      transport: TcpSessionTransport,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
@@ -285,17 +283,8 @@ internal constructor(
 
     // We use a string parsing to figure out what this HTTP request wants to do
     // Inline to avoid new object allocation
-    var transport: TcpSessionTransport? = null
-    var request: ProxyRequest? = null
-    for (t in transports) {
-      val req = t.parseRequest(proxyInput)
-      if (req != null) {
-        transport = t
-        request = req
-        break
-      }
-    }
-    if (transport == null || request == null) {
+    val request = transport.parseRequest(proxyInput)
+    if (request == null) {
       Timber.w { "Could not parse proxy request $client" }
       writeProxyError(proxyOutput)
       return
@@ -316,6 +305,7 @@ internal constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      transport: TcpSessionTransport,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
@@ -329,6 +319,7 @@ internal constructor(
         try {
           handleClientRequest(
               scope = this,
+              transport = transport,
               networkBinder = networkBinder,
               hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,
