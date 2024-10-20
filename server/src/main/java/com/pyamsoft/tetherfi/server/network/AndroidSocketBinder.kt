@@ -28,14 +28,15 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ServerInternalApi
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import java.nio.channels.SocketChannel
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import java.nio.channels.SocketChannel
+import javax.inject.Inject
+import javax.inject.Singleton
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.first
 internal class AndroidSocketBinder
 @Inject
 internal constructor(
+    @ServerInternalApi private val noOp: NoOpSocketBinder,
     private val preferences: ExpertPreferences,
     private val context: Context,
     private val enforcer: ThreadEnforcer,
@@ -122,8 +124,7 @@ internal constructor(
     val preferred = getPreferredNetwork()
     if (preferred == PreferredNetwork.NONE) {
       // User does not want to bind, do absolutely nothing
-      Timber.d { "Using currently active network for proxy connections..." }
-      block(NOOP_BOUND)
+      noOp.withMobileDataNetworkActive(block)
     } else {
       val networkState = MutableStateFlow<Network?>(null)
       val callback = createMobileDataNetworkCallback(preferred, networkState)
@@ -163,15 +164,6 @@ internal constructor(
   }
 
   companion object {
-    // KTOR needs to support upstream
-    // https://youtrack.jetbrains.com/issue/KTOR-7452/Question-KTOR-Socket-using-Android-bindSocketgg
-    //
-    // For now, we support using our own custom hacked build of ktor
-    // https://github.com/pyamsoft/ktor
-    private const val IS_SOCKET_BIND_ENABLED = true
-
-    private val NOOP_BOUND: SocketBinder.NetworkBinder =
-        SocketBinder.NetworkBinder { Timber.d { "Not binding to any socket" } }
 
     @JvmStatic
     private fun bindToNetwork(channel: SocketChannel, network: Network) {

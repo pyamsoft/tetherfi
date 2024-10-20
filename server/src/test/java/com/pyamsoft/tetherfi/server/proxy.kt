@@ -25,16 +25,13 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.network.NoOpSocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,6 +42,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newSingleThreadContext
 import timber.log.Timber
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
@@ -149,7 +150,7 @@ internal suspend inline fun setupProxy(
           yoloRepeatDelay = 0.seconds,
           enforcer = enforcer,
           serverStopConsumer = DefaultEventBus(),
-          socketBinder = {},
+          socketBinder = NoOpSocketBinder(),
       )
 
   val server =
