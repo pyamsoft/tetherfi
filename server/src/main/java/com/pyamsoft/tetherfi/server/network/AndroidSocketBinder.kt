@@ -30,12 +30,12 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import java.nio.channels.SocketChannel
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import java.nio.channels.SocketChannel
+import javax.inject.Inject
+import javax.inject.Singleton
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -169,7 +169,7 @@ internal constructor(
       try {
         network.bindSocket(channel.socket())
       } catch (e: Throwable) {
-        Timber.e(e) { "Error binding socket to network $network, continue anyway!" }
+        Timber.w { "Error binding socket to network $network, continue anyway!: ${e.message.orEmpty()}" }
       }
     }
   }
