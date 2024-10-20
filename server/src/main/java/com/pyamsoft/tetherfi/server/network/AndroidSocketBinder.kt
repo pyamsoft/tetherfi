@@ -31,12 +31,12 @@ import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import java.nio.channels.SocketChannel
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -44,7 +44,7 @@ import javax.inject.Singleton
 internal class AndroidSocketBinder
 @Inject
 internal constructor(
-    @ServerInternalApi private val noOp: NoOpSocketBinder,
+    @ServerInternalApi private val noOp: PassthroughSocketBinder,
     private val preferences: ExpertPreferences,
     private val context: Context,
     private val enforcer: ThreadEnforcer,

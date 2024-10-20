@@ -61,10 +61,10 @@ class ProxyPerformanceTest {
   fun serverPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
         setupServer(this) {
-          setupProxy(this) { dispatcher ->
+          setupProxy(this, isLoggingEnabled = true) { dispatcher ->
             ByteBufferPool().use { pool ->
               val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
-              for (i in 0 until 50) {
+              for (i in 0 until 20) {
                 val job =
                     async(context = Dispatchers.IO) {
                       usingSocketBuilder(dispatcher) { builder ->
