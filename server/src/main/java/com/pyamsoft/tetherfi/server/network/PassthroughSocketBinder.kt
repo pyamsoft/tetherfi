@@ -25,19 +25,17 @@ import javax.inject.Singleton
 // https://github.com/pyamsoft/tetherfi/issues/331
 @Singleton
 @ServerInternalApi
-internal class NoOpSocketBinder
-@Inject
-internal constructor() : SocketBinder {
+internal class PassthroughSocketBinder @Inject internal constructor() : SocketBinder {
 
-    override suspend fun withMobileDataNetworkActive(
-        block: suspend (SocketBinder.NetworkBinder) -> Unit
-    ) {
-        Timber.d { "Using currently active network for proxy connections..." }
-        block(NOOP_BOUND)
-    }
+  override suspend fun withMobileDataNetworkActive(
+      block: suspend (SocketBinder.NetworkBinder) -> Unit
+  ) {
+    Timber.d { "Using currently active network for proxy connections..." }
+    block(NOOP_BOUND)
+  }
 
-    companion object {
-        private val NOOP_BOUND: SocketBinder.NetworkBinder =
-            SocketBinder.NetworkBinder { Timber.d { "Not binding to any socket" } }
-    }
+  companion object {
+    private val NOOP_BOUND: SocketBinder.NetworkBinder =
+        SocketBinder.NetworkBinder { Timber.d { "Not binding to any socket" } }
+  }
 }
