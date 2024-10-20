@@ -167,6 +167,8 @@ internal constructor(
     @JvmStatic
     private fun bindToNetwork(channel: SocketChannel, network: Network) {
       try {
+        // IF you are connected to a VPN, binding to a socket may not work unless you "whitelist"
+        // TetherFi in your VPN settings
         network.bindSocket(channel.socket())
       } catch (e: Throwable) {
         Timber.w { "Error binding socket to network $network, continue anyway!: ${e.message.orEmpty()}" }
