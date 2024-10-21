@@ -19,15 +19,19 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
-import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.CoroutineScope
 
-internal interface TcpSessionTransport {
+internal interface TcpSessionTransport<Q : ProxyRequest> {
 
-  @CheckResult suspend fun parseRequest(input: ByteReadChannel): ProxyRequest?
+  @CheckResult suspend fun parseRequest(input: ByteReadChannel): Q?
+
+  suspend fun write(
+      proxyOutput: ByteWriteChannel,
+      command: TransportWriteCommand,
+  )
 
   suspend fun exchangeInternet(
       scope: CoroutineScope,
@@ -36,7 +40,7 @@ internal interface TcpSessionTransport {
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
-      request: ProxyRequest,
+      request: Q,
       client: TetherClient,
       onReport: suspend (ByteTransferReport) -> Unit,
   )

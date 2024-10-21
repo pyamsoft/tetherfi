@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
-import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.talk
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -43,7 +45,7 @@ internal class HttpTcpTransport
 internal constructor(
     private val requestParser: RequestParser,
     private val enforcer: ThreadEnforcer,
-) : TcpSessionTransport {
+) : TcpSessionTransport<HttpProxyRequest> {
 
   /**
    * HTTPS Connections are encrypted and so we cannot see anything further past the initial CONNECT
@@ -54,7 +56,7 @@ internal constructor(
   private suspend fun establishHttpsConnection(
       input: ByteReadChannel,
       output: ByteWriteChannel,
-      request: ProxyRequest,
+      request: HttpProxyRequest,
   ) {
     // We exhaust the input here because the client is sending CONNECT data to what it thinks is a
     // server but its actually us, and we don't care how they connect
@@ -67,7 +69,7 @@ internal constructor(
     } while (!throwaway.isNullOrBlank())
 
     Timber.d { "Establish HTTPS CONNECT tunnel ${request.raw}" }
-    writeConnectSuccess(output)
+    writeHttpConnectSuccess(output)
   }
 
   /**
@@ -77,13 +79,19 @@ internal constructor(
    */
   private suspend fun replayHttpCommunication(
       output: ByteWriteChannel,
-      request: ProxyRequest,
+      request: HttpProxyRequest,
   ) {
     // TODO(Peter): If the output socket is already closed this will fail and throw.
     //   realistically, will the output socket ever be closed for the initial connection?
     Timber.d { "Rewrote initial HTTP request: ${request.raw} -> ${request.httpRequest}" }
-    output.writeFully(writeMessageAndAwaitMore(request.httpRequest))
+    output.writeFully(writeHttpMessageAndAwaitMore(request.httpRequest))
   }
+
+  override suspend fun write(proxyOutput: ByteWriteChannel, command: TransportWriteCommand) =
+      when (command) {
+        TransportWriteCommand.ERROR -> writeProxyHttpError(proxyOutput)
+        TransportWriteCommand.BLOCK -> writeHttpClientBlocked(proxyOutput)
+      }
 
   /**
    * Parse the first line of content which may be a connect call
@@ -93,7 +101,7 @@ internal constructor(
    *
    * If we buffer we may end up reading the whole input which can be huge, and OOM us.
    */
-  override suspend fun parseRequest(input: ByteReadChannel): ProxyRequest? {
+  override suspend fun parseRequest(input: ByteReadChannel): HttpProxyRequest? {
     val line = input.readUTF8Line()
 
     // No line, no go
@@ -113,7 +121,7 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       internetInput: ByteReadChannel,
       internetOutput: ByteWriteChannel,
-      request: ProxyRequest,
+      request: HttpProxyRequest,
       client: TetherClient,
       onReport: suspend (ByteTransferReport) -> Unit,
   ) {
@@ -197,7 +205,7 @@ internal constructor(
           Timber.w { "Proxy:Internet socket timeout! $request $client" }
         } else {
           Timber.e(e) { "Error occurred during internet exchange: $request $client" }
-          writeProxyError(proxyOutput)
+          write(proxyOutput, TransportWriteCommand.ERROR)
         }
       }
     } finally {

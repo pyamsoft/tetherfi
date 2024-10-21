@@ -49,19 +49,19 @@ import com.pyamsoft.tetherfi.server.proxy.WifiSharedProxy
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.factory.DefaultProxyManagerFactory
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.RequestParser
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
-import com.pyamsoft.tetherfi.server.urlfixer.PSNUrlFixer
-import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxyRequest
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTcpTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.RequestParser
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.urlfixer.PSNUrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.urlfixer.UrlFixer
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -154,16 +154,18 @@ abstract class ServerAppModule {
       impl: DefaultProxyManagerFactory
   ): ProxyManager.Factory
 
-  // TCP
+  // HTTP
   @Binds
   @CheckResult
-  @Named("http")
-  internal abstract fun bindTcpHttpTransport(impl: HttpTcpTransport): TcpSessionTransport
+  @ServerInternalApi
+  internal abstract fun bindTcpHttpTransport(
+      impl: HttpTcpTransport
+  ): TcpSessionTransport<HttpProxyRequest>
 
   @Binds
   @CheckResult
   @ServerInternalApi
-  internal abstract fun bindTcpProxySession(impl: TcpProxySession): ProxySession<TcpProxyData>
+  internal abstract fun bindHttpTcpProxySession(impl: HttpProxySession): ProxySession<TcpProxyData>
 
   @Module
   companion object {

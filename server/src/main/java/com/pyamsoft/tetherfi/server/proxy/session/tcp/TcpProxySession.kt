@@ -27,7 +27,6 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
-import com.pyamsoft.tetherfi.server.event.ProxyRequest
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -39,17 +38,14 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@Singleton
-internal class TcpProxySession
-@Inject
-internal constructor(
+internal abstract class TcpProxySession<Q : ProxyRequest>
+protected constructor(
+    private val transport: TcpSessionTransport<Q>,
     private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
@@ -68,7 +64,7 @@ internal constructor(
       networkBinder: SocketBinder.NetworkBinder,
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
-      request: ProxyRequest,
+      request: Q,
       socketTracker: SocketTracker,
       block: (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
@@ -146,8 +142,7 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       socketTracker: SocketTracker,
       client: TetherClient,
-      transport: TcpSessionTransport,
-      request: ProxyRequest,
+      request: Q,
       onReport: suspend (ByteTransferReport) -> Unit,
   ) {
     enforcer.assertOffMainThread()
@@ -182,7 +177,7 @@ internal constructor(
           Timber.w { "Proxy:Internet socket timeout! $request $client" }
         } else {
           Timber.e(e) { "Error during Internet exchange $request $client" }
-          writeProxyError(proxyOutput)
+          transport.write(proxyOutput, TransportWriteCommand.ERROR)
         }
       }
     }
@@ -224,8 +219,7 @@ internal constructor(
       proxyOutput: ByteWriteChannel,
       socketTracker: SocketTracker,
       client: TetherClient,
-      transport: TcpSessionTransport,
-      request: ProxyRequest,
+      request: Q,
   ) {
     // This is launched as its own scope so that the side effect does not slow
     // down the internet traffic processing.
@@ -246,7 +240,6 @@ internal constructor(
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
         socketTracker = socketTracker,
-        transport = transport,
         request = request,
         client = client,
         onReport = { report ->
@@ -266,7 +259,6 @@ internal constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
-      transport: TcpSessionTransport,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
@@ -277,16 +269,16 @@ internal constructor(
   ) {
     val client = resolveClientOrBlock(hostConnection, hostNameOrIp)
     if (client == null) {
-      writeClientBlocked(proxyOutput)
+      transport.write(proxyOutput, TransportWriteCommand.BLOCK)
       return
     }
 
     // We use a string parsing to figure out what this HTTP request wants to do
     // Inline to avoid new object allocation
-    val request = transport.parseRequest(proxyInput)
+    val request: Q? = transport.parseRequest(proxyInput)
     if (request == null) {
       Timber.w { "Could not parse proxy request $client" }
-      writeProxyError(proxyOutput)
+      transport.write(proxyOutput, TransportWriteCommand.ERROR)
       return
     }
 
@@ -298,14 +290,12 @@ internal constructor(
         proxyOutput = proxyOutput,
         socketTracker = socketTracker,
         client = client,
-        transport = transport,
         request = request,
     )
   }
 
   override suspend fun exchange(
       scope: CoroutineScope,
-      transport: TcpSessionTransport,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
@@ -319,7 +309,6 @@ internal constructor(
         try {
           handleClientRequest(
               scope = this,
-              transport = transport,
               networkBinder = networkBinder,
               hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.urlfixer
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import androidx.annotation.CheckResult
 
-interface UrlFixer {
+internal interface RequestParser {
 
-  @CheckResult fun fix(url: String): String
+  @CheckResult fun parse(line: String): HttpProxyRequest?
 }

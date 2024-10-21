@@ -22,13 +22,9 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import io.ktor.utils.io.writeFully
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
-
-/** Bandwidth is measured per second */
-private val BANDWIDTH_INTERVAL_NANOS = 1.seconds.inWholeNanoseconds
 
 /**
  * Line ending for socket messages
@@ -37,41 +33,8 @@ private val BANDWIDTH_INTERVAL_NANOS = 1.seconds.inWholeNanoseconds
  */
 const val SOCKET_EOL = "\r\n"
 
-/** Right now we speak 1.1, maybe 2.0 someday */
-const val PROXY_HTTP_VERSION = "HTTP/1.1"
-
-/** Static proxy events */
-private enum class ProxyEvents(
-    val code: Int,
-    val message: String,
-) {
-  CONNECT(200, "Connection Established"),
-  ERROR(502, "Bad Gateway"),
-  BLOCKED(403, "Forbidden")
-}
-
-/** Write a message to the proxy for various events */
-private suspend fun proxyEvent(output: ByteWriteChannel, code: ProxyEvents) {
-  proxyResponse(output, "$PROXY_HTTP_VERSION ${code.code} ${code.message}")
-}
-
-/**
- * Respond to the client with a message string
- *
- * Properly line-ended with flushed output
- */
-private suspend fun proxyResponse(output: ByteWriteChannel, response: String) {
-  // Don't attempt the write if the channel is closed
-  if (output.isClosedForWrite) {
-    return
-  }
-
-  output.apply {
-    writeFully(writeMessageAndAwaitMore(response))
-    writeFully(SOCKET_EOL.encodeToByteArray())
-    flush()
-  }
-}
+/** Bandwidth is measured per second */
+private val BANDWIDTH_INTERVAL_NANOS = 1.seconds.inWholeNanoseconds
 
 @CheckResult
 private suspend fun enforceBandwidthLimit(
@@ -169,30 +132,4 @@ internal suspend inline fun talk(
   }
 
   return total
-}
-
-/** Write a generic error back to the client socket because something has gone wrong */
-internal suspend fun writeProxyError(output: ByteWriteChannel) {
-  proxyEvent(output, ProxyEvents.ERROR)
-}
-
-/** Response for a client that is blocked */
-internal suspend fun writeClientBlocked(output: ByteWriteChannel) {
-  proxyEvent(output, ProxyEvents.BLOCKED)
-}
-
-/** A CONNECT call has successfully created an HTTP tunnel */
-internal suspend fun writeConnectSuccess(output: ByteWriteChannel) {
-  proxyEvent(output, ProxyEvents.CONNECT)
-}
-
-/**
- * Convert a message string into a byte array
- *
- * Correctly end the line with return and newline
- */
-@CheckResult
-internal fun writeMessageAndAwaitMore(message: String): ByteArray {
-  val msg = if (message.endsWith(SOCKET_EOL)) message else "${message}$SOCKET_EOL"
-  return msg.encodeToByteArray()
 }
