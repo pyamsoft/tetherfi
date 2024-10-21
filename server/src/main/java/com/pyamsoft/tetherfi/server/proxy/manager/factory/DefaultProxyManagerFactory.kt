@@ -31,10 +31,11 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxyRequest
 import javax.inject.Inject
-import javax.inject.Named
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -43,19 +44,20 @@ import kotlinx.coroutines.withContext
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
-    @ServerInternalApi private val tcpSession: ProxySession<TcpProxyData>,
     @ServerInternalApi private val socketBinder: SocketBinder,
+    @ServerInternalApi private val httpTransport: TcpSessionTransport<HttpProxyRequest>,
+    @ServerInternalApi private val httpSession: ProxySession<TcpProxyData>,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val preferences: ProxyPreferences,
     private val appEnvironment: AppDevEnvironment,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
-    @Named("http") private val httpTransport: TcpSessionTransport,
 ) : ProxyManager.Factory {
 
   @CheckResult
-  private fun createTcp(
-      transport: TcpSessionTransport,
+  private fun <Q : ProxyRequest> createTcp(
+      session: ProxySession<TcpProxyData>,
+      transport: TcpSessionTransport<Q>,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       dispatcher: ServerDispatcher,
       port: Int,
@@ -64,12 +66,12 @@ internal constructor(
 
     return TcpProxyManager(
         socketTagger = socketTagger,
-        session = tcpSession,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
         enforcer = enforcer,
         serverStopConsumer = serverStopConsumer,
         socketBinder = socketBinder,
+        session = session,
         hostConnection = info,
         port = port,
         serverDispatcher = dispatcher,
@@ -87,10 +89,11 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return createTcp(
+        transport = httpTransport,
+        session = httpSession,
         info = info,
         dispatcher = dispatcher,
         port = port,
-        transport = httpTransport,
     )
   }
 

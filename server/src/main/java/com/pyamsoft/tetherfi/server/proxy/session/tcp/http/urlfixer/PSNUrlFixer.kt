@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.urlfixer
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.http.urlfixer
 
 import com.pyamsoft.tetherfi.core.Timber
 import javax.inject.Inject

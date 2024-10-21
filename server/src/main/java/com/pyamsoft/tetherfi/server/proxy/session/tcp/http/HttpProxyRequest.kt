@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.event
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 
 @ConsistentCopyVisibility
-internal data class ProxyRequest
+internal data class HttpProxyRequest
 internal constructor(
     override val method: String,
-    val host: String,
-    val port: Int,
+    override val host: String,
+    override val port: Int,
     val version: String,
     val raw: String,
     val file: String,
-) : TunnelRequest(method) {
+) : ProxyRequest, TunnelRequest(method) {
 
   val httpRequest by lazy {
     // Strip off the hostname just leaving file name for requests

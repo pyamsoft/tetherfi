@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerInternalApi
-import com.pyamsoft.tetherfi.server.event.ProxyRequest
-import com.pyamsoft.tetherfi.server.event.TunnelRequest
-import com.pyamsoft.tetherfi.server.urlfixer.UrlFixer
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.urlfixer.UrlFixer
 import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -187,7 +185,7 @@ internal constructor(
     }
   }
 
-  override fun parse(line: String): ProxyRequest? {
+  override fun parse(line: String): HttpProxyRequest? {
     try {
       val methodData = getMethodAndUrlString(line)
       if (methodData == null) {
@@ -201,7 +199,7 @@ internal constructor(
         return null
       }
 
-      return ProxyRequest(
+      return HttpProxyRequest(
               raw = line,
               method = methodData.method,
               host = urlData.hostName,

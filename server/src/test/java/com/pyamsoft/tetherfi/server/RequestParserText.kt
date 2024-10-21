@@ -16,8 +16,8 @@
 
 package com.pyamsoft.tetherfi.server
 
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.RequestParser
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.RequestParser
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

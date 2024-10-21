@@ -29,9 +29,9 @@ import com.pyamsoft.tetherfi.server.network.PassthroughSocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.HttpTcpTransport
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.UrlRequestParser
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTcpTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -119,11 +119,21 @@ internal suspend inline fun setupProxy(
         })
   }
 
+  val transport =
+      HttpTcpTransport(
+          requestParser =
+              UrlRequestParser(
+                  urlFixers = mutableSetOf(),
+              ),
+          enforcer = enforcer,
+      )
+
   val manager =
       TcpProxyManager(
           appEnvironment = AppDevEnvironment().apply(appEnv),
           session =
-              TcpProxySession(
+              HttpProxySession(
+                  transport = transport,
                   blockedClients = blocked,
                   allowedClients = allowed,
                   enforcer = enforcer,
@@ -141,15 +151,7 @@ internal suspend inline fun setupProxy(
           enforcer = enforcer,
           serverStopConsumer = DefaultEventBus(),
           socketBinder = PassthroughSocketBinder(),
-          transport =
-              HttpTcpTransport(
-                  requestParser =
-                      UrlRequestParser(
-                          urlFixers = mutableSetOf(),
-                      ),
-                  enforcer = enforcer,
-              ),
-      )
+          transport = transport)
 
   val server =
       scope.async {
