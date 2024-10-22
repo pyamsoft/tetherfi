@@ -17,6 +17,5 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 interface ProxyRequest {
-  val host: String
-  val port: Int
+  val valid: Boolean
 }

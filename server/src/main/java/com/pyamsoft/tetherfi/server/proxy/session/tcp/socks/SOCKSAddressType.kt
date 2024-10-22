@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
 
-internal interface TcpSessionTransport<Q : ProxyRequest> {
+internal enum class SOCKSAddressType(val version: Byte) {
+    IPV4(1),
+    IPV6(4),
+    HOSTNAME(3);
 
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
-
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
+    companion object {
+        @JvmStatic
+        @CheckResult
+        fun fromVersion(version: Byte): SOCKSAddressType = when (version) {
+            IPV4.version -> IPV4
+            IPV6.version -> IPV6
+            HOSTNAME.version -> HOSTNAME
+            else -> throw SOCKSException("Invalid SOCKS address type: $version")
+        }
+    }
 }

@@ -20,5 +20,5 @@ import androidx.annotation.CheckResult
 
 internal interface RequestParser {
 
-  @CheckResult fun parse(line: String): HttpProxyRequest?
+  @CheckResult fun parse(line: String): HttpProxyRequest
 }

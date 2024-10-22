@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.readByte
 
-internal interface TcpSessionTransport<Q : ProxyRequest> {
+private const val NULL_BYTE: Byte = 0
 
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
+@CheckResult
+internal suspend fun ByteReadChannel.readNullTerminatedString(): String {
+    val builder = StringBuilder()
 
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
+    // TODO(Peter): This is very slow
+    // We want to read up until a delimeter null byte and then return the string
+    while (!isClosedForRead) {
+        val maybe = readByte()
+        if (maybe == NULL_BYTE) {
+            break
+        }
+        builder.append(maybe)
+    }
+
+    return builder.toString()
 }

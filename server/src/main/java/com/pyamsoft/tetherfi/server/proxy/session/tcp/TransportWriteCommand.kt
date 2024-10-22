@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
 enum class TransportWriteCommand {
+  INVALID,
+  BLOCK,
   ERROR,
-  BLOCK
 }

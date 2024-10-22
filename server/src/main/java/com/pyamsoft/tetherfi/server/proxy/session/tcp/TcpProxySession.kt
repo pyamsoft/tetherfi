@@ -32,13 +32,8 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.usingConnection
-import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
-import io.ktor.network.sockets.InetSocketAddress
-import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,279 +41,203 @@ import kotlinx.coroutines.withContext
 internal abstract class TcpProxySession<Q : ProxyRequest>
 protected constructor(
     private val transport: TcpSessionTransport<Q>,
-    private val socketTagger: SocketTagger,
     private val blockedClients: BlockedClients,
     private val clientResolver: ClientResolver,
     private val allowedClients: AllowedClients,
-    private val enforcer: ThreadEnforcer,
+    protected val socketTagger: SocketTagger,
+    protected val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
 
-  /**
-   * Given the initial proxy request, connect to the Internet from our device via the connected
-   * socket
-   *
-   * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
-   * leak
-   */
-  private suspend inline fun <T> connectToInternet(
-      networkBinder: SocketBinder.NetworkBinder,
-      autoFlush: Boolean,
-      serverDispatcher: ServerDispatcher,
-      request: Q,
-      socketTracker: SocketTracker,
-      block: (ByteReadChannel, ByteWriteChannel) -> T
-  ): T =
-      usingSocketBuilder(serverDispatcher.primary) { builder ->
-        // We don't actually use the socket tls() method here since we are not a TLS server
-        // We do the CONNECT based workaround to handle HTTPS connections
-        val remote =
-            InetSocketAddress(
-                hostname = request.host,
-                port = request.port,
+    private fun CoroutineScope.handleClientRequestSideEffects(
+        serverDispatcher: ServerDispatcher,
+        client: TetherClient,
+    ) {
+        enforcer.assertOffMainThread()
+
+        // Mark all client connections as seen
+        //
+        // We need to do this because we have access to the MAC address via the GroupInfo.clientList
+        // but not the IP address. Android does not let us access the system ARP table so we cannot map
+        // MACs to IPs. Thus we need to basically hold our own table of "known" IP addresses and allow
+        // a user to block them as they see fit. This is UX wise, not great at all, since a user must
+        // eliminate a "bad" IP address by first knowing all the good ones.
+        //
+        // Though, arguably, blocking is only a nice to have. Real network security should be handled
+        // via the password.
+        launch(context = serverDispatcher.sideEffect) { allowedClients.seen(client) }
+    }
+
+    private fun CoroutineScope.handleClientReportSideEffects(
+        serverDispatcher: ServerDispatcher,
+        report: ByteTransferReport,
+        client: TetherClient,
+    ) {
+        enforcer.assertOffMainThread()
+
+        // Track the report for the given client
+        launch(context = serverDispatcher.sideEffect) {
+            allowedClients.reportTransfer(
+                client,
+                report
             )
+        }
+    }
 
-        val socket =
-            builder
-                .tcp()
-                .configure {
-                  reuseAddress = true
-                  // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                  // reusePort = true
+
+    @CheckResult
+    private fun resolveClientOrBlock(
+        hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        hostNameOrIp: String
+    ): TetherClient? {
+        // If the host is an IP address, and we are an IP address,
+        // check that we fall into the host
+        if (hostConnection.isIpAddress) {
+            if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+                if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
+                    Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
+                    return null
                 }
-                .also { socketTagger.tagSocket() }
-                // This function uses our custom build of KTOR
-                // which adds the [onBeforeConnect] hook to allow us
-                // to use the socket created BEFORE connection starts.
-                .connectWithConfiguration(
-                    remoteAddress = remote,
-                    configure = {
-                      // By default KTOR does not close sockets until "infinity" is reached.
-                      socketTimeout = 1.minutes.inWholeMilliseconds
-                    },
-                    onBeforeConnect = { networkBinder.bindToNetwork(it) },
-                )
+            }
+        }
 
-        // Track this socket for when we fully shut down
-        socketTracker.track(socket)
+        // Retrieve the client (or track if it is it new)
+        val client = clientResolver.ensure(hostNameOrIp)
 
-        return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
-      }
+        // If the client is blocked we do not process any input
+        if (blockedClients.isBlocked(client)) {
+            Timber.w { "Client is marked blocked: $client" }
+            return null
+        }
 
-  private fun CoroutineScope.handleClientRequestSideEffects(
-      serverDispatcher: ServerDispatcher,
-      client: TetherClient,
-  ) {
-    enforcer.assertOffMainThread()
+        return client
+    }
 
-    // Mark all client connections as seen
-    //
-    // We need to do this because we have access to the MAC address via the GroupInfo.clientList
-    // but not the IP address. Android does not let us access the system ARP table so we cannot map
-    // MACs to IPs. Thus we need to basically hold our own table of "known" IP addresses and allow
-    // a user to block them as they see fit. This is UX wise, not great at all, since a user must
-    // eliminate a "bad" IP address by first knowing all the good ones.
-    //
-    // Though, arguably, blocking is only a nice to have. Real network security should be handled
-    // via the password.
-    launch(context = serverDispatcher.sideEffect) { allowedClients.seen(client) }
-  }
+    private suspend fun processRequest(
+        scope: CoroutineScope,
+        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        networkBinder: SocketBinder.NetworkBinder,
+        serverDispatcher: ServerDispatcher,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        socketTracker: SocketTracker,
+        client: TetherClient,
+        request: Q,
+    ) {
+        // This is launched as its own scope so that the side effect does not slow
+        // down the internet traffic processing.
+        // Since this context is our own dispatcher which is cachedThreadPool backed,
+        // we just "spin up" another thread and forget about it performance wise.
+        scope.launch(context = serverDispatcher.primary) {
+            handleClientRequestSideEffects(
+                serverDispatcher = serverDispatcher,
+                client = client,
+            )
+        }
 
-  private fun CoroutineScope.handleClientReportSideEffects(
-      serverDispatcher: ServerDispatcher,
-      report: ByteTransferReport,
-      client: TetherClient,
-  ) {
-    enforcer.assertOffMainThread()
-
-    // Track the report for the given client
-    launch(context = serverDispatcher.sideEffect) { allowedClients.reportTransfer(client, report) }
-  }
-
-  private suspend fun proxyToInternet(
-      scope: CoroutineScope,
-      networkBinder: SocketBinder.NetworkBinder,
-      serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      socketTracker: SocketTracker,
-      client: TetherClient,
-      request: Q,
-      onReport: suspend (ByteTransferReport) -> Unit,
-  ) {
-    enforcer.assertOffMainThread()
-
-    // Given the request, connect to the Web
-    try {
-      connectToInternet(
-          autoFlush = true,
-          networkBinder = networkBinder,
-          serverDispatcher = serverDispatcher,
-          socketTracker = socketTracker,
-          request = request,
-      ) { internetInput, internetOutput ->
-        // Communicate between the web connection we've made and back to our client device
-        transport.exchangeInternet(
+        // And then we go to the web!
+        proxyToInternet(
             scope = scope,
+            connectionInfo = connectionInfo,
+            networkBinder = networkBinder,
             serverDispatcher = serverDispatcher,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
-            internetInput = internetInput,
-            internetOutput = internetOutput,
+            socketTracker = socketTracker,
             request = request,
             client = client,
-            onReport = onReport,
+            onReport = { report ->
+                // This is launched as its own scope so that the side effect does not slow
+                // down the internet traffic processing.
+                // Since this context is our own dispatcher which is cachedThreadPool backed,
+                // we just "spin up" another thread and forget about it performance wise.
+                scope.launch(context = serverDispatcher.primary) {
+                    handleClientReportSideEffects(
+                        serverDispatcher = serverDispatcher,
+                        report = report,
+                        client = client,
+                    )
+                }
+            },
         )
-      }
-    } catch (e: Throwable) {
-      e.ifNotCancellation {
-        // Generally, the Transport should handle SocketTimeoutException itself.
-        // We capture here JUST in case
-        if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Internet socket timeout! $request $client" }
-        } else {
-          Timber.e(e) { "Error during Internet exchange $request $client" }
-          transport.write(proxyOutput, TransportWriteCommand.ERROR)
+    }
+
+    private suspend fun handleClientRequest(
+        scope: CoroutineScope,
+        networkBinder: SocketBinder.NetworkBinder,
+        hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        serverDispatcher: ServerDispatcher,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        socketTracker: SocketTracker,
+        hostNameOrIp: String,
+    ) {
+
+        // We use a string parsing to figure out what this HTTP request wants to do
+        // Inline to avoid new object allocation
+        val request: Q = transport.parseRequest(proxyInput, proxyOutput)
+        if (!request.valid) {
+            Timber.w { "Could not parse proxy request $request" }
+            transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.INVALID)
+            return
         }
-      }
-    }
-  }
 
-  @CheckResult
-  private fun resolveClientOrBlock(
-      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      hostNameOrIp: String
-  ): TetherClient? {
-    // If the host is an IP address, and we are an IP address,
-    // check that we fall into the host
-    if (hostConnection.isIpAddress) {
-      if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
-        if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
-          Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
-          return null
+        val client = resolveClientOrBlock(hostConnection, hostNameOrIp)
+        if (client == null) {
+            transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.BLOCK)
+            return
         }
-      }
+
+        processRequest(
+            scope = scope,
+            connectionInfo = hostConnection,
+            networkBinder = networkBinder,
+            serverDispatcher = serverDispatcher,
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            socketTracker = socketTracker,
+            client = client,
+            request = request,
+        )
     }
 
-    // Retrieve the client (or track if it is it new)
-    val client = clientResolver.ensure(hostNameOrIp)
+    override suspend fun exchange(
+        scope: CoroutineScope,
+        networkBinder: SocketBinder.NetworkBinder,
+        hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        serverDispatcher: ServerDispatcher,
+        socketTracker: SocketTracker,
+        data: TcpProxyData,
+    ) =
+        withContext(context = serverDispatcher.primary) {
+            val proxyInput = data.proxyInput
+            val proxyOutput = data.proxyOutput
+            val hostNameOrIp = data.hostNameOrIp
+            try {
+                handleClientRequest(
+                    scope = this,
+                    networkBinder = networkBinder,
+                    hostConnection = hostConnection,
+                    serverDispatcher = serverDispatcher,
+                    proxyInput = proxyInput,
+                    proxyOutput = proxyOutput,
+                    hostNameOrIp = hostNameOrIp,
+                    socketTracker = socketTracker,
+                )
+            } catch (e: Throwable) {
+                e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
+            }
+        }
 
-    // If the client is blocked we do not process any input
-    if (blockedClients.isBlocked(client)) {
-      Timber.w { "Client is marked blocked: $client" }
-      return null
-    }
-
-    return client
-  }
-
-  private suspend fun processRequest(
-      scope: CoroutineScope,
-      networkBinder: SocketBinder.NetworkBinder,
-      serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      socketTracker: SocketTracker,
-      client: TetherClient,
-      request: Q,
-  ) {
-    // This is launched as its own scope so that the side effect does not slow
-    // down the internet traffic processing.
-    // Since this context is our own dispatcher which is cachedThreadPool backed,
-    // we just "spin up" another thread and forget about it performance wise.
-    scope.launch(context = serverDispatcher.primary) {
-      handleClientRequestSideEffects(
-          serverDispatcher = serverDispatcher,
-          client = client,
-      )
-    }
-
-    // And then we go to the web!
-    proxyToInternet(
-        scope = scope,
-        networkBinder = networkBinder,
-        serverDispatcher = serverDispatcher,
-        proxyInput = proxyInput,
-        proxyOutput = proxyOutput,
-        socketTracker = socketTracker,
-        request = request,
-        client = client,
-        onReport = { report ->
-          // This is launched as its own scope so that the side effect does not slow
-          // down the internet traffic processing.
-          // Since this context is our own dispatcher which is cachedThreadPool backed,
-          // we just "spin up" another thread and forget about it performance wise.
-          scope.launch(context = serverDispatcher.primary) {
-            handleClientReportSideEffects(
-                serverDispatcher = serverDispatcher,
-                report = report,
-                client = client,
-            )
-          }
-        })
-  }
-
-  private suspend fun handleClientRequest(
-      scope: CoroutineScope,
-      networkBinder: SocketBinder.NetworkBinder,
-      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      socketTracker: SocketTracker,
-      hostNameOrIp: String,
-  ) {
-    val client = resolveClientOrBlock(hostConnection, hostNameOrIp)
-    if (client == null) {
-      transport.write(proxyOutput, TransportWriteCommand.BLOCK)
-      return
-    }
-
-    // We use a string parsing to figure out what this HTTP request wants to do
-    // Inline to avoid new object allocation
-    val request: Q? = transport.parseRequest(proxyInput)
-    if (request == null) {
-      Timber.w { "Could not parse proxy request $client" }
-      transport.write(proxyOutput, TransportWriteCommand.ERROR)
-      return
-    }
-
-    processRequest(
-        scope = scope,
-        networkBinder = networkBinder,
-        serverDispatcher = serverDispatcher,
-        proxyInput = proxyInput,
-        proxyOutput = proxyOutput,
-        socketTracker = socketTracker,
-        client = client,
-        request = request,
+    protected abstract suspend fun proxyToInternet(
+        scope: CoroutineScope,
+        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        networkBinder: SocketBinder.NetworkBinder,
+        serverDispatcher: ServerDispatcher,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        socketTracker: SocketTracker,
+        client: TetherClient,
+        request: Q,
+        onReport: suspend (ByteTransferReport) -> Unit,
     )
-  }
-
-  override suspend fun exchange(
-      scope: CoroutineScope,
-      networkBinder: SocketBinder.NetworkBinder,
-      hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      serverDispatcher: ServerDispatcher,
-      socketTracker: SocketTracker,
-      data: TcpProxyData,
-  ) =
-      withContext(context = serverDispatcher.primary) {
-        val proxyInput = data.proxyInput
-        val proxyOutput = data.proxyOutput
-        val hostNameOrIp = data.hostNameOrIp
-        try {
-          handleClientRequest(
-              scope = this,
-              networkBinder = networkBinder,
-              hostConnection = hostConnection,
-              serverDispatcher = serverDispatcher,
-              proxyInput = proxyInput,
-              proxyOutput = proxyOutput,
-              hostNameOrIp = hostNameOrIp,
-              socketTracker = socketTracker,
-          )
-        } catch (e: Throwable) {
-          e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
-        }
-      }
 }

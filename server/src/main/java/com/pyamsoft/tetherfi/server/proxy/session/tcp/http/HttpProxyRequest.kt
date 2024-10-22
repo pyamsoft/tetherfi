@@ -23,8 +23,9 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 internal data class HttpProxyRequest
 internal constructor(
     override val method: String,
-    override val host: String,
-    override val port: Int,
+    override val valid: Boolean,
+    val host: String,
+    val port: Int,
     val version: String,
     val raw: String,
     val file: String,

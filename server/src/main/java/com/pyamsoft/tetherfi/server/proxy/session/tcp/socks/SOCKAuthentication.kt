@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
-import androidx.annotation.CheckResult
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
-
-internal interface TcpSessionTransport<Q : ProxyRequest> {
-
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
-
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
+class SOCKAuthentication {
 }

@@ -22,9 +22,9 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.delay
 
 /**
  * Line ending for socket messages
@@ -114,8 +114,6 @@ internal suspend inline fun talk(
           }
         } catch (e: Throwable) {
           e.ifNotCancellation {
-            Timber.e(e) { "Error during socket talk $client" }
-
             // Return 0 bytes to stop the talking, BUT
             // we want to still remember all the work we've done up until this point.
             0
