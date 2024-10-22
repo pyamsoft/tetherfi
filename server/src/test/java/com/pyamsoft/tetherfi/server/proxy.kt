@@ -30,7 +30,7 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTcpTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -55,126 +55,126 @@ internal suspend inline fun setupProxy(
     appEnv: AppDevEnvironment.() -> Unit = {},
     withServer: CoroutineScope.(CoroutineDispatcher) -> Unit,
 ) {
-  val dispatcher =
-      object : ServerDispatcher {
-        override val primary = newSingleThreadContext("TEST")
-        override val sideEffect = primary
+    val dispatcher =
+        object : ServerDispatcher {
+            override val primary = newSingleThreadContext("TEST")
+            override val sideEffect = primary
 
-        override fun shutdown() {}
-      }
-
-  val enforcer =
-      object : ThreadEnforcer {
-        override fun assertOffMainThread() {}
-
-        override fun assertOnMainThread() {}
-      }
-
-  val blocked =
-      object : BlockedClients {
-        override fun listenForBlocked(): Flow<Collection<TetherClient>> {
-          return flowOf(emptyList())
+            override fun shutdown() {}
         }
 
-        override fun isBlocked(client: TetherClient): Boolean {
-          return false
-        }
-      }
+    val enforcer =
+        object : ThreadEnforcer {
+            override fun assertOffMainThread() {}
 
-  val allowed =
-      object : AllowedClients {
-        override fun listenForClients(): Flow<List<TetherClient>> {
-          return flowOf(emptyList())
+            override fun assertOnMainThread() {}
         }
 
-        override suspend fun seen(client: TetherClient) {}
+    val blocked =
+        object : BlockedClients {
+            override fun listenForBlocked(): Flow<Collection<TetherClient>> {
+                return flowOf(emptyList())
+            }
 
-        override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) {}
-      }
-
-  val resolver =
-      object : ClientResolver {
-
-        private val clients = mutableMapOf<String, TetherClient>()
-
-        override fun ensure(hostNameOrIp: String): TetherClient {
-          return clients.getOrPut(hostNameOrIp) {
-            TetherClient.create(
-                hostNameOrIp,
-                clock = Clock.systemDefaultZone(),
-            )
-          }
-        }
-      }
-
-  val socketTagger = SocketTagger {}
-
-  if (isLoggingEnabled) {
-    Timber.plant(
-        object : Timber.Tree() {
-          override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-            t?.printStackTrace()
-            println(message)
-          }
-        })
-  }
-
-  val transport =
-      HttpTcpTransport(
-          requestParser =
-              UrlRequestParser(
-                  urlFixers = mutableSetOf(),
-              ),
-          enforcer = enforcer,
-      )
-
-  val manager =
-      TcpProxyManager(
-          appEnvironment = AppDevEnvironment().apply(appEnv),
-          session =
-              HttpProxySession(
-                  transport = transport,
-                  blockedClients = blocked,
-                  allowedClients = allowed,
-                  enforcer = enforcer,
-                  socketTagger = socketTagger,
-                  clientResolver = resolver,
-              ),
-          hostConnection =
-              BroadcastNetworkStatus.ConnectionInfo.Connected(
-                  hostName = HOSTNAME,
-              ),
-          port = PROXY_PORT,
-          serverDispatcher = dispatcher,
-          socketTagger = socketTagger,
-          yoloRepeatDelay = 0.seconds,
-          enforcer = enforcer,
-          serverStopConsumer = DefaultEventBus(),
-          socketBinder = PassthroughSocketBinder(),
-          transport = transport)
-
-  val server =
-      scope.async {
-        val block = suspend {
-          manager.loop(
-              onOpened = {},
-              onClosing = {},
-          )
+            override fun isBlocked(client: TetherClient): Boolean {
+                return false
+            }
         }
 
-        if (expectServerFail) {
-          assertFailsWith<IOException> { block() }
-        } else {
-          block()
+    val allowed =
+        object : AllowedClients {
+            override fun listenForClients(): Flow<List<TetherClient>> {
+                return flowOf(emptyList())
+            }
+
+            override suspend fun seen(client: TetherClient) {}
+
+            override suspend fun reportTransfer(client: TetherClient, report: ByteTransferReport) {}
         }
-      }
 
-  println("Start TetherFi proxy $HOSTNAME $PROXY_PORT")
-  delay(3.seconds)
+    val resolver =
+        object : ClientResolver {
 
-  println("Run with TetherFi proxy")
-  scope.withServer(dispatcher.primary)
+            private val clients = mutableMapOf<String, TetherClient>()
 
-  println("Done TetherFi proxy")
-  server.cancel()
+            override fun ensure(hostNameOrIp: String): TetherClient {
+                return clients.getOrPut(hostNameOrIp) {
+                    TetherClient.create(
+                        hostNameOrIp,
+                        clock = Clock.systemDefaultZone(),
+                    )
+                }
+            }
+        }
+
+    val socketTagger = SocketTagger {}
+
+    if (isLoggingEnabled) {
+        Timber.plant(
+            object : Timber.Tree() {
+                override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+                    t?.printStackTrace()
+                    println(message)
+                }
+            })
+    }
+
+    val transport =
+        HttpTransport(
+            requestParser =
+            UrlRequestParser(
+                urlFixers = mutableSetOf(),
+            ),
+            enforcer = enforcer,
+        )
+
+    val manager =
+        TcpProxyManager(
+            appEnvironment = AppDevEnvironment().apply(appEnv),
+            session =
+            HttpProxySession(
+                transport = transport,
+                blockedClients = blocked,
+                allowedClients = allowed,
+                enforcer = enforcer,
+                socketTagger = socketTagger,
+                clientResolver = resolver,
+            ),
+            hostConnection =
+            BroadcastNetworkStatus.ConnectionInfo.Connected(
+                hostName = HOSTNAME,
+            ),
+            port = PROXY_PORT,
+            serverDispatcher = dispatcher,
+            socketTagger = socketTagger,
+            yoloRepeatDelay = 0.seconds,
+            enforcer = enforcer,
+            serverStopConsumer = DefaultEventBus(),
+            socketBinder = PassthroughSocketBinder(),
+        )
+
+    val server =
+        scope.async {
+            val block = suspend {
+                manager.loop(
+                    onOpened = {},
+                    onClosing = {},
+                )
+            }
+
+            if (expectServerFail) {
+                assertFailsWith<IOException> { block() }
+            } else {
+                block()
+            }
+        }
+
+    println("Start TetherFi proxy $HOSTNAME $PROXY_PORT")
+    delay(3.seconds)
+
+    println("Run with TetherFi proxy")
+    scope.withServer(dispatcher.primary)
+
+    println("Done TetherFi proxy")
+    server.cancel()
 }

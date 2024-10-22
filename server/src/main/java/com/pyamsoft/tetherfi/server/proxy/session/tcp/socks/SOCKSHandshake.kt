@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
-import androidx.annotation.CheckResult
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
+import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.tetherfi.server.clients.AllowedClients
+import com.pyamsoft.tetherfi.server.clients.BlockedClients
+import com.pyamsoft.tetherfi.server.clients.ClientResolver
+import com.pyamsoft.tetherfi.server.proxy.SocketTagger
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import javax.inject.Inject
+import javax.inject.Singleton
 
-internal interface TcpSessionTransport<Q : ProxyRequest> {
-
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
-
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
-}

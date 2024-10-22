@@ -31,22 +31,20 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxyRequest
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Named
+import kotlin.time.Duration.Companion.seconds
 
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
     @ServerInternalApi private val socketBinder: SocketBinder,
-    @ServerInternalApi private val httpTransport: TcpSessionTransport<HttpProxyRequest>,
-    @ServerInternalApi private val httpSession: ProxySession<TcpProxyData>,
+    @Named("http") private val httpSession: ProxySession<TcpProxyData>,
+    @Named("socks") private val socksSession: ProxySession<TcpProxyData>,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
     private val preferences: ProxyPreferences,
@@ -54,63 +52,81 @@ internal constructor(
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
 ) : ProxyManager.Factory {
 
-  @CheckResult
-  private fun <Q : ProxyRequest> createTcp(
-      session: ProxySession<TcpProxyData>,
-      transport: TcpSessionTransport<Q>,
-      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      dispatcher: ServerDispatcher,
-      port: Int,
-  ): ProxyManager {
-    enforcer.assertOffMainThread()
+    @CheckResult
+    private fun createTcp(
+        session: ProxySession<TcpProxyData>,
+        info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        dispatcher: ServerDispatcher,
+        port: Int,
+    ): ProxyManager {
+        enforcer.assertOffMainThread()
 
-    return TcpProxyManager(
-        socketTagger = socketTagger,
-        appEnvironment = appEnvironment,
-        yoloRepeatDelay = 3.seconds,
-        enforcer = enforcer,
-        serverStopConsumer = serverStopConsumer,
-        socketBinder = socketBinder,
-        session = session,
-        hostConnection = info,
-        port = port,
-        serverDispatcher = dispatcher,
-        transport = transport,
-    )
-  }
+        return TcpProxyManager(
+            socketTagger = socketTagger,
+            appEnvironment = appEnvironment,
+            yoloRepeatDelay = 3.seconds,
+            enforcer = enforcer,
+            serverStopConsumer = serverStopConsumer,
+            socketBinder = socketBinder,
+            session = session,
+            hostConnection = info,
+            port = port,
+            serverDispatcher = dispatcher,
+        )
+    }
 
-  @CheckResult
-  private suspend fun createHttp(
-      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      dispatcher: ServerDispatcher,
-  ): ProxyManager {
-    enforcer.assertOffMainThread()
+    @CheckResult
+    private suspend fun createHttp(
+        info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        dispatcher: ServerDispatcher,
+    ): ProxyManager {
+        enforcer.assertOffMainThread()
 
-    val port = preferences.listenForPortChanges().first()
+        val port = preferences.listenForPortChanges().first()
 
-    return createTcp(
-        transport = httpTransport,
-        session = httpSession,
-        info = info,
-        dispatcher = dispatcher,
-        port = port,
-    )
-  }
+        return createTcp(
+            session = httpSession,
+            info = info,
+            dispatcher = dispatcher,
+            port = port,
+        )
+    }
 
-  override suspend fun create(
-      type: SharedProxy.Type,
-      info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      serverDispatcher: ServerDispatcher,
-  ): ProxyManager =
-      withContext(context = Dispatchers.Default) {
-        return@withContext when (type) {
-          SharedProxy.Type.HTTP ->
-              createHttp(
-                  info = info,
-                  dispatcher = serverDispatcher,
-              )
-          SharedProxy.Type.SOCKS ->
-              throw IllegalArgumentException("Proxy type $type not supported yet!")
+    @CheckResult
+    private suspend fun createSocks(
+        info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        dispatcher: ServerDispatcher,
+    ): ProxyManager {
+        enforcer.assertOffMainThread()
+
+        val port = preferences.listenForPortChanges().first()
+
+        return createTcp(
+            session = socksSession,
+            info = info,
+            dispatcher = dispatcher,
+            port = port + 1,
+        )
+    }
+
+    override suspend fun create(
+        type: SharedProxy.Type,
+        info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        serverDispatcher: ServerDispatcher,
+    ): ProxyManager =
+        withContext(context = Dispatchers.Default) {
+            return@withContext when (type) {
+                SharedProxy.Type.HTTP ->
+                    createHttp(
+                        info = info,
+                        dispatcher = serverDispatcher,
+                    )
+
+                SharedProxy.Type.SOCKS ->
+                    createSocks(
+                        info = info,
+                        dispatcher = serverDispatcher,
+                    )
+            }
         }
-      }
 }

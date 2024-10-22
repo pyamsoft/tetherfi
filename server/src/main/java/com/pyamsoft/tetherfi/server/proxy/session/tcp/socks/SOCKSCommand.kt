@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
 
-internal interface TcpSessionTransport<Q : ProxyRequest> {
+enum class SOCKSCommand(val command: Byte) {
+    NONE(0),
+    CONNECT(1),
+    BIND(2),
+    UDP_ASSOCIATE(3);
 
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
-
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
+    companion object {
+        @JvmStatic
+        @CheckResult
+        fun fromCommand(raw: Byte): SOCKSCommand = when (raw) {
+            CONNECT.command -> CONNECT
+            BIND.command -> BIND
+            UDP_ASSOCIATE.command -> UDP_ASSOCIATE
+            else -> throw SOCKSException("Invalid SOCKS command: $raw")
+        }
+    }
 }
