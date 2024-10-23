@@ -25,11 +25,12 @@ import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_IP
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_PORT
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_IP
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_PORT
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.ERROR_NO_ACCEPTABLE_AUTH_METHODS
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four.SOCKS4Implementation.Responder
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.core.writeFully
@@ -55,8 +56,10 @@ import javax.inject.Singleton
  */
 @Singleton
 internal class SOCKS5Implementation @Inject internal constructor(
-    private val socketTagger: SocketTagger,
-) : SOCKSImplementation<SOCKS5Implementation.Responder> {
+    socketTagger: SocketTagger,
+) : AbstractSOCKSImplementation<SOCKS5AddressType, SOCKS5Implementation.Responder>(
+    socketTagger = socketTagger,
+) {
 
     @CheckResult
     private suspend fun readDestinationAddress(
@@ -87,6 +90,23 @@ internal class SOCKS5Implementation @Inject internal constructor(
         block: suspend Responder.() -> Unit
     ) {
         Responder(proxyOutput).also { block(it) }
+    }
+
+    override suspend fun udpAssociate(
+        scope: CoroutineScope,
+        serverDispatcher: ServerDispatcher,
+        socketTracker: SocketTracker,
+        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        client: TetherClient,
+        destinationAddress: InetAddress,
+        destinationPort: Short,
+        addressType: SOCKS5AddressType,
+        responder: Responder,
+        onReport: suspend (ByteTransferReport) -> Unit
+    ) {
+        Timber.w { "TODO UDP_ASSOC $destinationAddress $destinationPort" }
     }
 
     override suspend fun handleSocksCommand(
@@ -128,6 +148,9 @@ internal class SOCKS5Implementation @Inject internal constructor(
         // Send the method selection message
         usingResponder(proxyOutput) { sendAuthMethodSelection(selectedMethod) }
 
+        // Used only for error messages, this type does not matter
+        val errorFallbackAddressType = SOCKS5AddressType.IPV4
+
         /**
          *   +----+-----+-------+------+----------+----------+
          *   |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
@@ -138,22 +161,22 @@ internal class SOCKS5Implementation @Inject internal constructor(
         val versionByte = proxyInput.readByte()
         if (versionByte != SOCKS_VERSION_BYTE) {
             Timber.w { "Invalid SOCKS version byte: $versionByte" }
-            usingResponder(proxyOutput) { sendConnectionRefused() }
+            usingResponder(proxyOutput) { sendRefusal(errorFallbackAddressType) }
             return@withContext
         }
 
         val commandByte = proxyInput.readByte()
         val command = SOCKSCommand.fromByte(commandByte)
         if (command == null) {
-            Timber.w { "Invalid SOCKS5 command byte: $commandByte" }
-            usingResponder(proxyOutput) { sendCommandUnsupported() }
+            Timber.w { "Invalid command byte: $commandByte, expected CONNECT, BIND, or UDP_ASSOCIATE" }
+            usingResponder(proxyOutput) { sendCommandUnsupported(errorFallbackAddressType) }
             return@withContext
         }
 
         val reserved = proxyInput.readByte()
         if (reserved != RESERVED_BYTE) {
             Timber.w { "Expected reserve byte, but got data: $reserved" }
-            usingResponder(proxyOutput) { sendConnectionRefused() }
+            usingResponder(proxyOutput) { sendRefusal(errorFallbackAddressType) }
             return@withContext
         }
 
@@ -161,7 +184,7 @@ internal class SOCKS5Implementation @Inject internal constructor(
         val addressType = SOCKS5AddressType.fromAddressType(addressTypeByte)
         if (addressType == null) {
             Timber.w { "Invalid address type: $addressTypeByte" }
-            usingResponder(proxyOutput) { sendConnectionRefused() }
+            usingResponder(proxyOutput) { sendRefusal(errorFallbackAddressType) }
             return@withContext
         }
 
@@ -173,24 +196,40 @@ internal class SOCKS5Implementation @Inject internal constructor(
             )
         } catch (e: Throwable) {
             Timber.e(e) { "Unable to parse the destination address" }
-            usingResponder(proxyOutput) { sendConnectionRefused() }
+            usingResponder(proxyOutput) { sendError(addressType) }
             return@withContext
         }
 
         val destinationPort = proxyInput.readShort()
         if (destinationPort <= 0) {
             Timber.w { "Invalid destination port $destinationPort" }
-            usingResponder(proxyOutput) { sendConnectionRefused() }
+            usingResponder(proxyOutput) { sendError(addressType) }
             return@withContext
         }
 
-        // TODO we have all the data, now do the thing with it
+        val responder = Responder(proxyOutput)
+        return@withContext performSOCKSCommand(
+            addressType = addressType,
+            scope = scope,
+            socketTracker = socketTracker,
+            networkBinder = networkBinder,
+            serverDispatcher = serverDispatcher,
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            responder = responder,
+            client = client,
+            destinationAddress = destinationAddress,
+            destinationPort = destinationPort,
+            command = command,
+            connectionInfo = connectionInfo,
+            onReport = onReport,
+        )
     }
 
     @JvmInline
     internal value class Responder internal constructor(
         private val proxyOutput: ByteWriteChannel,
-    ) : SOCKSImplementation.Responder {
+    ) : AbstractSOCKSImplementation.Responder<SOCKS5AddressType> {
 
         /**
          *         +----+-----+-------+------+----------+----------+
@@ -238,7 +277,7 @@ internal class SOCKS5Implementation @Inject internal constructor(
             }
         }
 
-        suspend fun sendConnectSuccess(
+        override suspend fun sendConnectSuccess(
             addressType: SOCKS5AddressType,
         ) {
             return sendPacket(
@@ -249,7 +288,7 @@ internal class SOCKS5Implementation @Inject internal constructor(
             )
         }
 
-        suspend fun sendBindInitialized(
+        override suspend fun sendBindInitialized(
             addressType: SOCKS5AddressType,
             port: Short,
             address: InetAddress,
@@ -262,18 +301,18 @@ internal class SOCKS5Implementation @Inject internal constructor(
             )
         }
 
-        suspend fun sendServerFail() {
+        override suspend fun sendError(addressType: SOCKS5AddressType) {
             return sendPacket(
                 replyCode = ERROR_GENERAL_SERVER_FAIL,
 
                 // These don't matter
                 port = INVALID_PORT,
                 address = INVALID_IP,
-                addressType = SOCKS5AddressType.IPV4,
+                addressType = addressType,
             )
         }
 
-        suspend fun sendConnectionRefused() {
+        override suspend fun sendRefusal(addressType: SOCKS5AddressType) {
             return sendPacket(
                 replyCode = ERROR_CONNECTION_REFUSED,
                 // These don't matter
@@ -283,13 +322,13 @@ internal class SOCKS5Implementation @Inject internal constructor(
             )
         }
 
-        suspend fun sendCommandUnsupported() {
+        suspend fun sendCommandUnsupported(addressType: SOCKS5AddressType) {
             return sendPacket(
                 replyCode = ERROR_COMMAND_NOT_SUPPORTED,
                 // These don't matter
                 port = INVALID_PORT,
                 address = INVALID_IP,
-                addressType = SOCKS5AddressType.IPV4,
+                addressType = addressType,
             )
         }
 

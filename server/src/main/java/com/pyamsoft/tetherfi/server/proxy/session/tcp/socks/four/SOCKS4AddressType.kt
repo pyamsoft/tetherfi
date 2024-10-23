@@ -14,28 +14,11 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four
 
-import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
 
-internal enum class SOCKS5AddressType(
-    internal val byte: Byte
-) : AbstractSOCKSImplementation.SOCKSAddressType {
-    IPV4(1),
-    DOMAIN_NAME(3),
-    IPV6(4);
-
-    companion object {
-
-        @JvmStatic
-        @CheckResult
-        fun fromAddressType(addressType: Byte): SOCKS5AddressType? = when (addressType) {
-            IPV4.byte -> IPV4
-            DOMAIN_NAME.byte -> DOMAIN_NAME
-            IPV6.byte -> DOMAIN_NAME
-            else -> null
-        }
-
-    }
-}
+/**
+ * SOCKS4 has no address type
+ */
+data object SOCKS4AddressType : AbstractSOCKSImplementation.SOCKSAddressType
