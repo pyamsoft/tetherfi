@@ -22,9 +22,9 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 
 /**
  * Line ending for socket messages

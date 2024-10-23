@@ -21,18 +21,19 @@ import androidx.annotation.CheckResult
 enum class SOCKSCommand(
     private val byte: Byte,
 ) {
-    CONNECT(1),
-    BIND(2),
-    UDP_ASSOCIATE(3);
+  CONNECT(1),
+  BIND(2),
+  UDP_ASSOCIATE(3);
 
-    companion object {
-        @JvmStatic
-        @CheckResult
-        fun fromByte(byte: Byte): SOCKSCommand? = when (byte) {
-            CONNECT.byte -> CONNECT
-            BIND.byte -> BIND
-            UDP_ASSOCIATE.byte -> UDP_ASSOCIATE
-            else -> null
+  companion object {
+    @JvmStatic
+    @CheckResult
+    fun fromByte(byte: Byte): SOCKSCommand? =
+        when (byte) {
+          CONNECT.byte -> CONNECT
+          BIND.byte -> BIND
+          UDP_ASSOCIATE.byte -> UDP_ASSOCIATE
+          else -> null
         }
-    }
+  }
 }

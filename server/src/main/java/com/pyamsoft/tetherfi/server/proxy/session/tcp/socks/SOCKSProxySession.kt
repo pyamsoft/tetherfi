@@ -34,65 +34,68 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
-internal class SOCKSProxySession @Inject internal constructor(
+internal class SOCKSProxySession
+@Inject
+internal constructor(
     private val transport: SOCKSTransport,
     socketTagger: SocketTagger,
     blockedClients: BlockedClients,
     clientResolver: ClientResolver,
     allowedClients: AllowedClients,
     enforcer: ThreadEnforcer,
-) : TcpProxySession<SOCKSVersion>(
-    blockedClients = blockedClients,
-    clientResolver = clientResolver,
-    allowedClients = allowedClients,
-    socketTagger = socketTagger,
-    enforcer = enforcer,
-    transport = transport,
-) {
-    override suspend fun proxyToInternet(
-        scope: CoroutineScope,
-        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
-        networkBinder: SocketBinder.NetworkBinder,
-        serverDispatcher: ServerDispatcher,
-        proxyInput: ByteReadChannel,
-        proxyOutput: ByteWriteChannel,
-        socketTracker: SocketTracker,
-        client: TetherClient,
-        request: SOCKSVersion,
-        onReport: suspend (ByteTransferReport) -> Unit
+) :
+    TcpProxySession<SOCKSVersion>(
+        blockedClients = blockedClients,
+        clientResolver = clientResolver,
+        allowedClients = allowedClients,
+        socketTagger = socketTagger,
+        enforcer = enforcer,
+        transport = transport,
     ) {
-        enforcer.assertOffMainThread()
+  override suspend fun proxyToInternet(
+      scope: CoroutineScope,
+      connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      networkBinder: SocketBinder.NetworkBinder,
+      serverDispatcher: ServerDispatcher,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
+      client: TetherClient,
+      request: SOCKSVersion,
+      onReport: suspend (ByteTransferReport) -> Unit
+  ) {
+    enforcer.assertOffMainThread()
 
-        // Given the request, connect to the Web
-        try {
-            transport.handleRequest(
-                scope = scope,
-                connectionInfo = connectionInfo,
-                serverDispatcher = serverDispatcher,
-                proxyInput = proxyInput,
-                proxyOutput = proxyOutput,
-                socketTracker = socketTracker,
-                networkBinder = networkBinder,
-                client = client,
-                version = request,
-                onReport = onReport,
-            )
-        } catch (e: Throwable) {
-            e.ifNotCancellation {
-                // Generally, the Transport should handle SocketTimeoutException itself.
-                // We capture here JUST in case
-                if (e is SocketTimeoutException) {
-                    Timber.w { "Proxy:Internet socket timeout! $request $client" }
-                } else {
-                    Timber.e(e) { "Error during Internet exchange $request $client" }
-                    transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
-                }
-            }
+    // Given the request, connect to the Web
+    try {
+      transport.handleRequest(
+          scope = scope,
+          connectionInfo = connectionInfo,
+          serverDispatcher = serverDispatcher,
+          proxyInput = proxyInput,
+          proxyOutput = proxyOutput,
+          socketTracker = socketTracker,
+          networkBinder = networkBinder,
+          client = client,
+          version = request,
+          onReport = onReport,
+      )
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        // Generally, the Transport should handle SocketTimeoutException itself.
+        // We capture here JUST in case
+        if (e is SocketTimeoutException) {
+          Timber.w { "Proxy:Internet socket timeout! $request $client" }
+        } else {
+          Timber.e(e) { "Error during Internet exchange $request $client" }
+          transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
         }
+      }
     }
+  }
 }

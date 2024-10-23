@@ -20,18 +20,14 @@ import androidx.annotation.CheckResult
 import java.net.Inet4Address
 import java.net.InetAddress
 
-
 private const val ZERO_BYTE: Byte = 0
 
 @CheckResult
 internal fun InetAddress.isSOCKS4A(): Boolean {
-    if (this is Inet4Address) {
-        val a = this.address
-        return a[0] == ZERO_BYTE
-                && a[1] == ZERO_BYTE
-                && a[2] == ZERO_BYTE
-                && a[3] != ZERO_BYTE
-    }
+  if (this is Inet4Address) {
+    val a = this.address
+    return a[0] == ZERO_BYTE && a[1] == ZERO_BYTE && a[2] == ZERO_BYTE && a[3] != ZERO_BYTE
+  }
 
-    return false
+  return false
 }

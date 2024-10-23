@@ -18,7 +18,5 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four
 
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
 
-/**
- * SOCKS4 has no address type
- */
+/** SOCKS4 has no address type */
 data object SOCKS4AddressType : AbstractSOCKSImplementation.SOCKSAddressType

@@ -21,29 +21,30 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 
 internal sealed interface SOCKSVersion : ProxyRequest {
 
-    data object SOCKS4 : SOCKSVersion {
-        override val valid: Boolean = true
-    }
+  data object SOCKS4 : SOCKSVersion {
+    override val valid: Boolean = true
+  }
 
-    data object SOCKS5 : SOCKSVersion {
-        override val valid: Boolean = true
-    }
+  data object SOCKS5 : SOCKSVersion {
+    override val valid: Boolean = true
+  }
 
-    data object Invalid : SOCKSVersion {
-        override val valid: Boolean = false
-    }
+  data object Invalid : SOCKSVersion {
+    override val valid: Boolean = false
+  }
 
-    companion object {
+  companion object {
 
-        private const val VERSION_4: Byte = 4
-        private const val VERSION_5: Byte = 5
+    private const val VERSION_4: Byte = 4
+    private const val VERSION_5: Byte = 5
 
-        @JvmStatic
-        @CheckResult
-        fun fromVersion(version: Byte): SOCKSVersion = when (version) {
-            VERSION_4 -> SOCKS4
-            VERSION_5 -> SOCKS5
-            else -> Invalid
+    @JvmStatic
+    @CheckResult
+    fun fromVersion(version: Byte): SOCKSVersion =
+        when (version) {
+          VERSION_4 -> SOCKS4
+          VERSION_5 -> SOCKS5
+          else -> Invalid
         }
-    }
+  }
 }

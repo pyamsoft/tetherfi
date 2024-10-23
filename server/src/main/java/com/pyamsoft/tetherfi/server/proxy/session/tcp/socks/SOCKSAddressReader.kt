@@ -26,17 +26,17 @@ private const val NULL_BYTE: Byte = 0
 
 @CheckResult
 internal suspend fun ByteReadChannel.readUntilNullTerminator(): String {
-    val builder = ByteStringBuilder()
+  val builder = ByteStringBuilder()
 
-    // TODO(Peter): This is very slow
-    // We want to read up until a delimeter null byte and then return the string
-    while (!isClosedForRead) {
-        val maybe = readByte()
-        if (maybe == NULL_BYTE) {
-            break
-        }
-        builder.append(maybe)
+  // TODO(Peter): This is very slow
+  // We want to read up until a delimeter null byte and then return the string
+  while (!isClosedForRead) {
+    val maybe = readByte()
+    if (maybe == NULL_BYTE) {
+      break
     }
+    builder.append(maybe)
+  }
 
-    return builder.toByteString().decodeToString()
+  return builder.toByteString().decodeToString()
 }
