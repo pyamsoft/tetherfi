@@ -423,9 +423,7 @@ internal class SOCKS4Implementation @Inject internal constructor(
                 writeShort(port)
 
                 // DSTIP
-                writeFully(
-                    address.address, offset = 0, length = 4,
-                )
+                writeFully(address.address)
             }
 
             proxyOutput.apply {
