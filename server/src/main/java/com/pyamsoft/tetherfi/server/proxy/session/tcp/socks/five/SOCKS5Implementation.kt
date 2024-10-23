@@ -29,7 +29,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_IP
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_PORT
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.NO_ACCEPTABLE_AUTH_METHODS
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.ERROR_NO_ACCEPTABLE_AUTH_METHODS
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.core.writeFully
@@ -110,10 +110,23 @@ internal class SOCKS5Implementation @Inject internal constructor(
          */
         val methodCount = proxyInput.readByte()
         val methods = ByteArray(methodCount.toInt()) { proxyInput.readByte() }
-        if (!methods.contains(AcceptedAuthenticationMethods.NO_AUTHENTICATION)) {
+
+        // Check that we both support the "no-auth" method
+        val selectedMethod = AcceptedAuthenticationMethods.METHOD_NO_AUTHENTICATION
+        if (!methods.contains(selectedMethod)) {
             usingResponder(proxyOutput) { sendNoValidAuthentication() }
             return@withContext
         }
+
+        /**
+         *     +----+--------+
+         *     |VER | METHOD |
+         *     +----+--------+
+         *     | 1  |   1    |
+         *     +----+--------+
+         */
+        // Send the method selection message
+        usingResponder(proxyOutput) { sendAuthMethodSelection(selectedMethod) }
 
         /**
          *   +----+-----+-------+------+----------+----------+
@@ -282,7 +295,13 @@ internal class SOCKS5Implementation @Inject internal constructor(
 
         suspend fun sendNoValidAuthentication() {
             return sendPacket {
-                writeByte(NO_ACCEPTABLE_AUTH_METHODS)
+                writeByte(ERROR_NO_ACCEPTABLE_AUTH_METHODS)
+            }
+        }
+
+        suspend fun sendAuthMethodSelection(method: Byte) {
+            return sendPacket {
+                writeByte(method)
             }
         }
 
@@ -306,8 +325,9 @@ internal class SOCKS5Implementation @Inject internal constructor(
      * https://www.rfc-editor.org/rfc/rfc1928 page:3
      */
     private object AcceptedAuthenticationMethods {
-        const val NO_AUTHENTICATION: Byte = 0
-        const val NO_ACCEPTABLE_AUTH_METHODS = 0xFF.toByte()
+        const val METHOD_NO_AUTHENTICATION: Byte = 0
+
+        const val ERROR_NO_ACCEPTABLE_AUTH_METHODS = 0xFF.toByte()
     }
 
     companion object {
