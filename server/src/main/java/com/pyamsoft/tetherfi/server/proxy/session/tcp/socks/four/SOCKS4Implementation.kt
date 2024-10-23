@@ -31,6 +31,8 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.relayData
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_IP
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSImplementation.Responder.Companion.INVALID_PORT
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.readUntilNullTerminator
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
@@ -50,6 +52,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.io.Buffer
+import kotlinx.io.Sink
 import kotlinx.io.readByteArray
 import java.net.Inet4Address
 import java.net.InetAddress
@@ -396,11 +399,25 @@ internal class SOCKS4Implementation @Inject internal constructor(
 
     }
 
-    @ConsistentCopyVisibility
-    internal data class Responder internal constructor(
-        val proxyOutput: ByteWriteChannel,
+    @JvmInline
+    internal value class Responder internal constructor(
+        private val proxyOutput: ByteWriteChannel,
     ) : SOCKSImplementation.Responder {
 
+        private suspend inline fun sendPacket(builder: Sink.() -> Unit) {
+            val packet = Buffer().apply {
+                // VN
+                writeByte(0)
+
+                // Builder
+                builder()
+            }
+
+            proxyOutput.apply {
+                writePacket(packet)
+                flush()
+            }
+        }
         /**
          * 		         +----+----+----+----+----+----+----+----+
          * 		         | VN | CD | DSTPORT |      DSTIP        |
@@ -412,10 +429,7 @@ internal class SOCKS4Implementation @Inject internal constructor(
             port: Short,
             address: InetAddress
         ) {
-            val packet = Buffer().apply {
-                // VN
-                writeByte(0)
-
+            sendPacket {
                 // CD
                 writeByte(replyCode)
 
@@ -424,11 +438,6 @@ internal class SOCKS4Implementation @Inject internal constructor(
 
                 // DSTIP
                 writeFully(address.address)
-            }
-
-            proxyOutput.apply {
-                writePacket(packet)
-                flush()
             }
         }
 
@@ -466,16 +475,6 @@ internal class SOCKS4Implementation @Inject internal constructor(
 
             // SOCKS4 does not differentiate between "something went wrong" and "no"
             private const val ERROR_CODE: Byte = 91
-
-            /**
-             * The zero IP, we send to this IP for error commands
-             */
-            private val INVALID_IP = InetAddress.getByAddress(byteArrayOf(0, 0, 0, 0))
-
-            /**
-             * Zero port sent for error commands
-             */
-            private const val INVALID_PORT: Short = 0
 
         }
 

@@ -25,6 +25,7 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.CoroutineScope
+import java.net.InetAddress
 
 internal interface SOCKSImplementation<R: SOCKSImplementation.Responder> {
 
@@ -42,5 +43,18 @@ internal interface SOCKSImplementation<R: SOCKSImplementation.Responder> {
         onReport: suspend (ByteTransferReport) -> Unit,
     )
 
-    interface Responder
+    interface Responder {
+        companion object {
+
+            /**
+             * The zero IP, we send to this IP for error commands
+             */
+            val INVALID_IP = InetAddress.getByAddress(byteArrayOf(0, 0, 0, 0))
+
+            /**
+             * Zero port sent for error commands
+             */
+            const val INVALID_PORT: Short = 0
+        }
+    }
 }

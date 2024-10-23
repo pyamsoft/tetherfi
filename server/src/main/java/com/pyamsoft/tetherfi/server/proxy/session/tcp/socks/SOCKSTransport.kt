@@ -25,6 +25,7 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four.SOCKS4Implementation
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -37,6 +38,7 @@ import javax.inject.Singleton
 @Singleton
 internal class SOCKSTransport @Inject internal constructor(
     private val socks4: SOCKS4Implementation,
+    private val socks5: SOCKS5Implementation,
 ) : TcpSessionTransport<SOCKSVersion> {
 
     override suspend fun writeProxyOutput(
@@ -58,7 +60,11 @@ internal class SOCKSTransport @Inject internal constructor(
         }
 
         SOCKSVersion.SOCKS5 -> {
-            Timber.w { "SOCKS5 todo $command" }
+            when (command) {
+                TransportWriteCommand.INVALID -> socks5.usingResponder(output) { sendConnectionRefused() }
+                TransportWriteCommand.BLOCK -> socks5.usingResponder(output) { sendConnectionRefused() }
+                TransportWriteCommand.ERROR -> socks5.usingResponder(output) { sendServerFail() }
+            }
         }
     }
 
@@ -105,6 +111,7 @@ internal class SOCKSTransport @Inject internal constructor(
                     onReport = onReport,
                 )
             }
+
             SOCKSVersion.SOCKS5 -> {
                 Timber.w { "SOCKS5 TODO" }
             }
