@@ -28,19 +28,19 @@ import kotlinx.coroutines.CoroutineScope
 
 internal interface SOCKSImplementation<R : SOCKSImplementation.Responder> {
 
-    suspend fun usingResponder(proxyOutput: ByteWriteChannel, block: suspend R.() -> Unit)
+  suspend fun usingResponder(proxyOutput: ByteWriteChannel, block: suspend R.() -> Unit)
 
-    suspend fun handleSocksCommand(
-        scope: CoroutineScope,
-        serverDispatcher: ServerDispatcher,
-        socketTracker: SocketTracker,
-        networkBinder: SocketBinder.NetworkBinder,
-        proxyInput: ByteReadChannel,
-        proxyOutput: ByteWriteChannel,
-        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
-        client: TetherClient,
-        onReport: suspend (ByteTransferReport) -> Unit,
-    )
+  suspend fun handleSocksCommand(
+      scope: CoroutineScope,
+      serverDispatcher: ServerDispatcher,
+      socketTracker: SocketTracker,
+      networkBinder: SocketBinder.NetworkBinder,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      client: TetherClient,
+      onReport: suspend (ByteTransferReport) -> Unit,
+  )
 
-    interface Responder
+  interface Responder
 }

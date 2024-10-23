@@ -22,12 +22,15 @@ import io.ktor.utils.io.ByteWriteChannel
 
 internal interface TcpSessionTransport<Q : ProxyRequest> {
 
-    suspend fun writeProxyOutput(
-        output: ByteWriteChannel, request: Q, command: TransportWriteCommand,
-    )
+  suspend fun writeProxyOutput(
+      output: ByteWriteChannel,
+      request: Q,
+      command: TransportWriteCommand,
+  )
 
-    @CheckResult
-    suspend fun parseRequest(
-        input: ByteReadChannel, output: ByteWriteChannel,
-    ): Q
+  @CheckResult
+  suspend fun parseRequest(
+      input: ByteReadChannel,
+      output: ByteWriteChannel,
+  ): Q
 }

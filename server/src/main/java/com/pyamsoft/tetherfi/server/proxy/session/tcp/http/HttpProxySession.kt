@@ -37,10 +37,10 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 internal class HttpProxySession
@@ -52,114 +52,114 @@ internal constructor(
     clientResolver: ClientResolver,
     allowedClients: AllowedClients,
     enforcer: ThreadEnforcer,
-) : TcpProxySession<HttpProxyRequest>(
-    transport = transport,
-    socketTagger = socketTagger,
-    blockedClients = blockedClients,
-    clientResolver = clientResolver,
-    allowedClients = allowedClients,
-    enforcer = enforcer,
-) {
-
-    /**
-     * Given the initial proxy request, connect to the Internet from our device via the connected
-     * socket
-     *
-     * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
-     * leak
-     */
-    private suspend inline fun <T> connectToInternet(
-        networkBinder: SocketBinder.NetworkBinder,
-        autoFlush: Boolean,
-        serverDispatcher: ServerDispatcher,
-        request: HttpProxyRequest,
-        socketTracker: SocketTracker,
-        block: (ByteReadChannel, ByteWriteChannel) -> T
-    ): T =
-        usingSocketBuilder(serverDispatcher.primary) { builder ->
-            // We don't actually use the socket tls() method here since we are not a TLS server
-            // We do the CONNECT based workaround to handle HTTPS connections
-            val remote =
-                InetSocketAddress(
-                    hostname = request.host,
-                    port = request.port,
-                )
-
-            val socket =
-                builder
-                    .tcp()
-                    .configure {
-                        reuseAddress = true
-                        // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                        // reusePort = true
-                    }
-                    .also { socketTagger.tagSocket() }
-                    // This function uses our custom build of KTOR
-                    // which adds the [onBeforeConnect] hook to allow us
-                    // to use the socket created BEFORE connection starts.
-                    .connectWithConfiguration(
-                        remoteAddress = remote,
-                        configure = {
-                            // By default KTOR does not close sockets until "infinity" is reached.
-                            socketTimeout = 1.minutes.inWholeMilliseconds
-                        },
-                        onBeforeConnect = { networkBinder.bindToNetwork(it) },
-                    )
-
-            // Track this socket for when we fully shut down
-            socketTracker.track(socket)
-
-            return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
-        }
-
-    override suspend fun proxyToInternet(
-        scope: CoroutineScope,
-        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
-        networkBinder: SocketBinder.NetworkBinder,
-        serverDispatcher: ServerDispatcher,
-        proxyInput: ByteReadChannel,
-        proxyOutput: ByteWriteChannel,
-        socketTracker: SocketTracker,
-        client: TetherClient,
-        request: HttpProxyRequest,
-        onReport: suspend (ByteTransferReport) -> Unit
+) :
+    TcpProxySession<HttpProxyRequest>(
+        transport = transport,
+        socketTagger = socketTagger,
+        blockedClients = blockedClients,
+        clientResolver = clientResolver,
+        allowedClients = allowedClients,
+        enforcer = enforcer,
     ) {
-        enforcer.assertOffMainThread()
 
-        // Given the request, connect to the Web
-        try {
-            connectToInternet(
-                autoFlush = true,
-                networkBinder = networkBinder,
-                serverDispatcher = serverDispatcher,
-                socketTracker = socketTracker,
-                request = request,
-            ) { internetInput, internetOutput ->
-                // Communicate between the web connection we've made and back to our client device
-                transport.exchangeInternet(
-                    scope = scope,
-                    serverDispatcher = serverDispatcher,
-                    proxyInput = proxyInput,
-                    proxyOutput = proxyOutput,
-                    internetInput = internetInput,
-                    internetOutput = internetOutput,
-                    request = request,
-                    client = client,
-                    onReport = onReport,
-                )
-            }
-        } catch (e: Throwable) {
-            e.ifNotCancellation {
-                // Generally, the Transport should handle SocketTimeoutException itself.
-                // We capture here JUST in case
-                if (e is SocketTimeoutException) {
-                    Timber.w { "Proxy:Internet socket timeout! $request $client" }
-                } else {
-                    Timber.e(e) { "Error during Internet exchange $request $client" }
-                    transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
+  /**
+   * Given the initial proxy request, connect to the Internet from our device via the connected
+   * socket
+   *
+   * This function must ALWAYS call connection.usingConnection {} or else a socket may potentially
+   * leak
+   */
+  private suspend inline fun <T> connectToInternet(
+      networkBinder: SocketBinder.NetworkBinder,
+      autoFlush: Boolean,
+      serverDispatcher: ServerDispatcher,
+      request: HttpProxyRequest,
+      socketTracker: SocketTracker,
+      block: (ByteReadChannel, ByteWriteChannel) -> T
+  ): T =
+      usingSocketBuilder(serverDispatcher.primary) { builder ->
+        // We don't actually use the socket tls() method here since we are not a TLS server
+        // We do the CONNECT based workaround to handle HTTPS connections
+        val remote =
+            InetSocketAddress(
+                hostname = request.host,
+                port = request.port,
+            )
+
+        val socket =
+            builder
+                .tcp()
+                .configure {
+                  reuseAddress = true
+                  // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                  // reusePort = true
                 }
-            }
-        }
-    }
+                .also { socketTagger.tagSocket() }
+                // This function uses our custom build of KTOR
+                // which adds the [onBeforeConnect] hook to allow us
+                // to use the socket created BEFORE connection starts.
+                .connectWithConfiguration(
+                    remoteAddress = remote,
+                    configure = {
+                      // By default KTOR does not close sockets until "infinity" is reached.
+                      socketTimeout = 1.minutes.inWholeMilliseconds
+                    },
+                    onBeforeConnect = { networkBinder.bindToNetwork(it) },
+                )
 
+        // Track this socket for when we fully shut down
+        socketTracker.track(socket)
+
+        return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
+      }
+
+  override suspend fun proxyToInternet(
+      scope: CoroutineScope,
+      connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      networkBinder: SocketBinder.NetworkBinder,
+      serverDispatcher: ServerDispatcher,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      socketTracker: SocketTracker,
+      client: TetherClient,
+      request: HttpProxyRequest,
+      onReport: suspend (ByteTransferReport) -> Unit
+  ) {
+    enforcer.assertOffMainThread()
+
+    // Given the request, connect to the Web
+    try {
+      connectToInternet(
+          autoFlush = true,
+          networkBinder = networkBinder,
+          serverDispatcher = serverDispatcher,
+          socketTracker = socketTracker,
+          request = request,
+      ) { internetInput, internetOutput ->
+        // Communicate between the web connection we've made and back to our client device
+        transport.exchangeInternet(
+            scope = scope,
+            serverDispatcher = serverDispatcher,
+            proxyInput = proxyInput,
+            proxyOutput = proxyOutput,
+            internetInput = internetInput,
+            internetOutput = internetOutput,
+            request = request,
+            client = client,
+            onReport = onReport,
+        )
+      }
+    } catch (e: Throwable) {
+      e.ifNotCancellation {
+        // Generally, the Transport should handle SocketTimeoutException itself.
+        // We capture here JUST in case
+        if (e is SocketTimeoutException) {
+          Timber.w { "Proxy:Internet socket timeout! $request $client" }
+        } else {
+          Timber.e(e) { "Error during Internet exchange $request $client" }
+          transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
+        }
+      }
+    }
+  }
 }

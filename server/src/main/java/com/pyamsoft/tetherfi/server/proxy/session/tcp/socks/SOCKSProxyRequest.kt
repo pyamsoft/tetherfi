@@ -20,7 +20,8 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 import java.net.InetAddress
 
 @ConsistentCopyVisibility
-internal data class SOCKSProxyRequest internal constructor(
+internal data class SOCKSProxyRequest
+internal constructor(
     override val valid: Boolean,
     internal val version: SOCKSVersion,
     internal val command: SOCKSCommand,

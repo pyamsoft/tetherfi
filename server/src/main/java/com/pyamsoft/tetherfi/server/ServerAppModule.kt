@@ -66,130 +66,118 @@ import javax.inject.Singleton
 @Module
 abstract class ServerAppModule {
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindSocketTagger(impl: AndroidSocketTagger): SocketTagger
+  @Binds
+  @CheckResult
+  internal abstract fun bindSocketTagger(impl: AndroidSocketTagger): SocketTagger
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindRequestParser(impl: UrlRequestParser): RequestParser
+  @Binds @CheckResult internal abstract fun bindRequestParser(impl: UrlRequestParser): RequestParser
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindShutdownConsumer(
-        impl: EventBus<ServerShutdownEvent>
-    ): EventConsumer<ServerShutdownEvent>
+  @Binds
+  @CheckResult
+  internal abstract fun bindShutdownConsumer(
+      impl: EventBus<ServerShutdownEvent>
+  ): EventConsumer<ServerShutdownEvent>
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindStopRequestConsumer(
-        impl: EventBus<ServerStopRequestEvent>
-    ): EventConsumer<ServerStopRequestEvent>
+  @Binds
+  @CheckResult
+  internal abstract fun bindStopRequestConsumer(
+      impl: EventBus<ServerStopRequestEvent>
+  ): EventConsumer<ServerStopRequestEvent>
 
-    // Prereqs
-    @Binds
-    @CheckResult
-    internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
+  // Prereqs
+  @Binds
+  @CheckResult
+  internal abstract fun bindPermissionChecker(impl: PermissionGuardImpl): PermissionGuard
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindVpnChecker(impl: AndroidVpnChecker): VpnChecker
+  @Binds @CheckResult internal abstract fun bindVpnChecker(impl: AndroidVpnChecker): VpnChecker
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindLocationChecker(impl: AndroidLocationChecker): LocationChecker
+  @Binds
+  @CheckResult
+  internal abstract fun bindLocationChecker(impl: AndroidLocationChecker): LocationChecker
 
-    // OS level
-    @Binds
-    @CheckResult
-    internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
+  // OS level
+  @Binds
+  @CheckResult
+  internal abstract fun bindBatteryOptimizer(impl: BatteryOptimizerImpl): BatteryOptimizer
 
-    // Client tracking
-    @Binds
-    @CheckResult
-    internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
+  // Client tracking
+  @Binds
+  @CheckResult
+  internal abstract fun bindBlockedClients(impl: ClientManagerImpl): BlockedClients
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindSeenClients(impl: ClientManagerImpl): AllowedClients
+  @Binds @CheckResult internal abstract fun bindSeenClients(impl: ClientManagerImpl): AllowedClients
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindClientEraser(impl: ClientManagerImpl): ClientEraser
+  @Binds @CheckResult internal abstract fun bindClientEraser(impl: ClientManagerImpl): ClientEraser
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindClientEditor(impl: ClientManagerImpl): ClientEditor
+  @Binds @CheckResult internal abstract fun bindClientEditor(impl: ClientManagerImpl): ClientEditor
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindClientResolver(impl: ClientManagerImpl): ClientResolver
+  @Binds
+  @CheckResult
+  internal abstract fun bindClientResolver(impl: ClientManagerImpl): ClientResolver
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindStartedClients(impl: ClientManagerImpl): StartedClients
+  @Binds
+  @CheckResult
+  internal abstract fun bindStartedClients(impl: ClientManagerImpl): StartedClients
 
-    @Binds
-    @CheckResult
-    internal abstract fun bindBlockedClientTracker(impl: ClientManagerImpl): BlockedClientTracker
+  @Binds
+  @CheckResult
+  internal abstract fun bindBlockedClientTracker(impl: ClientManagerImpl): BlockedClientTracker
 
-    // URL fixers
-    @Binds
-    @IntoSet
-    @CheckResult
-    @ServerInternalApi
-    internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
+  // URL fixers
+  @Binds
+  @IntoSet
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindPSNUrlFixer(impl: PSNUrlFixer): UrlFixer
 
-    // Proxy
-    @Binds
-    @CheckResult
-    internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
+  // Proxy
+  @Binds @CheckResult internal abstract fun bindProxy(impl: WifiSharedProxy): SharedProxy
 
-    // Network Binder
-    @Binds
-    @CheckResult
-    @ServerInternalApi
-    internal abstract fun bindNetworkBinder(impl: AndroidSocketBinder): SocketBinder
+  // Network Binder
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindNetworkBinder(impl: AndroidSocketBinder): SocketBinder
 
-    @Binds
-    @CheckResult
-    @ServerInternalApi
-    internal abstract fun bindServerDispatcherFactory(
-        impl: DefaultServerDispatcherFactory
-    ): ServerDispatcher.Factory
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindServerDispatcherFactory(
+      impl: DefaultServerDispatcherFactory
+  ): ServerDispatcher.Factory
 
-    @Binds
-    @CheckResult
-    @ServerInternalApi
-    internal abstract fun bindProxyManagerFactory(
-        impl: DefaultProxyManagerFactory
-    ): ProxyManager.Factory
+  @Binds
+  @CheckResult
+  @ServerInternalApi
+  internal abstract fun bindProxyManagerFactory(
+      impl: DefaultProxyManagerFactory
+  ): ProxyManager.Factory
 
-    @Binds
-    @CheckResult
-    @Named("http")
-    internal abstract fun bindHttpProxySession(impl: HttpProxySession): ProxySession<TcpProxyData>
+  @Binds
+  @CheckResult
+  @Named("http")
+  internal abstract fun bindHttpProxySession(impl: HttpProxySession): ProxySession<TcpProxyData>
 
-    @Binds
-    @CheckResult
-    @Named("socks")
-    internal abstract fun bindSocksProxySession(impl: SOCKSProxySession): ProxySession<TcpProxyData>
+  @Binds
+  @CheckResult
+  @Named("socks")
+  internal abstract fun bindSocksProxySession(impl: SOCKSProxySession): ProxySession<TcpProxyData>
 
-    @Module
-    companion object {
+  @Module
+  companion object {
 
-        @Provides
-        @JvmStatic
-        @Singleton
-        internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
-            return DefaultEventBus()
-        }
-
-        @Provides
-        @JvmStatic
-        @Singleton
-        internal fun provideStopRequestEventBus(): EventBus<ServerStopRequestEvent> {
-            return DefaultEventBus()
-        }
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideShutdownEventBus(): EventBus<ServerShutdownEvent> {
+      return DefaultEventBus()
     }
+
+    @Provides
+    @JvmStatic
+    @Singleton
+    internal fun provideStopRequestEventBus(): EventBus<ServerStopRequestEvent> {
+      return DefaultEventBus()
+    }
+  }
 }
