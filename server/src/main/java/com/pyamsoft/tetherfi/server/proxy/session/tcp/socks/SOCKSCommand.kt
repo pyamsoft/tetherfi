@@ -18,8 +18,9 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
 
-enum class SOCKSCommand(val command: Byte) {
-    NONE(0),
+enum class SOCKSCommand(
+    private val byte: Byte,
+) {
     CONNECT(1),
     BIND(2),
     UDP_ASSOCIATE(3);
@@ -27,11 +28,11 @@ enum class SOCKSCommand(val command: Byte) {
     companion object {
         @JvmStatic
         @CheckResult
-        fun fromCommand(raw: Byte): SOCKSCommand = when (raw) {
-            CONNECT.command -> CONNECT
-            BIND.command -> BIND
-            UDP_ASSOCIATE.command -> UDP_ASSOCIATE
-            else -> throw SOCKSException("Invalid SOCKS command: $raw")
+        fun fromByte(byte: Byte): SOCKSCommand? = when (byte) {
+            CONNECT.byte -> CONNECT
+            BIND.byte -> BIND
+            UDP_ASSOCIATE.byte -> UDP_ASSOCIATE
+            else -> null
         }
     }
 }

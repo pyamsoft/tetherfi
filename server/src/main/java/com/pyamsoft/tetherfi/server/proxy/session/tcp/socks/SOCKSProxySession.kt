@@ -46,7 +46,7 @@ internal class SOCKSProxySession @Inject internal constructor(
     clientResolver: ClientResolver,
     allowedClients: AllowedClients,
     enforcer: ThreadEnforcer,
-) : TcpProxySession<SOCKSProxyRequest>(
+) : TcpProxySession<SOCKSVersion>(
     blockedClients = blockedClients,
     clientResolver = clientResolver,
     allowedClients = allowedClients,
@@ -63,14 +63,14 @@ internal class SOCKSProxySession @Inject internal constructor(
         proxyOutput: ByteWriteChannel,
         socketTracker: SocketTracker,
         client: TetherClient,
-        request: SOCKSProxyRequest,
+        request: SOCKSVersion,
         onReport: suspend (ByteTransferReport) -> Unit
     ) {
         enforcer.assertOffMainThread()
 
         // Given the request, connect to the Web
         try {
-            transport.handleSOCKSRequest(
+            transport.handleRequest(
                 scope = scope,
                 connectionInfo = connectionInfo,
                 serverDispatcher = serverDispatcher,
@@ -79,7 +79,7 @@ internal class SOCKSProxySession @Inject internal constructor(
                 socketTracker = socketTracker,
                 networkBinder = networkBinder,
                 client = client,
-                request = request,
+                version = request,
                 onReport = onReport,
             )
         } catch (e: Throwable) {
@@ -95,6 +95,4 @@ internal class SOCKSProxySession @Inject internal constructor(
             }
         }
     }
-
-
 }
