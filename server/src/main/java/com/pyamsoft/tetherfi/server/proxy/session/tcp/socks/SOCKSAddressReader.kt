@@ -19,12 +19,14 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 import androidx.annotation.CheckResult
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readByte
+import kotlinx.io.bytestring.ByteStringBuilder
+import kotlinx.io.bytestring.decodeToString
 
 private const val NULL_BYTE: Byte = 0
 
 @CheckResult
-internal suspend fun ByteReadChannel.readNullTerminatedString(): String {
-    val builder = StringBuilder()
+internal suspend fun ByteReadChannel.readUntilNullTerminator(): String {
+    val builder = ByteStringBuilder()
 
     // TODO(Peter): This is very slow
     // We want to read up until a delimeter null byte and then return the string
@@ -36,5 +38,5 @@ internal suspend fun ByteReadChannel.readNullTerminatedString(): String {
         builder.append(maybe)
     }
 
-    return builder.toString()
+    return builder.toByteString().decodeToString()
 }

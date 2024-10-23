@@ -17,37 +17,33 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.ProxyRequest
 
-internal enum class SOCKSVersion(
-    val version: Byte,
-    val replyVersion: Byte,
-    val successCode: Byte,
-    val unreachableHostCode: Byte,
-    val connectionRefusedCode: Byte
-) {
-    SOCKS4(
-        version = 4,
-        replyVersion = 0,
-        successCode = 90,
-        unreachableHostCode = 91,
-        connectionRefusedCode = 91
-    ),
-    SOCKS5(
-        version = 5,
-        replyVersion = 5,
-        successCode = 0,
-        unreachableHostCode = 4,
-        connectionRefusedCode = 5
-    );
+internal sealed interface SOCKSVersion : ProxyRequest {
+
+    data object SOCKS4 : SOCKSVersion {
+        override val valid: Boolean = true
+    }
+
+    data object SOCKS5 : SOCKSVersion {
+        override val valid: Boolean = true
+    }
+
+    data object Invalid : SOCKSVersion {
+        override val valid: Boolean = false
+    }
 
     companion object {
+
+        private const val VERSION_4: Byte = 4
+        private const val VERSION_5: Byte = 5
 
         @JvmStatic
         @CheckResult
         fun fromVersion(version: Byte): SOCKSVersion = when (version) {
-            SOCKS4.version -> SOCKS4
-            SOCKS5.version -> SOCKS5
-            else -> throw SOCKSException("Invalid SOCKS version: $version")
+            VERSION_4 -> SOCKS4
+            VERSION_5 -> SOCKS5
+            else -> Invalid
         }
     }
 }
