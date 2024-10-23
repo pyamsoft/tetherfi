@@ -14,11 +14,27 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
+package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five
 
-import kotlinx.io.IOException
+import androidx.annotation.CheckResult
 
-data class SOCKSException(
-    override val message: String,
-    override val cause: Throwable? = null,
-) : IOException(message, cause)
+internal enum class SOCKS5AddressType(
+    internal val byte: Byte
+) {
+    IPV4(1),
+    DOMAIN_NAME(3),
+    IPV6(4);
+
+    companion object {
+
+        @JvmStatic
+        @CheckResult
+        fun fromAddressType(addressType: Byte): SOCKS5AddressType? = when (addressType) {
+            IPV4.byte -> IPV4
+            DOMAIN_NAME.byte -> DOMAIN_NAME
+            IPV6.byte -> DOMAIN_NAME
+            else -> null
+        }
+
+    }
+}
