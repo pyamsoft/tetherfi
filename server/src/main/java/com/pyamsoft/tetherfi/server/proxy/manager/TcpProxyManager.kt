@@ -26,6 +26,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
@@ -51,6 +52,7 @@ import kotlinx.coroutines.withContext
 
 internal class TcpProxyManager
 internal constructor(
+    private val type: SharedProxy.Type,
     private val socketBinder: SocketBinder,
     private val appEnvironment: AppDevEnvironment,
     private val socketTagger: SocketTagger,
@@ -68,6 +70,8 @@ internal constructor(
         serverStopConsumer = serverStopConsumer,
     ) {
 
+  private val logTag by lazy { type.name }
+
   /** Keep track of how many times we fail to claim a socket in a row. */
   private val proxyFailCount = MutableStateFlow(0)
 
@@ -75,7 +79,9 @@ internal constructor(
   private fun resolveHostNameOrIpAddress(connection: Socket): String {
     val remote = connection.remoteAddress
     if (remote !is InetSocketAddress) {
-      Timber.w { "Block non-internet socket addresses, we expect clients to be inet: $connection" }
+      Timber.w {
+        "$logTag: Block non-internet socket addresses, we expect clients to be inet: $connection"
+      }
       return ""
     }
 
@@ -91,7 +97,7 @@ internal constructor(
   ) {
     // Resolve the client as an IP or hostname
     if (hostNameOrIp.isBlank()) {
-      Timber.w { "Unable to resolve TetherClient for connection" }
+      Timber.w { "$logTag: Unable to resolve TetherClient for connection" }
       return
     }
 
@@ -136,9 +142,11 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Server socket timeout! $hostNameOrIp" }
+          Timber.w { "$logTag: Proxy:Server socket timeout! $hostNameOrIp" }
         } else {
-          Timber.e(e) { "Error occurred while establishing TCP Proxy Connection: $hostNameOrIp" }
+          Timber.e(e) {
+            "$logTag: Error occurred while establishing TCP Proxy Connection: $hostNameOrIp"
+          }
         }
       }
     }
@@ -153,7 +161,7 @@ internal constructor(
                 verifyPort = true,
                 verifyHostName = true,
             )
-        Timber.d { "Bind TCP server to local address: $localAddress" }
+        Timber.d { "$logTag: Bind TCP server to local address: $localAddress" }
         return@withContext builder
             .tcp()
             .configure {
@@ -166,12 +174,14 @@ internal constructor(
       }
 
   private suspend fun prepareToTryAgainOrThrow(e: IOException) {
-    Timber.e(e) { "We've caught an IOException opening the ServerSocket!" }
+    Timber.e(e) { "$logTag: We've caught an IOException opening the ServerSocket!" }
     val failCount = proxyFailCount.value
     val canTryAgain = failCount < PROXY_ACCEPT_TOO_MANY_FAILURES
     if (canTryAgain) {
       proxyFailCount.update { it + 1 }
-      Timber.d { "In YOLO mode, we ignore IOException and just try again. Yolo!: $failCount" }
+      Timber.d {
+        "$logTag: In YOLO mode, we ignore IOException and just try again. Yolo!: $failCount"
+      }
 
       // Wait just a little bit
       delay(yoloRepeatDelay)
@@ -180,7 +190,7 @@ internal constructor(
       proxyFailCount.value = 0
 
       // Otherwise, we treat this error as a no-no
-      Timber.w { "Too many IOExceptions thrown, even for YOLO mode :(: $failCount" }
+      Timber.w { "$logTag: Too many IOExceptions thrown, even for YOLO mode :(: $failCount" }
       throw IOException("Too many failed connection attempts: $failCount", e)
     }
   }
@@ -190,7 +200,7 @@ internal constructor(
     while (!server.isClosed) {
       try {
         if (appEnvironment.isYoloError.first()) {
-          Timber.w { "In YOLO mode, we simulate an IOException" }
+          Timber.w { "$logTag: In YOLO mode, we simulate an IOException" }
           throw IOException("YOLO Mode Test Error!")
         }
 
@@ -219,7 +229,7 @@ internal constructor(
   override suspend fun runServer(tracker: SocketTracker, server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
         val addr = server.localAddress
-        Timber.d { "Awaiting TCP connections on $addr" }
+        Timber.d { "$logTag: Awaiting TCP connections on $addr" }
 
         socketBinder.withMobileDataNetworkActive { networkBinder ->
           try {
@@ -244,14 +254,16 @@ internal constructor(
                       socketTracker = tracker,
                   )
                 } catch (e: Throwable) {
-                  e.ifNotCancellation { Timber.e(e) { "Error during server socket accept" } }
+                  e.ifNotCancellation {
+                    Timber.e(e) { "$logTag: Error during server socket accept" }
+                  }
                 } finally {
                   connection.dispose()
                 }
               }
             }
           } finally {
-            Timber.d { "Closing TCP server $addr" }
+            Timber.d { "$logTag: Closing TCP server $addr" }
           }
         }
       }

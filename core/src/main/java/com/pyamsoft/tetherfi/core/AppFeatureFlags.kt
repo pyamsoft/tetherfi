@@ -25,7 +25,7 @@ import javax.inject.Singleton
 internal class AppFeatureFlags
 @Inject
 internal constructor(
-  @Named("debug") private val debug: Boolean,
+    @Named("debug") private val debug: Boolean,
 ) : FeatureFlags {
 
   override val isSocksProxyEnabled = flag { debug }

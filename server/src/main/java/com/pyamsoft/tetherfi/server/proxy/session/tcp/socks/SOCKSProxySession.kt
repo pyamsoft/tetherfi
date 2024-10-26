@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
@@ -57,6 +58,9 @@ internal constructor(
         enforcer = enforcer,
         transport = transport,
     ) {
+
+  override val logTag by lazy { SharedProxy.Type.SOCKS.name }
+
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
