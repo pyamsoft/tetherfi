@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
@@ -61,6 +62,8 @@ internal constructor(
         allowedClients = allowedClients,
         enforcer = enforcer,
     ) {
+
+  override val logTag by lazy { SharedProxy.Type.HTTP.name }
 
   /**
    * Given the initial proxy request, connect to the Internet from our device via the connected

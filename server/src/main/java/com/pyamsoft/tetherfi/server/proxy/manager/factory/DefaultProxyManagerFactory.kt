@@ -54,6 +54,7 @@ internal constructor(
 
   @CheckResult
   private fun createTcp(
+      type: SharedProxy.Type,
       session: ProxySession<TcpProxyData>,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       dispatcher: ServerDispatcher,
@@ -62,6 +63,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return TcpProxyManager(
+        type = type,
         socketTagger = socketTagger,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
@@ -85,6 +87,7 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return createTcp(
+        type = SharedProxy.Type.HTTP,
         session = httpSession,
         info = info,
         dispatcher = dispatcher,
@@ -102,6 +105,7 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return createTcp(
+        type = SharedProxy.Type.SOCKS,
         session = socksSession,
         info = info,
         dispatcher = dispatcher,

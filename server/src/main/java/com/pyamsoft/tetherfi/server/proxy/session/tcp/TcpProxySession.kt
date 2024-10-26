@@ -88,7 +88,7 @@ protected constructor(
     if (hostConnection.isIpAddress) {
       if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
         if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
-          Timber.w { "Reject IP address outside of host range: $hostNameOrIp" }
+          Timber.w { "$logTag: Reject IP address outside of host range: $hostNameOrIp" }
           return null
         }
       }
@@ -99,7 +99,7 @@ protected constructor(
 
     // If the client is blocked we do not process any input
     if (blockedClients.isBlocked(client)) {
-      Timber.w { "Client is marked blocked: $client" }
+      Timber.w { "$logTag: Client is marked blocked: $client" }
       return null
     }
 
@@ -170,7 +170,7 @@ protected constructor(
     // Inline to avoid new object allocation
     val request: Q = transport.parseRequest(proxyInput, proxyOutput)
     if (!request.valid) {
-      Timber.w { "Could not parse proxy request $request" }
+      Timber.w { "$logTag: Could not parse proxy request $request" }
       transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.INVALID)
       return
     }
@@ -218,7 +218,9 @@ protected constructor(
               socketTracker = socketTracker,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation { Timber.e(e) { "Error handling client Request: $hostNameOrIp" } }
+          e.ifNotCancellation {
+            Timber.e(e) { "$logTag: Error handling client Request: $hostNameOrIp" }
+          }
         }
       }
 
@@ -234,4 +236,6 @@ protected constructor(
       request: Q,
       onReport: suspend (ByteTransferReport) -> Unit,
   )
+
+  protected abstract val logTag: String
 }
