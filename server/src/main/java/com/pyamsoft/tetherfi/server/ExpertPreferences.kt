@@ -23,15 +23,20 @@ import kotlinx.coroutines.flow.Flow
 
 interface ExpertPreferences {
 
-  @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
+    @CheckResult
+    @Deprecated("Do not use")
+    fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
 
-  fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
+    @Deprecated("Do not use")
+    fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
 
-  @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
+    @CheckResult
+    fun listenForBroadcastType(): Flow<BroadcastType>
 
-  fun setBroadcastType(type: BroadcastType)
+    fun setBroadcastType(type: BroadcastType)
 
-  @CheckResult fun listenForPreferredNetwork(): Flow<PreferredNetwork>
+    @CheckResult
+    fun listenForPreferredNetwork(): Flow<PreferredNetwork>
 
-  fun setPreferredNetwork(network: PreferredNetwork)
+    fun setPreferredNetwork(network: PreferredNetwork)
 }
