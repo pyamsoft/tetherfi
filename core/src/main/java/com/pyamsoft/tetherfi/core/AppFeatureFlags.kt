@@ -18,16 +18,17 @@ package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 internal class AppFeatureFlags
 @Inject
 internal constructor(
-    // @Named("debug") private val debug: Boolean,
+  @Named("debug") private val debug: Boolean,
 ) : FeatureFlags {
 
-  override val isSocksProxyEnabled = flag { false }
+  override val isSocksProxyEnabled = flag { debug }
 
   companion object {
 
