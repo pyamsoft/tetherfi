@@ -18,11 +18,11 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.AbstractTcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.relayData
 import io.ktor.network.sockets.SocketTimeoutException
@@ -38,7 +38,9 @@ internal class HttpTransport
 internal constructor(
     private val requestParser: RequestParser,
     private val enforcer: ThreadEnforcer,
-) : TcpSessionTransport<HttpProxyRequest> {
+) : AbstractTcpSessionTransport<HttpProxyRequest>() {
+
+  override val proxyType = SharedProxy.Type.HTTP
 
   /**
    * HTTPS Connections are encrypted and so we cannot see anything further past the initial CONNECT
@@ -61,7 +63,7 @@ internal constructor(
       throwaway = input.readUTF8Line()
     } while (!throwaway.isNullOrBlank())
 
-    Timber.d { "Establish HTTPS CONNECT tunnel ${request.raw}" }
+    debugLog { "Establish HTTPS CONNECT tunnel ${request.raw}" }
     writeHttpConnectSuccess(output)
   }
 
@@ -76,7 +78,7 @@ internal constructor(
   ) {
     // TODO(Peter): If the output socket is already closed this will fail and throw.
     //   realistically, will the output socket ever be closed for the initial connection?
-    Timber.d { "Rewrote initial HTTP request: ${request.raw} -> ${request.httpRequest}" }
+    debugLog { "Rewrote initial HTTP request: ${request.raw} -> ${request.httpRequest}" }
     output.writeFully(writeHttpMessageAndAwaitMore(request.httpRequest))
   }
 
@@ -107,7 +109,7 @@ internal constructor(
 
     // No line, no go
     if (line.isNullOrBlank()) {
-      Timber.w { "No input read from proxy" }
+      warnLog { "No input read from proxy" }
       return INVALID_REQUEST
     }
 
@@ -159,9 +161,9 @@ internal constructor(
     } catch (e: Throwable) {
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Internet socket timeout! $request $client" }
+          warnLog { "Proxy:Internet socket timeout! $request $client" }
         } else {
-          Timber.e(e) { "Error occurred during internet exchange: $request $client" }
+          errorLog(e) { "Error occurred during internet exchange: $request $client" }
           writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
         }
       }

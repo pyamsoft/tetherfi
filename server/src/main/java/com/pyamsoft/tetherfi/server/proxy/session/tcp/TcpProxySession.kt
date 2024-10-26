@@ -29,6 +29,7 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
@@ -47,6 +48,8 @@ protected constructor(
     protected val socketTagger: SocketTagger,
     protected val enforcer: ThreadEnforcer,
 ) : ProxySession<TcpProxyData> {
+
+  private val logTag: String by lazy { proxyType.name }
 
   private fun CoroutineScope.handleClientRequestSideEffects(
       serverDispatcher: ServerDispatcher,
@@ -88,7 +91,7 @@ protected constructor(
     if (hostConnection.isIpAddress) {
       if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
         if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
-          Timber.w { "$logTag: Reject IP address outside of host range: $hostNameOrIp" }
+          warnLog { "Reject IP address outside of host range: $hostNameOrIp" }
           return null
         }
       }
@@ -99,7 +102,7 @@ protected constructor(
 
     // If the client is blocked we do not process any input
     if (blockedClients.isBlocked(client)) {
-      Timber.w { "$logTag: Client is marked blocked: $client" }
+      warnLog { "Client is marked blocked: $client" }
       return null
     }
 
@@ -170,7 +173,7 @@ protected constructor(
     // Inline to avoid new object allocation
     val request: Q = transport.parseRequest(proxyInput, proxyOutput)
     if (!request.valid) {
-      Timber.w { "$logTag: Could not parse proxy request $request" }
+      warnLog { "Could not parse proxy request $request" }
       transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.INVALID)
       return
     }
@@ -192,6 +195,18 @@ protected constructor(
         client = client,
         request = request,
     )
+  }
+
+  protected inline fun debugLog(message: () -> String) {
+    Timber.d { "$logTag: ${message()}" }
+  }
+
+  protected inline fun warnLog(message: () -> String) {
+    Timber.w { "$logTag: ${message()}" }
+  }
+
+  protected inline fun errorLog(throwable: Throwable, message: () -> String) {
+    Timber.e(throwable) { "$logTag: ${message()}" }
   }
 
   override suspend fun exchange(
@@ -218,9 +233,7 @@ protected constructor(
               socketTracker = socketTracker,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation {
-            Timber.e(e) { "$logTag: Error handling client Request: $hostNameOrIp" }
-          }
+          e.ifNotCancellation { errorLog(e) { "Error handling client Request: $hostNameOrIp" } }
         }
       }
 
@@ -237,5 +250,5 @@ protected constructor(
       onReport: suspend (ByteTransferReport) -> Unit,
   )
 
-  protected abstract val logTag: String
+  protected abstract val proxyType: SharedProxy.Type
 }
