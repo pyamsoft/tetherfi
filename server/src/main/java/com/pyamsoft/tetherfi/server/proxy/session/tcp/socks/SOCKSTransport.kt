@@ -16,14 +16,14 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpSessionTransport
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.AbstractTcpSessionTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four.SOCKS4Implementation
@@ -41,7 +41,9 @@ internal class SOCKSTransport
 internal constructor(
     private val socks4: SOCKS4Implementation,
     private val socks5: SOCKS5Implementation,
-) : TcpSessionTransport<SOCKSVersion> {
+) : AbstractTcpSessionTransport<SOCKSVersion>() {
+
+  override val proxyType = SharedProxy.Type.SOCKS
 
   override suspend fun writeProxyOutput(
       output: ByteWriteChannel,
@@ -50,7 +52,7 @@ internal constructor(
   ) =
       when (request) {
         SOCKSVersion.Invalid -> {
-          Timber.w { "Asked to write proxy output to INVALID SOCKS version: $command" }
+          warnLog { "Asked to write proxy output to INVALID SOCKS version: $command" }
         }
         SOCKSVersion.SOCKS4 -> {
           when (command) {
@@ -77,7 +79,7 @@ internal constructor(
       val versionByte = input.readByte()
       return SOCKSVersion.fromVersion(versionByte)
     } catch (e: Throwable) {
-      Timber.e(e) { "Error reading initial input byte for SOCKS version" }
+      errorLog(e) { "Error reading initial input byte for SOCKS version" }
       return SOCKSVersion.Invalid
     }
   }
@@ -97,7 +99,7 @@ internal constructor(
       withContext(context = serverDispatcher.primary) {
         when (version) {
           SOCKSVersion.Invalid -> {
-            Timber.w { "Invalid SOCKS version, can't handle this request!" }
+            warnLog { "Invalid SOCKS version, can't handle this request!" }
           }
           SOCKSVersion.SOCKS4 -> {
             socks4.handleSocksCommand(
@@ -113,7 +115,7 @@ internal constructor(
             )
           }
           SOCKSVersion.SOCKS5 -> {
-            Timber.w { "SOCKS5 TODO" }
+            warnLog { "SOCKS5 TODO" }
           }
         }
       }

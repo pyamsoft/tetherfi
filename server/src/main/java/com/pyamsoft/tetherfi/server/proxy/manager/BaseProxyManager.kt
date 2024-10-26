@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.ASocket
@@ -43,10 +44,13 @@ import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket>
 protected constructor(
+    private val proxyType: SharedProxy.Type,
     private val enforcer: ThreadEnforcer,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     protected val serverDispatcher: ServerDispatcher,
 ) : ProxyManager {
+
+  private val logTag: String by lazy { proxyType.name }
 
   /** Periodically remove any sockets that are alreaedy closed */
   private fun cleanOldSockets(sockets: MutableCollection<ASocket>) {
@@ -56,7 +60,7 @@ protected constructor(
     sockets.removeIf { it.isClosed }
     val newSize = sockets.size
 
-    Timber.d { "Clear out old closed sockets Old=${oldSize} New=$newSize" }
+    debugLog { "Clear out old closed sockets Old=${oldSize} New=$newSize" }
   }
 
   private suspend fun closeAllSockets(
@@ -74,7 +78,7 @@ protected constructor(
                 val start = System.currentTimeMillis()
                 socket.dispose()
                 val end = System.currentTimeMillis()
-                Timber.d { "Close socket: $socket (${end - start}ms)" }
+                debugLog { "Close socket: $socket (${end - start}ms)" }
               }
           waitForClose.add(job)
         }
@@ -101,7 +105,7 @@ protected constructor(
     )
 
     mutex.withLock {
-      Timber.d { "All leftover sockets closed: ${sockets.size}" }
+      debugLog { "All leftover sockets closed: ${sockets.size}" }
       sockets.clear()
     }
   }
@@ -142,7 +146,7 @@ protected constructor(
     scope.launch(context = serverDispatcher.sideEffect) {
       serverStopConsumer.also { f ->
         f.collect {
-          Timber.d { "Received STOP event, prepare to die!" }
+          debugLog { "Received STOP event, prepare to die!" }
           prepareToDie(
               scope = scope,
               mutex = mutex,
@@ -153,7 +157,7 @@ protected constructor(
     }
   }
 
-  private suspend fun trackingSideEffects(
+  private fun trackingSideEffects(
       scope: CoroutineScope,
       mutex: Mutex,
       sockets: MutableCollection<ASocket>
@@ -200,6 +204,18 @@ protected constructor(
     }
   }
 
+  protected inline fun debugLog(message: () -> String) {
+    Timber.d { "$logTag: ${message()}" }
+  }
+
+  protected inline fun warnLog(message: () -> String) {
+    Timber.w { "$logTag: ${message()}" }
+  }
+
+  protected inline fun errorLog(throwable: Throwable, message: () -> String) {
+    Timber.e(throwable) { "$logTag: ${message()}" }
+  }
+
   @CheckResult
   protected fun getServerAddress(
       hostName: String,
@@ -211,13 +227,13 @@ protected constructor(
     if (verifyPort) {
       if (port > 65000) {
         val err = "Port must be <65000: $port"
-        Timber.w { err }
+        warnLog { err }
         throw IllegalArgumentException(err)
       }
 
       if (port <= 1024) {
         val err = "Port must be >1024: $port"
-        Timber.w { err }
+        warnLog { err }
         throw IllegalArgumentException(err)
       }
     }
@@ -226,7 +242,7 @@ protected constructor(
       // Name must be valid
       if (hostName.isBlank()) {
         val err = "HostName is invalid: $hostName"
-        Timber.w { err }
+        warnLog { err }
         throw IllegalArgumentException(err)
       }
     }

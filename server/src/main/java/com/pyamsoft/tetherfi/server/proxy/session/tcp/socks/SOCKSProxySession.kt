@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -59,7 +58,7 @@ internal constructor(
         transport = transport,
     ) {
 
-  override val logTag by lazy { SharedProxy.Type.SOCKS.name }
+  override val proxyType = SharedProxy.Type.SOCKS
 
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
@@ -94,9 +93,9 @@ internal constructor(
         // Generally, the Transport should handle SocketTimeoutException itself.
         // We capture here JUST in case
         if (e is SocketTimeoutException) {
-          Timber.w { "Proxy:Internet socket timeout! $request $client" }
+          warnLog { "Proxy:Internet socket timeout! $request $client" }
         } else {
-          Timber.e(e) { "Error during Internet exchange $request $client" }
+          errorLog(e) { "Error during Internet exchange $request $client" }
           transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
         }
       }

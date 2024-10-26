@@ -32,12 +32,12 @@ import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.ProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
-import javax.inject.Inject
-import javax.inject.Named
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Named
+import kotlin.time.Duration.Companion.seconds
 
 internal class DefaultProxyManagerFactory
 @Inject
@@ -54,7 +54,7 @@ internal constructor(
 
   @CheckResult
   private fun createTcp(
-      type: SharedProxy.Type,
+      proxyType: SharedProxy.Type,
       session: ProxySession<TcpProxyData>,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       dispatcher: ServerDispatcher,
@@ -63,7 +63,7 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return TcpProxyManager(
-        type = type,
+        proxyType = proxyType,
         socketTagger = socketTagger,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
@@ -87,7 +87,7 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return createTcp(
-        type = SharedProxy.Type.HTTP,
+        proxyType = SharedProxy.Type.HTTP,
         session = httpSession,
         info = info,
         dispatcher = dispatcher,
@@ -105,7 +105,7 @@ internal constructor(
     val port = preferences.listenForPortChanges().first()
 
     return createTcp(
-        type = SharedProxy.Type.SOCKS,
+        proxyType = SharedProxy.Type.SOCKS,
         session = socksSession,
         info = info,
         dispatcher = dispatcher,
