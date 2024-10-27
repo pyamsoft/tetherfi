@@ -365,11 +365,13 @@ protected constructor(
 
     companion object {
 
-      /** The zero IP, we send to this IP for error commands */
-      internal val INVALID_IPV6 = InetAddress.getByAddress(ByteArray(16) { 0 })
+      internal val DEBUG_SOCKS_REPLIES = false
 
       /** The zero IP, we send to this IP for error commands */
-      internal val INVALID_IPV4 = InetAddress.getByAddress(ByteArray(4) { 0 })
+      internal val INVALID_IPV6_BYTES = ByteArray(16) { 0 }
+
+      /** The zero IP, we send to this IP for error commands */
+      internal val INVALID_IPV4_BYTES = ByteArray(4) { 0 }
 
       /** Zero port sent for error commands */
       internal const val INVALID_PORT: Short = 0

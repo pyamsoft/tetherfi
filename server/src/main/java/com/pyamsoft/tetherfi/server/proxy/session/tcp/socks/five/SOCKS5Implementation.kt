@@ -26,8 +26,9 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV6
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.DEBUG_SOCKS_REPLIES
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4_BYTES
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV6_BYTES
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_PORT
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
@@ -40,11 +41,6 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import java.net.Inet4Address
-import java.net.Inet6Address
-import java.net.InetAddress
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
@@ -52,6 +48,11 @@ import kotlinx.io.Sink
 import kotlinx.io.bytestring.decodeToString
 import kotlinx.io.readByteArray
 import kotlinx.io.readByteString
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** https://www.rfc-editor.org/rfc/rfc1928 */
 @Singleton
@@ -224,6 +225,36 @@ internal constructor(
             builder()
           }
 
+      if (DEBUG_SOCKS_REPLIES) {
+        Timber.d {
+          val peek = packet.peek()
+          val version = peek.readByte()
+          val authOrReplyCode = peek.readByte()
+          if (peek.exhausted()) {
+            "SOCKS5 AUTH: VERSION=$version AUTH=$authOrReplyCode"
+          } else {
+            var all = "SOCKS5 REPLY: VERSION=$version REPLY=$authOrReplyCode RSV=${peek.readByte()}"
+            val type = peek.readByte()
+            all += " ADDR_TYPE=$type "
+            val addr =
+                when (type) {
+                  1.toByte() -> {
+                    InetAddress.getByAddress(peek.readByteArray(4)).hostName
+                  }
+                  4.toByte() -> {
+                    InetAddress.getByAddress(peek.readByteArray(16)).hostName
+                  }
+                  else -> {
+                    val addrLen = peek.readByte()
+                    val bytes = peek.readByteArray(addrLen.toInt())
+                    InetAddress.getByAddress(bytes).hostName
+                  }
+                }
+            "$all ADDR=$addr PORT=${peek.readShort()}"
+          }
+        }
+      }
+
       proxyOutput.apply {
         writePacket(packet)
         flush()
@@ -234,7 +265,7 @@ internal constructor(
         addressType: SOCKS5AddressType,
         replyCode: Byte,
         port: Short,
-        address: InetAddress
+        address: ByteArray
     ) {
       sendPacket {
         // CD
@@ -247,7 +278,17 @@ internal constructor(
         writeByte(addressType.byte)
 
         // BND.ADDR
-        writeFully(address.address)
+        if (addressType == SOCKS5AddressType.DOMAIN_NAME) {
+          // Write a length byte to tell the client how long the domain name is
+          writeByte(address.size.toByte())
+          if (address.isNotEmpty()) {
+            writeFully(address)
+          }
+        } else {
+          // For non-domain address types, the type will inform the client how many bytes it should
+          // expect
+          writeFully(address)
+        }
 
         // BND.PORT
         writeShort(port)
@@ -261,7 +302,7 @@ internal constructor(
       return sendPacket(
           addressType = addressType,
           replyCode = SUCCESS_CODE,
-          address = getInvalidAddress(addressType),
+          address = getDestinationAddress(addressType, remote),
           port = getDestinationPort(remote),
       )
     }
@@ -292,7 +333,7 @@ internal constructor(
       return sendError(addressType = SOCKS5AddressType.IPV4)
     }
 
-    suspend fun sendRefusal(addressType: SOCKS5AddressType) {
+    private suspend fun sendRefusal(addressType: SOCKS5AddressType) {
       return sendPacket(
           addressType = addressType,
           replyCode = ERROR_CONNECTION_REFUSED,
@@ -334,6 +375,8 @@ internal constructor(
       private const val ERROR_CONNECTION_REFUSED: Byte = 5
       private const val ERROR_COMMAND_NOT_SUPPORTED: Byte = 7
 
+      private val INVALID_DOMAIN_NAME_BYTES = byteArrayOf(0)
+
       @JvmStatic
       @CheckResult
       internal fun getDestinationPort(address: InetSocketAddress?): Short {
@@ -342,11 +385,11 @@ internal constructor(
 
       @JvmStatic
       @CheckResult
-      internal fun getInvalidAddress(addressType: SOCKS5AddressType): InetAddress =
+      internal fun getInvalidAddress(addressType: SOCKS5AddressType): ByteArray =
           when (addressType) {
-            SOCKS5AddressType.IPV4 -> INVALID_IPV4
-            SOCKS5AddressType.DOMAIN_NAME -> INVALID_IPV4
-            SOCKS5AddressType.IPV6 -> INVALID_IPV6
+            SOCKS5AddressType.IPV4 -> INVALID_IPV4_BYTES
+            SOCKS5AddressType.DOMAIN_NAME -> INVALID_DOMAIN_NAME_BYTES
+            SOCKS5AddressType.IPV6 -> INVALID_IPV6_BYTES
           }
 
       @JvmStatic
@@ -354,8 +397,8 @@ internal constructor(
       internal fun getDestinationAddress(
           addressType: SOCKS5AddressType,
           address: InetSocketAddress?
-      ): InetAddress {
-        return address?.getJavaInetSocketAddress() ?: getInvalidAddress(addressType)
+      ): ByteArray {
+        return address?.getJavaInetSocketAddress()?.address ?: getInvalidAddress(addressType)
       }
     }
   }
