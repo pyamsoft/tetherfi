@@ -25,11 +25,14 @@ import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_IP
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_PORT
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV6
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_PORT
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.ERROR_NO_ACCEPTABLE_AUTH_METHODS
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.core.writeFully
@@ -57,7 +60,7 @@ internal class SOCKS5Implementation
 internal constructor(
     socketTagger: SocketTagger,
 ) :
-    AbstractSOCKSImplementation<SOCKS5AddressType, SOCKS5Implementation.Responder>(
+    BaseSOCKSImplementation<SOCKS5AddressType, SOCKS5Implementation.Responder>(
         socketTagger = socketTagger,
     ) {
 
@@ -121,13 +124,6 @@ internal constructor(
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       withContext(context = serverDispatcher.primary) {
-        /**
-         *      +----------+----------+
-         *      | NMETHODS | METHODS  |
-         *      +----------+----------+
-         *      |    1     | 1 to 255 |
-         *      +----------+----------+
-         */
         val methodCount = proxyInput.readByte()
         val methods = ByteArray(methodCount.toInt()) { proxyInput.readByte() }
 
@@ -138,21 +134,9 @@ internal constructor(
           return@withContext
         }
 
-        /**
-         *     +----+--------+
-         *     |VER | METHOD |
-         *     +----+--------+
-         *     | 1  |   1    |
-         *     +----+--------+
-         */
         // Send the method selection message
         usingResponder(proxyOutput) { sendAuthMethodSelection(selectedMethod) }
 
-        /**
-         * +----+-----+-------+------+----------+----------+ |VER | CMD | RSV | ATYP | DST.ADDR |
-         * DST.PORT | +----+-----+-------+------+----------+----------+ | 1 | 1 | X'00' | 1 |
-         * Variable | 2 | +----+-----+-------+------+----------+----------+
-         */
         val versionByte = proxyInput.readByte()
         if (versionByte != SOCKS_VERSION_BYTE) {
           Timber.w { "Invalid SOCKS version byte: $versionByte" }
@@ -194,14 +178,14 @@ internal constructor(
               )
             } catch (e: Throwable) {
               Timber.e(e) { "Unable to parse the destination address" }
-              usingResponder(proxyOutput) { sendError() }
+              usingResponder(proxyOutput) { sendError(addressType) }
               return@withContext
             }
 
         val destinationPort = proxyInput.readShort()
         if (destinationPort <= 0) {
           Timber.w { "Invalid destination port $destinationPort" }
-          usingResponder(proxyOutput) { sendError() }
+          usingResponder(proxyOutput) { sendError(addressType) }
           return@withContext
         }
 
@@ -228,15 +212,8 @@ internal constructor(
   internal value class Responder
   internal constructor(
       private val proxyOutput: ByteWriteChannel,
-  ) : AbstractSOCKSImplementation.Responder<SOCKS5AddressType> {
+  ) : BaseSOCKSImplementation.Responder<SOCKS5AddressType> {
 
-    /**
-     *         +----+-----+-------+------+----------+----------+
-     *         |VER | REP |  RSV  | ATYP | BND.ADDR | BND.PORT |
-     *         +----+-----+-------+------+----------+----------+
-     *         | 1  |  1  | X'00' |  1   | Variable |    2     |
-     *         +----+-----+-------+------+----------+----------+
-     */
     private suspend inline fun sendPacket(builder: Sink.() -> Unit) {
       val packet =
           Buffer().apply {
@@ -279,56 +256,64 @@ internal constructor(
 
     override suspend fun sendConnectSuccess(
         addressType: SOCKS5AddressType,
+        remote: InetSocketAddress?,
     ) {
       return sendPacket(
           addressType = addressType,
           replyCode = SUCCESS_CODE,
-          port = INVALID_PORT,
-          address = INVALID_IP,
+          address = getInvalidAddress(addressType),
+          port = getDestinationPort(remote),
       )
     }
 
     override suspend fun sendBindInitialized(
         addressType: SOCKS5AddressType,
-        port: Short,
-        address: InetAddress,
+        bound: InetSocketAddress?
     ) {
       return sendPacket(
           addressType = addressType,
           replyCode = SUCCESS_CODE,
-          port = port,
-          address = address,
+          address = getDestinationAddress(addressType, bound),
+          port = getDestinationPort(bound),
+      )
+    }
+
+    suspend fun sendError(addressType: SOCKS5AddressType) {
+      return sendPacket(
+          addressType = addressType,
+          replyCode = ERROR_GENERAL_SERVER_FAIL,
+          address = getInvalidAddress(addressType),
+          port = INVALID_PORT,
       )
     }
 
     override suspend fun sendError() {
-      return sendPacket(
-          replyCode = ERROR_GENERAL_SERVER_FAIL,
+      // Error with unknown data, who cares
+      return sendError(addressType = SOCKS5AddressType.IPV4)
+    }
 
-          // These don't matter
+    suspend fun sendRefusal(addressType: SOCKS5AddressType) {
+      return sendPacket(
+          addressType = addressType,
+          replyCode = ERROR_CONNECTION_REFUSED,
+          address = getInvalidAddress(addressType),
           port = INVALID_PORT,
-          address = INVALID_IP,
-          addressType = SOCKS5AddressType.IPV4,
       )
     }
 
     override suspend fun sendRefusal() {
-      return sendPacket(
-          replyCode = ERROR_CONNECTION_REFUSED,
-          // These don't matter
-          port = INVALID_PORT,
-          address = INVALID_IP,
-          addressType = SOCKS5AddressType.IPV4,
-      )
+      // Error with unknown data, who cares
+      return sendRefusal(addressType = SOCKS5AddressType.IPV4)
     }
 
     suspend fun sendCommandUnsupported() {
+      // This fails so early, we don't know the typ
+      val addressType = SOCKS5AddressType.IPV4
       return sendPacket(
+          addressType = addressType,
           replyCode = ERROR_COMMAND_NOT_SUPPORTED,
-          // These don't matter
+          address = getInvalidAddress(addressType),
           port = INVALID_PORT,
-          address = INVALID_IP,
-          addressType = SOCKS5AddressType.IPV4,
       )
     }
 
@@ -348,6 +333,30 @@ internal constructor(
       private const val ERROR_GENERAL_SERVER_FAIL: Byte = 1
       private const val ERROR_CONNECTION_REFUSED: Byte = 5
       private const val ERROR_COMMAND_NOT_SUPPORTED: Byte = 7
+
+      @JvmStatic
+      @CheckResult
+      internal fun getDestinationPort(address: InetSocketAddress?): Short {
+        return address?.port?.toShort() ?: INVALID_PORT
+      }
+
+      @JvmStatic
+      @CheckResult
+      internal fun getInvalidAddress(addressType: SOCKS5AddressType): InetAddress =
+          when (addressType) {
+            SOCKS5AddressType.IPV4 -> INVALID_IPV4
+            SOCKS5AddressType.DOMAIN_NAME -> INVALID_IPV4
+            SOCKS5AddressType.IPV6 -> INVALID_IPV6
+          }
+
+      @JvmStatic
+      @CheckResult
+      internal fun getDestinationAddress(
+          addressType: SOCKS5AddressType,
+          address: InetSocketAddress?
+      ): InetAddress {
+        return address?.getJavaInetSocketAddress() ?: getInvalidAddress(addressType)
+      }
     }
   }
 

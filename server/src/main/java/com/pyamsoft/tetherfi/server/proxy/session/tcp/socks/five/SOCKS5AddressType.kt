@@ -17,10 +17,10 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five
 
 import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation
 
 internal enum class SOCKS5AddressType(internal val byte: Byte) :
-    AbstractSOCKSImplementation.SOCKSAddressType {
+    BaseSOCKSImplementation.SOCKSAddressType {
   IPV4(1),
   DOMAIN_NAME(3),
   IPV6(4);

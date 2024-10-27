@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.PassthroughSocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.manager.TcpProxyManager
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
@@ -130,6 +131,7 @@ internal suspend inline fun setupProxy(
 
   val manager =
       TcpProxyManager(
+          proxyType = SharedProxy.Type.HTTP,
           appEnvironment = AppDevEnvironment().apply(appEnv),
           session =
               HttpProxySession(

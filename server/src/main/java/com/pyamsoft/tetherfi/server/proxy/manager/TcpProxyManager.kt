@@ -97,19 +97,23 @@ internal constructor(
       return
     }
 
-    session.exchange(
-        scope = this,
-        networkBinder = networkBinder,
-        hostConnection = hostConnection,
-        serverDispatcher = serverDispatcher,
-        socketTracker = socketTracker,
-        data =
-            TcpProxyData(
-                proxyInput = proxyInput,
-                proxyOutput = proxyOutput,
-                hostNameOrIp = hostNameOrIp,
-            ),
-    )
+    try {
+      session.exchange(
+          scope = this,
+          networkBinder = networkBinder,
+          hostConnection = hostConnection,
+          serverDispatcher = serverDispatcher,
+          socketTracker = socketTracker,
+          data =
+              TcpProxyData(
+                  proxyInput = proxyInput,
+                  proxyOutput = proxyOutput,
+                  hostNameOrIp = hostNameOrIp,
+              ),
+      )
+    } finally {
+      proxyOutput.flush()
+    }
   }
 
   /**
