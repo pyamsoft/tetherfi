@@ -17,6 +17,8 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.pydroid.core.cast
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
@@ -33,6 +35,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementat
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.ERROR_NO_ACCEPTABLE_AUTH_METHODS
+import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -41,18 +44,19 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.bytestring.decodeToString
 import kotlinx.io.readByteArray
 import kotlinx.io.readByteString
-import java.net.Inet4Address
-import java.net.Inet6Address
-import java.net.InetAddress
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /** https://www.rfc-editor.org/rfc/rfc1928 */
 @Singleton
@@ -109,9 +113,66 @@ internal constructor(
       addressType: SOCKS5AddressType,
       responder: Responder,
       onReport: suspend (ByteTransferReport) -> Unit
-  ) {
-    Timber.w { "TODO UDP_ASSOC $destinationAddress $destinationPort" }
-  }
+  ) =
+      usingSocketBuilder(dispatcher = serverDispatcher.primary) { builder ->
+        val bound =
+            try {
+              builder
+                  .udp()
+                  .configure {
+                    reuseAddress = true
+                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                    // reusePort = true
+                  }
+                  .also { socketTagger.tagSocket() }
+                  .let { b ->
+                    Timber.d { "SOCKS UDP_ASSOC -> ${connectionInfo.hostName}" }
+                    b.bind(
+                        localAddress =
+                            InetSocketAddress(
+                                hostname = connectionInfo.hostName,
+                                port = 0,
+                            ),
+                        configure = {
+                          reuseAddress = true
+                          // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                          // reusePort = true
+                        },
+                    )
+                  }
+                  .also {
+                    // Track server socket
+                    socketTracker.track(it)
+                  }
+            } catch (e: Throwable) {
+              if (e is TimeoutCancellationException) {
+                Timber.w { "Timeout while waiting for socket udp_assoc()" }
+                responder.sendRefusal()
+
+                // Rethrow a cancellation exception
+                throw e
+              } else {
+                e.ifNotCancellation {
+                  Timber.e(e) { "Error during socket udp_assoc()" }
+                  responder.sendError()
+                  return@usingSocketBuilder
+                }
+              }
+            }
+
+        bound.use { server ->
+          // TODO begin recv()
+
+          // Once the bind is open, we send the initial reply telling the client
+          // the IP and the port
+          responder.sendBindInitialized(
+              addressType = addressType,
+              bound = server.localAddress.cast(),
+          )
+
+          // TODO handle recv()
+        }
+      }
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,

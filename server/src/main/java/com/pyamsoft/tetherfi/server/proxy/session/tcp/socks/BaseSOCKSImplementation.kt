@@ -35,19 +35,19 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import java.net.InetAddress
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
+import java.net.InetAddress
+import kotlin.time.Duration.Companion.minutes
 
 internal abstract class BaseSOCKSImplementation<
     AT : BaseSOCKSImplementation.SOCKSAddressType,
     R : BaseSOCKSImplementation.Responder<AT>,
 >
 protected constructor(
-    private val socketTagger: SocketTagger,
+    protected val socketTagger: SocketTagger,
 ) : SOCKSImplementation<R> {
 
   private suspend fun connect(
@@ -99,6 +99,10 @@ protected constructor(
                       )
                     }
                   }
+                  .also {
+                    // Track this socket for when we fully shut down
+                    socketTracker.track(it)
+                  }
             } catch (e: Throwable) {
               if (e is TimeoutCancellationException) {
                 Timber.w { "Timeout while waiting for socket connect()" }
@@ -114,9 +118,6 @@ protected constructor(
                 }
               }
             }
-
-        // Track this socket for when we fully shut down
-        socketTracker.track(connected)
 
         connected.use { socket ->
           val remote = socket.remoteAddress
@@ -189,9 +190,11 @@ protected constructor(
                         },
                     )
                   }
-                  .use { server ->
+                  .also {
                     // Track server socket
-                    socketTracker.track(server)
+                    socketTracker.track(it)
+                  }
+                  .use { server ->
 
                     // SOCKS protocol says you MUST time out after 2 minutes
                     val boundSocket = scope.async { withTimeout(2.minutes) { server.accept() } }
