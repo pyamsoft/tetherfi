@@ -28,7 +28,8 @@ import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.DEBUG_SOCKS_REPLIES
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4_BYTES
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_PORT
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
@@ -204,13 +205,24 @@ internal constructor(
             builder()
           }
 
+      if (DEBUG_SOCKS_REPLIES) {
+        Timber.d {
+          val peek = packet.peek()
+          "SOCKS4 REPLY: VERSION=${peek.readByte()} REPLY=${peek.readByte()} PORT=${peek.readShort()} ADDR=${
+                        InetAddress.getByAddress(
+                            peek.readByteArray()
+                        ).hostName
+                    }"
+        }
+      }
+
       proxyOutput.apply {
         writePacket(packet)
         flush()
       }
     }
 
-    private suspend fun sendPacket(replyCode: Byte, port: Short, address: InetAddress) {
+    private suspend fun sendPacket(replyCode: Byte, port: Short, address: ByteArray) {
       sendPacket {
         // CD
         writeByte(replyCode)
@@ -219,7 +231,7 @@ internal constructor(
         writeShort(port)
 
         // DSTIP
-        writeFully(address.address)
+        writeFully(address)
       }
     }
 
@@ -248,7 +260,7 @@ internal constructor(
     override suspend fun sendRefusal() {
       return sendPacket(
           replyCode = ERROR_CODE,
-          address = INVALID_IPV4,
+          address = INVALID_IPV4_BYTES,
           port = INVALID_PORT,
       )
     }
@@ -274,8 +286,8 @@ internal constructor(
 
       @JvmStatic
       @CheckResult
-      internal fun getDestinationAddress(address: InetSocketAddress?): InetAddress {
-        return address?.getJavaInetSocketAddress() ?: INVALID_IPV4
+      internal fun getDestinationAddress(address: InetSocketAddress?): ByteArray {
+        return address?.getJavaInetSocketAddress()?.address ?: INVALID_IPV4_BYTES
       }
     }
   }
