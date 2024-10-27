@@ -115,7 +115,17 @@ internal constructor(
             )
           }
           SOCKSVersion.SOCKS5 -> {
-            warnLog { "SOCKS5 TODO" }
+            socks5.handleSocksCommand(
+                scope = scope,
+                serverDispatcher = serverDispatcher,
+                socketTracker = socketTracker,
+                networkBinder = networkBinder,
+                proxyInput = proxyInput,
+                proxyOutput = proxyOutput,
+                connectionInfo = connectionInfo,
+                client = client,
+                onReport = onReport,
+            )
           }
         }
       }

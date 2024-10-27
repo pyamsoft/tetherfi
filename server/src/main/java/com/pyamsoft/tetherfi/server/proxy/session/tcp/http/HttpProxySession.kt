@@ -138,18 +138,22 @@ internal constructor(
           socketTracker = socketTracker,
           request = request,
       ) { internetInput, internetOutput ->
-        // Communicate between the web connection we've made and back to our client device
-        transport.exchangeInternet(
-            scope = scope,
-            serverDispatcher = serverDispatcher,
-            proxyInput = proxyInput,
-            proxyOutput = proxyOutput,
-            internetInput = internetInput,
-            internetOutput = internetOutput,
-            request = request,
-            client = client,
-            onReport = onReport,
-        )
+        try {
+          // Communicate between the web connection we've made and back to our client device
+          transport.exchangeInternet(
+              scope = scope,
+              serverDispatcher = serverDispatcher,
+              proxyInput = proxyInput,
+              proxyOutput = proxyOutput,
+              internetInput = internetInput,
+              internetOutput = internetOutput,
+              request = request,
+              client = client,
+              onReport = onReport,
+          )
+        } finally {
+          internetOutput.flush()
+        }
       }
     } catch (e: Throwable) {
       e.ifNotCancellation {

@@ -18,19 +18,16 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
+import java.util.concurrent.Executors
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import java.util.concurrent.Executors
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
-class DefaultServerDispatcherFactory
-@Inject
-internal constructor(
-) : ServerDispatcher.Factory {
+class DefaultServerDispatcherFactory @Inject internal constructor() : ServerDispatcher.Factory {
 
   /** Make a new thread dispatcher using Daemon threads */
   @CheckResult
@@ -105,6 +102,5 @@ internal constructor(
 
     // Primary is 2X CPU cores
     private val PRIMARY_THREAD_COUNT = CORE_COUNT * 2
-
   }
 }

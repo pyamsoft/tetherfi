@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
@@ -41,9 +42,9 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
 
-internal abstract class AbstractSOCKSImplementation<
-    AT : AbstractSOCKSImplementation.SOCKSAddressType,
-    R : AbstractSOCKSImplementation.Responder<AT>,
+internal abstract class BaseSOCKSImplementation<
+    AT : BaseSOCKSImplementation.SOCKSAddressType,
+    R : BaseSOCKSImplementation.Responder<AT>,
 >
 protected constructor(
     private val socketTagger: SocketTagger,
@@ -118,9 +119,14 @@ protected constructor(
         socketTracker.track(connected)
 
         connected.use { socket ->
+          val remote = socket.remoteAddress
+          Timber.d { "SOCKS CONNECTED: $remote" }
           try {
             // We've successfully connected, tell the client
-            responder.sendConnectSuccess(addressType)
+            responder.sendConnectSuccess(
+                addressType = addressType,
+                remote = remote.cast<InetSocketAddress>(),
+            )
           } catch (e: Throwable) {
             e.ifNotCancellation {
               Timber.e(e) { "Error sending connect() SUCCESS notification" }
@@ -129,16 +135,20 @@ protected constructor(
           }
 
           socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
-            relayData(
-                scope = scope,
-                client = client,
-                proxyInput = proxyInput,
-                proxyOutput = proxyOutput,
-                internetInput = internetInput,
-                internetOutput = internetOutput,
-                serverDispatcher = serverDispatcher,
-                onReport = onReport,
-            )
+            try {
+              relayData(
+                  scope = scope,
+                  client = client,
+                  proxyInput = proxyInput,
+                  proxyOutput = proxyOutput,
+                  internetInput = internetInput,
+                  internetOutput = internetOutput,
+                  serverDispatcher = serverDispatcher,
+                  onReport = onReport,
+              )
+            } finally {
+              internetOutput.flush()
+            }
           }
         }
       }
@@ -168,6 +178,7 @@ protected constructor(
                   }
                   .also { socketTagger.tagSocket() }
                   .let { b ->
+                    Timber.d { "SOCKS BIND -> ${connectionInfo.hostName}" }
                     b.bind(
                         hostname = connectionInfo.hostName,
                         port = 0,
@@ -175,20 +186,21 @@ protected constructor(
                           reuseAddress = true
                           // As of KTOR-3.0.0, this is not supported and crashes at runtime
                           // reusePort = true
-                        })
+                        },
+                    )
                   }
                   .use { server ->
+                    // Track server socket
+                    socketTracker.track(server)
+
                     // SOCKS protocol says you MUST time out after 2 minutes
                     val boundSocket = scope.async { withTimeout(2.minutes) { server.accept() } }
 
                     // Once the bind is open, we send the initial reply telling the client
                     // the IP and the port
-                    val bindAddress = server.localAddress.cast<InetSocketAddress>().requireNotNull()
                     responder.sendBindInitialized(
                         addressType = addressType,
-                        port = bindAddress.port.toShort(),
-                        address =
-                            bindAddress.cast<java.net.InetSocketAddress>().requireNotNull().address,
+                        bound = server.localAddress.cast(),
                     )
 
                     boundSocket.await()
@@ -223,8 +235,7 @@ protected constructor(
           try {
             responder.sendBindInitialized(
                 addressType = addressType,
-                port = hostAddress.port.toShort(),
-                address = hostAddress.cast<java.net.InetSocketAddress>().requireNotNull().address,
+                bound = hostAddress,
             )
           } catch (e: Throwable) {
             e.ifNotCancellation {
@@ -235,16 +246,20 @@ protected constructor(
           }
 
           socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
-            relayData(
-                scope = scope,
-                client = client,
-                serverDispatcher = serverDispatcher,
-                proxyInput = proxyInput,
-                proxyOutput = proxyOutput,
-                internetInput = internetInput,
-                internetOutput = internetOutput,
-                onReport = onReport,
-            )
+            try {
+              relayData(
+                  scope = scope,
+                  client = client,
+                  serverDispatcher = serverDispatcher,
+                  proxyInput = proxyInput,
+                  proxyOutput = proxyOutput,
+                  internetInput = internetInput,
+                  internetOutput = internetOutput,
+                  onReport = onReport,
+              )
+            } finally {
+              internetOutput.flush()
+            }
           }
         }
       }
@@ -338,21 +353,35 @@ protected constructor(
 
     suspend fun sendError()
 
-    suspend fun sendConnectSuccess(addressType: AT)
+    suspend fun sendConnectSuccess(
+        addressType: AT,
+        remote: InetSocketAddress?,
+    )
 
     suspend fun sendBindInitialized(
         addressType: AT,
-        port: Short,
-        address: InetAddress,
+        bound: InetSocketAddress?,
     )
 
     companion object {
 
       /** The zero IP, we send to this IP for error commands */
-      internal val INVALID_IP = InetAddress.getByAddress(byteArrayOf(0, 0, 0, 0))
+      internal val INVALID_IPV6 = InetAddress.getByAddress(ByteArray(16) { 0 })
+
+      /** The zero IP, we send to this IP for error commands */
+      internal val INVALID_IPV4 = InetAddress.getByAddress(ByteArray(4) { 0 })
 
       /** Zero port sent for error commands */
       internal const val INVALID_PORT: Short = 0
+
+      @CheckResult
+      internal fun InetSocketAddress.getJavaInetSocketAddress(): InetAddress {
+        return toJavaAddress()
+            .cast<java.net.InetSocketAddress>()
+            .requireNotNull { "Failed to cast to java.net.InetSocketAddress: $this" }
+            .address
+            .requireNotNull { "Failed to get IP address from $this" }
+      }
     }
   }
 }

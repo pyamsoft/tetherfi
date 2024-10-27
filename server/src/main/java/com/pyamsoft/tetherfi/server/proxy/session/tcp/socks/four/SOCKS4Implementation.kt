@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four
 
 import android.annotation.SuppressLint
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -26,11 +27,13 @@ import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_IP
-import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.AbstractSOCKSImplementation.Responder.Companion.INVALID_PORT
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_IPV4
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.INVALID_PORT
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.readUntilNullTerminator
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.core.writeFully
@@ -56,7 +59,7 @@ internal class SOCKS4Implementation
 internal constructor(
     socketTagger: SocketTagger,
 ) :
-    AbstractSOCKSImplementation<SOCKS4AddressType, SOCKS4Implementation.Responder>(
+    BaseSOCKSImplementation<SOCKS4AddressType, SOCKS4Implementation.Responder>(
         socketTagger = socketTagger) {
 
   @SuppressLint("CheckResult")
@@ -102,12 +105,6 @@ internal constructor(
   ) =
       withContext(context = serverDispatcher.primary) {
 
-        /**
-         * +----+----+----+----+----+----+----+----+----+....+----+ | CD | DSTPORT | DSTIP | USERID
-         * |NULL| +----+----+----+----+----+----+----+----+----+....+----+
-         *
-         * # of bytes:	 1 2 4 variable 1
-         */
         // We've already consumed the first byte of this and determined it was a SOCKS4 request
 
         // First byte command
@@ -195,7 +192,7 @@ internal constructor(
   internal value class Responder
   internal constructor(
       private val proxyOutput: ByteWriteChannel,
-  ) : AbstractSOCKSImplementation.Responder<SOCKS4AddressType> {
+  ) : BaseSOCKSImplementation.Responder<SOCKS4AddressType> {
 
     private suspend inline fun sendPacket(builder: Sink.() -> Unit) {
       val packet =
@@ -213,12 +210,6 @@ internal constructor(
       }
     }
 
-    /**
-     * +----+----+----+----+----+----+----+----+ | VN | CD | DSTPORT | DSTIP |
-     * +----+----+----+----+----+----+----+----+
-     *
-     * # of bytes:	 1 1 2 4
-     */
     private suspend fun sendPacket(replyCode: Byte, port: Short, address: InetAddress) {
       sendPacket {
         // CD
@@ -232,31 +223,33 @@ internal constructor(
       }
     }
 
-    override suspend fun sendConnectSuccess(addressType: SOCKS4AddressType) {
+    override suspend fun sendConnectSuccess(
+        addressType: SOCKS4AddressType,
+        remote: InetSocketAddress?
+    ) {
       return sendPacket(
           replyCode = SUCCESS_CODE,
-          port = INVALID_PORT,
-          address = INVALID_IP,
+          address = getDestinationAddress(remote),
+          port = getDestinationPort(remote),
       )
     }
 
     override suspend fun sendBindInitialized(
         addressType: SOCKS4AddressType,
-        port: Short,
-        address: InetAddress
+        bound: InetSocketAddress?
     ) {
       return sendPacket(
           replyCode = SUCCESS_CODE,
-          port = port,
-          address = address,
+          address = getDestinationAddress(bound),
+          port = getDestinationPort(bound),
       )
     }
 
     override suspend fun sendRefusal() {
       return sendPacket(
           replyCode = ERROR_CODE,
+          address = INVALID_IPV4,
           port = INVALID_PORT,
-          address = INVALID_IP,
       )
     }
 
@@ -267,13 +260,28 @@ internal constructor(
 
     companion object {
 
-      private const val SOCKS_VERSION_BYTE: Byte = 0
-
       // Granted
       private const val SUCCESS_CODE: Byte = 90
 
       // SOCKS4 does not differentiate between "something went wrong" and "no"
       private const val ERROR_CODE: Byte = 91
+
+      @JvmStatic
+      @CheckResult
+      internal fun getDestinationPort(address: InetSocketAddress?): Short {
+        return address?.port?.toShort() ?: INVALID_PORT
+      }
+
+      @JvmStatic
+      @CheckResult
+      internal fun getDestinationAddress(address: InetSocketAddress?): InetAddress {
+        return address?.getJavaInetSocketAddress() ?: INVALID_IPV4
+      }
     }
+  }
+
+  companion object {
+
+    private const val SOCKS_VERSION_BYTE: Byte = 0
   }
 }

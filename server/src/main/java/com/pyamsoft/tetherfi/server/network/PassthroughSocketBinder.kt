@@ -33,7 +33,6 @@ internal class PassthroughSocketBinder @Inject internal constructor() : SocketBi
   }
 
   companion object {
-    private val NOOP_BOUND: SocketBinder.NetworkBinder =
-        SocketBinder.NetworkBinder { Timber.d { "Not binding to any socket" } }
+    private val NOOP_BOUND: SocketBinder.NetworkBinder = SocketBinder.NetworkBinder {}
   }
 }
