@@ -43,7 +43,7 @@ buildscript {
 
     desugar = "2.1.2"
 
-    ktor = "3.0.0-PYAMSOFT"
+    ktor = "3.0.1-PYAMSOFT"
 
     // Testing
     testRunner = "1.6.2"
@@ -81,7 +81,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-1.0.25" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-1.0.26" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
