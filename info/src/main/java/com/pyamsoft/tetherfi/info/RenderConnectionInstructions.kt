@@ -70,6 +70,7 @@ internal fun LazyListScope.renderConnectionInstructions(
   renderAppSetup(
       itemModifier = itemModifier,
       appName = appName,
+      serverViewState = serverViewState,
   )
 
   item(

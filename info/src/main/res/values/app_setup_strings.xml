@@ -33,4 +33,8 @@
   <string
     name="check_hotspot_green"
   >Check that the Broadcast, Proxy, and Hotspot status are all up and running.</string>
+
+  <!-- TODO(Help): Need zh-rTW translation -->
+  <string name="connect_usb_ethernet">Connect a USB cable to your device</string>
+  <string name="usb_tethering_must_be_on">You need to start USB Tethering on your device. You do not need to have a Tethering plan, but you need to be able to be in Tethering mode (also called RNDIS) for %1$s to work.</string>
 </resources>
