@@ -28,26 +28,18 @@ import org.jetbrains.annotations.TestOnly
 @TestOnly
 @VisibleForTesting
 enum class TestServerState {
-    EMPTY,
-    CONNECTED,
-    ERROR,
+  EMPTY,
+  CONNECTED,
+  ERROR,
 }
 
-@TestOnly
-@VisibleForTesting
-const val TEST_SSID = "TEST"
+@TestOnly @VisibleForTesting const val TEST_SSID = "TEST"
 
-@TestOnly
-@VisibleForTesting
-const val TEST_PASSWORD = "testing123"
+@TestOnly @VisibleForTesting const val TEST_PASSWORD = "testing123"
 
-@TestOnly
-@VisibleForTesting
-const val TEST_PORT = 9999
+@TestOnly @VisibleForTesting const val TEST_PORT = 9999
 
-@TestOnly
-@VisibleForTesting
-const val TEST_HOSTNAME = "127.0.0.1"
+@TestOnly @VisibleForTesting const val TEST_HOSTNAME = "127.0.0.1"
 
 @TestOnly
 @CheckResult
@@ -57,62 +49,53 @@ fun makeTestServerState(
     broadcastType: BroadcastType? = BroadcastType.WIFI_DIRECT,
 ): ServerViewState =
     when (state) {
-        TestServerState.EMPTY ->
-            object : ServerViewState {
-                override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
-                override val connection =
-                    MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-                override val port = MutableStateFlow(TEST_PORT)
+      TestServerState.EMPTY ->
+          object : ServerViewState {
+            override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+            override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+            override val port = MutableStateFlow(TEST_PORT)
 
-                override val broadcastType = MutableStateFlow(broadcastType)
+            override val broadcastType = MutableStateFlow(broadcastType)
 
-                // TODO support other network prefs
-                override val preferredNetwork =
-                    MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
-            }
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+          }
+      TestServerState.CONNECTED ->
+          object : ServerViewState {
+            override val group =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.GroupInfo.Connected(
+                        ssid = TEST_SSID,
+                        password = TEST_PASSWORD,
+                    ))
+            override val connection =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
+            override val port = MutableStateFlow(TEST_PORT)
 
-        TestServerState.CONNECTED ->
-            object : ServerViewState {
-                override val group =
-                    MutableStateFlow(
-                        BroadcastNetworkStatus.GroupInfo.Connected(
-                            ssid = TEST_SSID,
-                            password = TEST_PASSWORD,
-                        )
-                    )
-                override val connection =
-                    MutableStateFlow(
-                        BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME)
-                    )
-                override val port = MutableStateFlow(TEST_PORT)
+            override val broadcastType = MutableStateFlow(broadcastType)
 
-                override val broadcastType = MutableStateFlow(broadcastType)
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+          }
+      TestServerState.ERROR ->
+          object : ServerViewState {
+            override val group =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.GroupInfo.Error(
+                        error = RuntimeException("Test Group Error")))
+            override val connection =
+                MutableStateFlow(
+                    BroadcastNetworkStatus.ConnectionInfo.Error(
+                        error = RuntimeException("Test Connection Error")))
+            override val port = MutableStateFlow(TEST_PORT)
 
-                // TODO support other network prefs
-                override val preferredNetwork =
-                    MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
-            }
+            override val broadcastType = MutableStateFlow(broadcastType)
 
-        TestServerState.ERROR ->
-            object : ServerViewState {
-                override val group =
-                    MutableStateFlow(
-                        BroadcastNetworkStatus.GroupInfo.Error(
-                            error = RuntimeException("Test Group Error")
-                        )
-                    )
-                override val connection =
-                    MutableStateFlow(
-                        BroadcastNetworkStatus.ConnectionInfo.Error(
-                            error = RuntimeException("Test Connection Error")
-                        )
-                    )
-                override val port = MutableStateFlow(TEST_PORT)
-
-                override val broadcastType = MutableStateFlow(broadcastType)
-
-                // TODO support other network prefs
-                override val preferredNetwork =
-                    MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
-            }
+            // TODO support other network prefs
+            override val preferredNetwork =
+                MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+          }
     }

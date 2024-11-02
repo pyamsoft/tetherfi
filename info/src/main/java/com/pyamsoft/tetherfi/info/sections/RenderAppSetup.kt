@@ -39,11 +39,11 @@ import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 
 private enum class AppSetupContentTypes {
-    PREP,
-    INTERNET,
-    CONFIG,
-    BATTERY,
-    START,
+  PREP,
+  INTERNET,
+  CONFIG,
+  BATTERY,
+  START,
 }
 
 internal fun LazyListScope.renderAppSetup(
@@ -51,97 +51,97 @@ internal fun LazyListScope.renderAppSetup(
     appName: String,
     serverViewState: ServerViewState,
 ) {
-    renderConnectionPrep(
-        itemModifier = itemModifier,
-        appName = appName,
-        serverViewState = serverViewState,
-    )
+  renderConnectionPrep(
+      itemModifier = itemModifier,
+      appName = appName,
+      serverViewState = serverViewState,
+  )
 
-    item(
-        contentType = AppSetupContentTypes.INTERNET,
+  item(
+      contentType = AppSetupContentTypes.INTERNET,
+  ) {
+    ThisInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
-        ThisInstruction(
-            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.connect_internet),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    text = stringResource(R.string.connect_internet_options),
-                    style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
-            }
-        }
+      Column {
+        Text(
+            text = stringResource(R.string.connect_internet),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            text = stringResource(R.string.connect_internet_options),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        )
+      }
     }
+  }
 
-    item(
-        contentType = AppSetupContentTypes.CONFIG,
-    ) {
-        if (ServerDefaults.canUseCustomConfig()) {
-            ThisInstruction(
-                modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-                small = true,
-            ) {
-                Text(
-                    text = stringResource(R.string.optionally_configure_hotspot),
-                    style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color =
+  item(
+      contentType = AppSetupContentTypes.CONFIG,
+  ) {
+    if (ServerDefaults.canUseCustomConfig()) {
+      ThisInstruction(
+          modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+          small = true,
+      ) {
+        Text(
+            text = stringResource(R.string.optionally_configure_hotspot),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color =
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(
                             alpha = TypographyDefaults.ALPHA_DISABLED,
                         ),
-                    ),
-                )
-            }
-        }
-    }
-
-    item(
-        contentType = AppSetupContentTypes.BATTERY,
-    ) {
-        ThisInstruction(
-            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-            small = true,
-        ) {
-            Text(
-                text = stringResource(R.string.optionally_configure_power, appName),
-                style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color =
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                        alpha = TypographyDefaults.ALPHA_DISABLED,
-                    ),
                 ),
-            )
-        }
+        )
+      }
     }
+  }
 
-    item(
-        contentType = AppSetupContentTypes.START,
+  item(
+      contentType = AppSetupContentTypes.BATTERY,
+  ) {
+    ThisInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+        small = true,
     ) {
-        ThisInstruction(
-            modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.start_the_hotspot, appName),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    text = stringResource(R.string.check_hotspot_green),
-                    style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
-                )
-            }
-        }
+      Text(
+          text = stringResource(R.string.optionally_configure_power, appName),
+          style =
+              MaterialTheme.typography.bodyMedium.copy(
+                  color =
+                      MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                          alpha = TypographyDefaults.ALPHA_DISABLED,
+                      ),
+              ),
+      )
     }
+  }
+
+  item(
+      contentType = AppSetupContentTypes.START,
+  ) {
+    ThisInstruction(
+        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
+    ) {
+      Column {
+        Text(
+            text = stringResource(R.string.start_the_hotspot, appName),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            text = stringResource(R.string.check_hotspot_green),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                ),
+        )
+      }
+    }
+  }
 }
 
 private fun LazyListScope.renderConnectionPrep(
@@ -149,86 +149,85 @@ private fun LazyListScope.renderConnectionPrep(
     appName: String,
     serverViewState: ServerViewState,
 ) {
-    item(
-        contentType = AppSetupContentTypes.PREP,
-    ) {
-        val type by serverViewState.broadcastType.collectAsStateWithLifecycle()
+  item(
+      contentType = AppSetupContentTypes.PREP,
+  ) {
+    val type by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
-        @StringRes val titleRes: Int
-        @StringRes val descRes: Int
-        when (type) {
-            BroadcastType.WIFI_DIRECT -> {
-                titleRes = R.string.turn_on_wi_fi
-                descRes = R.string.wifi_must_be_on
-            }
-            BroadcastType.RNDIS -> {
-                titleRes = R.string.connect_usb_ethernet
-                descRes = R.string.usb_tethering_must_be_on
-            }
-            else -> {
-                return@item
-            }
-        }
-
-        ThisInstruction(
-            modifier = itemModifier,
-        ) {
-            Column {
-                Text(
-                    text = stringResource(titleRes),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    text = stringResource(descRes, appName),
-                    style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
-            }
-        }
+    @StringRes val titleRes: Int
+    @StringRes val descRes: Int
+    when (type) {
+      BroadcastType.WIFI_DIRECT -> {
+        titleRes = R.string.turn_on_wi_fi
+        descRes = R.string.wifi_must_be_on
+      }
+      BroadcastType.RNDIS -> {
+        titleRes = R.string.connect_usb_ethernet
+        descRes = R.string.usb_tethering_must_be_on
+      }
+      else -> {
+        return@item
+      }
     }
 
+    ThisInstruction(
+        modifier = itemModifier,
+    ) {
+      Column {
+        Text(
+            text = stringResource(titleRes),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            text = stringResource(descRes, appName),
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        )
+      }
+    }
+  }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewAppSetupWifiDirect() {
-    LazyColumn {
-        renderAppSetup(
-            appName = "TEST",
-            serverViewState = makeTestServerState(
+  LazyColumn {
+    renderAppSetup(
+        appName = "TEST",
+        serverViewState =
+            makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = BroadcastType.WIFI_DIRECT,
-            )
-        )
-    }
+            ))
+  }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewAppSetupRndis() {
-    LazyColumn {
-        renderAppSetup(
-            appName = "TEST",
-            serverViewState = makeTestServerState(
+  LazyColumn {
+    renderAppSetup(
+        appName = "TEST",
+        serverViewState =
+            makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = BroadcastType.RNDIS,
-            )
-        )
-    }
+            ))
+  }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewAppSetupNone() {
-    LazyColumn {
-        renderAppSetup(
-            appName = "TEST",
-            serverViewState = makeTestServerState(
+  LazyColumn {
+    renderAppSetup(
+        appName = "TEST",
+        serverViewState =
+            makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = null,
-            )
-        )
-    }
+            ))
+  }
 }

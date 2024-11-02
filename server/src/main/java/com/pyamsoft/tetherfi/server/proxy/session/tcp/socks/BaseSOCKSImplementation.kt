@@ -35,12 +35,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import java.net.InetAddress
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
-import java.net.InetAddress
-import kotlin.time.Duration.Companion.minutes
 
 internal abstract class BaseSOCKSImplementation<
     AT : BaseSOCKSImplementation.SOCKSAddressType,

@@ -19,18 +19,10 @@ package com.pyamsoft.tetherfi.server.clients
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.requireNotNull
-import com.pyamsoft.pydroid.util.contains
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import java.time.Clock
-import java.time.LocalDateTime
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,10 +30,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Clock
+import java.time.LocalDateTime
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class ClientManagerImpl
@@ -50,7 +49,6 @@ internal constructor(
     private val inAppRatingPreferences: InAppRatingPreferences,
     private val clock: Clock,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
-    private val proxyPreferences: ProxyPreferences,
     private val tweakPreferences: TweakPreferences,
 ) :
     BlockedClientTracker,
@@ -61,8 +59,8 @@ internal constructor(
     ClientResolver,
     ClientEditor {
 
-  private val blockedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
-  private val allowedClients = MutableStateFlow<Collection<TetherClient>>(emptySet())
+  private val blockedClients = MutableStateFlow<Map<String, TetherClient>>(emptyMap())
+  private val allowedClients = MutableStateFlow<Map<String, TetherClient>>(emptyMap())
 
   private val jobs = MutableStateFlow<Collection<Job>>(emptySet())
 
@@ -121,22 +119,22 @@ internal constructor(
     // "Live" client must have activity within 2 minutes
     val newClients =
         allowedClients.updateAndGet { list ->
-          list.filter {
-            val newEnough = it.mostRecentlySeen >= cutoffTime
+          list.filter { entry ->
+            val client = entry.value
+            val newEnough = client.mostRecentlySeen >= cutoffTime
             if (!newEnough) {
-              Timber.d { "Client is too old: $it. Last seen ${it.mostRecentlySeen}" }
+              Timber.d { "Client is too old: $client. Last seen ${client.mostRecentlySeen}" }
             }
             return@filter newEnough
           }
         }
-    blockedClients.update { set ->
-      set.filter { bc ->
-            // If this blocked client is still found in the "new client" list, keep it,
-            // otherwise filter it out
-            val stillAlive = newClients.firstOrNull { bc.matches(it) }
-            return@filter stillAlive != null
-          }
-          .toSet()
+    blockedClients.update { blocked ->
+      blocked.filter { entry ->
+        // If this blocked client is still found in the "new client" list, keep it,
+        // otherwise filter it out
+        val stillAlive = newClients.get(entry.key)
+        return@filter stillAlive != null
+      }
     }
 
     // Don't call shutdownWithNoClients here, we want to call it only on its own schedule
@@ -198,7 +196,7 @@ internal constructor(
 
   @CheckResult
   private fun isBlockedClient(client: TetherClient): Boolean {
-    return blockedClients.value.contains { it.matches(client) }
+    return blockedClients.value.contains(client.key())
   }
 
   private suspend inline fun onTimerElapsed(period: Duration, block: (LocalDateTime) -> Unit) {
@@ -232,30 +230,22 @@ internal constructor(
     return false
   }
 
-  @CheckResult
-  private fun resolve(hostNameOrIp: String): TetherClient? {
-    val allowed = allowedClients.value
-
-    // Find a client
-    return allowed.firstOrNull { it.matches(hostNameOrIp) }
-  }
-
   private fun CoroutineScope.handleClientUpdate(
       client: TetherClient,
       onClientUpdated: (TetherClient) -> TetherClient,
   ) {
+    val key = client.key()
     val clients =
-        allowedClients.updateAndGet { list ->
-          return@updateAndGet list.map { c ->
-            if (c.matches(client)) {
-              return@map onClientUpdated(c)
-            } else {
-              return@map c
-            }
+        allowedClients.updateAndGet { clients ->
+          val existing = clients[key]
+          if (existing != null) {
+            return@updateAndGet clients.toMutableMap().apply { put(key, onClientUpdated(existing)) }
+          } else {
+            return@updateAndGet clients
           }
         }
 
-    onClientsUpdated(clients)
+    onClientsUpdated(clients.values)
   }
 
   override suspend fun started() =
@@ -265,29 +255,27 @@ internal constructor(
       }
 
   override fun block(client: TetherClient) {
-    blockedClients.update { set ->
-      val existing = set.firstOrNull { it.matches(client) }
+    blockedClients.update { blocked ->
+      val key = client.key()
+      val existing = blocked[key]
 
-      return@update set.run {
-        if (existing == null) {
-          this + client
-        } else {
-          this
-        }
+      if (existing == null) {
+        return@update blocked.toMutableMap().apply { put(key, client) }
+      } else {
+        return@update blocked
       }
     }
   }
 
   override fun unblock(client: TetherClient) {
-    blockedClients.update { clients ->
-      val existing = clients.firstOrNull { it.matches(client) }
+    blockedClients.update { blocked ->
+      val key = client.key()
+      val existing = blocked[key]
 
-      return@update clients.run {
-        if (existing == null) {
-          this
-        } else {
-          this - existing
-        }
+      if (existing == null) {
+        return@update blocked
+      } else {
+        return@update blocked.toMutableMap().apply { remove(key) }
       }
     }
   }
@@ -324,41 +312,42 @@ internal constructor(
   override fun clear() {
     Timber.d { "Clear client tracker" }
 
-    allowedClients.value = emptySet()
-    blockedClients.value = emptySet()
+    allowedClients.value = emptyMap()
+    blockedClients.value = emptyMap()
     jobs.value = emptySet()
   }
 
   override fun listenForClients(): Flow<Collection<TetherClient>> {
-    return allowedClients
+    return allowedClients.map { it.values }
   }
 
   override fun listenForBlocked(): Flow<Collection<TetherClient>> {
-    return blockedClients
+    return blockedClients.map { it.values }
   }
 
   override fun ensure(hostNameOrIp: String): TetherClient {
-    val maybeClient = resolve(hostNameOrIp)
-    return maybeClient
-        ?: allowedClients
-            .updateAndGet { list ->
-              val client =
-                  TetherClient.create(
-                      hostNameOrIp = hostNameOrIp,
-                      clock = clock,
-                  )
+    return allowedClients
+        .updateAndGet { clients ->
+          // Don't allow duplicates in the client list
+          // ConnectionScreen crashes on initial state switch from empty to >0 clients
+          // because a Key is double-added briefly
+          if (clients.containsKey(hostNameOrIp)) {
+            return@updateAndGet clients
+          }
 
-              // Don't allow duplicates in the client list
-              // ConnectionScreen crashes on initial state switch from empty to >0 clients
-              // because a Key is double-added briefly
-              if (list.contains { it.matches(client) }) {
-                return@updateAndGet list
-              }
+          val client =
+              TetherClient.create(
+                  hostNameOrIp = hostNameOrIp,
+                  clock = clock,
+              )
 
-              return@updateAndGet (list + client).also { onNewClientSeen(client) }
-            }
-            .firstOrNull { it.matches(hostNameOrIp) }
-            .requireNotNull { "Unable to ensure TetherClient exists: $hostNameOrIp" }
+          return@updateAndGet clients
+              .toMutableMap()
+              .apply { put(hostNameOrIp, client) }
+              .also { onNewClientSeen(client) }
+        }
+        .getValue(hostNameOrIp)
+        .requireNotNull { "Unable to ensure TetherClient exists: $hostNameOrIp" }
   }
 
   companion object {
