@@ -18,7 +18,7 @@ package com.pyamsoft.tetherfi.connections.sections.list
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
@@ -28,6 +28,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.connections.R
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.clients.key
 
 private enum class RenderConnectionListContentTypes {
   EMPTY,
@@ -115,11 +116,11 @@ private fun LazyListScope.renderRunningWithClients(
     )
   }
 
-  itemsIndexed(
+  items(
       items = clients,
-      key = { index, _ -> index },
-      contentType = { _, _ -> RenderConnectionListContentTypes.CLIENT },
-  ) { _, client ->
+      key = { it.key() },
+      contentType = { RenderConnectionListContentTypes.CLIENT },
+  ) { client ->
     ConnectionItem(
         modifier = itemModifier,
         client = client,
