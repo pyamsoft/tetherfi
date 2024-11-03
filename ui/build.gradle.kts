@@ -51,7 +51,7 @@ dependencies {
   ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
 
   // Lifecycle extensions
-  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 
   // Compose
   api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
