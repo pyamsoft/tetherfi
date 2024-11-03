@@ -20,10 +20,6 @@
   <string
     name="http_manual_proxy"
   >使用「手動」模式並設定 HTTP 跟 HTTPS 的代理服務設定。</string>
-  <string name="toggle_wifi">將 Wi-Fi 網路關閉並重新啟動。</string>
-  <string
-    name="automatically_connect"
-  >裝置應該會自動連接至 %1$s 網路熱點</string>
   <string name="connect_to_hotspot">連接至 %1$s 網路熱點</string>
   <string name="open_wifi_settings">打開 Wi-Fi 連線設定頁面</string>
   <string name="label_hotspot_name">名稱</string>

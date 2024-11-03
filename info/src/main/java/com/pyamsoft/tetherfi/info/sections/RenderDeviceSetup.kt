@@ -45,7 +45,6 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
 import com.pyamsoft.tetherfi.info.R
-import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -57,6 +56,7 @@ import com.pyamsoft.tetherfi.ui.rememberServerSSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
+import com.pyamsoft.tetherfi.ui.R as R2
 
 private enum class DeviceSetupContentTypes {
   SETTINGS,
@@ -279,28 +279,6 @@ internal fun LazyListScope.renderDeviceSetup(
                   ),
           )
         }
-      }
-    }
-  }
-
-  item(
-      contentType = DeviceSetupContentTypes.TOGGLE,
-  ) {
-    OtherInstruction(
-        modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
-    ) {
-      Column {
-        Text(
-            text = stringResource(R.string.toggle_wifi),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Text(
-            text = stringResource(R.string.automatically_connect, appName),
-            style =
-                MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-        )
       }
     }
   }

@@ -21,10 +21,6 @@
   <string
     name="http_manual_proxy"
   >Use MANUAL mode and configure both HTTP and HTTPS proxy options.</string>
-  <string name="toggle_wifi">Turn the Wi-Fi off and back on again.</string>
-  <string
-    name="automatically_connect"
-  >It should automatically connect to the %1$s Hotspot</string>
   <string name="connect_to_hotspot">Connect to the %1$s Hotspot</string>
   <string name="open_wifi_settings">Open the Wi-Fi settings page</string>
   <string name="label_hotspot_name">Name</string>
