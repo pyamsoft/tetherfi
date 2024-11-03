@@ -32,9 +32,4 @@
   <string
     name="shutdown_no_client_description"
   >如果 %1$s 網路熱點在沒有服務任何客戶端裝置情境下運行超過十分鐘就中止服務。\n\n在未使用情境下自動中止網路熱點服務可以節省電池電量消耗。</string>
-
-  <string name="enable_socket_timeout_title">啟用閒置連線逾時清理功能</string>
-  <string
-    name="enable_socket_timeout_description"
-  >在日常使用的情境下這個選項應該被啟用。這讓 %1$s 得以在超過一分鐘的無活動後清理老舊/已死亡的連線。在大量或長時間下載的情境中這個選項應該保持「禁用」。（建議使用）</string>
 </resources>

@@ -94,12 +94,6 @@ internal fun LazyListScope.renderTweaks(
                 ),
         )
 
-        SocketTimeoutTweak(
-            modifier = Modifier.fillMaxWidth(),
-            appName = appName,
-            isEditable = isEditable,
-        )
-
         KeepScreenOnTweak(
             modifier = Modifier.fillMaxWidth(),
             isEditable = isEditable,
@@ -133,31 +127,6 @@ internal fun LazyListScope.renderTweaks(
       }
     }
   }
-}
-
-@Composable
-private fun SocketTimeoutTweak(
-    modifier: Modifier = Modifier,
-    appName: String,
-    isEditable: Boolean,
-) {
-  val color by
-      rememberCheckableColor(
-          enabled = isEditable,
-          label = "Enable Socket Timeout",
-          condition = true,
-          selectedColor = MaterialTheme.colorScheme.primary,
-      )
-
-  ToggleSwitch(
-      modifier = modifier,
-      isEditable = isEditable,
-      color = color,
-      checked = true,
-      title = stringResource(R.string.enable_socket_timeout_title),
-      description = stringResource(R.string.enable_socket_timeout_description, appName),
-      onClick = {},
-  )
 }
 
 @Composable
