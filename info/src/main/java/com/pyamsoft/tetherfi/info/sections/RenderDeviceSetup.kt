@@ -45,6 +45,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
 import com.pyamsoft.tetherfi.info.R
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -56,12 +57,10 @@ import com.pyamsoft.tetherfi.ui.rememberServerSSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
-import com.pyamsoft.tetherfi.ui.R as R2
 
 private enum class DeviceSetupContentTypes {
   SETTINGS,
   CONNECT,
-  TOGGLE,
 }
 
 internal fun LazyListScope.renderDeviceSetup(
@@ -75,134 +74,153 @@ internal fun LazyListScope.renderDeviceSetup(
   item(
       contentType = DeviceSetupContentTypes.SETTINGS,
   ) {
-    OtherInstruction(
-        modifier = itemModifier,
-    ) {
-      Text(
-          text = stringResource(R.string.open_wifi_settings),
-          style = MaterialTheme.typography.bodyLarge,
-      )
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
+    if (broadcastType == BroadcastType.WIFI_DIRECT) {
+      // Only render this instruction for Wi-Fi Direct
+      OtherInstruction(
+          modifier = itemModifier,
+      ) {
+        Text(
+            text = stringResource(R.string.open_wifi_settings),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+      }
+    } else if (broadcastType == BroadcastType.RNDIS) {
+      // Only render this instruction for RNDIS
+      OtherInstruction(
+          modifier = itemModifier,
+      ) {
+        Text(
+            text = stringResource(R.string.open_connection_settings),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+      }
     }
   }
 
   item(
       contentType = DeviceSetupContentTypes.CONNECT,
   ) {
+    val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
     OtherInstruction(
         modifier = itemModifier.padding(top = MaterialTheme.keylines.content),
     ) {
       Column {
-        Text(
-            text = stringResource(R.string.connect_to_hotspot, appName),
-            style =
-                MaterialTheme.typography.labelMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-        )
+        if (broadcastType == BroadcastType.WIFI_DIRECT) {
+          // Only render this instruction for Wi-Fi Direct
+          Text(
+              text = stringResource(R.string.connect_to_hotspot, appName),
+              style =
+                  MaterialTheme.typography.labelMedium.copy(
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  ),
+          )
 
-        Row {
-          val group by serverViewState.group.collectAsStateWithLifecycle()
-          val ssid = rememberServerSSID(group)
+          Row {
+            val group by serverViewState.group.collectAsStateWithLifecycle()
+            val ssid = rememberServerSSID(group)
 
-          val password = rememberServerRawPassword(group)
-          val isNetworkReadyForQRCode =
-              remember(
-                  ssid,
-                  password,
+            val password = rememberServerRawPassword(group)
+            val isNetworkReadyForQRCode =
+                remember(
+                    ssid,
+                    password,
+                ) {
+                  ssid.isNotBlank() && password.isNotBlank()
+                }
+
+            Text(
+                text = stringResource(R.string.label_hotspot_name),
+                style =
+                    MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+            )
+
+            Text(
+                modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                text = ssid,
+                style =
+                    MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.W700,
+                        fontFamily = FontFamily.Monospace,
+                    ),
+            )
+
+            if (isNetworkReadyForQRCode) {
+              // Don't use IconButton because we don't care about minimum touch target size
+              Box(
+                  modifier =
+                      Modifier.padding(start = MaterialTheme.keylines.baseline)
+                          .clickable { onShowQRCode() }
+                          .padding(MaterialTheme.keylines.typography),
+                  contentAlignment = Alignment.Center,
               ) {
-                ssid.isNotBlank() && password.isNotBlank()
+                Icon(
+                    modifier = Modifier.size(16.dp),
+                    imageVector = Icons.Filled.QrCode,
+                    contentDescription = stringResource(com.pyamsoft.tetherfi.ui.R.string.qr_code),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
               }
-
-          Text(
-              text = stringResource(R.string.label_hotspot_name),
-              style =
-                  MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  ),
-          )
-
-          Text(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = ssid,
-              style =
-                  MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      fontWeight = FontWeight.W700,
-                      fontFamily = FontFamily.Monospace,
-                  ),
-          )
-
-          if (isNetworkReadyForQRCode) {
-            // Don't use IconButton because we don't care about minimum touch target size
-            Box(
-                modifier =
-                    Modifier.padding(start = MaterialTheme.keylines.baseline)
-                        .clickable { onShowQRCode() }
-                        .padding(MaterialTheme.keylines.typography),
-                contentAlignment = Alignment.Center,
-            ) {
-              Icon(
-                  modifier = Modifier.size(16.dp),
-                  imageVector = Icons.Filled.QrCode,
-                  contentDescription = stringResource(R2.string.qr_code),
-                  tint = MaterialTheme.colorScheme.primary,
-              )
             }
           }
-        }
 
-        Row {
-          val group by serverViewState.group.collectAsStateWithLifecycle()
-          val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
-          val password = rememberServerPassword(group, isPasswordVisible)
-          val rawPassword = rememberServerRawPassword(group)
+          Row {
+            val group by serverViewState.group.collectAsStateWithLifecycle()
+            val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
+            val password = rememberServerPassword(group, isPasswordVisible)
+            val rawPassword = rememberServerRawPassword(group)
 
-          val hapticManager = LocalHapticManager.current
+            val hapticManager = LocalHapticManager.current
 
-          Text(
-              text = stringResource(R2.string.password),
-              style =
-                  MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  ),
-          )
-          Text(
-              modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
-              text = password,
-              style =
-                  MaterialTheme.typography.bodyLarge.copy(
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      fontWeight = FontWeight.W700,
-                      fontFamily = FontFamily.Monospace,
-                  ),
-          )
+            Text(
+                text = stringResource(com.pyamsoft.tetherfi.ui.R.string.password),
+                style =
+                    MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+            )
+            Text(
+                modifier = Modifier.padding(start = MaterialTheme.keylines.typography),
+                text = password,
+                style =
+                    MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.W700,
+                        fontFamily = FontFamily.Monospace,
+                    ),
+            )
 
-          if (rawPassword.isNotBlank()) {
-            // Don't use IconButton because we don't care about minimum touch target size
-            Box(
-                modifier =
-                    Modifier.padding(start = MaterialTheme.keylines.baseline)
-                        .clickable {
-                          if (isPasswordVisible) {
-                            hapticManager?.toggleOff()
-                          } else {
-                            hapticManager?.toggleOn()
+            if (rawPassword.isNotBlank()) {
+              // Don't use IconButton because we don't care about minimum touch target size
+              Box(
+                  modifier =
+                      Modifier.padding(start = MaterialTheme.keylines.baseline)
+                          .clickable {
+                            if (isPasswordVisible) {
+                              hapticManager?.toggleOff()
+                            } else {
+                              hapticManager?.toggleOn()
+                            }
+                            onTogglePasswordVisibility()
                           }
-                          onTogglePasswordVisibility()
-                        }
-                        .padding(MaterialTheme.keylines.typography),
-                contentAlignment = Alignment.Center,
-            ) {
-              Icon(
-                  modifier = Modifier.size(16.dp),
-                  imageVector =
-                      if (isPasswordVisible) Icons.Filled.VisibilityOff
-                      else Icons.Filled.Visibility,
-                  contentDescription =
-                      stringResource(
-                          if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden),
-                  tint = MaterialTheme.colorScheme.primary,
-              )
+                          .padding(MaterialTheme.keylines.typography),
+                  contentAlignment = Alignment.Center,
+              ) {
+                Icon(
+                    modifier = Modifier.size(16.dp),
+                    imageVector =
+                        if (isPasswordVisible) Icons.Filled.VisibilityOff
+                        else Icons.Filled.Visibility,
+                    contentDescription =
+                        stringResource(
+                            if (isPasswordVisible) com.pyamsoft.tetherfi.ui.R.string.pass_visible
+                            else com.pyamsoft.tetherfi.ui.R.string.pass_hidden),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+              }
             }
           }
         }
@@ -266,7 +284,8 @@ internal fun LazyListScope.renderDeviceSetup(
                   context,
                   port,
               ) {
-                if (port <= 1024) context.getString(R2.string.invalid_port) else "$port"
+                if (port <= 1024) context.getString(com.pyamsoft.tetherfi.ui.R.string.invalid_port)
+                else "$port"
               }
           Text(
               modifier = Modifier.padding(start = MaterialTheme.keylines.typography),

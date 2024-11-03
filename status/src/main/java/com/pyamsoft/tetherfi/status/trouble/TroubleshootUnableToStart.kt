@@ -125,6 +125,11 @@ internal fun TroubleshootUnableToStart(
       } else if (broadcastType == BroadcastType.RNDIS) {
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.trouble_connect_rndis),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Text(
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             text = stringResource(R.string.trouble_broadcast_rndis),
             style = MaterialTheme.typography.bodyLarge,
         )

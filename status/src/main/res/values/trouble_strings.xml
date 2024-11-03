@@ -57,6 +57,9 @@
     name="trouble_location_service"
   >• Location Services must be turned ON</string>
   <string
+    name="trouble_connect_rndis"
+  >• Your device must be physically connected via a USB data cable</string>
+  <string
     name="trouble_broadcast_rndis"
   >• USB Tethering must be turned ON</string>
 </resources>
