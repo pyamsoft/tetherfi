@@ -94,7 +94,6 @@ internal fun LazyListScope.renderLoadedContent(
     onViewSlowSpeedHelp: () -> Unit,
 
     // Expert
-    onShowPowerBalance: () -> Unit,
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
@@ -168,7 +167,6 @@ internal fun LazyListScope.renderLoadedContent(
       serverViewState = serverViewState,
       isEditable = isEditable,
       appName = appName,
-      onShowPowerBalance = onShowPowerBalance,
       onSelectBroadcastType = onSelectBroadcastType,
       onSelectPreferredNetwork = onSelectPreferredNetwork,
   )
@@ -230,7 +228,6 @@ private fun PreviewLoadedContent(
         onToggleIgnoreVpn = {},
         onToggleShutdownWithNoClients = {},
         onJumpToHowTo = {},
-        onShowPowerBalance = {},
         isEditable = isEditable,
         wiDiStatus = RunningStatus.NotRunning,
         proxyStatus = RunningStatus.NotRunning,

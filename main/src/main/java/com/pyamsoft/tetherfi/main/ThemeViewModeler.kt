@@ -52,14 +52,13 @@ internal constructor(
     val s = state
     registry
         .consumeRestored(KEY_THEME_MODE)
-        ?.let { it.cast<String>() }
+        ?.cast<String>()
         ?.let { Theming.Mode.valueOf(it) }
         ?.also { s.mode.value = it }
 
-    registry
-        .consumeRestored(KEY_THEME_MATERIAL_YOU)
-        ?.let { it.cast<Boolean>() }
-        ?.also { s.isMaterialYou.value = it }
+    registry.consumeRestored(KEY_THEME_MATERIAL_YOU)?.cast<Boolean>()?.also {
+      s.isMaterialYou.value = it
+    }
   }
 
   private fun bind(scope: CoroutineScope) {
