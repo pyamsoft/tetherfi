@@ -104,12 +104,24 @@ android {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+      // https://developer.android.com/build/shrink-code#native-crash-support
+      // androidx.graphics.path includes native code now?
+      ndk {
+        debugSymbolLevel = "FULL"
+      }
     }
 
     debug {
       signingConfig = signingConfigs.getByName("debug")
       applicationIdSuffix = ".dev"
       versionNameSuffix = "-dev"
+
+      // https://developer.android.com/build/shrink-code#native-crash-support
+      // androidx.graphics.path includes native code now?
+      ndk {
+        debugSymbolLevel = "FULL"
+      }
     }
   }
 
