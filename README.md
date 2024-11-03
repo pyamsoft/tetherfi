@@ -76,7 +76,7 @@ Hotspot data plan to use TetherFi, but the app works best with "unlimited" data 
 
 #### TetherFi may be for you if:
 
-- You want to share your Android's Wi-Fi or Mobile Data
+- You want to share your Android's Wi-Fi or Cellular Data
 - You have an Unlimited Data and a Hotspot plan from your Carrier, but Hotspot
   has a data cap
 - You have an Unlimited Data and a Hotspot plan from your Carrier, but Hotspot

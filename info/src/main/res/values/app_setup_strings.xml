@@ -22,7 +22,7 @@
   <string name="connect_internet">Connect to the Internet.</string>
   <string
     name="connect_internet_options"
-  >You can connect via Wi-Fi or Mobile Data</string>
+  >You can connect via Wi-Fi or Cellular Data</string>
   <string
     name="optionally_configure_hotspot"
   >You can optionally configure the Name, Password, Proxy Port and Broadcast Frequency Band. This is not required, and the defaults will work fine for most people.</string>

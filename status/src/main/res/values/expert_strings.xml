@@ -91,7 +91,7 @@
     Connections to the Hotspot will go over Wi-Fi connection if available
   </string>
 
-  <string name="expert_preferred_network_cellular_title">Mobile Data</string>
+  <string name="expert_preferred_network_cellular_title">Cellular Data</string>
   <string name="expert_preferred_network_cellular_description">
     Connections to the Hotspot will go over Cellular Data connection if available
   </string>
