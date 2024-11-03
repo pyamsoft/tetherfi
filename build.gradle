@@ -20,15 +20,15 @@ buildscript {
   ext {
     // SDK
     minSdk = 24
-    targetSdk = 34
-    compileSdk = 34
+    targetSdk = 35
+    compileSdk = 35
 
     // Kotlin
     kotlin = "2.0.21"
     coroutines = "1.9.0"
 
     // Us
-    pydroid = "27.0.6"
+    pydroid = "27.1.0"
 
     // Leak Canary
     leakCanary = "2.14"

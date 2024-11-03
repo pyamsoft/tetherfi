@@ -107,9 +107,7 @@ android {
 
       // https://developer.android.com/build/shrink-code#native-crash-support
       // androidx.graphics.path includes native code now?
-      ndk {
-        debugSymbolLevel = "FULL"
-      }
+      ndk { debugSymbolLevel = "FULL" }
     }
 
     debug {
@@ -119,9 +117,7 @@ android {
 
       // https://developer.android.com/build/shrink-code#native-crash-support
       // androidx.graphics.path includes native code now?
-      ndk {
-        debugSymbolLevel = "FULL"
-      }
+      ndk { debugSymbolLevel = "FULL" }
     }
   }
 
