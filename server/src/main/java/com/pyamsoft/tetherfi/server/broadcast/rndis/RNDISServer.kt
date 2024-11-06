@@ -21,13 +21,14 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
-import java.net.NetworkInterface
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.net.NetworkInterface
+import java.util.Enumeration
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class RNDISServer @Inject internal constructor() : BroadcastServerImplementation<String> {
@@ -35,13 +36,17 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
   @CheckResult
   private suspend fun resolveRNDISNetwork(): String =
       withContext(context = Dispatchers.IO) {
-        val allIfaces = NetworkInterface.getNetworkInterfaces()
-        for (iface in allIfaces) {
-          if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
-            for (address in iface.inetAddresses) {
-              val hostName = address.hostName.orEmpty()
-              if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
-                return@withContext hostName
+        // On some devices, this method does not return interfaces?
+        // https://github.com/pyamsoft/tetherfi/issues/351
+        val allIfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
+        if (allIfaces != null) {
+          for (iface in allIfaces) {
+            if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
+              for (address in iface.inetAddresses) {
+                val hostName = address.hostName.orEmpty()
+                if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
+                  return@withContext hostName
+                }
               }
             }
           }
