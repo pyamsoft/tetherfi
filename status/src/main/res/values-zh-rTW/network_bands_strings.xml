@@ -17,7 +17,17 @@
   -->
 <resources>
   <string name="broadcast_frequency">廣播的無線通訊頻段</string>
+
   <string
     name="network_bands_system_defined"
   >網路的廣播頻段由作業系統定義且無法被變更。</string>
+
+  <string name="network_bands_legacy_title">2.4GHz</string>
+  <string
+    name="network_bands_legacy_description"
+  >較慢但是相容於所有裝置。</string>
+  <string name="network_bands_modern_title">5GHz</string>
+  <string
+    name="network_bands_modern_description"
+  >較快但是並不相容於所有裝置</string>
 </resources>

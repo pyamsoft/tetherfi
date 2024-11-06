@@ -16,4 +16,5 @@
   -->
 <resources>
   <string name="app_name">TetherFi（開發版）</string>
+  <string name="toggle_hotspot_shortcut">啟/停 TetherFi（開發版）熱點</string>
 </resources>

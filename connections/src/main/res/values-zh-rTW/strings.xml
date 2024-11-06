@@ -40,6 +40,9 @@
     name="connection_running_explain"
   >預設行為下任何連接的客戶端裝置皆允許透過網路熱點訪問網際網路。若您需要自網路阻擋特定的客戶端裝置您可以將您要限制的 IP 地址的開關關掉。</string>
   <string name="option_set_nickname">設定暱稱</string>
-  <string name="option_set_transfer">設定頻寬限制</string>
-  <string name="transfer_over_limit">頻寬使用超限：%1$s</string>
+  <string name="option_set_transfer">設定流量限制</string>
+  <string name="transfer_over_limit">流量使用超過限制：%1$s</string>
+  <string name="option_set_bandwidth">設定頻寬限制</string>
+  <string name="bandwidth_label">頻寬速率限制</string>
+  <string name="bandwidth_limit">%1$s：%2$s/秒</string>
 </resources>

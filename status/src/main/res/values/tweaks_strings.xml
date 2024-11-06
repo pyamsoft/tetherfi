@@ -30,13 +30,11 @@
     name="shutdown_no_client_description"
   >If the %1$s hotspot has been running for 10 minutes without serving any client devices, shut it down.\n\nAutomatically shutting down the hotspot when it is not being used can save battery.</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string name="keep_screen_on_title">Keep Screen On</string>
   <string
     name="keep_screen_on_description"
   >Keep the screen on while the Hotspot is running. Once the Hotspot is stopped, the screen will be allowed to turn off again. This tweak is not supported on every device.</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string name="ignore_location_title">Avoid Location Blocker Dialog</string>
   <string name="ignore_location_description">
         In order to use Wi-Fi Direct, %1$s may require Location turned on. Not

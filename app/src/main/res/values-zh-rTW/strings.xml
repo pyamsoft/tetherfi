@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
+  ~ Copyright 2024 林博仁(Buo-ren Lin)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,18 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="broadcast_frequency">Broadcast Frequency</string>
-
-  <string
-    name="network_bands_system_defined"
-  >Network Broadcast Frequency is defined by the system and cannot be changed.</string>
-
-  <string name="network_bands_legacy_title">2.4GHz</string>
-  <string
-    name="network_bands_legacy_description"
-  >Slower but compatible with every device.</string>
-  <string name="network_bands_modern_title">5GHz</string>
-  <string
-    name="network_bands_modern_description"
-  >Faster but not compatible with every device.</string>
+    <string name="app_name">TetherFi</string>
+    <string name="toggle_hotspot_shortcut">啟/停 TetherFi 熱點</string>
 </resources>

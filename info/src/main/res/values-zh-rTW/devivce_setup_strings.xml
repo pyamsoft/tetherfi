@@ -25,4 +25,8 @@
   <string name="label_hotspot_name">名稱</string>
   <string name="label_hotspot_hostname">網址(URL)</string>
   <string name="label_hotspot_port">通訊埠號</string>
+
+  <string
+    name="open_connection_settings"
+  >開啟網路連線／網際網路設定頁面</string>
 </resources>

@@ -16,6 +16,11 @@
   ~ limitations under the License.
   -->
 <resources>
+  <string name="expert_title">專業設定</string>
+  <string
+      name="expert_description"
+      >以下設定為提供進階使用者使用。\n\n調整這些選項可能會完全改變 %1$s 的運作方式，僅在自負責任下繼續操作。大部分使用者皆「不」需要變更這些設定。</string>
+
   <string name="expert_power_balance_title">專業設定：性能平衡設定</string>
   <string
     name="expert_power_balance_description"
@@ -46,4 +51,41 @@
   <string
     name="expert_balance_super_performance_description"
   >最多建立 %1$d 個執行緒。以更顯著的電池電量使用為代價提供非常好的網路熱點性能。</string>
+
+  <string name="expert_broadcast_title">熱點類型</string>
+  <string
+    name="expert_broadcast_description"
+  >變更 %1$s 創建一個熱點連線的方式</string>
+
+  <string name="expert_broadcast_type_wifi_direct_title">Wi-Fi Direct</string>
+  <string name="expert_broadcast_type_wifi_direct_description">
+    使用 Wi-Fi direct 創建一個可以讓多個裝置連接的行動熱點。
+    \n\n這仰賴您裝置能夠成功使用 Wi-Fi Direct 的能力，並不是所有裝置都支援這個功能。
+  </string>
+
+  <string name="expert_broadcast_type_rndis_title">USB 網路分享</string>
+  <string name="expert_broadcast_type_rndis_description">
+    使用 USB 網路分享(RNDIS) 創建一個可以讓一台裝置透過 USB 傳輸線連接的連線。
+    \n\n這仰賴您裝置能夠成功使用 USB 網路分享功能的能力，並不是所有裝置都支援這個功能。
+  </string>
+
+  <string name="expert_preferred_network_title">偏好的網路</string>
+  <string
+    name="expert_preferred_network_description"
+  >變更 %1$s 用於熱點資料傳輸的連接類型</string>
+
+  <string name="expert_preferred_network_none_title">當前作用中的網路</string>
+  <string name="expert_preferred_network_none_description">
+    通往熱點的連線會走裝置當前作用中的對外網路連線。
+  </string>
+
+  <string name="expert_preferred_network_wifi_title">Wi-Fi</string>
+  <string name="expert_preferred_network_wifi_description">
+    通往熱點的連線會從 Wi-Fi 網路連線連出去（如果可用）
+  </string>
+
+  <string name="expert_preferred_network_cellular_title">行動網路</string>
+  <string name="expert_preferred_network_cellular_description">
+    通往熱點的連線會從行動網路連線連出去（如果可用）
+  </string>
 </resources>

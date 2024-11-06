@@ -32,4 +32,13 @@
   <string
     name="shutdown_no_client_description"
   >如果 %1$s 網路熱點在沒有服務任何客戶端裝置情境下運行超過十分鐘就中止服務。\n\n在未使用情境下自動中止網路熱點服務可以節省電池電量消耗。</string>
+
+  <string name="keep_screen_on_title">螢幕保持開啟</string>
+  <string
+    name="keep_screen_on_description"
+  >在熱點運行時將螢幕保持開啟。當熱點被停止後螢幕會再被允許被關閉。這個行為調整設定不是在每個裝置上都被支援。</string>
+
+  <string name="ignore_location_title">避免出現定位服務阻擋對話框</string>
+  <string name="ignore_location_description">
+        %1$s 可能會需要定位服務被啟用才得以使用 Wi-Fi Direct。但不是每個裝置都需要這樣。\n\n如果您「已知」您的裝置使用 Wi-Fi Direct 時不需要定位服務，將此選項開啟以避免出現定位服務阻擋對話框。\n\n要使用 Wi-Fi Direct 仍需要定位/鄰近裝置相關權限。</string>
 </resources>

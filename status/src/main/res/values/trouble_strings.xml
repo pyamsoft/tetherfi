@@ -52,7 +52,6 @@
     name="trouble_broadcast_ssid_name"
   >• The Hotspot name must be unique</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string
     name="trouble_location_service"
   >• Location Services must be turned ON</string>
