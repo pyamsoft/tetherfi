@@ -41,11 +41,15 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         val allIfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
         if (allIfaces != null) {
           for (iface in allIfaces) {
-            if (iface.name.orEmpty().lowercase().startsWith(EXPECTED_RNDIS_NAME_PREFIX)) {
-              for (address in iface.inetAddresses) {
-                val hostName = address.hostName.orEmpty()
-                if (hostName.startsWith(EXPECTED_RNDIS_IP_PREFIX)) {
-                  return@withContext hostName
+            for (prefix in EXPECTED_RNDIS_NAME_PREFIX_LIST) {
+              if (iface.name.orEmpty().lowercase().startsWith(prefix)) {
+                for (address in iface.inetAddresses) {
+                  val hostName = address.hostName.orEmpty()
+                  for (ip in EXPECTED_RNDIS_IP_PREFIX_LIST) {
+                    if (hostName.startsWith(ip)) {
+                      return@withContext hostName
+                    }
+                  }
                 }
               }
             }
@@ -85,7 +89,16 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
   ) {}
 
   companion object {
-    private const val EXPECTED_RNDIS_NAME_PREFIX = "rndis"
-    private const val EXPECTED_RNDIS_IP_PREFIX = "192.168."
+    private val EXPECTED_RNDIS_NAME_PREFIX_LIST =
+        arrayOf(
+            // Samsung?
+            "rndis",
+
+            // https://github.com/pyamsoft/tetherfi/issues/351
+            "ncm")
+    private val EXPECTED_RNDIS_IP_PREFIX_LIST =
+        arrayOf(
+            // Samsung? and others?
+            "192.168.")
   }
 }
