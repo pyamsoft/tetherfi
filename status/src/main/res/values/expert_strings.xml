@@ -15,7 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <!--  TODO(Help): Need zh-rTW translation-->
   <string name="expert_title">Expert Settings</string>
   <string
     name="expert_description"
@@ -55,7 +54,6 @@
     name="expert_balance_super_performance_description"
   >%1$d threads. Offers great hotspot performance at the cost of significant battery usage.</string>
 
-  <!--  TODO(Help): Need zh-rTW translation-->
   <string name="expert_broadcast_title">Hotspot Type</string>
   <string
     name="expert_broadcast_description"
@@ -75,7 +73,6 @@
     all devices.
   </string>
 
-  <!--  TODO(Help): Need zh-rTW translation-->
   <string name="expert_preferred_network_title">Preferred Network</string>
   <string
     name="expert_preferred_network_description"

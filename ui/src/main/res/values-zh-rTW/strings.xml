@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
-  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~ Copyright 2024 林博仁(Buo-ren Lin)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="hotspot_error">Wi-Fi 網路熱點錯誤</string>
   <string
     name="faq_blurb"
   >對 %1$s 如何運作存在疑問嗎？在連接網路期間有發現什麼問題嗎？查看我們的%2$s文章以及%3$s應用軟體清單</string>
@@ -25,4 +24,20 @@
   <string name="view_information">查看資訊</string>
   <string name="something_went_wrong">某個東西出錯了</string>
   <string name="unknown_error">錯誤</string>
+
+  <string name="hotspot_speed_what">熱點性能太差</string>
+  <string name="hotspot_speed_sad">覺得%1$s嗎？</string>
+  <string-array name="hotspot_speed_items">
+    <item>將此裝置連接電源並確認它正在充電</item>
+    <item
+    >啟用「永遠存活」行為調校設定（禁用電量最佳化功能）</item>
+    <item>嘗試在 2.4GHz 和 5GHz 之間變更廣播的無線通訊頻段設定</item>
+    <item>重新啟動此裝置與您連接的裝置</item>
+    <item
+    >多次開啟/關閉此裝置的飛航模式、Wi-Fi 與藍牙功能</item>
+  </string-array>
+
+  <string
+    name="hotspot_speed_faq"
+  >還是覺得速度緩慢嗎？\n查看 Wiki 頁面以排查%1$s問題</string>
 </resources>

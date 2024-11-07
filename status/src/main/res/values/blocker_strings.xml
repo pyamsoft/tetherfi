@@ -25,7 +25,6 @@
     name="block_vpn_instruction"
   >Please disconnect from your VPN, and then attempt to launch the Hotspot again. Alternatively, you can enable the \"%1$s\" tweak to test if your VPN works with %2$s</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string name="block_location_title">Location Required</string>
   <string
     name="block_location_description"

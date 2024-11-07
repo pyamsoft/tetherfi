@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
-  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~ Copyright 2024 林博仁(Buo-ren Lin)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -46,4 +46,14 @@
   <string
     name="trouble_proxy_port"
   >• 網路熱點代理服務的通訊埠號必須介於 1025 與 65000 之間</string>
+
+  <string
+    name="trouble_location_service"
+  >• 定位服務必須被「啟用」</string>
+  <string
+    name="trouble_connect_rndis"
+  >• 您的裝置必須透過一條 USB 傳輸線實際連接</string>
+  <string
+    name="trouble_broadcast_rndis"
+  >• USB 網路分享功能必須被「啟用」</string>
 </resources>

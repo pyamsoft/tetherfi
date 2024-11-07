@@ -34,7 +34,6 @@
     name="check_hotspot_green"
   >Check that the Broadcast, Proxy, and Hotspot status are all up and running.</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string
     name="connect_usb_ethernet"
   >Connect a USB cable to your device</string>

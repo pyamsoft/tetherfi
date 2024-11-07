@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
-  ~ Copyright 2024 林博仁(Buo-ren, Lin)
+  ~ Copyright 2024 林博仁(Buo-ren Lin)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,4 +25,13 @@
   <string
     name="block_vpn_instruction"
   >請將您的 VPN 中斷連線，然後再嘗試啟動熱點。</string>
+
+  <string name="block_location_title">需要定位服務</string>
+  <string
+    name="block_location_description"
+  >%1$s 在定位服務沒有運作的狀態下啟動熱點會容易遇到問題。即使您已授權應用軟體使用定位權限，您仍需要將定位服務啟動以確保熱點能夠正常運作。</string>
+  <string
+    name="block_location_instruction"
+  >請啟動您裝置上的定位服務，然後再次嘗試啟動熱點。另外您也可以啟用「%1$s」行為調整設定以測試 %2$s 是否能夠在不需要啟動定位服務的狀態下正常運作。</string>
+  <string name="block_location_open_settings">啟用定位服務</string>
 </resources>

@@ -21,7 +21,6 @@
     name="network_bands_system_defined"
   >Network Broadcast Frequency is defined by the system and cannot be changed.</string>
 
-  <!--  TODO(Help): Need zh-rTW translation-->
   <string name="network_bands_legacy_title">2.4GHz</string>
   <string
     name="network_bands_legacy_description"

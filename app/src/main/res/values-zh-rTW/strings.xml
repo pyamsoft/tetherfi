@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
   ~ Copyright 2024 林博仁(Buo-ren Lin)
@@ -16,7 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="ssid_no_name">**無名稱資訊**</string>
-  <string name="server_no_host">**無主機資訊**</string>
-  <string name="invalid_port">**無效的通訊埠號**</string>
+    <string name="app_name">TetherFi</string>
+    <string name="toggle_hotspot_shortcut">啟/停 TetherFi 熱點</string>
 </resources>

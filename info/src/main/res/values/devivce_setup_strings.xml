@@ -27,7 +27,6 @@
   <string name="label_hotspot_hostname">URL</string>
   <string name="label_hotspot_port">Port</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string
     name="open_connection_settings"
   >Open the Connection/Internet settings page</string>

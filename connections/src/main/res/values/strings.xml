@@ -42,7 +42,6 @@
   <string name="option_set_transfer">Set Transfer Limit</string>
   <string name="transfer_label">Transfer Limit</string>
 
-  <!-- TODO(Help): Need zh-rTW translation -->
   <string name="option_set_bandwidth">Set Bandwidth Limit</string>
   <string name="bandwidth_label">Bandwidth Rate Limit</string>
   <string name="bandwidth_limit">%1$s: %2$s/sec</string>
