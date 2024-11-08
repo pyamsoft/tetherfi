@@ -44,11 +44,6 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import java.net.Inet4Address
-import java.net.Inet6Address
-import java.net.InetAddress
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withContext
@@ -57,6 +52,11 @@ import kotlinx.io.Sink
 import kotlinx.io.bytestring.decodeToString
 import kotlinx.io.readByteArray
 import kotlinx.io.readByteString
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** https://www.rfc-editor.org/rfc/rfc1928 */
 @Singleton
@@ -121,8 +121,7 @@ internal constructor(
                   .udp()
                   .configure {
                     reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
+                    reusePort = true
                   }
                   .also { socketTagger.tagSocket() }
                   .let { b ->
@@ -135,8 +134,7 @@ internal constructor(
                             ),
                         configure = {
                           reuseAddress = true
-                          // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                          // reusePort = true
+                          reusePort = true
                         },
                     )
                   }

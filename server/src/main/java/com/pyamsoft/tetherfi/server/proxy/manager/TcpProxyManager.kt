@@ -39,8 +39,6 @@ import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.network.sockets.isClosed
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import java.io.IOException
-import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +46,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
+import kotlin.time.Duration
 
 internal class TcpProxyManager
 internal constructor(
@@ -164,8 +164,7 @@ internal constructor(
             .tcp()
             .configure {
               reuseAddress = true
-              // As of KTOR-3.0.0, this is not supported and crashes at runtime
-              // reusePort = true
+              reusePort = true
             }
             .also { socketTagger.tagSocket() }
             .bind(localAddress = localAddress)

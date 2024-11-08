@@ -35,12 +35,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import java.net.InetAddress
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
+import java.net.InetAddress
+import kotlin.time.Duration.Companion.minutes
 
 internal abstract class BaseSOCKSImplementation<
     AT : BaseSOCKSImplementation.SOCKSAddressType,
@@ -71,8 +71,7 @@ protected constructor(
                   .tcp()
                   .configure {
                     reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
+                    reusePort = true
                   }
                   .also { socketTagger.tagSocket() }
                   .let { b ->
@@ -174,8 +173,7 @@ protected constructor(
                   .tcp()
                   .configure {
                     reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
+                    reusePort = true
                   }
                   .also { socketTagger.tagSocket() }
                   .let { b ->
@@ -185,8 +183,7 @@ protected constructor(
                         port = 0,
                         configure = {
                           reuseAddress = true
-                          // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                          // reusePort = true
+                          reusePort = true
                         },
                     )
                   }
