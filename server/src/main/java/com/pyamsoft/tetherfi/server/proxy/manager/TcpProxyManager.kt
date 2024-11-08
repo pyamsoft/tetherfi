@@ -21,6 +21,8 @@ import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.network.SocketBinder
@@ -58,6 +60,7 @@ internal constructor(
     private val port: Int,
     private val yoloRepeatDelay: Duration,
     private val session: ProxySession<TcpProxyData>,
+    private val expertPreferences: ExpertPreferences,
     proxyType: SharedProxy.Type,
     serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     enforcer: ThreadEnforcer,
@@ -86,6 +89,7 @@ internal constructor(
 
   private suspend fun CoroutineScope.handleProxyConnection(
       networkBinder: SocketBinder.NetworkBinder,
+      timeout: ServerSocketTimeout,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
       hostNameOrIp: String,
@@ -104,6 +108,7 @@ internal constructor(
           hostConnection = hostConnection,
           serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,
+          timeout = timeout,
           data =
               TcpProxyData(
                   proxyInput = proxyInput,
@@ -122,6 +127,7 @@ internal constructor(
    */
   private suspend fun runSession(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       networkBinder: SocketBinder.NetworkBinder,
       connection: Socket,
       socketTracker: SocketTracker,
@@ -132,6 +138,7 @@ internal constructor(
       // Catch the error and continue
       connection.usingConnection(autoFlush = true) { proxyInput, proxyOutput ->
         scope.handleProxyConnection(
+            timeout = timeout,
             networkBinder = networkBinder,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
@@ -239,6 +246,9 @@ internal constructor(
         val addr = server.localAddress
         debugLog { "Awaiting TCP connections on $addr" }
 
+        val timeout = expertPreferences.listenForSocketTimeout().first()
+        debugLog { "Socket timeout set as ${timeout.timeoutDuration}" }
+
         socketBinder.withMobileDataNetworkActive { networkBinder ->
           try {
             // In a loop, we wait for new TCP connections and then offload them to their own
@@ -257,6 +267,7 @@ internal constructor(
 
                   runSession(
                       scope = this,
+                      timeout = timeout,
                       networkBinder = networkBinder,
                       connection = connection,
                       socketTracker = tracker,

@@ -39,79 +39,77 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.CardDialog
 
-private enum class PowerBalanceDialogContentTypes {
+private enum class SocketTimeoutDialogContentTypes {
   DIALOG_LIMITS,
 }
 
-private data class PowerDisplayLimit(
+private data class SocketDisplayTimeout(
     val key: String,
-    val limit: ServerPerformanceLimit,
+    val timeout: ServerSocketTimeout,
     val title: String,
     val description: String,
 )
 
 @Composable
 @CheckResult
-private fun rememberDisplayLimits(): List<PowerDisplayLimit> {
+private fun rememberDisplayTimeouts(): List<SocketDisplayTimeout> {
   val context = LocalContext.current
   return remember(context) {
-    ServerPerformanceLimit.Defaults.entries
-        .map { l ->
+    ServerSocketTimeout.Defaults.entries
+        .map { t ->
           val title: String
           val description: String
-          val t = l.coroutineLimit
-          when (l) {
-            ServerPerformanceLimit.Defaults.UNBOUND -> {
-              title = context.getString(R.string.expert_balance_max_title)
-              description = context.getString(R.string.expert_balance_max_description)
+          when (t) {
+            ServerSocketTimeout.Defaults.INFINITE -> {
+              title = context.getString(R.string.expert_timeout_yolo_title)
+              description = context.getString(R.string.expert_timeout_yolo_description)
             }
-            ServerPerformanceLimit.Defaults.BOUND_N_CPU -> {
-              title = context.getString(R.string.expert_balance_super_save_title)
-              description = context.getString(R.string.expert_balance_super_save_description, t)
+            ServerSocketTimeout.Defaults.SUPERFAST -> {
+              title = context.getString(R.string.expert_timeout_toofast_title)
+              description = context.getString(R.string.expert_timeout_toofast_description)
             }
-            ServerPerformanceLimit.Defaults.BOUND_2N_CPU -> {
-              title = context.getString(R.string.expert_balance_save_title)
-              description = context.getString(R.string.expert_balance_save_description, t)
+            ServerSocketTimeout.Defaults.FAST -> {
+              title = context.getString(R.string.expert_timeout_fast_title)
+              description = context.getString(R.string.expert_timeout_fast_description)
             }
-            ServerPerformanceLimit.Defaults.BOUND_3N_CPU -> {
-              title = context.getString(R.string.expert_balance_normal_title)
-              description = context.getString(R.string.expert_balance_normal_description, t)
+            ServerSocketTimeout.Defaults.BALANCED -> {
+              title = context.getString(R.string.expert_timeout_balance_title)
+              description = context.getString(R.string.expert_timeout_balance_description)
             }
-            ServerPerformanceLimit.Defaults.BOUND_4N_CPU -> {
-              title = context.getString(R.string.expert_balance_performance_title)
-              description = context.getString(R.string.expert_balance_performance_description, t)
+            ServerSocketTimeout.Defaults.COMPAT -> {
+              title = context.getString(R.string.expert_timeout_conservative_title)
+              description = context.getString(R.string.expert_timeout_conservative_description)
             }
-            ServerPerformanceLimit.Defaults.BOUND_5N_CPU -> {
-              title = context.getString(R.string.expert_balance_super_performance_title)
-              description =
-                  context.getString(R.string.expert_balance_super_performance_description, t)
+            ServerSocketTimeout.Defaults.NICE -> {
+              title = context.getString(R.string.expert_timeout_longwait_title)
+              description = context.getString(R.string.expert_timeout_longwait_description)
             }
           }
 
-          return@map PowerDisplayLimit(
-              key = l.name,
-              limit = l,
+          return@map SocketDisplayTimeout(
+              key = t.name,
+              timeout = t,
               title = title,
               description = description,
           )
         }
         .sortedWith { o1, o2 ->
-          // Unbound on bottom
-          if (o1.limit.coroutineLimit <= 0) {
+          // Infinite on bottom
+          if (o1.timeout.timeoutDuration.isInfinite()) {
             return@sortedWith 1
           }
 
-          // Unbound on bottom
-          if (o2.limit.coroutineLimit <= 0) {
+          // Infinite on bottom
+          if (o2.timeout.timeoutDuration.isInfinite()) {
             return@sortedWith -1
           }
 
-          return@sortedWith o1.limit.coroutineLimit - o2.limit.coroutineLimit
+          return@sortedWith o1.timeout.timeoutDuration.compareTo(o2.timeout.timeoutDuration)
         }
   }
 }
@@ -119,7 +117,7 @@ private fun rememberDisplayLimits(): List<PowerDisplayLimit> {
 @Composable
 private fun DialogClose(
     modifier: Modifier = Modifier,
-    onHidePowerBalance: () -> Unit,
+    onHideSocketTimeout: () -> Unit,
 ) {
   Row(
       modifier = modifier,
@@ -129,7 +127,7 @@ private fun DialogClose(
         modifier = Modifier.weight(1F),
     )
     TextButton(
-        onClick = onHidePowerBalance,
+        onClick = onHideSocketTimeout,
     ) {
       Text(
           text = stringResource(android.R.string.cancel),
@@ -139,31 +137,31 @@ private fun DialogClose(
 }
 
 @Composable
-private fun PowerBalanceLimit(
+private fun SocketTimeoutLimit(
     modifier: Modifier = Modifier,
-    current: ServerPerformanceLimit,
-    limit: ServerPerformanceLimit,
+    current: ServerSocketTimeout,
+    timeout: ServerSocketTimeout,
     title: String,
     description: String,
-    onSelect: (ServerPerformanceLimit) -> Unit,
+    onSelect: (ServerSocketTimeout) -> Unit,
 ) {
-  val isMax = remember(limit) { limit.coroutineLimit <= 0 }
+  val isInfinite = remember(timeout) { timeout.timeoutDuration.isInfinite() }
   val isCurrent =
       remember(
           current,
-          limit,
+          timeout,
       ) {
-        current.coroutineLimit == limit.coroutineLimit
+        current.timeoutDuration == timeout.timeoutDuration
       }
 
   Row(
       modifier =
           modifier
-              .padding(top = MaterialTheme.keylines.content * if (isMax) 2 else 1)
+              .padding(top = MaterialTheme.keylines.content * if (isInfinite) 2 else 1)
               .clickable(
                   enabled = !isCurrent,
               ) {
-                onSelect(limit)
+                onSelect(timeout)
               }
               .padding(horizontal = MaterialTheme.keylines.content),
       verticalAlignment = Alignment.CenterVertically,
@@ -195,36 +193,36 @@ private fun PowerBalanceLimit(
 }
 
 @Composable
-internal fun PowerBalanceDialog(
+internal fun SocketTimeoutDialog(
     modifier: Modifier = Modifier,
     state: StatusViewState,
-    onHidePowerBalance: () -> Unit,
-    onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
+    onHideSocketTimeout: () -> Unit,
+    onUpdateSocketTimeout: (ServerSocketTimeout) -> Unit,
 ) {
-  val currentLimit by state.powerBalance.collectAsStateWithLifecycle()
-  val limits = rememberDisplayLimits()
+  val currentTimeout by state.socketTimeout.collectAsStateWithLifecycle()
+  val timeouts = rememberDisplayTimeouts()
 
   CardDialog(
       modifier = modifier,
-      onDismiss = onHidePowerBalance,
+      onDismiss = onHideSocketTimeout,
   ) {
     LazyColumn(
         modifier = Modifier.weight(1F, fill = false),
     ) {
       items(
-          items = limits,
+          items = timeouts,
           key = { it.key },
-          contentType = { PowerBalanceDialogContentTypes.DIALOG_LIMITS },
-      ) { limit ->
-        PowerBalanceLimit(
+          contentType = { SocketTimeoutDialogContentTypes.DIALOG_LIMITS },
+      ) { timeout ->
+        SocketTimeoutLimit(
             modifier = Modifier.fillMaxWidth(),
-            current = currentLimit,
-            limit = limit.limit,
-            title = limit.title,
-            description = limit.description,
+            current = currentTimeout,
+            timeout = timeout.timeout,
+            title = timeout.title,
+            description = timeout.description,
             onSelect = {
-              onUpdatePowerBalance(it)
-              onHidePowerBalance()
+              onUpdateSocketTimeout(it)
+              onHideSocketTimeout()
             },
         )
       }
@@ -232,7 +230,7 @@ internal fun PowerBalanceDialog(
 
     DialogClose(
         modifier = Modifier.fillMaxWidth().padding(horizontal = MaterialTheme.keylines.content),
-        onHidePowerBalance = onHidePowerBalance,
+        onHideSocketTimeout = onHideSocketTimeout,
     )
   }
 }

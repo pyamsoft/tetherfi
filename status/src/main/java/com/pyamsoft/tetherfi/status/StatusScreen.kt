@@ -36,6 +36,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -123,6 +124,9 @@ fun StatusScreen(
     onShowPowerBalance: () -> Unit,
     onHidePowerBalance: () -> Unit,
     onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
+    onShowSocketTimeout: () -> Unit,
+    onHideSocketTimeout: () -> Unit,
+    onUpdateSocketTimeout: (ServerSocketTimeout) -> Unit,
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
@@ -260,6 +264,7 @@ fun StatusScreen(
             onToggleKeepScreenOn = onToggleKeepScreenOn,
             onSelectBroadcastType = onSelectBroadcastType,
             onSelectPreferredNetwork = onSelectPreferredNetwork,
+            onShowSocketTimeout = onShowSocketTimeout,
         )
       }
     }
@@ -281,6 +286,8 @@ fun StatusScreen(
       onHideBroadcastError = onHideBroadcastError,
       onHidePowerBalance = onHidePowerBalance,
       onUpdatePowerBalance = onUpdatePowerBalance,
+      onHideSocketTimeout = onHideSocketTimeout,
+      onUpdateSocketTimeout = onUpdateSocketTimeout,
   )
 }
 
@@ -340,6 +347,9 @@ private fun PreviewStatusScreen(
       onToggleKeepScreenOn = {},
       onSelectBroadcastType = {},
       onSelectPreferredNetwork = {},
+      onUpdateSocketTimeout = {},
+      onHideSocketTimeout = {},
+      onShowSocketTimeout = {},
   )
 }
 

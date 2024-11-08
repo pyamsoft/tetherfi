@@ -18,7 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
-import com.pyamsoft.tetherfi.server.SOCKET_TIMEOUT_DURATION
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -73,6 +73,7 @@ internal constructor(
    */
   private suspend inline fun <T> connectToInternet(
       networkBinder: SocketBinder.NetworkBinder,
+      timeout: ServerSocketTimeout,
       autoFlush: Boolean,
       serverDispatcher: ServerDispatcher,
       request: HttpProxyRequest,
@@ -104,7 +105,10 @@ internal constructor(
                     remoteAddress = remote,
                     configure = {
                       // By default KTOR does not close sockets until "infinity" is reached.
-                      socketTimeout = SOCKET_TIMEOUT_DURATION.inWholeMilliseconds
+                      val duration = timeout.timeoutDuration
+                      if (!duration.isInfinite()) {
+                        socketTimeout = duration.inWholeMilliseconds
+                      }
                     },
                     onBeforeConnect = { networkBinder.bindToNetwork(it) },
                 )
@@ -117,6 +121,7 @@ internal constructor(
 
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
@@ -133,6 +138,7 @@ internal constructor(
     try {
       connectToInternet(
           autoFlush = true,
+          timeout = timeout,
           networkBinder = networkBinder,
           serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,

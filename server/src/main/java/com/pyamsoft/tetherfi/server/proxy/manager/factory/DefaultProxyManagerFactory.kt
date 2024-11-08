@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -45,9 +46,10 @@ internal constructor(
     @ServerInternalApi private val socketBinder: SocketBinder,
     @Named("http") private val httpSession: ProxySession<TcpProxyData>,
     @Named("socks") private val socksSession: ProxySession<TcpProxyData>,
+    private val expertPreferences: ExpertPreferences,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,
-    private val preferences: ProxyPreferences,
+    private val proxyPreferences: ProxyPreferences,
     private val appEnvironment: AppDevEnvironment,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
 ) : ProxyManager.Factory {
@@ -73,6 +75,7 @@ internal constructor(
         session = session,
         hostConnection = info,
         port = port,
+        expertPreferences = expertPreferences,
         serverDispatcher = dispatcher,
     )
   }
@@ -84,7 +87,7 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = preferences.listenForPortChanges().first()
+    val port = proxyPreferences.listenForPortChanges().first()
 
     return createTcp(
         proxyType = SharedProxy.Type.HTTP,
@@ -102,7 +105,7 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = preferences.listenForPortChanges().first()
+    val port = proxyPreferences.listenForPortChanges().first()
 
     return createTcp(
         proxyType = SharedProxy.Type.SOCKS,

@@ -24,6 +24,7 @@ import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.preferenceBooleanFlow
 import com.pyamsoft.pydroid.util.preferenceIntFlow
+import com.pyamsoft.pydroid.util.preferenceLongFlow
 import com.pyamsoft.pydroid.util.preferenceStringFlow
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
@@ -32,6 +33,7 @@ import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
@@ -211,14 +213,14 @@ internal constructor(
 
             Timber.d {
               "In app rating check: ${
-                    mapOf(
-                        "lastVersion" to lastVersionShown,
-                        "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
-                        "hotspotUsed" to hotspotUsed,
-                        "devicesConnected" to devicesConnected,
-                        "appOpened" to appOpened,
-                    )
-                }"
+                mapOf(
+                    "lastVersion" to lastVersionShown,
+                    "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
+                    "hotspotUsed" to hotspotUsed,
+                    "devicesConnected" to devicesConnected,
+                    "appOpened" to appOpened,
+                )
+            }"
             }
 
             if (lastVersionShown.isInAppRatingAlreadyShown()) {
@@ -277,6 +279,20 @@ internal constructor(
 
   override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) = setPreference {
     putInt(SERVER_LIMITS, limit.coroutineLimit)
+  }
+
+  override fun listenForSocketTimeout(): Flow<ServerSocketTimeout> =
+      preferenceLongFlow(
+              SOCKET_TIMEOUT,
+              ServerSocketTimeout.Defaults.BALANCED.timeoutDuration.inWholeSeconds) {
+                preferences
+              }
+          .map { ServerSocketTimeout.create(it) }
+
+  override fun setSocketTimeout(limit: ServerSocketTimeout) = setPreference {
+    val seconds =
+        if (limit.timeoutDuration.isInfinite()) -1 else limit.timeoutDuration.inWholeSeconds
+    putLong(SOCKET_TIMEOUT, seconds)
   }
 
   private fun SharedPreferences.updateInt(key: String, defaultValue: Int, update: (Int) -> Int) {
@@ -356,5 +372,7 @@ internal constructor(
     private const val BROADCAST_TYPE = "key_broadcast_type_1"
 
     private const val PREFERRED_NETWORK = "key_preferred_network_1"
+
+    private const val SOCKET_TIMEOUT = "key_socket_timeout_1"
   }
 }

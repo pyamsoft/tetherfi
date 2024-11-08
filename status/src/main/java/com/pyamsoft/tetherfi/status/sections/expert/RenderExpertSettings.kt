@@ -31,6 +31,7 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 private enum class ExpertSettingsContentTypes {
   SETTINGS,
   POWER_BALANCE,
+  SOCKET_TIMEOUT,
   BROADCAST_TYPE,
   PREFERRED_NETWORK,
 }
@@ -41,6 +42,7 @@ internal fun LazyListScope.renderExpertSettings(
     isEditable: Boolean,
     appName: String,
     onShowPowerBalance: () -> Unit,
+    onShowSocketTimeout: () -> Unit,
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
@@ -71,6 +73,27 @@ internal fun LazyListScope.renderExpertSettings(
           isEditable = isEditable,
           appName = appName,
           onShowPowerBalance = onShowPowerBalance,
+      )
+    }
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.SOCKET_TIMEOUT,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      SocketTimeout(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          appName = appName,
+          onShowSocketTimeout = onShowSocketTimeout,
       )
     }
   }

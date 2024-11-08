@@ -95,6 +95,7 @@ internal fun LazyListScope.renderLoadedContent(
 
     // Expert
     onShowPowerBalance: () -> Unit,
+    onShowSocketTimeout: () -> Unit,
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
@@ -169,6 +170,7 @@ internal fun LazyListScope.renderLoadedContent(
       isEditable = isEditable,
       appName = appName,
       onShowPowerBalance = onShowPowerBalance,
+      onShowSocketTimeout = onShowSocketTimeout,
       onSelectBroadcastType = onSelectBroadcastType,
       onSelectPreferredNetwork = onSelectPreferredNetwork,
   )
@@ -231,6 +233,7 @@ private fun PreviewLoadedContent(
         onToggleShutdownWithNoClients = {},
         onJumpToHowTo = {},
         onShowPowerBalance = {},
+        onShowSocketTimeout = {},
         isEditable = isEditable,
         wiDiStatus = RunningStatus.NotRunning,
         proxyStatus = RunningStatus.NotRunning,

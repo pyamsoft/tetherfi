@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -176,6 +177,7 @@ internal constructor(
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       networkBinder: SocketBinder.NetworkBinder,
@@ -253,8 +255,9 @@ internal constructor(
 
         val responder = Responder(proxyOutput)
         return@withContext performSOCKSCommand(
-            addressType = addressType,
             scope = scope,
+            addressType = addressType,
+            timeout = timeout,
             socketTracker = socketTracker,
             networkBinder = networkBinder,
             serverDispatcher = serverDispatcher,

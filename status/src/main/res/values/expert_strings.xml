@@ -91,4 +91,36 @@
   <string name="expert_preferred_network_cellular_description">
     Connections to the Hotspot will go over Cellular Data connection if available
   </string>
+
+  <!-- TODO Need translations -->
+  <string name="expert_socket_timeout_title">Socket Timeout</string>
+  <string
+    name="expert_socket_timeout_description"
+  >This is for Advanced Users.\n\nYou can adjust the timeout, which controls how long %1$s will wait for a connection before closing a socket. For most well behaving, modern websites on a decent connection, you should be fine with the default. If you notice connections are reporting frequent time outs, you should try increasing this value. If you notice high latency, you could try lowering the value</string>
+  <string name="expert_socket_timeout_button">Adjust Socket Timeout</string>
+
+  <string name="expert_timeout_yolo_title">No Timeout</string>
+  <string
+    name="expert_timeout_yolo_description"
+  >Will never close connections until the website closes them. Throws memory usage and latency concerns out the window in an attempt to get websites to work. If there are many connections, could massively increase latency and memory usage. Adjusting Power Balance for Max or High performance is recommended.</string>
+  <string name="expert_timeout_toofast_title">3 seconds</string>
+  <string
+    name="expert_timeout_toofast_description"
+  >Barely waits at all. If you are on a fast connection, most well-behaved websites should still work. Cleans up aggressively, lowering memory usage and latency at the risk of breaking connections</string>
+  <string name="expert_timeout_fast_title">10 seconds</string>
+  <string
+    name="expert_timeout_fast_description"
+  >Slightly faster timeout that should work with most well-behaved websites. Slightly lower memory usage, and only some latency if there are many connections.</string>
+  <string name="expert_timeout_balance_title">30 seconds</string>
+  <string
+    name="expert_timeout_balance_description"
+  >The most balanced setting that should work with most well-behaved websites. Normal memory usage, and only some latency if there are many connections.</string>
+  <string name="expert_timeout_conservative_title">1 minute</string>
+  <string
+    name="expert_timeout_conservative_description"
+  >Waits extra long which should allow slower or bad behaving websites to still work. Slightly higher memory usage and latency if there are many connections. Adjusting Power Balance for High performance is recommended.</string>
+  <string name="expert_timeout_longwait_title">5 minutes</string>
+  <string
+    name="expert_timeout_longwait_description"
+  >Almost every website should work. If there are many connections, could massively increase latency and memory usage. Adjusting Power Balance for Max or High performance is recommended.</string>
 </resources>

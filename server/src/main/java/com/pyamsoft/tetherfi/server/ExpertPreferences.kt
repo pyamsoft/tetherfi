@@ -27,6 +27,10 @@ interface ExpertPreferences {
 
   fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
 
+  @CheckResult fun listenForSocketTimeout(): Flow<ServerSocketTimeout>
+
+  fun setSocketTimeout(limit: ServerSocketTimeout)
+
   @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
 
   fun setBroadcastType(type: BroadcastType)

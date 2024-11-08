@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import javax.inject.Inject
@@ -54,6 +55,7 @@ interface StatusViewState : UiViewState {
 
   // Expert
   val powerBalance: StateFlow<ServerPerformanceLimit>
+  val socketTimeout: StateFlow<ServerSocketTimeout>
 
   // Dialogs
   val startBlockers: StateFlow<Collection<HotspotStartBlocker>>
@@ -63,6 +65,7 @@ interface StatusViewState : UiViewState {
   val isShowingBroadcastError: StateFlow<Boolean>
   val isShowingProxyError: StateFlow<Boolean>
   val isShowingPowerBalance: StateFlow<Boolean>
+  val isShowingSocketTimeout: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -92,6 +95,8 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
   override val powerBalance =
       MutableStateFlow<ServerPerformanceLimit>(ServerPerformanceLimit.Defaults.BOUND_N_CPU)
+  override val socketTimeout =
+      MutableStateFlow<ServerSocketTimeout>(ServerSocketTimeout.Defaults.BALANCED)
 
   override val isShowingSetupError = MutableStateFlow(false)
   override val isShowingNetworkError = MutableStateFlow(false)
@@ -99,6 +104,7 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val isShowingBroadcastError = MutableStateFlow(false)
   override val isShowingProxyError = MutableStateFlow(false)
   override val isShowingPowerBalance = MutableStateFlow(false)
+  override val isShowingSocketTimeout = MutableStateFlow(false)
 
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isIgnoreLocation = MutableStateFlow(false)

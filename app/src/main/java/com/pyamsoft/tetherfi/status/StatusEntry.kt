@@ -227,5 +227,8 @@ fun StatusEntry(
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
       onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
       onSelectPreferredNetwork = { viewModel.handleUpdatePreferredNetwork(it) },
+      onHideSocketTimeout = { viewModel.handleCloseSocketTimeout() },
+      onUpdateSocketTimeout = { viewModel.handleUpdateSocketTimeout(it) },
+      onShowSocketTimeout = { viewModel.handleOpenSocketTimeout() },
   )
 }

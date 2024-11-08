@@ -20,12 +20,14 @@ import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.PassthroughSocketBinder
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -129,6 +131,33 @@ internal suspend inline fun setupProxy(
           enforcer = enforcer,
       )
 
+  val expertPreferences =
+      object : ExpertPreferences {
+        override fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit> {
+          return flowOf(ServerPerformanceLimit.Defaults.BOUND_3N_CPU)
+        }
+
+        override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) {}
+
+        override fun listenForSocketTimeout(): Flow<ServerSocketTimeout> {
+          return flowOf(ServerSocketTimeout.Defaults.BALANCED)
+        }
+
+        override fun setSocketTimeout(limit: ServerSocketTimeout) {}
+
+        override fun listenForBroadcastType(): Flow<BroadcastType> {
+          return flowOf(BroadcastType.WIFI_DIRECT)
+        }
+
+        override fun setBroadcastType(type: BroadcastType) {}
+
+        override fun listenForPreferredNetwork(): Flow<PreferredNetwork> {
+          return flowOf(PreferredNetwork.NONE)
+        }
+
+        override fun setPreferredNetwork(network: PreferredNetwork) {}
+      }
+
   val manager =
       TcpProxyManager(
           proxyType = SharedProxy.Type.HTTP,
@@ -153,6 +182,7 @@ internal suspend inline fun setupProxy(
           enforcer = enforcer,
           serverStopConsumer = DefaultEventBus(),
           socketBinder = PassthroughSocketBinder(),
+          expertPreferences = expertPreferences,
       )
 
   val server =

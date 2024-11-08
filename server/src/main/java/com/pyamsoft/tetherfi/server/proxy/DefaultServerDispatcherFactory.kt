@@ -20,14 +20,14 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import java.util.concurrent.Executors
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
-import java.util.concurrent.Executors
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class DefaultServerDispatcherFactory

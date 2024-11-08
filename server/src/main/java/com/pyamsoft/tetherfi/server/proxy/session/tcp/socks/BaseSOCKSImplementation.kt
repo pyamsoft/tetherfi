@@ -21,7 +21,7 @@ import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.SOCKET_TIMEOUT_DURATION
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -53,6 +53,7 @@ protected constructor(
 
   private suspend fun connect(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       networkBinder: SocketBinder.NetworkBinder,
@@ -94,7 +95,10 @@ protected constructor(
                           remoteAddress = remote,
                           configure = {
                             // By default KTOR does not close sockets until "infinity" is reached.
-                            socketTimeout = SOCKET_TIMEOUT_DURATION.inWholeMilliseconds
+                            val duration = timeout.timeoutDuration
+                            if (!duration.isInfinite()) {
+                              socketTimeout = duration.inWholeMilliseconds
+                            }
                           },
                           onBeforeConnect = { networkBinder.bindToNetwork(it) },
                       )
@@ -270,6 +274,7 @@ protected constructor(
 
   protected suspend fun performSOCKSCommand(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -298,6 +303,7 @@ protected constructor(
               destinationAddress = destinationAddress,
               destinationPort = destinationPort,
               addressType = addressType,
+              timeout = timeout,
               onReport = onReport,
           )
         }

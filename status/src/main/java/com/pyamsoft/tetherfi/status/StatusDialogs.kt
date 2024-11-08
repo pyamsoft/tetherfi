@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
@@ -32,6 +33,7 @@ import com.pyamsoft.tetherfi.status.blockers.LocationBlocker
 import com.pyamsoft.tetherfi.status.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.status.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.status.sections.expert.PowerBalanceDialog
+import com.pyamsoft.tetherfi.status.sections.expert.SocketTimeoutDialog
 import com.pyamsoft.tetherfi.status.trouble.TroubleshootDialog
 import com.pyamsoft.tetherfi.ui.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -61,6 +63,10 @@ internal fun StatusDialogs(
     // Power Balance
     onHidePowerBalance: () -> Unit,
     onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
+
+    // Socket Timeout
+    onHideSocketTimeout: () -> Unit,
+    onUpdateSocketTimeout: (ServerSocketTimeout) -> Unit,
 ) {
   val blockers = state.startBlockers.collectAsStateListWithLifecycle()
 
@@ -78,6 +84,7 @@ internal fun StatusDialogs(
   val isShowingSetupError by state.isShowingSetupError.collectAsStateWithLifecycle()
 
   val isShowingPowerBalance by state.isShowingPowerBalance.collectAsStateWithLifecycle()
+  val isShowingSocketTimeout by state.isShowingSocketTimeout.collectAsStateWithLifecycle()
 
   // Show the Required blocks first, and if all required ones are done, show the "skippable" ones
   // even though we don't support skipping yet.
@@ -148,6 +155,17 @@ internal fun StatusDialogs(
         state = state,
         onHidePowerBalance = onHidePowerBalance,
         onUpdatePowerBalance = onUpdatePowerBalance,
+    )
+  }
+
+  AnimatedVisibility(
+      visible = isShowingSocketTimeout,
+  ) {
+    SocketTimeoutDialog(
+        modifier = dialogModifier,
+        state = state,
+        onHideSocketTimeout = onHideSocketTimeout,
+        onUpdateSocketTimeout = onUpdateSocketTimeout,
     )
   }
 

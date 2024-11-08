@@ -63,8 +63,7 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix(
-                        "Fix RNDIS connection for some devices")
+                    bugfix("Fix RNDIS connection for some devices")
                     change(
                         "Due to community feedback, the Power Balance Expert Setting will NOT be removed.")
                     change(

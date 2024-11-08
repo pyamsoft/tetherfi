@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -32,6 +33,7 @@ internal interface SOCKSImplementation<R : SOCKSImplementation.Responder> {
 
   suspend fun handleSocksCommand(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       networkBinder: SocketBinder.NetworkBinder,

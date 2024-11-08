@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
@@ -85,6 +86,7 @@ internal constructor(
       var tweakShutdownWithNoClients: Boolean,
       var tweakKeepScreenOn: Boolean,
       var expertPowerBalance: Boolean,
+      var expertSocketTimeout: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
@@ -95,6 +97,7 @@ internal constructor(
         config.password &&
         config.band &&
         config.expertPowerBalance &&
+        config.expertSocketTimeout &&
         config.tweakKeepScreenOn) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
@@ -238,6 +241,7 @@ internal constructor(
             tweakIgnoreLocation = false,
             tweakShutdownWithNoClients = false,
             expertPowerBalance = false,
+            expertSocketTimeout = false,
             tweakKeepScreenOn = false,
         )
 
@@ -332,6 +336,21 @@ internal constructor(
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
             config.expertPowerBalance = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest socket timeout value
+    expertPreferences.listenForSocketTimeout().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { timeout ->
+          s.socketTimeout.value = timeout
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.expertSocketTimeout = true
             markPreferencesLoaded(config)
           }
         }
@@ -572,6 +591,19 @@ internal constructor(
 
   fun handleUpdatePreferredNetwork(network: PreferredNetwork) {
     expertPreferences.setPreferredNetwork(network)
+  }
+
+  fun handleOpenSocketTimeout() {
+    state.isShowingSocketTimeout.value = true
+  }
+
+  fun handleCloseSocketTimeout() {
+    state.isShowingSocketTimeout.value = false
+  }
+
+  fun handleUpdateSocketTimeout(timeout: ServerSocketTimeout) {
+    val newVal = state.socketTimeout.updateAndGet { timeout }
+    expertPreferences.setSocketTimeout(newVal)
   }
 
   companion object {

@@ -16,8 +16,6 @@
 
 package com.pyamsoft.tetherfi.server
 
-import kotlin.time.Duration.Companion.seconds
-
 /**
  * What the fuck is this
  * https://stackoverflow.com/questions/10006459/regular-expression-for-ip-address-validation
@@ -28,11 +26,3 @@ import kotlin.time.Duration.Companion.seconds
 val IP_ADDRESS_REGEX =
     """^(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.(\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))$"""
         .toRegex()
-
-/**
- * KTOR sockets by default do not time out
- *
- * We want a socket to die if it has been idle for X amount of time to avoid hogging memory which
- * leads to device slowdowns
- */
-val SOCKET_TIMEOUT_DURATION = 10.seconds

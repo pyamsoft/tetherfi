@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
@@ -27,6 +28,7 @@ internal interface ProxySession<T : ProxyData> {
 
   suspend fun exchange(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,

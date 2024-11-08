@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -62,6 +63,7 @@ internal constructor(
 
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
       serverDispatcher: ServerDispatcher,
@@ -78,6 +80,7 @@ internal constructor(
     try {
       transport.handleRequest(
           scope = scope,
+          timeout = timeout,
           connectionInfo = connectionInfo,
           serverDispatcher = serverDispatcher,
           proxyInput = proxyInput,
