@@ -43,7 +43,6 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +53,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -171,23 +171,19 @@ internal constructor(
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
     registry
-        .consumeRestored(KEY_SHOW_POWER_BALANCE)
-        ?.let { it.cast<Boolean>() }
+        .consumeRestored(KEY_SHOW_POWER_BALANCE)?.cast<Boolean>()
         ?.also { state.isShowingPowerBalance.value = it }
 
     registry
-        .consumeRestored(KEY_SHOW_NETWORK_ERROR)
-        ?.let { it.cast<Boolean>() }
+        .consumeRestored(KEY_SHOW_NETWORK_ERROR)?.cast<Boolean>()
         ?.also { state.isShowingNetworkError.value = it }
 
     registry
-        .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)
-        ?.let { it.cast<Boolean>() }
+        .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)?.cast<Boolean>()
         ?.also { state.isShowingHotspotError.value = it }
 
     registry
-        .consumeRestored(KEY_SHOW_SETUP_ERROR)
-        ?.let { it.cast<Boolean>() }
+        .consumeRestored(KEY_SHOW_SETUP_ERROR)?.cast<Boolean>()
         ?.also { state.isShowingSetupError.value = it }
   }
 

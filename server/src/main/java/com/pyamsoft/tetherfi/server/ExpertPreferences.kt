@@ -24,10 +24,9 @@ import kotlinx.coroutines.flow.Flow
 interface ExpertPreferences {
 
   @CheckResult
-  @Deprecated("Do not use")
   fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
 
-  @Deprecated("Do not use") fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
+  fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
 
   @CheckResult fun listenForBroadcastType(): Flow<BroadcastType>
 
