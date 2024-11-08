@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.SOCKET_TIMEOUT_DURATION
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -93,7 +94,7 @@ protected constructor(
                           remoteAddress = remote,
                           configure = {
                             // By default KTOR does not close sockets until "infinity" is reached.
-                            socketTimeout = 1.minutes.inWholeMilliseconds
+                            socketTimeout = SOCKET_TIMEOUT_DURATION.inWholeMilliseconds
                           },
                           onBeforeConnect = { networkBinder.bindToNetwork(it) },
                       )

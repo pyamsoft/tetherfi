@@ -143,11 +143,23 @@ internal constructor(
       e.ifNotCancellation {
         if (e is SocketTimeoutException) {
           warnLog { "Proxy:Server socket timeout! $hostNameOrIp" }
-        } else {
+        } else if (!e.isExpectedSocketRelatedException()) {
           errorLog(e) { "Error occurred while establishing TCP Proxy Connection: $hostNameOrIp" }
         }
       }
     }
+  }
+
+  /** Socket Closed exceptions are "normal", don't log them */
+  @CheckResult
+  private fun Throwable.isExpectedSocketRelatedException(): Boolean {
+    if (this is IOException) {
+      if (EXPECTED_SOCKET_ERROR_MESSAGES.contains(this.message)) {
+        return true
+      }
+    }
+
+    return false
   }
 
   override suspend fun openServer(builder: SocketBuilder): ServerSocket =
@@ -270,5 +282,12 @@ internal constructor(
 
     /** If we fail to claim a socket this many times in a row, just assume we are dead. */
     private const val PROXY_ACCEPT_TOO_MANY_FAILURES = 10
+
+    private val EXPECTED_SOCKET_ERROR_MESSAGES =
+        setOf(
+            // Close normally by client
+            "Channel was closed",
+            // Close normally by server
+            "Broken pipe")
   }
 }

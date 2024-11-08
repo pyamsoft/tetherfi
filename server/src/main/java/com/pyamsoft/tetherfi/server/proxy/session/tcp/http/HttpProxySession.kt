@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.server.SOCKET_TIMEOUT_DURATION
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -39,7 +40,6 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 
 @Singleton
@@ -104,7 +104,7 @@ internal constructor(
                     remoteAddress = remote,
                     configure = {
                       // By default KTOR does not close sockets until "infinity" is reached.
-                      socketTimeout = 1.minutes.inWholeMilliseconds
+                      socketTimeout = SOCKET_TIMEOUT_DURATION.inWholeMilliseconds
                     },
                     onBeforeConnect = { networkBinder.bindToNetwork(it) },
                 )
