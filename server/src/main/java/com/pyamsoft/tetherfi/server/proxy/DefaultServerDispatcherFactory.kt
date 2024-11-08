@@ -18,6 +18,8 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.ExpertPreferences
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,9 +27,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 
 @Singleton
-class DefaultServerDispatcherFactory @Inject internal constructor() : ServerDispatcher.Factory {
+class DefaultServerDispatcherFactory
+@Inject
+internal constructor(
+    preferences: ExpertPreferences,
+) : ServerDispatcher.Factory {
+
+  private val flow by lazy { preferences.listenForPerformanceLimits() }
 
   /** Make a new thread dispatcher using Daemon threads */
   @CheckResult
@@ -62,11 +71,16 @@ class DefaultServerDispatcherFactory @Inject internal constructor() : ServerDisp
   }
 
   override suspend fun create(): ServerDispatcher {
+    val primaryLimit = flow.first()
+
+    // Side effect amount is the number of CPU cores
+    val sideEffectThreads = ServerPerformanceLimit.Defaults.BOUND_N_CPU.coroutineLimit
+
     val dispatcher = newThreadDispatcher()
 
     return DefaultServerDispatchers(
-        primary = dispatcher.limitDispatcher(nThreads = PRIMARY_THREAD_COUNT),
-        sideEffect = dispatcher.limitDispatcher(nThreads = SIDE_EFFECT_THREAD_COUNT),
+        primary = dispatcher.limitDispatcher(nThreads = primaryLimit.coroutineLimit),
+        sideEffect = dispatcher.limitDispatcher(nThreads = sideEffectThreads),
     )
   }
 
@@ -91,16 +105,5 @@ class DefaultServerDispatcherFactory @Inject internal constructor() : ServerDisp
       Timber.d { "Shutdown SideEffect Dispatcher" }
       sideEffect.shutdown()
     }
-  }
-
-  companion object {
-
-    private val CORE_COUNT = Runtime.getRuntime().availableProcessors()
-
-    // Side effect amount is the half number of CPU cores
-    private val SIDE_EFFECT_THREAD_COUNT = CORE_COUNT / 2
-
-    // Primary is 2X CPU cores
-    private val PRIMARY_THREAD_COUNT = CORE_COUNT * 2
   }
 }
