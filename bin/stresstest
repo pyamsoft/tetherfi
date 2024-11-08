@@ -1,5 +1,6 @@
 #!/bin/sh
 
+_start="$(( $(date +%s%N) / 1000000 ))"
 for i in $(seq 0 100); do
   echo "$i"
   _now="$(( $(date +%s%N) / 1000000 ))"
@@ -7,3 +8,6 @@ for i in $(seq 0 100); do
   _then="$(( $(date +%s%N) / 1000000 ))"
   echo "Took: $(( _then - _now ))ms"
 done
+_end="$(( $(date +%s%N) / 1000000 ))"
+
+echo "ALL Took: $(( _end - _start ))ms"

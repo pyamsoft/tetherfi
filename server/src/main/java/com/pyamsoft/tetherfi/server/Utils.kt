@@ -35,4 +35,4 @@ val IP_ADDRESS_REGEX =
  * We want a socket to die if it has been idle for X amount of time to avoid hogging memory which
  * leads to device slowdowns
  */
-val SOCKET_TIMEOUT_DURATION = 30.seconds
+val SOCKET_TIMEOUT_DURATION = 10.seconds
