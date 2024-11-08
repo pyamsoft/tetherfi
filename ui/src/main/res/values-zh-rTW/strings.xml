@@ -29,12 +29,10 @@
   <string name="hotspot_speed_sad">覺得%1$s嗎？</string>
   <string-array name="hotspot_speed_items">
     <item>將此裝置連接電源並確認它正在充電</item>
-    <item
-    >啟用「永遠存活」行為調校設定（禁用電量最佳化功能）</item>
+    <item>啟用「永遠存活」行為調校設定（禁用電量最佳化功能）</item>
     <item>嘗試在 2.4GHz 和 5GHz 之間變更廣播的無線通訊頻段設定</item>
     <item>重新啟動此裝置與您連接的裝置</item>
-    <item
-    >多次開啟/關閉此裝置的飛航模式、Wi-Fi 與藍牙功能</item>
+    <item>多次開啟/關閉此裝置的飛航模式、Wi-Fi 與藍牙功能</item>
   </string-array>
 
   <string

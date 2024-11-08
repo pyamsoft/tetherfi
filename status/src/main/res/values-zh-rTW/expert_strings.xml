@@ -18,8 +18,8 @@
 <resources>
   <string name="expert_title">專業設定</string>
   <string
-      name="expert_description"
-      >以下設定為提供進階使用者使用。\n\n調整這些選項可能會完全改變 %1$s 的運作方式，僅在自負責任下繼續操作。大部分使用者皆「不」需要變更這些設定。</string>
+    name="expert_description"
+  >以下設定為提供進階使用者使用。\n\n調整這些選項可能會完全改變 %1$s 的運作方式，僅在自負責任下繼續操作。大部分使用者皆「不」需要變更這些設定。</string>
 
   <string name="expert_power_balance_title">專業設定：性能平衡設定</string>
   <string

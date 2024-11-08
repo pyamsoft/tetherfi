@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 class MainViewModeler
 @Inject
@@ -164,17 +164,17 @@ internal constructor(
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
     val s = state
-    registry
-        .consumeRestored(KEY_IS_SETTINGS_OPEN)?.cast<Boolean>()
-        ?.also { s.isSettingsOpen.value = it }
+    registry.consumeRestored(KEY_IS_SETTINGS_OPEN)?.cast<Boolean>()?.also {
+      s.isSettingsOpen.value = it
+    }
 
-    registry
-        .consumeRestored(KEY_IS_SHOWING_QR)?.cast<Boolean>()
-        ?.also { s.isShowingQRCodeDialog.value = it }
+    registry.consumeRestored(KEY_IS_SHOWING_QR)?.cast<Boolean>()?.also {
+      s.isShowingQRCodeDialog.value = it
+    }
 
-    registry
-        .consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)?.cast<Boolean>()
-        ?.also { state.isShowingSlowSpeedHelp.value = it }
+    registry.consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)?.cast<Boolean>()?.also {
+      state.isShowingSlowSpeedHelp.value = it
+    }
   }
 
   fun handleRefreshConnectionInfo(scope: CoroutineScope) {

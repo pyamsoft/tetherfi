@@ -7,6 +7,11 @@ import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 private val GET_REQUEST =
     listOf(
@@ -62,69 +62,69 @@ class ProxyPerformanceTest {
   @Test
   fun serverPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
-          val completed = MutableStateFlow(0)
-          try {
-              setupServer(this) {
-                  setupProxy(this, isLoggingEnabled = true) { dispatcher ->
-                      ByteBufferPool().use { pool ->
-                          val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
-                          for (i in 0 until 20) {
-                              val job =
-                                  async(context = Dispatchers.IO) {
-                                      usingSocketBuilder(dispatcher) { builder ->
-                                          try {
-                                              builder
-                                                  .tcp()
-                                                  .connect(
-                                                      remoteAddress = PROXY_REMOTE,
-                                                      configure = {
-                                                          reuseAddress = true
-                                                          // As of KTOR-3.0.0, this is not supported and crashes at
-                                                          // runtime
-                                                          // reusePort = true
-                                                      },
-                                                  )
-                                                  .usingConnection(autoFlush = true) { read, write ->
-                                                      println("Send request $i")
-                                                      write.writeStringUtf8(GET_REQUEST)
+        val completed = MutableStateFlow(0)
+        try {
+          setupServer(this) {
+            setupProxy(this, isLoggingEnabled = true) { dispatcher ->
+              ByteBufferPool().use { pool ->
+                val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
+                for (i in 0 until 20) {
+                  val job =
+                      async(context = Dispatchers.IO) {
+                        usingSocketBuilder(dispatcher) { builder ->
+                          try {
+                            builder
+                                .tcp()
+                                .connect(
+                                    remoteAddress = PROXY_REMOTE,
+                                    configure = {
+                                      reuseAddress = true
+                                      // As of KTOR-3.0.0, this is not supported and crashes at
+                                      // runtime
+                                      // reusePort = true
+                                    },
+                                )
+                                .usingConnection(autoFlush = true) { read, write ->
+                                  println("Send request $i")
+                                  write.writeStringUtf8(GET_REQUEST)
 
-                                                      val dst = pool.borrow()
-                                                      try {
-                                                          val amt = read.readAvailable(dst)
+                                  val dst = pool.borrow()
+                                  try {
+                                    val amt = read.readAvailable(dst)
 
-                                                          val res =
-                                                              String(dst.array(), 0, amt, Charsets.UTF_8)
-                                                                  // Correct all the CRLF newlines to normal newlines
-                                                                  // This is just for test correctness.
-                                                                  .replace(SOCKET_EOL, System.lineSeparator())
+                                    val res =
+                                        String(dst.array(), 0, amt, Charsets.UTF_8)
+                                            // Correct all the CRLF newlines to normal newlines
+                                            // This is just for test correctness.
+                                            .replace(SOCKET_EOL, System.lineSeparator())
 
-                                                          assertEquals(GET_EXPECT_RESPONSE, res)
-                                                          println("Got response $i")
-                                                          completed.update { it + 1 }
-                                                      } finally {
-                                                          pool.recycle(dst)
-                                                      }
-                                                  }
-                                          } catch (e: Throwable) {
-                                              e.ifNotCancellation {
-                                                  println("Error connecting proxy: $PROXY_REMOTE")
-                                                  e.printStackTrace()
-                                                  throw e
-                                              }
-                                          }
-                                      }
+                                    assertEquals(GET_EXPECT_RESPONSE, res)
+                                    println("Got response $i")
+                                    completed.update { it + 1 }
+                                  } finally {
+                                    pool.recycle(dst)
                                   }
-
-                              jobs.add(job)
+                                }
+                          } catch (e: Throwable) {
+                            e.ifNotCancellation {
+                              println("Error connecting proxy: $PROXY_REMOTE")
+                              e.printStackTrace()
+                              throw e
+                            }
                           }
-
-                          jobs.awaitAll()
+                        }
                       }
-                  }
+
+                  jobs.add(job)
+                }
+
+                jobs.awaitAll()
               }
-          } finally {
-              println("Completed jobs: ${completed.value}")
+            }
           }
+        } finally {
+          println("Completed jobs: ${completed.value}")
+        }
       }
 
   /** We also are prepared to handle when a socket fails to open right? */

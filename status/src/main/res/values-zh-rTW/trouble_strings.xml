@@ -47,9 +47,7 @@
     name="trouble_proxy_port"
   >• 網路熱點代理服務的通訊埠號必須介於 1025 與 65000 之間</string>
 
-  <string
-    name="trouble_location_service"
-  >• 定位服務必須被「啟用」</string>
+  <string name="trouble_location_service">• 定位服務必須被「啟用」</string>
   <string
     name="trouble_connect_rndis"
   >• 您的裝置必須透過一條 USB 傳輸線實際連接</string>

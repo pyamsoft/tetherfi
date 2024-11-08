@@ -23,12 +23,12 @@ import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.theme.Theming
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class ThemeViewModeler
 @Inject
@@ -51,13 +51,14 @@ internal constructor(
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
     val s = state
     registry
-        .consumeRestored(KEY_THEME_MODE)?.cast<String>()
+        .consumeRestored(KEY_THEME_MODE)
+        ?.cast<String>()
         ?.let { Theming.Mode.valueOf(it) }
         ?.also { s.mode.value = it }
 
-    registry
-        .consumeRestored(KEY_THEME_MATERIAL_YOU)?.cast<Boolean>()
-        ?.also { s.isMaterialYou.value = it }
+    registry.consumeRestored(KEY_THEME_MATERIAL_YOU)?.cast<Boolean>()?.also {
+      s.isMaterialYou.value = it
+    }
   }
 
   private fun bind(scope: CoroutineScope) {

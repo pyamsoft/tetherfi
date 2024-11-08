@@ -35,9 +35,7 @@
     name="check_hotspot_green"
   >檢查廣播、代理、與網路熱點狀態皆顯示為正常且正在運行。</string>
 
-  <string
-    name="connect_usb_ethernet"
-  >連接 USB 傳輸線至您的裝置</string>
+  <string name="connect_usb_ethernet">連接 USB 傳輸線至您的裝置</string>
   <string
     name="usb_tethering_must_be_on"
   >您需要啟動您裝置的 USB 網路分享功能。您不需要有支援網路分享的資費方案，但是您必須要在 USB 網路分享模式（又稱 RNDIS）下 %1$s 才能正常運作。</string>

@@ -23,8 +23,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ExpertPreferences {
 
-  @CheckResult
-  fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
+  @CheckResult fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit>
 
   fun setServerPerformanceLimit(limit: ServerPerformanceLimit)
 

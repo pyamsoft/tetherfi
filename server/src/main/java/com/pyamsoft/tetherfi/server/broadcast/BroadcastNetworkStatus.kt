@@ -47,7 +47,6 @@ interface BroadcastNetworkStatus : Server {
       override fun toString(): String {
         return "Connected(ssid='$ssid')"
       }
-
     }
 
     data object Empty : GroupInfo
