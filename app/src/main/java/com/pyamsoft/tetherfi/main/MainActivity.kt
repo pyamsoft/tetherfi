@@ -63,11 +63,9 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix("Fix RNDIS connection for some devices")
                     change(
-                        "Due to community feedback, the Power Balance Expert Setting will NOT be removed.")
-                    change(
-                        "Reduce idle timeout default from 1 minute to 10 seconds to reduce memory usage")
+                        "Increase socket timeout default from 10 seconds to 30 seconds for better website compatibility")
+                    feature("Added an expert setting to configure the Socket Timeout values for better performance or website compatibility.")
                   }
                 },
         )
