@@ -31,6 +31,7 @@ import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
@@ -265,6 +266,19 @@ internal constructor(
     }
   }
 
+  override fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit> =
+      preferenceIntFlow(
+              SERVER_LIMITS,
+              ServerPerformanceLimit.Defaults.BOUND_3N_CPU.coroutineLimit,
+          ) {
+            preferences
+          }
+          .map { ServerPerformanceLimit.create(it) }
+
+  override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) = setPreference {
+    putInt(SERVER_LIMITS, limit.coroutineLimit)
+  }
+
   private fun SharedPreferences.updateInt(key: String, defaultValue: Int, update: (Int) -> Int) {
     val self = this
 
@@ -318,9 +332,6 @@ internal constructor(
 
             // Removed TCP socket timeout in version 45
             "key_tcp_socket_timeout_2",
-
-            // Remove performance limits in version 50
-            "key_server_perf_limit_1",
         )
 
     private const val SSID = "key_ssid_1"
@@ -337,6 +348,8 @@ internal constructor(
     private const val START_IGNORE_VPN = "key_start_ignore_vpn_1"
     private const val START_IGNORE_LOCATION = "key_start_ignore_location_1"
     private const val SHUTDOWN_NO_CLIENTS = "key_shutdown_no_clients_1"
+
+    private const val SERVER_LIMITS = "key_server_perf_limit_1"
 
     private const val KEEP_SCREEN_ON = "key_keep_screen_on_1"
 

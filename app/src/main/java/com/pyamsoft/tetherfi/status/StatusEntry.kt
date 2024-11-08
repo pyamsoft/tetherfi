@@ -222,6 +222,9 @@ fun StatusEntry(
       onHideProxyError = { viewModel.handleCloseProxyError() },
       onShowBroadcastError = { viewModel.handleOpenBroadcastError() },
       onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
+      onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
+      onHidePowerBalance = { viewModel.handleClosePowerBalance() },
+      onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
       onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
       onSelectPreferredNetwork = { viewModel.handleUpdatePreferredNetwork(it) },
   )

@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -119,6 +120,9 @@ fun StatusScreen(
     onViewSlowSpeedHelp: () -> Unit,
 
     // Expert
+    onShowPowerBalance: () -> Unit,
+    onHidePowerBalance: () -> Unit,
+    onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
@@ -251,6 +255,7 @@ fun StatusScreen(
             onToggleIgnoreLocation = onToggleIgnoreLocation,
             onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onJumpToHowTo = onJumpToHowTo,
+            onShowPowerBalance = onShowPowerBalance,
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
             onToggleKeepScreenOn = onToggleKeepScreenOn,
             onSelectBroadcastType = onSelectBroadcastType,
@@ -274,6 +279,8 @@ fun StatusScreen(
       onHideSetupError = onHideSetupError,
       onHideProxyError = onHideProxyError,
       onHideBroadcastError = onHideBroadcastError,
+      onHidePowerBalance = onHidePowerBalance,
+      onUpdatePowerBalance = onUpdatePowerBalance,
   )
 }
 
@@ -326,6 +333,9 @@ private fun PreviewStatusScreen(
       onHideBroadcastError = {},
       onShowProxyError = {},
       onHideProxyError = {},
+      onUpdatePowerBalance = {},
+      onHidePowerBalance = {},
+      onShowPowerBalance = {},
       onViewSlowSpeedHelp = {},
       onToggleKeepScreenOn = {},
       onSelectBroadcastType = {},

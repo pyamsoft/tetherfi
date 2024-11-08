@@ -29,6 +29,7 @@ import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
@@ -83,6 +84,7 @@ internal constructor(
       var tweakIgnoreLocation: Boolean,
       var tweakShutdownWithNoClients: Boolean,
       var tweakKeepScreenOn: Boolean,
+      var expertPowerBalance: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
@@ -92,6 +94,7 @@ internal constructor(
         config.ssid &&
         config.password &&
         config.band &&
+        config.expertPowerBalance &&
         config.tweakKeepScreenOn) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
@@ -160,20 +163,32 @@ internal constructor(
         registry
             .registerProvider(KEY_SHOW_SETUP_ERROR) { state.isShowingSetupError.value }
             .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_POWER_BALANCE) { state.isShowingPowerBalance.value }
+            .also { add(it) }
       }
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
-    registry.consumeRestored(KEY_SHOW_NETWORK_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingNetworkError.value = it
-    }
+    registry
+        .consumeRestored(KEY_SHOW_POWER_BALANCE)
+        ?.let { it.cast<Boolean>() }
+        ?.also { state.isShowingPowerBalance.value = it }
 
-    registry.consumeRestored(KEY_SHOW_HOTSPOT_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingHotspotError.value = it
-    }
+    registry
+        .consumeRestored(KEY_SHOW_NETWORK_ERROR)
+        ?.let { it.cast<Boolean>() }
+        ?.also { state.isShowingNetworkError.value = it }
 
-    registry.consumeRestored(KEY_SHOW_SETUP_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingSetupError.value = it
-    }
+    registry
+        .consumeRestored(KEY_SHOW_HOTSPOT_ERROR)
+        ?.let { it.cast<Boolean>() }
+        ?.also { state.isShowingHotspotError.value = it }
+
+    registry
+        .consumeRestored(KEY_SHOW_SETUP_ERROR)
+        ?.let { it.cast<Boolean>() }
+        ?.also { state.isShowingSetupError.value = it }
   }
 
   fun handleToggleProxy() {
@@ -226,6 +241,7 @@ internal constructor(
             tweakIgnoreVpn = false,
             tweakIgnoreLocation = false,
             tweakShutdownWithNoClients = false,
+            expertPowerBalance = false,
             tweakKeepScreenOn = false,
         )
 
@@ -310,6 +326,21 @@ internal constructor(
   private fun CoroutineScope.bindConfigPreferences(config: LoadConfig) {
     val scope = this
     val s = state
+
+    // Always populate the latest power balance value
+    expertPreferences.listenForPerformanceLimits().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { balance ->
+          s.powerBalance.value = balance
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != StatusViewState.LoadingState.DONE) {
+            config.expertPowerBalance = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
 
     // Only pull once since after this point, the state will be driven by the input
     proxyPreferences.listenForPortChanges().also { f ->
@@ -506,6 +537,14 @@ internal constructor(
     state.isShowingProxyError.value = false
   }
 
+  fun handleOpenPowerBalance() {
+    state.isShowingPowerBalance.value = true
+  }
+
+  fun handleClosePowerBalance() {
+    state.isShowingPowerBalance.value = false
+  }
+
   fun handleToggleIgnoreVpn() {
     val newVal = state.isIgnoreVpn.updateAndGet { !it }
     tweakPreferences.setStartIgnoreVpn(newVal)
@@ -519,6 +558,11 @@ internal constructor(
   fun handleToggleShutdownNoClients() {
     val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
     tweakPreferences.setShutdownWithNoClients(newVal)
+  }
+
+  fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
+    val newVal = state.powerBalance.updateAndGet { limit }
+    expertPreferences.setServerPerformanceLimit(newVal)
   }
 
   fun handleToggleKeepScreenOn() {
@@ -538,5 +582,7 @@ internal constructor(
     private const val KEY_SHOW_SETUP_ERROR = "key_show_setup_error"
     private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
     private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
+
+    private const val KEY_SHOW_POWER_BALANCE = "key_show_power_balance"
   }
 }

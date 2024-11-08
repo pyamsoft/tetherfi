@@ -164,17 +164,20 @@ internal constructor(
 
   override fun consumeRestoredState(registry: SaveableStateRegistry) {
     val s = state
-    registry.consumeRestored(KEY_IS_SETTINGS_OPEN)?.cast<Boolean>()?.also {
-      s.isSettingsOpen.value = it
-    }
+    registry
+        .consumeRestored(KEY_IS_SETTINGS_OPEN)
+        ?.let { it.cast<Boolean>() }
+        ?.also { s.isSettingsOpen.value = it }
 
-    registry.consumeRestored(KEY_IS_SHOWING_QR)?.cast<Boolean>()?.also {
-      s.isShowingQRCodeDialog.value = it
-    }
+    registry
+        .consumeRestored(KEY_IS_SHOWING_QR)
+        ?.let { it.cast<Boolean>() }
+        ?.also { s.isShowingQRCodeDialog.value = it }
 
-    registry.consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)?.cast<Boolean>()?.also {
-      state.isShowingSlowSpeedHelp.value = it
-    }
+    registry
+        .consumeRestored(KEY_SHOW_SLOW_SPEED_HELP)
+        ?.let { it.cast<Boolean>() }
+        ?.also { state.isShowingSlowSpeedHelp.value = it }
   }
 
   fun handleRefreshConnectionInfo(scope: CoroutineScope) {
