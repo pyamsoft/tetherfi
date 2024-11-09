@@ -36,6 +36,11 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertEquals
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,11 +50,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertEquals
-import kotlin.test.fail
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
@@ -202,6 +202,10 @@ internal suspend inline fun setupProxy(
           socketCreator = socketCreator,
       )
 
+  val expectedErrorCode =
+      if (expectServerFail) "server" else if (testSocketCrash) "socket" else "none"
+  var errorCode = "none"
+
   val server =
       scope.async {
         val block = suspend {
@@ -210,11 +214,13 @@ internal suspend inline fun setupProxy(
               onClosing = {},
               onError = { e ->
                 if (expectServerFail) {
+                  errorCode = "server"
                   assertEquals(
                       IOException::class.java,
                       e::class.java,
                   )
                 } else if (testSocketCrash) {
+                  errorCode = "socket"
                   assertEquals(
                       IllegalStateException::class.java,
                       e::class.java,
@@ -237,6 +243,9 @@ internal suspend inline fun setupProxy(
 
   println("Done TetherFi proxy")
   server.cancel()
+
+  // Make sure we got errors when expected
+  assertEquals(expectedErrorCode, errorCode)
 
   tree?.also { Timber.uproot(it) }
 }

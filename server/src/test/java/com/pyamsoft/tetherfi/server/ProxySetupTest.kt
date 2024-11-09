@@ -16,11 +16,22 @@
 
 package com.pyamsoft.tetherfi.server
 
+import kotlinx.coroutines.delay
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.delay
 
 class ProxySetupTest {
+
+  @Test
+  fun setupNormal(): Unit = runBlockingWithDelays {
+    setupProxy(
+        this,
+        isLoggingEnabled = true,
+        proxyPort = 5553,
+    ) {
+      delay(5.seconds)
+    }
+  }
 
   @Test
   fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
