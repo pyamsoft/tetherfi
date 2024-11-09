@@ -20,6 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
+import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.response.respondText
@@ -71,19 +72,26 @@ val RESPONSE_TEXT =
 @CheckResult
 internal suspend inline fun setupServer(
     scope: CoroutineScope,
+    serverPort: Int,
     testServer: Boolean = false,
     withServer: CoroutineScope.() -> Unit,
 ) {
   val ktor =
       embeddedServer(
           factory = Netty,
-          port = SERVER_PORT,
+          port = serverPort,
           host = HOSTNAME,
           module = { routing { get("/") { call.respondText(RESPONSE_TEXT) } } },
       )
 
+  val serverRemote =
+      InetSocketAddress(
+          hostname = HOSTNAME,
+          port = serverPort,
+      )
+
   val thread = thread {
-    println("Start KTOR server: ${Thread.currentThread().name} $SERVER_REMOTE")
+    println("Start KTOR server: ${Thread.currentThread().name} $serverRemote")
     ktor.start(wait = true)
   }
 
@@ -92,12 +100,12 @@ internal suspend inline fun setupServer(
 
   if (testServer) {
     usingSocketBuilder(newSingleThreadContext("KTOR")) { b ->
-      b.tcp().connect(SERVER_REMOTE).usingConnection(autoFlush = true) { read, write ->
+      b.tcp().connect(serverRemote).usingConnection(autoFlush = true) { read, write ->
         val get =
             """
               GET / HTTP/1.1${SOCKET_EOL}
 
-              Host: ${HOSTNAME}:${SERVER_PORT}"""
+              Host: ${HOSTNAME}:${serverPort}"""
                 .trimIndent() + SOCKET_EOL
 
         write.writeStringUtf8(get)

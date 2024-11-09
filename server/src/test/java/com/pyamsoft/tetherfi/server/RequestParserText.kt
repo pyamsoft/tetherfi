@@ -93,7 +93,7 @@ class RequestParserText {
   }
 
   @Test
-  fun urlParse() = runTest {
+  fun testHttpNoPort() = runTest {
     val parser =
         UrlRequestParser(
             urlFixers = mutableSetOf(),
@@ -108,6 +108,14 @@ class RequestParserText {
         port = 80,
         file = "/",
     )
+  }
+
+  @Test
+  fun testHttpWeirdPort() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // http://example.com:69 -> http example.com 69
     parser.testSuccess(
@@ -118,6 +126,14 @@ class RequestParserText {
         port = 69,
         file = "/",
     )
+  }
+
+  @Test
+  fun testHttpDefaultPortNoSchema() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // example.com -> http example.com 80
     parser.testSuccess(
@@ -128,6 +144,14 @@ class RequestParserText {
         port = 80,
         file = "/",
     )
+  }
+
+  @Test
+  fun testHttpsNoSchemaNoPort() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // example.com:443 -> https example.com 443
     parser.testSuccess(
@@ -138,6 +162,32 @@ class RequestParserText {
         port = 443,
         file = "/",
     )
+  }
+
+  @Test
+  fun testHttpsNoSchemaWithPort() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
+
+    // example.com:443 -> https example.com 443
+    parser.testSuccess(
+        line = "GET example.com:443 HTTP/1.0",
+        method = "GET",
+        version = "HTTP/1.0",
+        host = "example.com",
+        port = 443,
+        file = "/",
+    )
+  }
+
+  @Test
+  fun testHttpsWithSchemaNoPort() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // https://example.com -> https example.com 443
     parser.testSuccess(
@@ -148,6 +198,14 @@ class RequestParserText {
         port = 443,
         file = "/",
     )
+  }
+
+  @Test
+  fun testHttpsWithSchemaWeirdPort() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // https://example.com:80 -> https example.com 69
     parser.testSuccess(
@@ -158,7 +216,14 @@ class RequestParserText {
         port = 69,
         file = "/",
     )
+  }
 
+  @Test
+  fun testHttpsSchemaNoPortWithFile() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
     // https://example.com/hello.html -> https example.com 443 /hello.html
     parser.testSuccess(
         line = "GET https://example.com/hello.html HTTP/1.0",
@@ -168,6 +233,14 @@ class RequestParserText {
         port = 443,
         file = "/hello.html",
     )
+  }
+
+  @Test
+  fun testHttpNoSchemaNoPortWithFile() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // example.com/hello.html -> http example.com 80 /hello.html
     parser.testSuccess(
@@ -178,7 +251,14 @@ class RequestParserText {
         port = 80,
         file = "/hello.html",
     )
+  }
 
+  @Test
+  fun testHttpsNoSchemaWithPortWithFile() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
     // example.com:443/hello.html -> https example.com 443 /hello.html
     parser.testSuccess(
         line = "GET example.com:443/hello.html HTTP/1.0",
@@ -188,7 +268,14 @@ class RequestParserText {
         port = 443,
         file = "/hello.html",
     )
+  }
 
+  @Test
+  fun testHttpWithSchemaWeirdPortWithFile() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
     // http://example.com:69/hello.html -> http example.com 69 /hello.html
     parser.testSuccess(
         line = "GET http://example.com:69/hello.html HTTP/1.0",
@@ -198,6 +285,14 @@ class RequestParserText {
         port = 69,
         file = "/hello.html",
     )
+  }
+
+  @Test
+  fun testHttpWithSchemaWeirdPortWithFileWithParameters() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // http://example.com:69/hello.html?also=1&accept=2&args=3 -> http example.com 69
     // /hello.html?also=1&accept=2&args=3
@@ -209,6 +304,14 @@ class RequestParserText {
         port = 69,
         file = "/hello.html?also=1&accept=2&args=3",
     )
+  }
+
+  @Test
+  fun testHttpWithSchemaWeirdPortWithFileWithParametersWithHash() = runTest {
+    val parser =
+        UrlRequestParser(
+            urlFixers = mutableSetOf(),
+        )
 
     // http://example.com:69/hello.html?also=1&accept=2&args=3 -> http example.com 69
     // /hello.html?also=1&accept=2&args=3

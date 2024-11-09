@@ -271,10 +271,17 @@ protected constructor(
 
               // Track the sockets we open so that we can close them later
               trackSockets(scope = scope) { tracker ->
-                runServer(
-                    server = server,
-                    tracker = tracker,
-                )
+                try {
+                  runServer(
+                      server = server,
+                      tracker = tracker,
+                  )
+                } catch (e: Throwable) {
+                  e.ifNotCancellation {
+                    Timber.e(e) { "Error running server" }
+                    onError(e)
+                  }
+                }
               }
 
               onClosing()

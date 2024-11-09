@@ -142,7 +142,8 @@ internal constructor(
                       type = type,
                   )
                 }
-              })
+              },
+          )
     } catch (e: Throwable) {
       e.ifNotCancellation {
         handleServerLoopError(

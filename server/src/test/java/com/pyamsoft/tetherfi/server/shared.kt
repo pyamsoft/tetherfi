@@ -16,20 +16,27 @@
 
 package com.pyamsoft.tetherfi.server
 
-import io.ktor.network.sockets.InetSocketAddress
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
 const val HOSTNAME = "127.0.0.1"
-const val SERVER_PORT = 6666
-const val PROXY_PORT = 9999
 
-val SERVER_REMOTE =
-    InetSocketAddress(
-        hostname = HOSTNAME,
-        port = SERVER_PORT,
-    )
-
-val PROXY_REMOTE =
-    InetSocketAddress(
-        hostname = HOSTNAME,
-        port = PROXY_PORT,
-    )
+/**
+ * This is like runTest, but it does not skip delay() calls.
+ *
+ * We need to actually be able to delay, since server spinup takes a "little bit" of time.
+ */
+inline fun runBlockingWithDelays(
+    timeout: Duration = 10.seconds,
+    crossinline block: suspend CoroutineScope.() -> Unit,
+): Unit = runBlocking {
+  try {
+    withTimeout(timeout) { block() }
+  } catch (e: Throwable) {
+    e.printStackTrace()
+    throw e
+  }
+}

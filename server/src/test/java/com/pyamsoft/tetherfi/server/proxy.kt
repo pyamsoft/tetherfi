@@ -36,10 +36,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,10 +45,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertEquals
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
     scope: CoroutineScope,
+    proxyPort: Int,
+    nThreads: Int = 1,
     isLoggingEnabled: Boolean = false,
     expectServerFail: Boolean = false,
     testSocketCrash: Boolean = false,
@@ -61,7 +64,7 @@ internal suspend inline fun setupProxy(
 ) {
   val dispatcher =
       object : ServerDispatcher {
-        override val primary = newFixedThreadPoolContext(24, "TEST")
+        override val primary = newFixedThreadPoolContext(nThreads = nThreads, "TEST")
         override val sideEffect = primary
 
         override fun shutdown() {}
@@ -113,14 +116,17 @@ internal suspend inline fun setupProxy(
 
   val socketTagger = SocketTagger {}
 
+  var tree: Timber.Tree? = null
   if (isLoggingEnabled) {
-    Timber.plant(
+    val t =
         object : Timber.Tree() {
           override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             t?.printStackTrace()
             println(message)
           }
-        })
+        }
+    tree = t
+    Timber.plant(t)
   }
 
   val transport =
@@ -163,7 +169,7 @@ internal suspend inline fun setupProxy(
       if (testSocketCrash)
           object : SocketCreator {
             override suspend fun <T> create(block: suspend (SocketBuilder) -> T): T {
-              throw IllegalStateException("Expected CRASH")
+              throw IllegalStateException("Expected CRASH: Too many files")
             }
           }
       else SocketCreator.create(dispatcher)
@@ -185,7 +191,7 @@ internal suspend inline fun setupProxy(
               BroadcastNetworkStatus.ConnectionInfo.Connected(
                   hostName = HOSTNAME,
               ),
-          port = PROXY_PORT,
+          port = proxyPort,
           serverDispatcher = dispatcher,
           socketTagger = socketTagger,
           yoloRepeatDelay = 0.seconds,
@@ -202,18 +208,28 @@ internal suspend inline fun setupProxy(
           manager.loop(
               onOpened = {},
               onClosing = {},
-              onError = {},
+              onError = { e ->
+                if (expectServerFail) {
+                  assertEquals(
+                      IOException::class.java,
+                      e::class.java,
+                  )
+                } else if (testSocketCrash) {
+                  assertEquals(
+                      IllegalStateException::class.java,
+                      e::class.java,
+                  )
+                } else {
+                  fail("Got exception but was not expecting one!", e)
+                }
+              },
           )
         }
 
-        if (expectServerFail) {
-          assertFailsWith<IOException> { block() }
-        } else {
-          block()
-        }
+        block()
       }
 
-  println("Start TetherFi proxy $HOSTNAME $PROXY_PORT")
+  println("Start TetherFi proxy $HOSTNAME $proxyPort")
   delay(3.seconds)
 
   println("Run with TetherFi proxy")
@@ -221,4 +237,6 @@ internal suspend inline fun setupProxy(
 
   println("Done TetherFi proxy")
   server.cancel()
+
+  tree?.also { Timber.uproot(it) }
 }
