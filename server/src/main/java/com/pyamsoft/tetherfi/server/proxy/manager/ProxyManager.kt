@@ -25,8 +25,9 @@ import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 internal interface ProxyManager {
 
   suspend fun loop(
-      onOpened: () -> Unit,
-      onClosing: () -> Unit,
+      onOpened: suspend () -> Unit,
+      onClosing: suspend () -> Unit,
+      onError: suspend (Throwable) -> Unit,
   )
 
   interface Factory {

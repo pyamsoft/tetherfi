@@ -135,7 +135,14 @@ internal constructor(
                 status.set(RunningStatus.Stopping)
                 unreadyState(type)
               },
-          )
+              onError = { e ->
+                e.ifNotCancellation {
+                  handleServerLoopError(
+                      e = e,
+                      type = type,
+                  )
+                }
+              })
     } catch (e: Throwable) {
       e.ifNotCancellation {
         handleServerLoopError(

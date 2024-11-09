@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
@@ -256,25 +257,33 @@ protected constructor(
 
   /** This function must ALWAYS call usingSocketBuilder {} or else a socket may potentially leak */
   override suspend fun loop(
-      onOpened: () -> Unit,
-      onClosing: () -> Unit,
+      onOpened: suspend () -> Unit,
+      onClosing: suspend () -> Unit,
+      onError: suspend (Throwable) -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
         val scope = this
 
-        return@withContext socketCreator.create { builder ->
-          openServer(builder = builder).use { server ->
-            onOpened()
+        try {
+          return@withContext socketCreator.create { builder ->
+            openServer(builder = builder).use { server ->
+              onOpened()
 
-            // Track the sockets we open so that we can close them later
-            trackSockets(scope = scope) { tracker ->
-              runServer(
-                  server = server,
-                  tracker = tracker,
-              )
+              // Track the sockets we open so that we can close them later
+              trackSockets(scope = scope) { tracker ->
+                runServer(
+                    server = server,
+                    tracker = tracker,
+                )
+              }
+
+              onClosing()
             }
-
-            onClosing()
+          }
+        } catch (e: Throwable) {
+          e.ifNotCancellation {
+            Timber.e(e) { "Error occurred while opening server" }
+            onError(e)
           }
         }
       }

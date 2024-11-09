@@ -16,13 +16,13 @@
 
 package com.pyamsoft.tetherfi.server
 
+import kotlin.test.Test
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlin.test.Test
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 class ProxySetupTest {
 
@@ -35,33 +35,33 @@ class ProxySetupTest {
       timeout: Duration = 10.seconds,
       block: suspend CoroutineScope.() -> Unit,
   ): Unit = runBlocking {
-      try {
-          withTimeout(timeout, block)
-      } catch (e: Throwable) {
-          e.printStackTrace()
-          throw e
-      }
+    try {
+      withTimeout(timeout, block)
+    } catch (e: Throwable) {
+      e.printStackTrace()
+      throw e
+    }
   }
 
-    @Test
-    fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
-        setupProxy(
-            this,
-            testSocketCrash = true,
-        ) {
-            delay(10.seconds)
-        }
+  @Test
+  fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
+    setupProxy(
+        this,
+        testSocketCrash = true,
+    ) {
+      delay(5.seconds)
     }
+  }
 
   /** We also are prepared to handle when a socket fails to open right? */
   @Test
   fun yoloFailThrows(): Unit = runBlockingWithDelays {
-      setupProxy(
-          this,
-          expectServerFail = true,
-          appEnv = { updateYolo(true) },
-      ) {
-          delay(5.seconds)
-      }
+    setupProxy(
+        this,
+        expectServerFail = true,
+        appEnv = { updateYolo(true) },
+    ) {
+      delay(5.seconds)
+    }
   }
 }
