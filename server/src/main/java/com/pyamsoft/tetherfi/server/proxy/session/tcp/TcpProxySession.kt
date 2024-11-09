@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -112,6 +113,7 @@ protected constructor(
 
   private suspend fun processRequest(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
@@ -136,6 +138,7 @@ protected constructor(
     // And then we go to the web!
     proxyToInternet(
         scope = scope,
+        socketCreator = socketCreator,
         timeout = timeout,
         connectionInfo = connectionInfo,
         networkBinder = networkBinder,
@@ -163,6 +166,7 @@ protected constructor(
 
   private suspend fun handleClientRequest(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -190,6 +194,7 @@ protected constructor(
 
     processRequest(
         scope = scope,
+        socketCreator = socketCreator,
         timeout = timeout,
         connectionInfo = hostConnection,
         networkBinder = networkBinder,
@@ -216,6 +221,7 @@ protected constructor(
 
   override suspend fun exchange(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -230,6 +236,7 @@ protected constructor(
         try {
           handleClientRequest(
               scope = this,
+              socketCreator = socketCreator,
               timeout = timeout,
               networkBinder = networkBinder,
               hostConnection = hostConnection,
@@ -246,6 +253,7 @@ protected constructor(
 
   protected abstract suspend fun proxyToInternet(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,

@@ -14,29 +14,18 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.manager
+package com.pyamsoft.tetherfi.server
 
-import androidx.annotation.CheckResult
-import com.pyamsoft.tetherfi.server.SocketCreator
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
+import io.ktor.network.sockets.SocketBuilder
 
-internal interface ProxyManager {
+internal class DefaultSocketCreator
+internal constructor(
+    private val serverDispatcher: ServerDispatcher,
+) : SocketCreator {
 
-  suspend fun loop(
-      onOpened: () -> Unit,
-      onClosing: () -> Unit,
-  )
-
-  interface Factory {
-
-    @CheckResult
-    suspend fun create(
-        type: SharedProxy.Type,
-        info: BroadcastNetworkStatus.ConnectionInfo.Connected,
-        socketCreator: SocketCreator,
-        serverDispatcher: ServerDispatcher,
-    ): ProxyManager
+  override suspend fun <T> create(block: suspend (SocketBuilder) -> T): T {
+    return usingSocketBuilder(dispatcher = serverDispatcher.primary) { block(it) }
   }
 }

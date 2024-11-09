@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -87,6 +88,7 @@ internal constructor(
 
   suspend fun handleRequest(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
@@ -106,6 +108,7 @@ internal constructor(
           SOCKSVersion.SOCKS4 -> {
             socks4.handleSocksCommand(
                 scope = scope,
+                socketCreator = socketCreator,
                 timeout = timeout,
                 serverDispatcher = serverDispatcher,
                 socketTracker = socketTracker,
@@ -120,6 +123,7 @@ internal constructor(
           SOCKSVersion.SOCKS5 -> {
             socks5.handleSocksCommand(
                 scope = scope,
+                socketCreator = socketCreator,
                 timeout = timeout,
                 serverDispatcher = serverDispatcher,
                 socketTracker = socketTracker,

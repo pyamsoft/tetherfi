@@ -25,6 +25,7 @@ import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.StartedClients
@@ -113,6 +114,7 @@ internal constructor(
   private suspend fun beginProxyLoop(
       type: SharedProxy.Type,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
   ) {
     enforcer.assertOffMainThread()
@@ -123,6 +125,7 @@ internal constructor(
           .create(
               type = type,
               info = info,
+              socketCreator = socketCreator,
               serverDispatcher = serverDispatcher,
           )
           .loop(
@@ -145,6 +148,7 @@ internal constructor(
 
   private fun CoroutineScope.proxyLoop(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
   ) {
     val fakeError = appEnvironment.isProxyFakeError
@@ -162,6 +166,7 @@ internal constructor(
       beginProxyLoop(
           type = SharedProxy.Type.HTTP,
           info = info,
+          socketCreator = socketCreator,
           serverDispatcher = serverDispatcher,
       )
     }
@@ -171,6 +176,7 @@ internal constructor(
         beginProxyLoop(
             type = SharedProxy.Type.SOCKS,
             info = info,
+            socketCreator = socketCreator,
             serverDispatcher = serverDispatcher,
         )
       }
@@ -219,6 +225,7 @@ internal constructor(
 
   private suspend fun startServer(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
   ) {
     try {
@@ -243,6 +250,7 @@ internal constructor(
         launch(context = Dispatchers.Default) {
           proxyLoop(
               info = info,
+              socketCreator = socketCreator,
               serverDispatcher = serverDispatcher,
           )
         }
@@ -265,6 +273,9 @@ internal constructor(
 
         // Create the server dispatcher here that future proxy bits will use
         val serverDispatcher = serverDispatcherFactory.create()
+
+        // Create the socket creator for socket connections
+        val socketCreator = SocketCreator.create(serverDispatcher)
 
         // Watch the connection status
         try {
@@ -293,6 +304,7 @@ internal constructor(
                         launch(context = Dispatchers.Default) {
                           startServer(
                               info = info,
+                              socketCreator = socketCreator,
                               serverDispatcher = serverDispatcher,
                           )
                         }

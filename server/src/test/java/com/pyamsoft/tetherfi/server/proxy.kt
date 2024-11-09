@@ -47,7 +47,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
@@ -60,7 +60,7 @@ internal suspend inline fun setupProxy(
 ) {
   val dispatcher =
       object : ServerDispatcher {
-        override val primary = newSingleThreadContext("TEST")
+        override val primary = newFixedThreadPoolContext(24, "TEST")
         override val sideEffect = primary
 
         override fun shutdown() {}
@@ -158,6 +158,8 @@ internal suspend inline fun setupProxy(
         override fun setPreferredNetwork(network: PreferredNetwork) {}
       }
 
+  val socketCreator = SocketCreator.create(dispatcher)
+
   val manager =
       TcpProxyManager(
           proxyType = SharedProxy.Type.HTTP,
@@ -183,6 +185,7 @@ internal suspend inline fun setupProxy(
           serverStopConsumer = DefaultEventBus(),
           socketBinder = PassthroughSocketBinder(),
           expertPreferences = expertPreferences,
+          socketCreator = socketCreator,
       )
 
   val server =

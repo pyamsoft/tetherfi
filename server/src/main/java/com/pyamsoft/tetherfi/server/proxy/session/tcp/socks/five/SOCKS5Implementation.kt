@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -36,7 +37,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementat
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.BaseSOCKSImplementation.Responder.Companion.getJavaInetSocketAddress
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.SOCKSCommand
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implementation.AcceptedAuthenticationMethods.ERROR_NO_ACCEPTABLE_AUTH_METHODS
-import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
@@ -103,6 +103,7 @@ internal constructor(
 
   override suspend fun udpAssociate(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -115,7 +116,7 @@ internal constructor(
       responder: Responder,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      usingSocketBuilder(dispatcher = serverDispatcher.primary) { builder ->
+      socketCreator.create { builder ->
         val bound =
             try {
               builder
@@ -156,7 +157,7 @@ internal constructor(
                 e.ifNotCancellation {
                   Timber.e(e) { "Error during socket udp_assoc()" }
                   responder.sendError()
-                  return@usingSocketBuilder
+                  return@create
                 }
               }
             }
@@ -177,6 +178,7 @@ internal constructor(
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -256,6 +258,7 @@ internal constructor(
         val responder = Responder(proxyOutput)
         return@withContext performSOCKSCommand(
             scope = scope,
+            socketCreator = socketCreator,
             addressType = addressType,
             timeout = timeout,
             socketTracker = socketTracker,

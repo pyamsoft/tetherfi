@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -31,7 +32,6 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.relayData
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
-import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
@@ -53,6 +53,7 @@ protected constructor(
 
   private suspend fun connect(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -66,7 +67,7 @@ protected constructor(
       responder: R,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      usingSocketBuilder(dispatcher = serverDispatcher.primary) { builder ->
+      socketCreator.create { builder ->
         val connected =
             try {
               builder
@@ -119,7 +120,7 @@ protected constructor(
                 e.ifNotCancellation {
                   Timber.e(e) { "Error during socket connect()" }
                   responder.sendRefusal()
-                  return@usingSocketBuilder
+                  return@create
                 }
               }
             }
@@ -136,7 +137,7 @@ protected constructor(
           } catch (e: Throwable) {
             e.ifNotCancellation {
               Timber.e(e) { "Error sending connect() SUCCESS notification" }
-              return@usingSocketBuilder
+              return@create
             }
           }
 
@@ -161,6 +162,7 @@ protected constructor(
 
   private suspend fun bind(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -172,7 +174,7 @@ protected constructor(
       responder: R,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      usingSocketBuilder(dispatcher = serverDispatcher.primary) { builder ->
+      socketCreator.create { builder ->
         val bound =
             try {
               builder
@@ -224,7 +226,7 @@ protected constructor(
                 e.ifNotCancellation {
                   Timber.e(e) { "Error during socket bind()" }
                   responder.sendError()
-                  return@usingSocketBuilder
+                  return@create
                 }
               }
             }
@@ -237,7 +239,7 @@ protected constructor(
           if (hostAddress.toJavaAddress() != destinationAddress) {
             Timber.w { "bind() address $hostAddress != original $destinationAddress" }
             responder.sendRefusal()
-            return@usingSocketBuilder
+            return@create
           }
 
           try {
@@ -249,7 +251,7 @@ protected constructor(
             e.ifNotCancellation {
               Timber.e(e) { "Error sending bind() SUCCESS notification" }
               responder.sendError()
-              return@usingSocketBuilder
+              return@create
             }
           }
 
@@ -274,6 +276,7 @@ protected constructor(
 
   protected suspend fun performSOCKSCommand(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -293,6 +296,7 @@ protected constructor(
         SOCKSCommand.CONNECT -> {
           connect(
               scope = scope,
+              socketCreator = socketCreator,
               socketTracker = socketTracker,
               networkBinder = networkBinder,
               serverDispatcher = serverDispatcher,
@@ -310,6 +314,7 @@ protected constructor(
         SOCKSCommand.BIND -> {
           bind(
               scope = scope,
+              socketCreator = socketCreator,
               socketTracker = socketTracker,
               serverDispatcher = serverDispatcher,
               connectionInfo = connectionInfo,
@@ -325,6 +330,7 @@ protected constructor(
         SOCKSCommand.UDP_ASSOCIATE -> {
           udpAssociate(
               scope = scope,
+              socketCreator = socketCreator,
               socketTracker = socketTracker,
               serverDispatcher = serverDispatcher,
               connectionInfo = connectionInfo,
@@ -342,6 +348,7 @@ protected constructor(
 
   protected abstract suspend fun udpAssociate(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,

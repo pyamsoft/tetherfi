@@ -21,6 +21,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
@@ -62,7 +63,8 @@ internal constructor(
     socketTagger: SocketTagger,
 ) :
     BaseSOCKSImplementation<SOCKS4AddressType, SOCKS4Implementation.Responder>(
-        socketTagger = socketTagger) {
+        socketTagger = socketTagger,
+    ) {
 
   @SuppressLint("CheckResult")
   private suspend fun ignoreUserId(proxyInput: ByteReadChannel) {
@@ -78,6 +80,7 @@ internal constructor(
 
   override suspend fun udpAssociate(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
@@ -96,6 +99,7 @@ internal constructor(
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       serverDispatcher: ServerDispatcher,
       socketTracker: SocketTracker,
@@ -175,6 +179,7 @@ internal constructor(
         val responder = Responder(proxyOutput)
         return@withContext performSOCKSCommand(
             scope = scope,
+            socketCreator = socketCreator,
             timeout = timeout,
             addressType = SOCKS4AddressType,
             socketTracker = socketTracker,

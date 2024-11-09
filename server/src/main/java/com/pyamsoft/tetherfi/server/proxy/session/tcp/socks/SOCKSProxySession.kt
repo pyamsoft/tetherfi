@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.socks
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -35,9 +36,9 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 internal class SOCKSProxySession
@@ -63,6 +64,7 @@ internal constructor(
 
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
@@ -80,6 +82,7 @@ internal constructor(
     try {
       transport.handleRequest(
           scope = scope,
+          socketCreator = socketCreator,
           timeout = timeout,
           connectionInfo = connectionInfo,
           serverDispatcher = serverDispatcher,

@@ -23,6 +23,7 @@ import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.network.SocketBinder
@@ -59,6 +60,7 @@ internal constructor(
       proxyType: SharedProxy.Type,
       session: ProxySession<TcpProxyData>,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       dispatcher: ServerDispatcher,
       port: Int,
   ): ProxyManager {
@@ -77,12 +79,14 @@ internal constructor(
         port = port,
         expertPreferences = expertPreferences,
         serverDispatcher = dispatcher,
+        socketCreator = socketCreator,
     )
   }
 
   @CheckResult
   private suspend fun createHttp(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       dispatcher: ServerDispatcher,
   ): ProxyManager {
     enforcer.assertOffMainThread()
@@ -93,6 +97,7 @@ internal constructor(
         proxyType = SharedProxy.Type.HTTP,
         session = httpSession,
         info = info,
+        socketCreator = socketCreator,
         dispatcher = dispatcher,
         port = port,
     )
@@ -101,6 +106,7 @@ internal constructor(
   @CheckResult
   private suspend fun createSocks(
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       dispatcher: ServerDispatcher,
   ): ProxyManager {
     enforcer.assertOffMainThread()
@@ -111,6 +117,7 @@ internal constructor(
         proxyType = SharedProxy.Type.SOCKS,
         session = socksSession,
         info = info,
+        socketCreator = socketCreator,
         dispatcher = dispatcher,
         port = port + 1,
     )
@@ -119,6 +126,7 @@ internal constructor(
   override suspend fun create(
       type: SharedProxy.Type,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
   ): ProxyManager =
       withContext(context = Dispatchers.Default) {
@@ -126,11 +134,13 @@ internal constructor(
           SharedProxy.Type.HTTP ->
               createHttp(
                   info = info,
+                  socketCreator = socketCreator,
                   dispatcher = serverDispatcher,
               )
           SharedProxy.Type.SOCKS ->
               createSocks(
                   info = info,
+                  socketCreator = socketCreator,
                   dispatcher = serverDispatcher,
               )
         }

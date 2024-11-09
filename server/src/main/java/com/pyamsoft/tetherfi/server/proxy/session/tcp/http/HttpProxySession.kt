@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
@@ -33,7 +34,6 @@ import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
-import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
@@ -73,14 +73,14 @@ internal constructor(
    */
   private suspend inline fun <T> connectToInternet(
       networkBinder: SocketBinder.NetworkBinder,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       autoFlush: Boolean,
-      serverDispatcher: ServerDispatcher,
       request: HttpProxyRequest,
       socketTracker: SocketTracker,
-      block: (ByteReadChannel, ByteWriteChannel) -> T
+      crossinline block: suspend (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
-      usingSocketBuilder(serverDispatcher.primary) { builder ->
+      socketCreator.create { builder ->
         // We don't actually use the socket tls() method here since we are not a TLS server
         // We do the CONNECT based workaround to handle HTTPS connections
         val remote =
@@ -116,11 +116,15 @@ internal constructor(
         // Track this socket for when we fully shut down
         socketTracker.track(socket)
 
-        return@usingSocketBuilder socket.usingConnection(autoFlush = autoFlush, block)
+        return@create socket.usingConnection(autoFlush = autoFlush) { internetInput, internetOutput
+          ->
+          block(internetInput, internetOutput)
+        }
       }
 
   override suspend fun proxyToInternet(
       scope: CoroutineScope,
+      socketCreator: SocketCreator,
       timeout: ServerSocketTimeout,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       networkBinder: SocketBinder.NetworkBinder,
@@ -138,9 +142,9 @@ internal constructor(
     try {
       connectToInternet(
           autoFlush = true,
+          socketCreator = socketCreator,
           timeout = timeout,
           networkBinder = networkBinder,
-          serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,
           request = request,
       ) { internetInput, internetOutput ->

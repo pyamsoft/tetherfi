@@ -23,6 +23,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.network.SocketBinder
@@ -61,6 +62,7 @@ internal constructor(
     private val yoloRepeatDelay: Duration,
     private val session: ProxySession<TcpProxyData>,
     private val expertPreferences: ExpertPreferences,
+    socketCreator: SocketCreator,
     proxyType: SharedProxy.Type,
     serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     enforcer: ThreadEnforcer,
@@ -69,6 +71,7 @@ internal constructor(
     BaseProxyManager<ServerSocket>(
         proxyType = proxyType,
         enforcer = enforcer,
+        socketCreator = socketCreator,
         serverDispatcher = serverDispatcher,
         serverStopConsumer = serverStopConsumer,
     ) {
@@ -109,6 +112,7 @@ internal constructor(
           serverDispatcher = serverDispatcher,
           socketTracker = socketTracker,
           timeout = timeout,
+          socketCreator = socketCreator,
           data =
               TcpProxyData(
                   proxyInput = proxyInput,

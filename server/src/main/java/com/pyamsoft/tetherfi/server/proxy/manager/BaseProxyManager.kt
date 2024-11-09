@@ -20,11 +20,11 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
-import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.ASocket
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.SocketAddress
@@ -44,6 +44,7 @@ import kotlinx.coroutines.withContext
 
 internal abstract class BaseProxyManager<S : ASocket>
 protected constructor(
+    protected val socketCreator: SocketCreator,
     private val proxyType: SharedProxy.Type,
     private val enforcer: ThreadEnforcer,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
@@ -261,7 +262,7 @@ protected constructor(
       withContext(context = serverDispatcher.primary) {
         val scope = this
 
-        return@withContext usingSocketBuilder(serverDispatcher.primary) { builder ->
+        return@withContext socketCreator.create { builder ->
           openServer(builder = builder).use { server ->
             onOpened()
 
