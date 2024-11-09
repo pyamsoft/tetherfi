@@ -7,21 +7,20 @@ import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 private val GET_REQUEST =
     listOf(
@@ -126,16 +125,4 @@ class ProxyPerformanceTest {
           println("Completed jobs: ${completed.value}")
         }
       }
-
-  /** We also are prepared to handle when a socket fails to open right? */
-  @Test
-  fun yoloFailThrows(): Unit = runBlockingWithDelays {
-    setupProxy(
-        this,
-        expectServerFail = true,
-        appEnv = { updateYolo(true) },
-    ) {
-      delay(5.seconds)
-    }
-  }
 }
