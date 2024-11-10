@@ -22,40 +22,45 @@ import kotlin.time.Duration.Companion.seconds
 
 class ProxySetupTest {
 
-  @Test
-  fun setupNormal(): Unit = runBlockingWithDelays {
-    setupProxy(
-        this,
-        isLoggingEnabled = true,
-        proxyPort = 5553,
-    ) {
-      delay(5.seconds)
+    /**
+     * It works right?
+     */
+    @Test
+    fun setupNormal(): Unit = runBlockingWithDelays {
+        setupProxy(
+            this,
+            isLoggingEnabled = true,
+            proxyPort = 5553,
+        ) {
+            delay(5.seconds)
+        }
     }
-  }
 
-  @Test
-  fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
-    setupProxy(
-        this,
-        isLoggingEnabled = true,
-        proxyPort = 5555,
-        testSocketCrash = true,
-    ) {
-      delay(5.seconds)
+    /** On files with lower memory like Android 7 or 8, sometimes opening the server
+     * socket crashes with Too Many Open Files. We want to catch the problem and show an error in the app, instead of having the app crash and die */
+    @Test
+    fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
+        setupProxy(
+            this,
+            isLoggingEnabled = true,
+            proxyPort = 5555,
+            testSocketCrash = true,
+        ) {
+            delay(5.seconds)
+        }
     }
-  }
 
-  /** We also are prepared to handle when a socket fails to open right? */
-  @Test
-  fun yoloFailThrows(): Unit = runBlockingWithDelays {
-    setupProxy(
-        this,
-        isLoggingEnabled = true,
-        proxyPort = 5554,
-        expectServerFail = true,
-        appEnv = { updateYolo(true) },
-    ) {
-      delay(5.seconds)
+    /** We also are prepared to handle when a socket fails to open right? */
+    @Test
+    fun yoloFailThrows(): Unit = runBlockingWithDelays {
+        setupProxy(
+            this,
+            isLoggingEnabled = true,
+            proxyPort = 5554,
+            expectServerFail = true,
+            appEnv = { updateYolo(true) },
+        ) {
+            delay(5.seconds)
+        }
     }
-  }
 }
