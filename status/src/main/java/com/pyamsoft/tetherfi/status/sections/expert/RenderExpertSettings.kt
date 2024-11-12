@@ -57,48 +57,6 @@ internal fun LazyListScope.renderExpertSettings(
   }
 
   item(
-      contentType = ExpertSettingsContentTypes.POWER_BALANCE,
-  ) {
-    Card(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
-        border =
-            BorderStroke(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        shape = MaterialTheme.shapes.medium,
-    ) {
-      PowerBalance(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
-          isEditable = isEditable,
-          appName = appName,
-          onShowPowerBalance = onShowPowerBalance,
-      )
-    }
-  }
-
-  item(
-      contentType = ExpertSettingsContentTypes.SOCKET_TIMEOUT,
-  ) {
-    Card(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
-        border =
-            BorderStroke(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        shape = MaterialTheme.shapes.medium,
-    ) {
-      SocketTimeout(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
-          isEditable = isEditable,
-          appName = appName,
-          onShowSocketTimeout = onShowSocketTimeout,
-      )
-    }
-  }
-
-  item(
       contentType = ExpertSettingsContentTypes.BROADCAST_TYPE,
   ) {
     Card(
@@ -138,6 +96,48 @@ internal fun LazyListScope.renderExpertSettings(
           appName = appName,
           isEditable = isEditable,
           onSelectPreferredNetwork = onSelectPreferredNetwork,
+      )
+    }
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.POWER_BALANCE,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      PowerBalance(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          appName = appName,
+          onShowPowerBalance = onShowPowerBalance,
+      )
+    }
+  }
+
+  item(
+      contentType = ExpertSettingsContentTypes.SOCKET_TIMEOUT,
+  ) {
+    Card(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+      SocketTimeout(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          isEditable = isEditable,
+          appName = appName,
+          onShowSocketTimeout = onShowSocketTimeout,
       )
     }
   }
