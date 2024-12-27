@@ -127,7 +127,10 @@ internal constructor(
             is BroadcastEvent.ConnectionChanged -> {
               s.connection.update { info -> info.update { it.copy(hostName = event.hostName) } }
             }
-            else -> {
+            is BroadcastEvent.Other -> {
+              // Unhandled event
+            }
+            is BroadcastEvent.RequestPeers -> {
               // Unhandled event
             }
           }

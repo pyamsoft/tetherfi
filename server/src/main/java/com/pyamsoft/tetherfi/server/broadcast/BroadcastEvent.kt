@@ -25,6 +25,9 @@ sealed interface BroadcastEvent {
       val hostName: String,
   ) : BroadcastEvent
 
+  /** Request the list of Wi-Fi Direct Peers */
+  data object RequestPeers : BroadcastEvent
+
   /** Other currently unhandled event */
   data object Other : BroadcastEvent
 }

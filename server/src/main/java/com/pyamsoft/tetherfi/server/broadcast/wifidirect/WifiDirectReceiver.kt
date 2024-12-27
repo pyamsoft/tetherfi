@@ -112,6 +112,7 @@ internal constructor(
             BroadcastEvent.ConnectionChanged(
                 hostName = event.hostName,
             )
+        is WidiNetworkEvent.PeersChanged -> BroadcastEvent.RequestPeers
         else -> BroadcastEvent.Other
       }
     }
