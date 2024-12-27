@@ -63,10 +63,8 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    change(
-                        "Increase socket timeout default from 10 seconds to 30 seconds for better website compatibility")
-                    feature(
-                        "Added an expert setting to configure the Socket Timeout values for better performance or website compatibility.")
+                    bugfix(
+                        "Fixed Error dialog getting stuck on the Status screen")
                   }
                 },
         )
