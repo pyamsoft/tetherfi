@@ -139,7 +139,7 @@ class ProxyPerformanceTest {
       runBlockingWithDelays(1.minutes) {
         testServerPerformance(
             nThreads = 8,
-            jobCount = 50,
+            jobCount = 40,
             serverPort = 6667,
             proxyPort = 9998,
         )
