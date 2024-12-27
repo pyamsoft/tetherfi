@@ -15,19 +15,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="permission_title">Permission Request</string>
-  <string
-    name="permission_description"
-  >%1$s needs %2$s permission to create a Wi-Fi Group</string>
-  <string
-    name="permission_reassure"
-  >%1$s will not use these permissions for anything else but Wi-Fi Group creation.</string>
-  <string name="permission_open_settings">Open Settings</string>
-  <string name="permission_deny">Deny</string>
-  <string name="permission_grant">Grant</string>
-  <string name="permission_type_location">PRECISE LOCATION</string>
-  <string name="permission_type_nearby">NEARBY WIFI</string>
-
   <string
     name="permission_notification_title"
   >Show Hotspot Notification</string>

@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.main
 
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.PagerState
@@ -29,8 +30,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
+import com.pyamsoft.pydroid.bus.EventBus
+import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
@@ -44,11 +49,16 @@ import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.settings.SettingsDialog
+import com.pyamsoft.tetherfi.status.PermissionRequests
+import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.SlowSpeedsDialog
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,6 +69,10 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
 
   @JvmField @Inject internal var appEnvironment: AppDevEnvironment? = null
 
+  @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
+
+  @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
+
   override fun onInject(activity: ComponentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).inject(this)
   }
@@ -66,6 +80,38 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
   override fun onDispose() {
     viewModel = null
     appEnvironment = null
+    permissionRequestBus = null
+    permissionResponseBus = null
+  }
+}
+
+/** Sets up permission request interaction */
+@Composable
+private fun RegisterPermissionRequests(
+    permissionResponseBus: Flow<PermissionResponse>,
+    onToggleProxy: CoroutineScope.() -> Unit,
+) {
+  // Create requesters
+  val handleToggleProxy by rememberUpdatedState(onToggleProxy)
+
+  LaunchedEffect(
+      permissionResponseBus,
+  ) {
+    // See MainActivity
+    permissionResponseBus.flowOn(context = Dispatchers.Default).also { f ->
+      launch(context = Dispatchers.Default) {
+        f.collect { resp ->
+          when (resp) {
+            is PermissionResponse.RefreshNotification -> {
+              // Blank
+            }
+            is PermissionResponse.ToggleProxy -> {
+              handleToggleProxy()
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -107,6 +153,8 @@ private fun MountHooks(
     viewModel: MainViewModeler,
     pagerState: PagerState,
     allTabs: List<MainView>,
+    permissionResponseBus: Flow<PermissionResponse>,
+    onToggleProxy: CoroutineScope.() -> Unit,
     onShowInAppRating: () -> Unit,
 ) {
   val handleShowInAppRating by rememberUpdatedState(onShowInAppRating)
@@ -118,10 +166,14 @@ private fun MountHooks(
       allTabs = allTabs,
   )
 
-  LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
+  // As early as possible because of Lifecycle quirks
+  RegisterPermissionRequests(
+      permissionResponseBus = permissionResponseBus,
+      onToggleProxy = { onToggleProxy() },
+  )
 
   LaunchedEffect(viewModel) {
-    viewModel.watchForInAppRatingPrompt(
+    viewModel.bind(
         scope = this,
         onShowInAppRating = { handleShowInAppRating() },
     )
@@ -152,6 +204,13 @@ fun MainEntry(
   val component = rememberComposableInjector { MainInjector() }
   val viewModel = rememberNotNull(component.viewModel)
   val appEnvironment = rememberNotNull(component.appEnvironment)
+  val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
+  val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
+
+  // Use the LifecycleOwner.CoroutineScope (Activity usually)
+  // so that the scope does not die because of navigation events
+  val owner = LocalLifecycleOwner.current
+  val lifecycleScope = owner.lifecycleScope
 
   val allTabs = rememberAllTabs()
   val pagerState =
@@ -171,9 +230,11 @@ fun MainEntry(
 
   MountHooks(
       viewModel = viewModel,
+      permissionResponseBus = permissionResponseBus,
       pagerState = pagerState,
       allTabs = allTabs,
       onShowInAppRating = { handleShowInAppRating() },
+      onToggleProxy = { viewModel.handleToggleProxy() },
   )
 
   MainScreen(
@@ -188,8 +249,34 @@ fun MainEntry(
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
       onJumpToHowTo = { handleTabSelected(MainView.INFO) },
       onShowSlowSpeedHelp = { viewModel.handleOpenSlowSpeedHelp() },
+      onToggleProxy = { viewModel.handleToggleProxy() },
+      onOpenNetworkError = { viewModel.handleOpenNetworkError() },
+      onOpenBroadcastError = { viewModel.handleOpenBroadcastError() },
+      onOpenProxyError = { viewModel.handleOpenProxyError() },
+      onOpenHotspotError = { viewModel.handleOpenHotspotError() },
       onUpdateTile = onUpdateTile,
       onLaunchIntent = onLaunchIntent,
+  )
+
+  MainDialogs(
+      dialogModifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
+      state = viewModel,
+      appName = appName,
+      onDismissBlocker = { viewModel.handleDismissBlocker(it) },
+      onDismissSetupError = { viewModel.handleDismissSetupError() },
+      onHideNetworkError = { viewModel.handleCloseNetworkError() },
+      onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
+      onHideProxyError = { viewModel.handleCloseProxyError() },
+      onHideHotspotError = { viewModel.handleCloseHotspotError() },
+      onRequestPermissions = {
+        // Request permissions
+        lifecycleScope.launch(context = Dispatchers.Default) {
+          // See MainActivity
+          permissionRequestBus.emit(PermissionRequests.Server)
+        }
+      },
+      onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
+      onOpenLocationSettings = { onLaunchIntent(Settings.ACTION_LOCATION_SOURCE_SETTINGS) },
   )
 
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()

@@ -14,56 +14,44 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.blockers
+package com.pyamsoft.tetherfi.main.blockers
 
-import android.os.Build
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.status.R
+import com.pyamsoft.tetherfi.main.R
 import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.R as R2
 
-private enum class PermissionBlockerContentTypes {
-  EXPLAIN,
-  REASSURE,
-  PRIVACY_POLICY,
+private enum class LocationBlockerContentTypes {
+  NOTE,
+  RESOLVE,
+  OPEN_SETTINGS,
+  PRIVACY_POLICY
 }
 
 @Composable
-internal fun PermissionBlocker(
+internal fun LocationBlocker(
     modifier: Modifier = Modifier,
     appName: String,
+    onOpenLocationSettings: () -> Unit,
     onDismiss: () -> Unit,
-    onOpenPermissionSettings: () -> Unit,
-    onRequestPermissions: () -> Unit,
 ) {
-  val context = LocalContext.current
   val hapticManager = LocalHapticManager.current
-
-  // Permission needed is different on T
-  val neededPermission =
-      remember(context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-          context.getString(R.string.permission_type_location)
-        } else {
-          context.getString(R.string.permission_type_nearby)
-        }
-      }
 
   CardDialog(
       modifier = modifier,
@@ -73,10 +61,9 @@ internal fun PermissionBlocker(
         modifier =
             Modifier.padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content),
-        text = stringResource(R.string.permission_title),
+        text = stringResource(R.string.block_location_title),
         style = MaterialTheme.typography.headlineSmall,
     )
-
     LazyColumn(
         modifier =
             Modifier.weight(
@@ -85,31 +72,55 @@ internal fun PermissionBlocker(
             ),
     ) {
       item(
-          contentType = PermissionBlockerContentTypes.EXPLAIN,
+          contentType = LocationBlockerContentTypes.NOTE,
       ) {
         Text(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.permission_description, appName, neededPermission),
+            text = stringResource(R.string.block_location_description, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
 
       item(
-          contentType = PermissionBlockerContentTypes.REASSURE,
+          contentType = LocationBlockerContentTypes.RESOLVE,
       ) {
+        val tweak = stringResource(R2.string.ignore_location_title)
         Text(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.permission_reassure, appName),
+            text = stringResource(R.string.block_location_instruction, tweak, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
 
       item(
-          contentType = PermissionBlockerContentTypes.PRIVACY_POLICY,
+          contentType = LocationBlockerContentTypes.OPEN_SETTINGS,
+      ) {
+        Box(
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(top = MaterialTheme.keylines.content)
+                    .fillParentMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+          Button(
+              onClick = {
+                hapticManager?.confirmButtonPress()
+                onOpenLocationSettings()
+              },
+          ) {
+            Text(
+                text = stringResource(R.string.block_location_open_settings),
+            )
+          }
+        }
+      }
+
+      item(
+          contentType = LocationBlockerContentTypes.PRIVACY_POLICY,
       ) {
         ViewPrivacyPolicy(
             modifier =
@@ -124,48 +135,18 @@ internal fun PermissionBlocker(
         modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      TextButton(
-          onClick = {
-            hapticManager?.actionButtonPress()
-            onOpenPermissionSettings()
-          },
-          colors =
-              ButtonDefaults.textButtonColors(
-                  contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-              ),
-      ) {
-        Text(
-            text = stringResource(R.string.permission_open_settings),
-        )
-      }
-
       Spacer(
           modifier = Modifier.weight(1F),
       )
 
       TextButton(
-          colors =
-              ButtonDefaults.textButtonColors(
-                  contentColor = MaterialTheme.colorScheme.error,
-              ),
           onClick = {
             hapticManager?.cancelButtonPress()
             onDismiss()
           },
       ) {
         Text(
-            text = stringResource(R.string.permission_deny),
-        )
-      }
-
-      TextButton(
-          onClick = {
-            hapticManager?.confirmButtonPress()
-            onRequestPermissions()
-          },
-      ) {
-        Text(
-            text = stringResource(R.string.permission_grant),
+            text = stringResource(android.R.string.ok),
         )
       }
     }
@@ -174,11 +155,10 @@ internal fun PermissionBlocker(
 
 @Preview
 @Composable
-private fun PreviewPermissionBlocker() {
-  PermissionBlocker(
+private fun PreviewLocationBlocker() {
+  LocationBlocker(
       appName = "TEST",
       onDismiss = {},
-      onOpenPermissionSettings = {},
-      onRequestPermissions = {},
+      onOpenLocationSettings = {},
   )
 }

@@ -42,6 +42,13 @@ fun MainContent(
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
+    onToggleProxy: () -> Unit,
+
+    // Dialogs
+    onOpenNetworkError: () -> Unit,
+    onOpenHotspotError: () -> Unit,
+    onOpenProxyError: () -> Unit,
+    onOpenBroadcastError: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -79,6 +86,11 @@ fun MainContent(
             onUpdateTile = onUpdateTile,
             onLaunchIntent = onLaunchIntent,
             onShowSlowSpeedHelp = onShowSlowSpeedHelp,
+            onToggleProxy = onToggleProxy,
+            onOpenNetworkError = onOpenNetworkError,
+            onOpenHotspotError = onOpenHotspotError,
+            onOpenProxyError = onOpenProxyError,
+            onOpenBroadcastError = onOpenBroadcastError,
         )
       }
       MainView.CONNECTIONS -> {

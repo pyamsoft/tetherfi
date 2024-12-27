@@ -32,7 +32,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
 
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.TestOnly
 fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
-    state: ServerViewState,
+    state: MainViewState,
     pagerState: PagerState,
     allTabs: List<MainView>,
 
@@ -54,6 +54,13 @@ fun MainScreen(
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
+    onToggleProxy: () -> Unit,
+
+    // Dialogs
+    onOpenNetworkError: () -> Unit,
+    onOpenHotspotError: () -> Unit,
+    onOpenProxyError: () -> Unit,
+    onOpenBroadcastError: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -91,6 +98,11 @@ fun MainScreen(
           onUpdateTile = onUpdateTile,
           onLaunchIntent = onLaunchIntent,
           onShowSlowSpeedHelp = onShowSlowSpeedHelp,
+          onToggleProxy = onToggleProxy,
+          onOpenNetworkError = onOpenNetworkError,
+          onOpenHotspotError = onOpenHotspotError,
+          onOpenProxyError = onOpenProxyError,
+          onOpenBroadcastError = onOpenBroadcastError,
       )
     }
   }
@@ -117,6 +129,16 @@ private fun PreviewMainScreen(
 
         // TODO support other network prefs
         override val preferredNetwork = MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+
+        override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+        override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+        override val startBlockers = MutableStateFlow<Collection<HotspotStartBlocker>>(emptySet())
+
+        override val isShowingSetupError = MutableStateFlow(false)
+        override val isShowingNetworkError = MutableStateFlow(false)
+        override val isShowingHotspotError = MutableStateFlow(false)
+        override val isShowingBroadcastError = MutableStateFlow(false)
+        override val isShowingProxyError = MutableStateFlow(false)
       }
   val allTabs = MainView.entries.rememberAsStateList()
 
@@ -133,6 +155,11 @@ private fun PreviewMainScreen(
       onLaunchIntent = {},
       onUpdateTile = {},
       onShowSlowSpeedHelp = {},
+      onToggleProxy = {},
+      onOpenBroadcastError = {},
+      onOpenProxyError = {},
+      onOpenNetworkError = {},
+      onOpenHotspotError = {},
   )
 }
 

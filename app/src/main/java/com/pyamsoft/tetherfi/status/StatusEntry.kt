@@ -67,17 +67,14 @@ internal class StatusInjector : ComposableInjector() {
 @Composable
 private fun RegisterPermissionRequests(
     permissionResponseBus: Flow<PermissionResponse>,
-    onToggleProxy: CoroutineScope.() -> Unit,
     onRefreshSystemInfo: CoroutineScope.() -> Unit,
 ) {
   // Create requesters
-  val handleToggleProxy by rememberUpdatedState(onToggleProxy)
   val handleRefreshSystemInfo by rememberUpdatedState(onRefreshSystemInfo)
 
   LaunchedEffect(
       permissionResponseBus,
   ) {
-
     // See MainActivity
     permissionResponseBus.flowOn(context = Dispatchers.Default).also { f ->
       launch(context = Dispatchers.Default) {
@@ -88,7 +85,7 @@ private fun RegisterPermissionRequests(
               handleRefreshSystemInfo(this)
             }
             is PermissionResponse.ToggleProxy -> {
-              handleToggleProxy()
+              // Blank
             }
           }
         }
@@ -102,7 +99,6 @@ private fun RegisterPermissionRequests(
 private fun MountHooks(
     viewModel: StatusViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
-    onToggleProxy: CoroutineScope.() -> Unit,
     onRefreshConnection: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
@@ -114,7 +110,6 @@ private fun MountHooks(
   // As early as possible because of Lifecycle quirks
   RegisterPermissionRequests(
       permissionResponseBus = permissionResponseBus,
-      onToggleProxy = onToggleProxy,
       onRefreshSystemInfo = { handleRefreshSystemInfo(this) },
   )
 
@@ -152,6 +147,13 @@ fun StatusEntry(
     onJumpToHowTo: () -> Unit,
     onLaunchIntent: (String) -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
+    onToggleProxy: () -> Unit,
+
+    // Dialogs
+    onOpenNetworkError: () -> Unit,
+    onOpenHotspotError: () -> Unit,
+    onOpenProxyError: () -> Unit,
+    onOpenBroadcastError: () -> Unit,
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
@@ -166,11 +168,16 @@ fun StatusEntry(
   val owner = LocalLifecycleOwner.current
   val lifecycleScope = owner.lifecycleScope
 
+  val handleToggleProxy by rememberUpdatedState(onToggleProxy)
+  val handleOpenNetworkError by rememberUpdatedState(onOpenNetworkError)
+  val handleOpenHotspotError by rememberUpdatedState(onOpenHotspotError)
+  val handleOpenBroadcastError by rememberUpdatedState(onOpenBroadcastError)
+  val handleOpenProxyError by rememberUpdatedState(onOpenProxyError)
+
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
       permissionResponseBus = permissionResponseBus,
-      onToggleProxy = { viewModel.handleToggleProxy() },
       onRefreshConnection = onRefreshConnection,
   )
 
@@ -182,7 +189,11 @@ fun StatusEntry(
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onJumpToHowTo = onJumpToHowTo,
-      onToggleProxy = { viewModel.handleToggleProxy() },
+      onToggleProxy = {
+        viewModel.handleToggleProxy(
+            onToggleProxy = handleToggleProxy,
+        )
+      },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
       onPortChanged = { viewModel.handlePortChanged(it) },
@@ -190,15 +201,6 @@ fun StatusEntry(
       onOpenBatterySettings = {
         onLaunchIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
       },
-      onDismissBlocker = { viewModel.handleDismissBlocker(it) },
-      onRequestPermissions = {
-        // Request permissions
-        lifecycleScope.launch(context = Dispatchers.Default) {
-          // See MainActivity
-          permissionRequestBus.emit(PermissionRequests.Server)
-        }
-      },
-      onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
       onSelectBand = { viewModel.handleChangeBand(it) },
       onRequestNotificationPermission = {
         lifecycleScope.launch(context = Dispatchers.Default) {
@@ -206,22 +208,16 @@ fun StatusEntry(
           permissionRequestBus.emit(PermissionRequests.Notification)
         }
       },
-      onOpenLocationSettings = { onLaunchIntent(Settings.ACTION_LOCATION_SOURCE_SETTINGS) },
       onStatusUpdated = onUpdateTile,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
-      onShowNetworkError = { viewModel.handleOpenNetworkError() },
-      onHideNetworkError = { viewModel.handleCloseNetworkError() },
-      onShowHotspotError = { viewModel.handleOpenHotspotError() },
-      onHideHotspotError = { viewModel.handleCloseHotspotError() },
-      onHideSetupError = { viewModel.handleCloseSetupError() },
+      onShowNetworkError = { handleOpenNetworkError() },
+      onShowHotspotError = { handleOpenHotspotError() },
       onToggleIgnoreVpn = { viewModel.handleToggleIgnoreVpn() },
       onToggleIgnoreLocation = { viewModel.handleToggleIgnoreLocation() },
       onToggleShutdownWithNoClients = { viewModel.handleToggleShutdownNoClients() },
       onToggleKeepScreenOn = { viewModel.handleToggleKeepScreenOn() },
-      onShowProxyError = { viewModel.handleOpenProxyError() },
-      onHideProxyError = { viewModel.handleCloseProxyError() },
-      onShowBroadcastError = { viewModel.handleOpenBroadcastError() },
-      onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
+      onShowProxyError = { handleOpenProxyError() },
+      onShowBroadcastError = { handleOpenBroadcastError() },
       onShowPowerBalance = { viewModel.handleOpenPowerBalance() },
       onHidePowerBalance = { viewModel.handleClosePowerBalance() },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.trouble
+package com.pyamsoft.tetherfi.ui.trouble
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,7 +40,7 @@ private enum class TroubleshootDialogContentTypes {
 }
 
 @Composable
-internal fun TroubleshootDialog(
+fun TroubleshootDialog(
     modifier: Modifier = Modifier,
     appName: String,
     broadcastType: BroadcastType?,

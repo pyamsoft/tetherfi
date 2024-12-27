@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.blockers
+package com.pyamsoft.tetherfi.main.blockers
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +33,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
-import com.pyamsoft.tetherfi.status.R
+import com.pyamsoft.tetherfi.main.R
 
 @Composable
 internal fun ViewPrivacyPolicy(

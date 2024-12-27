@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.trouble
+package com.pyamsoft.tetherfi.ui.trouble
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -29,11 +29,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.status.R
+import com.pyamsoft.tetherfi.ui.R
 import org.jetbrains.annotations.TestOnly
 
 @Composable
-internal fun TroubleshootUnableToStart(
+fun TroubleshootUnableToStart(
     modifier: Modifier = Modifier,
     appName: String,
     broadcastType: BroadcastType?,

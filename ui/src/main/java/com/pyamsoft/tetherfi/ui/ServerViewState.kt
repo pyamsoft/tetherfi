@@ -21,6 +21,7 @@ import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import kotlinx.coroutines.flow.StateFlow
 
 /** Activity global view state for server variables */
@@ -33,4 +34,7 @@ interface ServerViewState : UiViewState {
 
   val broadcastType: StateFlow<BroadcastType?>
   val preferredNetwork: StateFlow<PreferredNetwork?>
+
+  val wiDiStatus: StateFlow<RunningStatus>
+  val proxyStatus: StateFlow<RunningStatus>
 }

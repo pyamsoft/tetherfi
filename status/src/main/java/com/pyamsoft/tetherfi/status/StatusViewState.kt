@@ -22,8 +22,6 @@ import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
-import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,9 +30,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface StatusViewState : UiViewState {
 
   val loadingState: StateFlow<LoadingState>
-
-  val wiDiStatus: StateFlow<RunningStatus>
-  val proxyStatus: StateFlow<RunningStatus>
 
   // For editing, at proxy runtime we pull from ServerViewState
   val ssid: StateFlow<String>
@@ -58,12 +53,6 @@ interface StatusViewState : UiViewState {
   val socketTimeout: StateFlow<ServerSocketTimeout>
 
   // Dialogs
-  val startBlockers: StateFlow<Collection<HotspotStartBlocker>>
-  val isShowingSetupError: StateFlow<Boolean>
-  val isShowingNetworkError: StateFlow<Boolean>
-  val isShowingHotspotError: StateFlow<Boolean>
-  val isShowingBroadcastError: StateFlow<Boolean>
-  val isShowingProxyError: StateFlow<Boolean>
   val isShowingPowerBalance: StateFlow<Boolean>
   val isShowingSocketTimeout: StateFlow<Boolean>
 
@@ -80,16 +69,12 @@ interface StatusViewState : UiViewState {
 class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val loadingState = MutableStateFlow(StatusViewState.LoadingState.NONE)
 
-  override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
-  override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
-
   override val ssid = MutableStateFlow("")
   override val password = MutableStateFlow("")
   override val isPasswordVisible = MutableStateFlow(false)
   override val port = MutableStateFlow("")
   override val band = MutableStateFlow<ServerNetworkBand?>(null)
 
-  override val startBlockers = MutableStateFlow<Collection<HotspotStartBlocker>>(emptySet())
   override val hasNotificationPermission = MutableStateFlow(false)
 
   override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
@@ -98,11 +83,6 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val socketTimeout =
       MutableStateFlow<ServerSocketTimeout>(ServerSocketTimeout.Defaults.BALANCED)
 
-  override val isShowingSetupError = MutableStateFlow(false)
-  override val isShowingNetworkError = MutableStateFlow(false)
-  override val isShowingHotspotError = MutableStateFlow(false)
-  override val isShowingBroadcastError = MutableStateFlow(false)
-  override val isShowingProxyError = MutableStateFlow(false)
   override val isShowingPowerBalance = MutableStateFlow(false)
   override val isShowingSocketTimeout = MutableStateFlow(false)
 

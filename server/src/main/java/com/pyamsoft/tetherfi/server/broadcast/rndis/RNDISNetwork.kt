@@ -22,11 +22,15 @@ import java.util.UUID
 
 private val RNDIS_SSID by lazy { "rndis-ssid-${UUID.randomUUID()}" }
 private val RNDIS_PASSWD by lazy { "rndis-passwd-${UUID.randomUUID()}" }
+private val RNDIS_DOESNT_KNOW_CLIENT_LIST:
+    Collection<BroadcastNetworkStatus.GroupInfo.Connected.Device> =
+    emptySet()
 
 private val RNDIS by lazy {
   BroadcastNetworkStatus.GroupInfo.Connected(
       ssid = RNDIS_SSID,
       password = RNDIS_PASSWD,
+      clients = RNDIS_DOESNT_KNOW_CLIENT_LIST,
   )
 }
 

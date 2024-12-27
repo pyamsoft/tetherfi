@@ -55,6 +55,9 @@ import kotlinx.coroutines.withContext
 
 typealias ServerDataType = Any
 
+private val DEBUG_EMPTY_CLIENT_LIST: Collection<BroadcastNetworkStatus.GroupInfo.Connected.Device> =
+    emptySet()
+
 @Singleton
 internal class DelegatingBroadcastServer
 @Inject
@@ -270,6 +273,7 @@ internal constructor(
       return BroadcastNetworkStatus.GroupInfo.Connected(
           ssid = "DEBUG SSID",
           password = "DEBUG PASSWORD",
+          clients = DEBUG_EMPTY_CLIENT_LIST,
       )
     }
 

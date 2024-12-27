@@ -40,7 +40,6 @@ import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
@@ -82,16 +81,6 @@ fun StatusScreen(
     // Battery Optimization
     onOpenBatterySettings: () -> Unit,
 
-    // Blockers
-    onDismissBlocker: (HotspotStartBlocker) -> Unit,
-
-    // Permission
-    onOpenPermissionSettings: () -> Unit,
-    onRequestPermissions: () -> Unit,
-
-    // Location
-    onOpenLocationSettings: () -> Unit,
-
     // Notification
     onRequestNotificationPermission: () -> Unit,
 
@@ -100,15 +89,10 @@ fun StatusScreen(
     onRefreshConnection: () -> Unit,
 
     // Errors
-    onHideSetupError: () -> Unit,
     onShowNetworkError: () -> Unit,
-    onHideNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
-    onHideHotspotError: () -> Unit,
     onShowBroadcastError: () -> Unit,
-    onHideBroadcastError: () -> Unit,
     onShowProxyError: () -> Unit,
-    onHideProxyError: () -> Unit,
 
     // Tweaks
     onToggleIgnoreVpn: () -> Unit,
@@ -130,8 +114,8 @@ fun StatusScreen(
     onSelectBroadcastType: (BroadcastType) -> Unit,
     onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
-  val wiDiStatus by state.wiDiStatus.collectAsStateWithLifecycle()
-  val proxyStatus by state.proxyStatus.collectAsStateWithLifecycle()
+  val wiDiStatus by serverViewState.wiDiStatus.collectAsStateWithLifecycle()
+  val proxyStatus by serverViewState.proxyStatus.collectAsStateWithLifecycle()
 
   val hotspotStatus =
       remember(
@@ -273,17 +257,6 @@ fun StatusScreen(
   StatusDialogs(
       dialogModifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
       state = state,
-      serverViewState = serverViewState,
-      appName = appName,
-      onDismissBlocker = onDismissBlocker,
-      onOpenPermissionSettings = onOpenPermissionSettings,
-      onOpenLocationSettings = onOpenLocationSettings,
-      onRequestPermissions = onRequestPermissions,
-      onHideNetworkError = onHideNetworkError,
-      onHideHotspotError = onHideHotspotError,
-      onHideSetupError = onHideSetupError,
-      onHideProxyError = onHideProxyError,
-      onHideBroadcastError = onHideBroadcastError,
       onHidePowerBalance = onHidePowerBalance,
       onUpdatePowerBalance = onUpdatePowerBalance,
       onHideSocketTimeout = onHideSocketTimeout,
@@ -315,31 +288,22 @@ private fun PreviewStatusScreen(
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
       onSelectBand = {},
-      onDismissBlocker = {},
       onOpenBatterySettings = {},
-      onOpenPermissionSettings = {},
-      onOpenLocationSettings = {},
       onPasswordChanged = {},
       onPortChanged = {},
-      onRequestPermissions = {},
       onSsidChanged = {},
       onToggleProxy = {},
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onRefreshConnection = {},
-      onHideHotspotError = {},
       onShowHotspotError = {},
       onShowNetworkError = {},
-      onHideNetworkError = {},
-      onHideSetupError = {},
       onToggleIgnoreVpn = {},
       onToggleIgnoreLocation = {},
       onToggleShutdownWithNoClients = {},
       onJumpToHowTo = {},
       onShowBroadcastError = {},
-      onHideBroadcastError = {},
       onShowProxyError = {},
-      onHideProxyError = {},
       onUpdatePowerBalance = {},
       onHidePowerBalance = {},
       onShowPowerBalance = {},

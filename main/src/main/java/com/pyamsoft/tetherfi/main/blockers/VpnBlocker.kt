@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.blockers
+package com.pyamsoft.tetherfi.main.blockers
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,8 +31,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.status.R
+import com.pyamsoft.tetherfi.main.R
 import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.R as R2
 
 private enum class VpnBlockerContentTypes {
   NOTE,
@@ -81,7 +82,7 @@ internal fun VpnBlocker(
       item(
           contentType = VpnBlockerContentTypes.RESOLVE,
       ) {
-        val tweak = stringResource(R.string.ignore_vpn_title)
+        val tweak = stringResource(R2.string.ignore_vpn_title)
         Text(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)

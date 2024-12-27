@@ -16,8 +16,6 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="permission_notification_title">顯示網路熱點通知</string>
-  <string
-    name="permission_notification_description"
-  >在新的 Android 版本中使網路熱點保持存活。\n\n在沒有通知的情境下，網路熱點可能會被系統隨機中止。</string>
+  <string name="ignore_location_title">避免出現定位服務阻擋對話框</string>
+  <string name="ignore_vpn_title">避免顯示 VPN 連線阻擋對話框</string>
 </resources>

@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
+import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
@@ -42,6 +43,10 @@ enum class TestServerState {
 @TestOnly @VisibleForTesting const val TEST_HOSTNAME = "127.0.0.1"
 
 @TestOnly
+@VisibleForTesting
+val TEST_CLIENT_LIST: Collection<BroadcastNetworkStatus.GroupInfo.Connected.Device> = emptySet()
+
+@TestOnly
 @CheckResult
 @VisibleForTesting
 fun makeTestServerState(
@@ -60,6 +65,9 @@ fun makeTestServerState(
             // TODO support other network prefs
             override val preferredNetwork =
                 MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+
+            override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+            override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
           }
       TestServerState.CONNECTED ->
           object : ServerViewState {
@@ -68,6 +76,7 @@ fun makeTestServerState(
                     BroadcastNetworkStatus.GroupInfo.Connected(
                         ssid = TEST_SSID,
                         password = TEST_PASSWORD,
+                        clients = TEST_CLIENT_LIST,
                     ))
             override val connection =
                 MutableStateFlow(
@@ -79,6 +88,9 @@ fun makeTestServerState(
             // TODO support other network prefs
             override val preferredNetwork =
                 MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+
+            override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+            override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
           }
       TestServerState.ERROR ->
           object : ServerViewState {
@@ -97,5 +109,8 @@ fun makeTestServerState(
             // TODO support other network prefs
             override val preferredNetwork =
                 MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+
+            override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+            override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
           }
     }

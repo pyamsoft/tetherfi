@@ -20,7 +20,6 @@
     name="tweaks_description"
   >Tweaks change how %1$s performs in various ways.\n\nAll of these options are completely optional and do not impact network or hotspot performance in any way.</string>
 
-  <string name="ignore_vpn_title">Avoid VPN Blocker Dialog</string>
   <string
     name="ignore_vpn_description"
   >When starting, %1$s sometimes has trouble if a VPN is running, and will refuse to start the hotspot until it is turned off.\n\nIf you KNOW your VPN app works fine with %1$s, turn this option on to avoid the blocking dialog.</string>
@@ -35,7 +34,6 @@
     name="keep_screen_on_description"
   >Keep the screen on while the Hotspot is running. Once the Hotspot is stopped, the screen will be allowed to turn off again. This tweak is not supported on every device.</string>
 
-  <string name="ignore_location_title">Avoid Location Blocker Dialog</string>
   <string name="ignore_location_description">
         In order to use Wi-Fi Direct, %1$s may require Location turned on. Not
         every device needs Location on to use Wi-Fi Direct however.\n\nIf you

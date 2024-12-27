@@ -16,15 +16,11 @@
 
 package com.pyamsoft.tetherfi.status
 
-import androidx.annotation.CheckResult
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.notify.NotifyGuard
-import com.pyamsoft.tetherfi.core.AppCoroutineScope
-import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
@@ -35,23 +31,14 @@ import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import com.pyamsoft.tetherfi.server.proxy.SharedProxy
-import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
-import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
-import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
@@ -61,19 +48,14 @@ class StatusViewModeler
 internal constructor(
     override val state: MutableStatusViewState,
     private val notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    private val enforcer: ThreadEnforcer,
     private val tweakPreferences: TweakPreferences,
     private val expertPreferences: ExpertPreferences,
     private val proxyPreferences: ProxyPreferences,
     private val statusPreferences: StatusPreferences,
     private val wifiPreferences: WifiPreferences,
-    private val networkStatus: BroadcastNetworkStatus,
-    private val proxy: SharedProxy,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
     private val serviceLauncher: ServiceLauncher,
-    private val requirements: HotspotRequirements,
-    private val appScope: AppCoroutineScope,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -103,72 +85,16 @@ internal constructor(
     }
   }
 
-  @CheckResult
-  private fun resolveErrorFlow(): Flow<Boolean> =
-      combineTransform(
-              state.wiDiStatus,
-              state.proxyStatus,
-          ) { wifi, proxy ->
-            enforcer.assertOffMainThread()
-
-            emit(wifi is RunningStatus.Error || proxy is RunningStatus.Error)
-          }
-          // Distinct so that
-          // Upon ON -> if any ERROR, fire dialog and in page
-          // Once dialog dismissed, if OFF and error, don't dialog again because still TRUE
-          // otherwise if OFF and no error, no dialog
-          .distinctUntilChanged()
-
-  private suspend fun startProxy() {
-    val blockers = requirements.blockers()
-    // If something is blocking hotspot startup we will show it in the view
-    state.startBlockers.value = blockers
-    if (blockers.isNotEmpty()) {
-      Timber.w { "Cannot launch Proxy until blockers are dealt with: $blockers" }
-      stopProxy()
-      return
-    }
-
-    Timber.d { "Starting Proxy..." }
-    serviceLauncher.startForeground()
-  }
-
-  private fun stopProxy() {
-    Timber.d { "Stopping Proxy" }
-    serviceLauncher.stopForeground()
-  }
-
-  private fun resetError() {
-    Timber.d { "Resetting Proxy from Error state" }
-    serviceLauncher.resetError()
-  }
-
-  private fun closeAllDialogs() {
-    handleCloseProxyError()
-    handleCloseBroadcastError()
-    handleCloseHotspotError()
-    handleCloseSetupError()
-    handleCloseNetworkError()
-  }
-
   override fun registerSaveState(
       registry: SaveableStateRegistry
   ): List<SaveableStateRegistry.Entry> =
       mutableListOf<SaveableStateRegistry.Entry>().apply {
         registry
-            .registerProvider(KEY_SHOW_HOTSPOT_ERROR) { state.isShowingHotspotError.value }
-            .also { add(it) }
-
-        registry
-            .registerProvider(KEY_SHOW_NETWORK_ERROR) { state.isShowingNetworkError.value }
-            .also { add(it) }
-
-        registry
-            .registerProvider(KEY_SHOW_SETUP_ERROR) { state.isShowingSetupError.value }
-            .also { add(it) }
-
-        registry
             .registerProvider(KEY_SHOW_POWER_BALANCE) { state.isShowingPowerBalance.value }
+            .also { add(it) }
+
+        registry
+            .registerProvider(KEY_SHOW_POWER_BALANCE) { state.isShowingSocketTimeout.value }
             .also { add(it) }
       }
 
@@ -177,49 +103,15 @@ internal constructor(
       state.isShowingPowerBalance.value = it
     }
 
-    registry.consumeRestored(KEY_SHOW_NETWORK_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingNetworkError.value = it
-    }
-
-    registry.consumeRestored(KEY_SHOW_HOTSPOT_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingHotspotError.value = it
-    }
-
-    registry.consumeRestored(KEY_SHOW_SETUP_ERROR)?.cast<Boolean>()?.also {
-      state.isShowingSetupError.value = it
+    registry.consumeRestored(KEY_SHOW_TIMEOUTS)?.cast<Boolean>()?.also {
+      state.isShowingSocketTimeout.value = it
     }
   }
 
-  fun handleToggleProxy() {
+  fun handleToggleProxy(onToggleProxy: () -> Unit) {
     // Hide the password
     state.isPasswordVisible.value = false
-
-    closeAllDialogs()
-
-    appScope.launch(context = Dispatchers.Default) {
-      val broadcastStatus = networkStatus.getCurrentStatus()
-      val proxyStatus = proxy.getCurrentStatus()
-
-      if (broadcastStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
-        // If either is in error, reset network and restart
-        resetError()
-      } else {
-        // Otherwise just go by Wifi direct
-        when (broadcastStatus) {
-          is RunningStatus.NotRunning -> {
-            startProxy()
-          }
-          is RunningStatus.Running -> {
-            stopProxy()
-          }
-          else -> {
-            Timber.d {
-              "Cannot toggle while we are in the middle of an operation: $broadcastStatus"
-            }
-          }
-        }
-      }
-    }
+    onToggleProxy()
   }
 
   private fun loadPreferences(scope: CoroutineScope) {
@@ -416,49 +308,9 @@ internal constructor(
     }
   }
 
-  private fun watchStatusUpdates(scope: CoroutineScope) {
-    proxy.onStatusChanged().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { status ->
-          Timber.d { "Proxy Status Changed: $status" }
-          state.proxyStatus.value = status
-        }
-      }
-    }
-
-    networkStatus.onStatusChanged().also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { status ->
-          Timber.d { "WiDi Status Changed: $status" }
-          state.wiDiStatus.value = status
-        }
-      }
-    }
-  }
-
-  private fun watchSetupError(scope: CoroutineScope) {
-    // If either of these sets an error state, we will mark the error dialog as shown
-    // Need this or we run on the main thread
-    resolveErrorFlow().flowOn(context = Dispatchers.Default).also { f ->
-      scope.launch(context = Dispatchers.Default) {
-        f.collect { show ->
-          enforcer.assertOffMainThread()
-
-          // TODO(Peter): This causes the dialog to show each time a user swipes over to the Status
-          //              screen because the error flow re-delivers this state on each screen
-          //              initialization.
-          //              https://github.com/pyamsoft/tetherfi/issues/366
-          state.isShowingSetupError.value = show
-        }
-      }
-    }
-  }
-
   fun bind(
       scope: CoroutineScope,
   ) {
-    watchSetupError(scope)
-    watchStatusUpdates(scope)
     loadPreferences(scope)
   }
 
@@ -490,14 +342,6 @@ internal constructor(
     }
   }
 
-  fun handleDismissBlocker(blocker: HotspotStartBlocker) {
-    state.startBlockers.update { it - blocker }
-  }
-
-  fun handleCloseSetupError() {
-    state.isShowingSetupError.value = false
-  }
-
   fun handleSsidChanged(ssid: String) {
     state.ssid.value = ssid
     wifiPreferences.setSsid(ssid)
@@ -522,38 +366,6 @@ internal constructor(
 
   fun handleTogglePasswordVisibility() {
     state.isPasswordVisible.update { !it }
-  }
-
-  fun handleOpenHotspotError() {
-    state.isShowingHotspotError.value = true
-  }
-
-  fun handleCloseHotspotError() {
-    state.isShowingHotspotError.value = false
-  }
-
-  fun handleOpenNetworkError() {
-    state.isShowingNetworkError.value = true
-  }
-
-  fun handleCloseNetworkError() {
-    state.isShowingNetworkError.value = false
-  }
-
-  fun handleOpenBroadcastError() {
-    state.isShowingBroadcastError.value = true
-  }
-
-  fun handleCloseBroadcastError() {
-    state.isShowingBroadcastError.value = false
-  }
-
-  fun handleOpenProxyError() {
-    state.isShowingProxyError.value = true
-  }
-
-  fun handleCloseProxyError() {
-    state.isShowingProxyError.value = false
   }
 
   fun handleOpenPowerBalance() {
@@ -611,10 +423,8 @@ internal constructor(
   }
 
   companion object {
-    private const val KEY_SHOW_SETUP_ERROR = "key_show_setup_error"
-    private const val KEY_SHOW_HOTSPOT_ERROR = "key_show_hotspot_error"
-    private const val KEY_SHOW_NETWORK_ERROR = "key_show_network_error"
 
     private const val KEY_SHOW_POWER_BALANCE = "key_show_power_balance"
+    private const val KEY_SHOW_TIMEOUTS = "key_show_timeout"
   }
 }

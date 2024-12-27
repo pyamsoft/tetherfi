@@ -35,6 +35,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.Label
+import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.checkable.rememberCheckableColor
 import com.pyamsoft.tetherfi.ui.textAlpha
 
@@ -151,7 +152,7 @@ private fun LocationBlockerTweak(
       isEditable = isEditable,
       color = color,
       checked = isIgnoreLocation,
-      title = stringResource(R.string.ignore_location_title),
+      title = stringResource(R2.string.ignore_location_title),
       description = stringResource(R.string.ignore_location_description, appName),
       onClick = onToggleIgnoreLocation,
   )
@@ -179,7 +180,7 @@ private fun VPNBlockerTweak(
       isEditable = isEditable,
       color = color,
       checked = isIgnoreVpn,
-      title = stringResource(R.string.ignore_vpn_title),
+      title = stringResource(R2.string.ignore_vpn_title),
       description = stringResource(R.string.ignore_vpn_description, appName),
       onClick = onToggleIgnoreVpn,
   )

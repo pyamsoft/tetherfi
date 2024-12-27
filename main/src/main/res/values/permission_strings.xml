@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
   ~ Copyright 2024 pyamsoft
-  ~ Copyright 2024 林博仁(Buo-ren Lin)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,8 +15,16 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="permission_notification_title">顯示網路熱點通知</string>
+  <string name="permission_title">Permission Request</string>
   <string
-    name="permission_notification_description"
-  >在新的 Android 版本中使網路熱點保持存活。\n\n在沒有通知的情境下，網路熱點可能會被系統隨機中止。</string>
+    name="permission_description"
+  >%1$s needs %2$s permission to create a Wi-Fi Group</string>
+  <string
+    name="permission_reassure"
+  >%1$s will not use these permissions for anything else but Wi-Fi Group creation.</string>
+  <string name="permission_open_settings">Open Settings</string>
+  <string name="permission_deny">Deny</string>
+  <string name="permission_grant">Grant</string>
+  <string name="permission_type_location">PRECISE LOCATION</string>
+  <string name="permission_type_nearby">NEARBY WIFI</string>
 </resources>

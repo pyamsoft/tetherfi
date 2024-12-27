@@ -16,8 +16,16 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="permission_notification_title">顯示網路熱點通知</string>
+  <string name="permission_title">權限請求</string>
   <string
-    name="permission_notification_description"
-  >在新的 Android 版本中使網路熱點保持存活。\n\n在沒有通知的情境下，網路熱點可能會被系統隨機中止。</string>
+    name="permission_description"
+  >%1$s 需要 %2$s 權限以創建一個 Wi-Fi 群組</string>
+  <string
+    name="permission_reassure"
+  >%1$s 不會使用這些權限來進行除了 Wi-Fi 群組建立以外的任何事情。</string>
+  <string name="permission_open_settings">開啟設定</string>
+  <string name="permission_deny">拒絕</string>
+  <string name="permission_grant">授權</string>
+  <string name="permission_type_location">精確地理位置</string>
+  <string name="permission_type_nearby">鄰近 Wi-Fi 網路</string>
 </resources>

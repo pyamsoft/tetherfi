@@ -36,7 +36,6 @@ import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.status.trouble.TroubleshootUnableToStart
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
@@ -44,6 +43,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
+import com.pyamsoft.tetherfi.ui.trouble.TroubleshootUnableToStart
 import org.jetbrains.annotations.TestOnly
 
 private enum class NetworkStatusWidgetsContentTypes {
