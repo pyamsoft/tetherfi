@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server.broadcast.wifidirect
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pConfig
+import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
@@ -41,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -280,6 +282,16 @@ internal constructor(
     }
   }
 
+  /** This is only available in Android 35+ */
+  @CheckResult
+  private fun resolveP2PDeviceIpAddress(device: WifiP2pDevice): InetAddress? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+      device.ipAddress
+    } else {
+      null
+    }
+  }
+
   override suspend fun resolveCurrentGroupInfo(source: Channel): BroadcastNetworkStatus.GroupInfo {
     val group = resolveCurrentGroup(source)
     return if (group == null) {
@@ -290,6 +302,16 @@ internal constructor(
       BroadcastNetworkStatus.GroupInfo.Connected(
           ssid = group.networkName,
           password = group.passphrase,
+          clients =
+              group.clientList.orEmpty().mapNotNull { client ->
+                val ipAddressInStringFormat =
+                    resolveP2PDeviceIpAddress(client)?.hostAddress ?: return@mapNotNull null
+
+                BroadcastNetworkStatus.GroupInfo.Connected.Device(
+                    name = client.deviceName,
+                    ipAddress = ipAddressInStringFormat,
+                )
+              },
       )
     }
   }

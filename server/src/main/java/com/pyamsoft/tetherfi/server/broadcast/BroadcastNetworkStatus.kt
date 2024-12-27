@@ -42,11 +42,18 @@ interface BroadcastNetworkStatus : Server {
     constructor(
         val ssid: String,
         val password: String,
+        val clients: Collection<Device>,
     ) : GroupInfo {
 
       override fun toString(): String {
         return "Connected(ssid='$ssid')"
       }
+
+      /** A Connected client device */
+      data class Device(
+          val name: String,
+          val ipAddress: String,
+      )
     }
 
     data object Empty : GroupInfo
