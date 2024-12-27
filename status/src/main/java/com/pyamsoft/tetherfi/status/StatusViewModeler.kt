@@ -44,7 +44,6 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import com.pyamsoft.tetherfi.service.prereq.HotspotRequirements
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -55,6 +54,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StatusViewModeler
 @Inject
@@ -444,6 +444,10 @@ internal constructor(
         f.collect { show ->
           enforcer.assertOffMainThread()
 
+          // TODO(Peter): This causes the dialog to show each time a user swipes over to the Status
+          //              screen because the error flow re-delivers this state on each screen
+          //              initialization.
+          //              https://github.com/pyamsoft/tetherfi/issues/366
           state.isShowingSetupError.value = show
         }
       }
