@@ -23,6 +23,12 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+enum class ConnectionViewManagement {
+  NICK_NAME,
+  TRANSFER_LIMIT,
+  BANDWIDTH_LIMIT,
+}
+
 @Stable
 interface ConnectionViewState : UiViewState {
   val connections: StateFlow<List<TetherClient>>

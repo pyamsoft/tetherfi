@@ -153,7 +153,7 @@ internal constructor(
             handleRefreshConnectionInfo(this)
 
             // Explicitly close the QR code
-            handleCloseQRCodeDialog()
+            handleCloseDialog(MainViewDialogs.QR_CODE)
           } else if (!wasRunning && currentlyRunning) {
             Timber.d { "Hotspot was turned ON, refresh network settings to update" }
 
@@ -246,11 +246,11 @@ internal constructor(
   }
 
   private fun closeAllDialogs() {
-    handleCloseProxyError()
-    handleCloseBroadcastError()
-    handleCloseHotspotError()
-    handleDismissSetupError()
-    handleCloseNetworkError()
+    handleCloseDialog(MainViewDialogs.PROXY_ERROR)
+    handleCloseDialog(MainViewDialogs.BROADCAST_ERROR)
+    handleCloseDialog(MainViewDialogs.HOTSPOT_ERROR)
+    handleCloseDialog(MainViewDialogs.SETUP_ERROR)
+    handleCloseDialog(MainViewDialogs.NETWORK_ERROR)
   }
 
   override fun registerSaveState(
@@ -327,74 +327,70 @@ internal constructor(
     scope.launch(context = Dispatchers.Default) { networkUpdater.updateNetworkInfo() }
   }
 
-  fun handleOpenSettings() {
-    state.isSettingsOpen.value = true
-  }
+  fun handleOpenDialog(dialog: MainViewDialogs) =
+      when (dialog) {
+        MainViewDialogs.SETTINGS -> {
+          state.isSettingsOpen.value = true
+        }
+        MainViewDialogs.QR_CODE -> {
+          // If the hotspot is valid, we will have this from the group
+          val isHotspotDataValid = state.group.value is BroadcastNetworkStatus.GroupInfo.Connected
+          state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
+        }
+        MainViewDialogs.SLOW_SPEED_HELP -> {
+          state.isShowingSlowSpeedHelp.value = true
+        }
+        MainViewDialogs.SETUP_ERROR -> {
+          state.isShowingSetupError.value = true
+        }
+        MainViewDialogs.NETWORK_ERROR -> {
+          state.isShowingNetworkError.value = true
+        }
+        MainViewDialogs.HOTSPOT_ERROR -> {
+          state.isShowingHotspotError.value = true
+        }
+        MainViewDialogs.BROADCAST_ERROR -> {
+          state.isShowingBroadcastError.value = true
+        }
+        MainViewDialogs.PROXY_ERROR -> {
+          state.isShowingProxyError.value = true
+        }
+      }
 
-  fun handleCloseSettings() {
-    state.isSettingsOpen.value = false
-  }
-
-  fun handleOpenQRCodeDialog() {
-    // If the hotspot is valid, we will have this from the group
-    val isHotspotDataValid = state.group.value is BroadcastNetworkStatus.GroupInfo.Connected
-    state.isShowingQRCodeDialog.value = isHotspotDataValid && isNetworkCurrentlyRunning.value
-  }
-
-  fun handleCloseQRCodeDialog() {
-    state.isShowingQRCodeDialog.value = false
-  }
+  fun handleCloseDialog(dialog: MainViewDialogs) =
+      when (dialog) {
+        MainViewDialogs.SETTINGS -> {
+          state.isSettingsOpen.value = false
+        }
+        MainViewDialogs.QR_CODE -> {
+          state.isShowingQRCodeDialog.value = false
+        }
+        MainViewDialogs.SLOW_SPEED_HELP -> {
+          state.isShowingSlowSpeedHelp.value = false
+        }
+        MainViewDialogs.SETUP_ERROR -> {
+          state.isShowingSetupError.value = false
+        }
+        MainViewDialogs.NETWORK_ERROR -> {
+          state.isShowingNetworkError.value = false
+        }
+        MainViewDialogs.HOTSPOT_ERROR -> {
+          state.isShowingHotspotError.value = false
+        }
+        MainViewDialogs.BROADCAST_ERROR -> {
+          state.isShowingBroadcastError.value = false
+        }
+        MainViewDialogs.PROXY_ERROR -> {
+          state.isShowingProxyError.value = false
+        }
+      }
 
   fun handleAnalyticsMarkOpened() {
     inAppRatingPreferences.markAppOpened()
   }
 
-  fun handleOpenSlowSpeedHelp() {
-    state.isShowingSlowSpeedHelp.value = true
-  }
-
-  fun handleCloseSlowSpeedHelp() {
-    state.isShowingSlowSpeedHelp.value = false
-  }
-
-  fun handleOpenHotspotError() {
-    state.isShowingHotspotError.value = true
-  }
-
-  fun handleCloseHotspotError() {
-    state.isShowingHotspotError.value = false
-  }
-
-  fun handleOpenNetworkError() {
-    state.isShowingNetworkError.value = true
-  }
-
-  fun handleCloseNetworkError() {
-    state.isShowingNetworkError.value = false
-  }
-
-  fun handleOpenBroadcastError() {
-    state.isShowingBroadcastError.value = true
-  }
-
-  fun handleCloseBroadcastError() {
-    state.isShowingBroadcastError.value = false
-  }
-
-  fun handleOpenProxyError() {
-    state.isShowingProxyError.value = true
-  }
-
-  fun handleCloseProxyError() {
-    state.isShowingProxyError.value = false
-  }
-
   fun handleDismissBlocker(blocker: HotspotStartBlocker) {
     state.startBlockers.update { it - blocker }
-  }
-
-  fun handleDismissSetupError() {
-    state.isShowingSetupError.value = false
   }
 
   fun handleToggleProxy() {

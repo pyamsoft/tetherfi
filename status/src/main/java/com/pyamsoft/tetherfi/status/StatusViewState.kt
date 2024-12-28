@@ -26,6 +26,18 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+enum class StatusViewDialogs {
+  POWER_BALANCE,
+  SOCKET_TIMEOUT
+}
+
+enum class StatusViewTweaks {
+  IGNORE_VPN,
+  IGNORE_LOCATION,
+  KEEP_SCREEN_ON,
+  SHUTDOWN_NO_CLIENTS,
+}
+
 @Stable
 interface StatusViewState : UiViewState {
 

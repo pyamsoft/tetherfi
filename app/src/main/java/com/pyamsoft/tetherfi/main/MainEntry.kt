@@ -244,16 +244,16 @@ fun MainEntry(
       pagerState = pagerState,
       allTabs = allTabs,
       onTabChanged = { handleTabSelected(it) },
-      onSettingsOpen = { viewModel.handleOpenSettings() },
-      onShowQRCode = { viewModel.handleOpenQRCodeDialog() },
+      onSettingsOpen = { viewModel.handleOpenDialog(MainViewDialogs.SETTINGS) },
+      onShowQRCode = { viewModel.handleOpenDialog(MainViewDialogs.QR_CODE) },
       onRefreshConnection = { viewModel.handleRefreshConnectionInfo(scope) },
       onJumpToHowTo = { handleTabSelected(MainView.INFO) },
-      onShowSlowSpeedHelp = { viewModel.handleOpenSlowSpeedHelp() },
+      onShowSlowSpeedHelp = { viewModel.handleOpenDialog(MainViewDialogs.SLOW_SPEED_HELP) },
       onToggleProxy = { viewModel.handleToggleProxy() },
-      onOpenNetworkError = { viewModel.handleOpenNetworkError() },
-      onOpenBroadcastError = { viewModel.handleOpenBroadcastError() },
-      onOpenProxyError = { viewModel.handleOpenProxyError() },
-      onOpenHotspotError = { viewModel.handleOpenHotspotError() },
+      onOpenNetworkError = { viewModel.handleOpenDialog(MainViewDialogs.NETWORK_ERROR) },
+      onOpenBroadcastError = { viewModel.handleOpenDialog(MainViewDialogs.BROADCAST_ERROR) },
+      onOpenProxyError = { viewModel.handleOpenDialog(MainViewDialogs.PROXY_ERROR) },
+      onOpenHotspotError = { viewModel.handleOpenDialog(MainViewDialogs.HOTSPOT_ERROR) },
       onUpdateTile = onUpdateTile,
       onLaunchIntent = onLaunchIntent,
   )
@@ -263,11 +263,11 @@ fun MainEntry(
       state = viewModel,
       appName = appName,
       onDismissBlocker = { viewModel.handleDismissBlocker(it) },
-      onDismissSetupError = { viewModel.handleDismissSetupError() },
-      onHideNetworkError = { viewModel.handleCloseNetworkError() },
-      onHideBroadcastError = { viewModel.handleCloseBroadcastError() },
-      onHideProxyError = { viewModel.handleCloseProxyError() },
-      onHideHotspotError = { viewModel.handleCloseHotspotError() },
+      onDismissSetupError = { viewModel.handleCloseDialog(MainViewDialogs.SETUP_ERROR) },
+      onHideNetworkError = { viewModel.handleCloseDialog(MainViewDialogs.NETWORK_ERROR) },
+      onHideBroadcastError = { viewModel.handleCloseDialog(MainViewDialogs.BROADCAST_ERROR) },
+      onHideProxyError = { viewModel.handleCloseDialog(MainViewDialogs.PROXY_ERROR) },
+      onHideHotspotError = { viewModel.handleCloseDialog(MainViewDialogs.HOTSPOT_ERROR) },
       onRequestPermissions = {
         // Request permissions
         lifecycleScope.launch(context = Dispatchers.Default) {
@@ -288,7 +288,7 @@ fun MainEntry(
                     max = LANDSCAPE_MAX_WIDTH,
                 ),
         appEnvironment = appEnvironment,
-        onDismiss = { viewModel.handleCloseSettings() },
+        onDismiss = { viewModel.handleCloseDialog(MainViewDialogs.SETTINGS) },
     )
   }
 
@@ -304,7 +304,7 @@ fun MainEntry(
               ),
           ssid = grp.ssid,
           password = grp.password,
-          onDismiss = { viewModel.handleCloseQRCodeDialog() },
+          onDismiss = { viewModel.handleCloseDialog(MainViewDialogs.QR_CODE) },
       )
     }
   }
@@ -313,7 +313,7 @@ fun MainEntry(
   if (isShowingSlowSpeedHelp) {
     SlowSpeedsDialog(
         modifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
-        onDismiss = { viewModel.handleCloseSlowSpeedHelp() },
+        onDismiss = { viewModel.handleCloseDialog(MainViewDialogs.SLOW_SPEED_HELP) },
     )
   }
 }

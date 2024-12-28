@@ -28,6 +28,17 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+enum class MainViewDialogs {
+  SETTINGS,
+  QR_CODE,
+  SLOW_SPEED_HELP,
+  SETUP_ERROR,
+  NETWORK_ERROR,
+  HOTSPOT_ERROR,
+  BROADCAST_ERROR,
+  PROXY_ERROR
+}
+
 @Stable
 interface MainViewState : ServerViewState {
   // Dialogs

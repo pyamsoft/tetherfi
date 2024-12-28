@@ -368,37 +368,49 @@ internal constructor(
     state.isPasswordVisible.update { !it }
   }
 
-  fun handleOpenPowerBalance() {
-    state.isShowingPowerBalance.value = true
-  }
+  fun handleOpenDialog(dialog: StatusViewDialogs) =
+      when (dialog) {
+        StatusViewDialogs.POWER_BALANCE -> {
+          state.isShowingPowerBalance.value = true
+        }
+        StatusViewDialogs.SOCKET_TIMEOUT -> {
+          state.isShowingSocketTimeout.value = true
+        }
+      }
 
-  fun handleClosePowerBalance() {
-    state.isShowingPowerBalance.value = false
-  }
+  fun handleCloseDialog(dialog: StatusViewDialogs) =
+      when (dialog) {
+        StatusViewDialogs.POWER_BALANCE -> {
+          state.isShowingPowerBalance.value = false
+        }
+        StatusViewDialogs.SOCKET_TIMEOUT -> {
+          state.isShowingSocketTimeout.value = false
+        }
+      }
 
-  fun handleToggleIgnoreVpn() {
-    val newVal = state.isIgnoreVpn.updateAndGet { !it }
-    tweakPreferences.setStartIgnoreVpn(newVal)
-  }
-
-  fun handleToggleIgnoreLocation() {
-    val newVal = state.isIgnoreLocation.updateAndGet { !it }
-    tweakPreferences.setStartIgnoreLocation(newVal)
-  }
-
-  fun handleToggleShutdownNoClients() {
-    val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
-    tweakPreferences.setShutdownWithNoClients(newVal)
-  }
+  fun handleToggleTweak(tweak: StatusViewTweaks) =
+      when (tweak) {
+        StatusViewTweaks.IGNORE_VPN -> {
+          val newVal = state.isIgnoreVpn.updateAndGet { !it }
+          tweakPreferences.setStartIgnoreVpn(newVal)
+        }
+        StatusViewTweaks.IGNORE_LOCATION -> {
+          val newVal = state.isIgnoreLocation.updateAndGet { !it }
+          tweakPreferences.setStartIgnoreLocation(newVal)
+        }
+        StatusViewTweaks.KEEP_SCREEN_ON -> {
+          val newVal = state.isKeepScreenOn.updateAndGet { !it }
+          statusPreferences.setKeepScreenOn(newVal)
+        }
+        StatusViewTweaks.SHUTDOWN_NO_CLIENTS -> {
+          val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
+          tweakPreferences.setShutdownWithNoClients(newVal)
+        }
+      }
 
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
     val newVal = state.powerBalance.updateAndGet { limit }
     expertPreferences.setServerPerformanceLimit(newVal)
-  }
-
-  fun handleToggleKeepScreenOn() {
-    val newVal = state.isKeepScreenOn.updateAndGet { !it }
-    statusPreferences.setKeepScreenOn(newVal)
   }
 
   fun handleUpdateBroadcastType(type: BroadcastType) {
@@ -407,14 +419,6 @@ internal constructor(
 
   fun handleUpdatePreferredNetwork(network: PreferredNetwork) {
     expertPreferences.setPreferredNetwork(network)
-  }
-
-  fun handleOpenSocketTimeout() {
-    state.isShowingSocketTimeout.value = true
-  }
-
-  fun handleCloseSocketTimeout() {
-    state.isShowingSocketTimeout.value = false
   }
 
   fun handleUpdateSocketTimeout(timeout: ServerSocketTimeout) {

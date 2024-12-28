@@ -78,24 +78,32 @@ fun ConnectionEntry(
       state = viewModel,
       serverViewState = serverViewState,
       onToggleBlock = { viewModel.handleToggleBlock(it) },
-      onOpenManageNickName = { viewModel.handleOpenManageNickName(it) },
-      onCloseManageNickName = { viewModel.handleCloseManageNickName() },
+      onOpenManageNickName = { viewModel.handleOpenManage(it, ConnectionViewManagement.NICK_NAME) },
+      onCloseManageNickName = { viewModel.handleCloseManage(ConnectionViewManagement.NICK_NAME) },
       onUpdateNickName = {
         viewModel.handleUpdateNickName(
             scope = lifecycleScope,
             nickName = it,
         )
       },
-      onOpenManageTransferLimit = { viewModel.handleOpenManageTransferLimit(it) },
-      onCloseManageTransferLimit = { viewModel.handleCloseManageTransferLimit() },
+      onOpenManageTransferLimit = {
+        viewModel.handleOpenManage(it, ConnectionViewManagement.TRANSFER_LIMIT)
+      },
+      onCloseManageTransferLimit = {
+        viewModel.handleCloseManage(ConnectionViewManagement.TRANSFER_LIMIT)
+      },
       onUpdateTransferLimit = {
         viewModel.handleUpdateTransferLimit(
             scope = lifecycleScope,
             limit = it,
         )
       },
-      onOpenManageBandwidthLimit = { viewModel.handleOpenManageBandwidthLimit(it) },
-      onCloseManageBandwidthLimit = { viewModel.handleCloseManageBandwidthLimit() },
+      onOpenManageBandwidthLimit = {
+        viewModel.handleOpenManage(it, ConnectionViewManagement.BANDWIDTH_LIMIT)
+      },
+      onCloseManageBandwidthLimit = {
+        viewModel.handleCloseManage(ConnectionViewManagement.BANDWIDTH_LIMIT)
+      },
       onUpdateBandwidthLimit = {
         viewModel.handleUpdateBandwidthLimit(
             scope = lifecycleScope,

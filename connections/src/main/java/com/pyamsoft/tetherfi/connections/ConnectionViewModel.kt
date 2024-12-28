@@ -61,13 +61,31 @@ internal constructor(
     }
   }
 
-  fun handleOpenManageNickName(client: TetherClient) {
-    state.managingNickName.value = client
-  }
+  fun handleOpenManage(client: TetherClient, manage: ConnectionViewManagement) =
+      when (manage) {
+        ConnectionViewManagement.NICK_NAME -> {
+          state.managingNickName.value = client
+        }
+        ConnectionViewManagement.TRANSFER_LIMIT -> {
+          state.managingTransferLimit.value = client
+        }
+        ConnectionViewManagement.BANDWIDTH_LIMIT -> {
+          state.managingBandwidthLimit.value = client
+        }
+      }
 
-  fun handleCloseManageNickName() {
-    state.managingNickName.value = null
-  }
+  fun handleCloseManage(manage: ConnectionViewManagement) =
+      when (manage) {
+        ConnectionViewManagement.NICK_NAME -> {
+          state.managingNickName.value = null
+        }
+        ConnectionViewManagement.TRANSFER_LIMIT -> {
+          state.managingTransferLimit.value = null
+        }
+        ConnectionViewManagement.BANDWIDTH_LIMIT -> {
+          state.managingBandwidthLimit.value = null
+        }
+      }
 
   fun handleUpdateNickName(scope: CoroutineScope, nickName: String) {
     val client = state.managingNickName.value
@@ -82,14 +100,6 @@ internal constructor(
     }
   }
 
-  fun handleOpenManageTransferLimit(client: TetherClient) {
-    state.managingTransferLimit.value = client
-  }
-
-  fun handleCloseManageTransferLimit() {
-    state.managingTransferLimit.value = null
-  }
-
   fun handleUpdateTransferLimit(scope: CoroutineScope, limit: TransferAmount?) {
     val client = state.managingTransferLimit.value
     if (client == null) {
@@ -101,14 +111,6 @@ internal constructor(
       Timber.d { "Update client limit: $client $limit" }
       clientEditor.updateTransferLimit(client, limit)
     }
-  }
-
-  fun handleOpenManageBandwidthLimit(client: TetherClient) {
-    state.managingBandwidthLimit.value = client
-  }
-
-  fun handleCloseManageBandwidthLimit() {
-    state.managingBandwidthLimit.value = null
   }
 
   fun handleUpdateBandwidthLimit(scope: CoroutineScope, limit: TransferAmount?) {

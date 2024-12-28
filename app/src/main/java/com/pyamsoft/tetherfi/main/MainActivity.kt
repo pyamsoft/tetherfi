@@ -63,8 +63,7 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    bugfix(
-                        "Fixed Error dialog getting stuck on the Status screen")
+                    bugfix("Fixed Error dialog getting stuck on the Status screen")
                   }
                 },
         )
@@ -104,7 +103,7 @@ class MainActivity : AppCompatActivity() {
 
   private fun handleOpenedWithIntent(intent: Intent) {
     if (intent.action === Intent.ACTION_APPLICATION_PREFERENCES) {
-      mainViewModel.requireNotNull().handleOpenSettings()
+      mainViewModel.requireNotNull().handleOpenDialog(MainViewDialogs.SETTINGS)
     }
   }
 
