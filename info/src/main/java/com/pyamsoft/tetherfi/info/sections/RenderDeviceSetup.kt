@@ -33,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.info.InfoViewOptionsType
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
 import com.pyamsoft.tetherfi.info.R
@@ -77,6 +77,7 @@ internal fun LazyListScope.renderDeviceSetup(
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+    onToggleShowOptions: (InfoViewOptionsType) -> Unit,
 ) {
   item(
       contentType = DeviceSetupContentTypes.SETTINGS,
@@ -238,21 +239,22 @@ internal fun LazyListScope.renderDeviceSetup(
             style = MaterialTheme.typography.bodyLarge,
         )
 
-        // TODO(Peter): Move into VM scope
-        val (showHttpOptions, setShowHttpOptions) = remember { mutableStateOf(false) }
-        val (showSocksOptions, setShowSocksOptions) = remember { mutableStateOf(false) }
-
         Column(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
         ) {
+          val showHttpOptions by state.showHttpOptions.collectAsStateWithLifecycle()
+
           if (featureFlags.isSocksProxyEnabled) {
             Row(
-                modifier = Modifier.clickable { setShowHttpOptions(!showHttpOptions) },
+                modifier = Modifier.clickable { onToggleShowOptions(InfoViewOptionsType.HTTP) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
               Text(
                   text = stringResource(R.string.view_http_options),
-                  style = MaterialTheme.typography.labelLarge,
+                  style =
+                      MaterialTheme.typography.labelLarge.copy(
+                          color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      ),
               )
 
               Icon(
@@ -261,6 +263,7 @@ internal fun LazyListScope.renderDeviceSetup(
                       if (showHttpOptions) Icons.AutoMirrored.Filled.KeyboardArrowRight
                       else Icons.Filled.KeyboardArrowDown,
                   contentDescription = stringResource(R.string.view_http_options),
+                  tint = MaterialTheme.colorScheme.onSurfaceVariant,
               )
             }
           }
@@ -338,13 +341,18 @@ internal fun LazyListScope.renderDeviceSetup(
           Column(
               modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           ) {
+            val showSocksOptions by state.showSocksOptions.collectAsStateWithLifecycle()
+
             Row(
-                modifier = Modifier.clickable { setShowSocksOptions(!showSocksOptions) },
+                modifier = Modifier.clickable { onToggleShowOptions(InfoViewOptionsType.SOCKS) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
               Text(
                   text = stringResource(R.string.view_socks_options),
-                  style = MaterialTheme.typography.labelLarge,
+                  style =
+                      MaterialTheme.typography.labelLarge.copy(
+                          color = MaterialTheme.colorScheme.onSurfaceVariant,
+                      ),
               )
 
               Icon(
@@ -353,6 +361,7 @@ internal fun LazyListScope.renderDeviceSetup(
                       if (showSocksOptions) Icons.AutoMirrored.Filled.KeyboardArrowRight
                       else Icons.Filled.KeyboardArrowDown,
                   contentDescription = stringResource(R.string.view_http_options),
+                  tint = MaterialTheme.colorScheme.onSurfaceVariant,
               )
             }
 
@@ -441,6 +450,7 @@ private fun PreviewDeviceSetup(state: InfoViewState, server: TestServerState) {
         state = state,
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
+        onToggleShowOptions = {},
     )
   }
 }

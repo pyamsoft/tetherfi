@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.info
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
@@ -40,6 +41,14 @@ internal class InfoInjector : ComposableInjector() {
   }
 }
 
+/** On mount hooks */
+@Composable
+private fun MountHooks(
+    viewModel: InfoViewModeler,
+) {
+  SaveStateDisposableEffect(viewModel)
+}
+
 @Composable
 fun InfoEntry(
     modifier: Modifier = Modifier,
@@ -52,6 +61,10 @@ fun InfoEntry(
   val component = rememberComposableInjector { InfoInjector() }
   val viewModel = rememberNotNull(component.viewModel)
 
+  MountHooks(
+      viewModel = viewModel,
+  )
+
   InfoScreen(
       modifier = modifier,
       state = viewModel,
@@ -61,5 +74,6 @@ fun InfoEntry(
       onShowQRCode = onShowQRCode,
       onShowSlowSpeedHelp = onShowSlowSpeedHelp,
       onTogglePasswordVisibility = { viewModel.handleTogglePasswordVisibility() },
+      onToggleShowOptions = { viewModel.handleToggleOptions(it) },
   )
 }

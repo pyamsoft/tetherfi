@@ -49,6 +49,7 @@ internal fun LazyListScope.renderConnectionInstructions(
     onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
+    onToggleShowOptions: (InfoViewOptionsType) -> Unit,
 ) {
   item(
       contentType = ConnectionInstructionContentTypes.SPACER,
@@ -92,6 +93,7 @@ internal fun LazyListScope.renderConnectionInstructions(
       serverViewState = serverViewState,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
+      onToggleShowOptions = onToggleShowOptions,
   )
 
   item(
@@ -129,6 +131,7 @@ private fun PreviewConnectionInstructions(state: InfoViewState, server: TestServ
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
         onShowSlowSpeedHelp = {},
+        onToggleShowOptions = {},
     )
   }
 }

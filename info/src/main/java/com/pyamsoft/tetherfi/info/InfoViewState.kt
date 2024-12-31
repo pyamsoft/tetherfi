@@ -22,12 +22,21 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+enum class InfoViewOptionsType {
+  HTTP,
+  SOCKS,
+}
+
 @Stable
 interface InfoViewState : UiViewState {
   val isPasswordVisible: StateFlow<Boolean>
+  val showHttpOptions: StateFlow<Boolean>
+  val showSocksOptions: StateFlow<Boolean>
 }
 
 @Stable
 class MutableInfoViewState @Inject internal constructor() : InfoViewState {
   override val isPasswordVisible = MutableStateFlow(false)
+  override val showHttpOptions = MutableStateFlow(false)
+  override val showSocksOptions = MutableStateFlow(false)
 }

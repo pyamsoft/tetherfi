@@ -53,6 +53,7 @@ fun InfoScreen(
     onTogglePasswordVisibility: () -> Unit,
     onShowQRCode: () -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
+    onToggleShowOptions: (InfoViewOptionsType) -> Unit,
 ) {
   LazyColumn(
       modifier = modifier,
@@ -87,6 +88,7 @@ fun InfoScreen(
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onShowQRCode = onShowQRCode,
         onShowSlowSpeedHelp = onShowSlowSpeedHelp,
+        onToggleShowOptions = onToggleShowOptions,
     )
 
     item(
@@ -110,5 +112,6 @@ private fun PreviewInfoScreen() {
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onShowSlowSpeedHelp = {},
+      onToggleShowOptions = {},
   )
 }
