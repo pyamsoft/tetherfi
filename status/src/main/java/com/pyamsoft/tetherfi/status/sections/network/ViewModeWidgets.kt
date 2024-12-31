@@ -19,9 +19,7 @@ package com.pyamsoft.tetherfi.status.sections.network
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
@@ -33,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -57,31 +54,26 @@ import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
+import rememberPortNumber
 
 @Composable
 internal fun ViewProxy(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-  val context = LocalContext.current
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
   val ipAddress = rememberServerHostname(connection)
 
-  val portNumber by serverViewState.port.collectAsStateWithLifecycle()
-  val port =
-      remember(
-          context,
-          portNumber,
-      ) {
-        if (portNumber in 1024..65000) "$portNumber" else context.getString(R2.string.invalid_port)
-      }
+  val httpPortNumber by serverViewState.httpPort.collectAsStateWithLifecycle()
+  val socksPortNumber by serverViewState.socksPort.collectAsStateWithLifecycle()
+  val httpPort = rememberPortNumber(httpPortNumber)
+  val socksPort = rememberPortNumber(socksPortNumber)
 
-  Row(
+  Column(
       modifier = modifier,
-      verticalAlignment = Alignment.CenterVertically,
   ) {
     StatusItem(
-        modifier = Modifier.weight(1F, fill = false),
+        modifier = Modifier.padding(vertical = MaterialTheme.keylines.baseline),
         title = stringResource(R.string.viewmode_hotspot_hostname),
         value = ipAddress,
         valueStyle =
@@ -91,19 +83,30 @@ internal fun ViewProxy(
             ),
     )
 
-    Spacer(
-        modifier = Modifier.width(MaterialTheme.keylines.content),
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      StatusItem(
+          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+          title = stringResource(R.string.viewmode_hotspot_http_port),
+          value = httpPort,
+          valueStyle =
+              MaterialTheme.typography.titleLarge.copy(
+                  fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
+              ),
+      )
 
-    StatusItem(
-        title = stringResource(R.string.viewmode_hotspot_port),
-        value = port,
-        valueStyle =
-            MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.W400,
-                fontFamily = FontFamily.Monospace,
-            ),
-    )
+      StatusItem(
+          title = stringResource(R.string.viewmode_hotspot_socks_port),
+          value = socksPort,
+          valueStyle =
+              MaterialTheme.typography.titleLarge.copy(
+                  fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
+              ),
+      )
+    }
   }
 }
 

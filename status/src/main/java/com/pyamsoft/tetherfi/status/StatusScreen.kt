@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
@@ -47,6 +48,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -65,6 +67,7 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
+    featureFlags: FeatureFlags,
     serverViewState: ServerViewState,
 
     // Proxy
@@ -76,7 +79,8 @@ fun StatusScreen(
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
-    onPortChanged: (String) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
 
     // Battery Optimization
     onOpenBatterySettings: () -> Unit,
@@ -223,6 +227,7 @@ fun StatusScreen(
             itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
             appName = appName,
             state = state,
+            featureFlags = featureFlags,
             serverViewState = serverViewState,
             isEditable = isEditable,
             wiDiStatus = wiDiStatus,
@@ -230,7 +235,8 @@ fun StatusScreen(
             showNotificationSettings = showNotificationSettings,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
-            onPortChanged = onPortChanged,
+            onHttpPortChanged = onHttpPortChanged,
+            onSocksPortChanged = onSocksPortChanged,
             onOpenBatterySettings = onOpenBatterySettings,
             onSelectBand = onSelectBand,
             onRequestNotificationPermission = onRequestNotificationPermission,
@@ -280,17 +286,19 @@ private fun PreviewStatusScreen(
                 else StatusViewState.LoadingState.DONE
             this.ssid.value = ssid
             this.password.value = password
-            this.port.value = "$port"
+            this.httpPort.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       appName = "TEST",
+      featureFlags = makeTestFeatureFlags(),
       onStatusUpdated = {},
       onRequestNotificationPermission = {},
       onSelectBand = {},
       onOpenBatterySettings = {},
       onPasswordChanged = {},
-      onPortChanged = {},
+      onHttpPortChanged = {},
+      onSocksPortChanged = {},
       onSsidChanged = {},
       onToggleProxy = {},
       onTogglePasswordVisibility = {},

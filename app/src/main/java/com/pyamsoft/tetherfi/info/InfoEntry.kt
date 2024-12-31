@@ -23,6 +23,7 @@ import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
 
@@ -43,6 +44,7 @@ internal class InfoInjector : ComposableInjector() {
 fun InfoEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    featureFlags: FeatureFlags,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
     onShowSlowSpeedHelp: () -> Unit,
@@ -54,6 +56,7 @@ fun InfoEntry(
       modifier = modifier,
       state = viewModel,
       appName = appName,
+      featureFlags = featureFlags,
       serverViewState = serverViewState,
       onShowQRCode = onShowQRCode,
       onShowSlowSpeedHelp = onShowSlowSpeedHelp,

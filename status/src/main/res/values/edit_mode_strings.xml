@@ -15,17 +15,20 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="editmode_hotspot_port">PROXY PORT</string>
   <string name="editmode_system_defined">SET BY SYSTEM: CAN\'T CHANGE</string>
 
-  <string name="editmode_type_port">Port</string>
   <string name="editmode_type_ssid">SSID</string>
 
   <string name="editmode_label_map">%1$s is %2$s</string>
+
   <string name="editmode_label_valid">Valid</string>
   <string name="editmode_label_invalid">Invalid</string>
   <string name="editmode_label_visible">Visible</string>
   <string name="editmode_label_hidden">Hidden</string>
   <string name="editmode_hotspot_password">HOTSPOT PASSWORD</string>
   <string name="editmode_hotspot_name">HOTSPOT NAME</string>
+
+  <!-- TODO(Peter): Need zh-rTW translation -->
+  <string name="editmode_type_http_port">HTTP PORT</string>
+  <string name="editmode_type_socks_port">SOCKS PORT</string>
 </resources>

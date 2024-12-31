@@ -44,6 +44,7 @@ import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.qr.QRCodeEntry
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -68,10 +69,9 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
   @JvmField @Inject internal var viewModel: MainViewModeler? = null
 
   @JvmField @Inject internal var appEnvironment: AppDevEnvironment? = null
-
   @JvmField @Inject internal var permissionRequestBus: EventBus<PermissionRequests>? = null
-
   @JvmField @Inject internal var permissionResponseBus: EventConsumer<PermissionResponse>? = null
+  @JvmField @Inject internal var featureFlags: FeatureFlags? = null
 
   override fun onInject(activity: ComponentActivity) {
     ObjectGraph.ActivityScope.retrieve(activity).inject(this)
@@ -82,6 +82,7 @@ internal class MainInjector @Inject internal constructor() : ComposableInjector(
     appEnvironment = null
     permissionRequestBus = null
     permissionResponseBus = null
+    featureFlags = null
   }
 }
 
@@ -206,6 +207,7 @@ fun MainEntry(
   val appEnvironment = rememberNotNull(component.appEnvironment)
   val permissionRequestBus = rememberNotNull(component.permissionRequestBus)
   val permissionResponseBus = rememberNotNull(component.permissionResponseBus)
+  val featureFlags = rememberNotNull(component.featureFlags)
 
   // Use the LifecycleOwner.CoroutineScope (Activity usually)
   // so that the scope does not die because of navigation events
@@ -241,6 +243,7 @@ fun MainEntry(
       modifier = modifier,
       appName = appName,
       state = viewModel,
+      featureFlags = featureFlags,
       pagerState = pagerState,
       allTabs = allTabs,
       onTabChanged = { handleTabSelected(it) },

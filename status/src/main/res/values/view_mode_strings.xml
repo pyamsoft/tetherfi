@@ -21,6 +21,9 @@
   >Confused on what to do next?\nView the %1$s</string>
   <string name="viewmode_hotspot_name">HOTSPOT NAME</string>
   <string name="viewmode_hotspot_password">HOTSPOT PASSWORD</string>
-  <string name="viewmode_hotspot_port">PROXY PORT</string>
   <string name="viewmode_hotspot_hostname">PROXY URL/HOSTNAME</string>
+
+  <!-- TODO(Peter): Need zh-rTW translation -->
+  <string name="viewmode_hotspot_http_port">HTTP PROXY PORT</string>
+  <string name="viewmode_hotspot_socks_port">SOCKS PROXY PORT</string>
 </resources>

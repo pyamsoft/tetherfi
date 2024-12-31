@@ -22,6 +22,5 @@
   >不知道下一步要做什麼嗎？\n查看%1$s</string>
   <string name="viewmode_hotspot_name">網路熱點名稱</string>
   <string name="viewmode_hotspot_password">網路熱點密碼</string>
-  <string name="viewmode_hotspot_port">代理服務的通訊埠號</string>
   <string name="viewmode_hotspot_hostname">代理服務的網址/主機名稱</string>
 </resources>

@@ -29,11 +29,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 
 private enum class InfoContentTypes {
@@ -45,6 +47,7 @@ private enum class InfoContentTypes {
 fun InfoScreen(
     modifier: Modifier = Modifier,
     appName: String,
+    featureFlags: FeatureFlags,
     state: InfoViewState,
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
@@ -79,6 +82,7 @@ fun InfoScreen(
         itemModifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
         appName = appName,
         state = state,
+        featureFlags = featureFlags,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onShowQRCode = onShowQRCode,
@@ -100,6 +104,7 @@ fun InfoScreen(
 private fun PreviewInfoScreen() {
   InfoScreen(
       appName = "TEST",
+      featureFlags = makeTestFeatureFlags(),
       state = MutableInfoViewState(),
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       onTogglePasswordVisibility = {},

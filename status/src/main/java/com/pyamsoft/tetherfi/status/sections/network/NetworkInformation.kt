@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.HairlineSize
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -42,6 +43,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import com.pyamsoft.tetherfi.ui.trouble.TroubleshootUnableToStart
 import org.jetbrains.annotations.TestOnly
@@ -53,6 +55,7 @@ private enum class NetworkStatusWidgetsContentTypes {
 internal fun LazyListScope.renderNetworkInformation(
     itemModifier: Modifier = Modifier,
     appName: String,
+    featureFlags: FeatureFlags,
 
     // State
     state: StatusViewState,
@@ -66,7 +69,8 @@ internal fun LazyListScope.renderNetworkInformation(
     // Network config
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onPortChanged: (String) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 
     // Connections
@@ -124,10 +128,12 @@ internal fun LazyListScope.renderNetworkInformation(
     renderEditableItems(
         modifier = itemModifier,
         state = state,
+        featureFlags = featureFlags,
         serverViewState = serverViewState,
         onSsidChanged = onSsidChanged,
         onPasswordChanged = onPasswordChanged,
-        onPortChanged = onPortChanged,
+        onHttpPortChanged = onHttpPortChanged,
+        onSocksPortChanged = onSocksPortChanged,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
     )
   } else {
@@ -160,6 +166,7 @@ private fun PreviewNetworkInformation(
   LazyColumn {
     renderNetworkInformation(
         itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        featureFlags = makeTestFeatureFlags(),
         wiDiStatus = wiDiStatus,
         proxyStatus = proxyStatus,
         appName = "TEST",
@@ -169,13 +176,14 @@ private fun PreviewNetworkInformation(
             MutableStatusViewState().apply {
               this.ssid.value = ssid
               this.password.value = password
-              this.port.value = port
+              this.httpPort.value = port
             },
         onShowNetworkError = {},
         onShowQRCode = {},
         onRefreshConnection = {},
         onJumpToHowTo = {},
-        onPortChanged = {},
+        onHttpPortChanged = {},
+        onSocksPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onShowHotspotError = {},

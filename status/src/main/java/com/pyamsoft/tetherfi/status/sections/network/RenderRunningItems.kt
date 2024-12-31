@@ -134,7 +134,7 @@ private fun PreviewRunningItems(
             MutableStatusViewState().apply {
               this.ssid.value = TEST_SSID
               this.password.value = TEST_PASSWORD
-              this.port.value = "$TEST_PORT"
+              this.httpPort.value = "$TEST_PORT"
             },
         onShowNetworkError = {},
         onShowQRCode = {},

@@ -31,6 +31,11 @@ enum class StatusViewDialogs {
   SOCKET_TIMEOUT
 }
 
+enum class ServerPortTypes {
+  HTTP,
+  SOCKS
+}
+
 enum class StatusViewTweaks {
   IGNORE_VPN,
   IGNORE_LOCATION,
@@ -47,7 +52,8 @@ interface StatusViewState : UiViewState {
   val ssid: StateFlow<String>
   val password: StateFlow<String>
   val isPasswordVisible: StateFlow<Boolean>
-  val port: StateFlow<String>
+  val httpPort: StateFlow<String>
+  val socksPort: StateFlow<String>
   val band: StateFlow<ServerNetworkBand?>
 
   // Operating Settings
@@ -84,7 +90,8 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val ssid = MutableStateFlow("")
   override val password = MutableStateFlow("")
   override val isPasswordVisible = MutableStateFlow(false)
-  override val port = MutableStateFlow("")
+  override val httpPort = MutableStateFlow("")
+  override val socksPort = MutableStateFlow("")
   override val band = MutableStateFlow<ServerNetworkBand?>(null)
 
   override val hasNotificationPermission = MutableStateFlow(false)

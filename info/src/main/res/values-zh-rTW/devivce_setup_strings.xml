@@ -24,7 +24,6 @@
   <string name="open_wifi_settings">打開 Wi-Fi 連線設定頁面</string>
   <string name="label_hotspot_name">名稱</string>
   <string name="label_hotspot_hostname">網址(URL)</string>
-  <string name="label_hotspot_port">通訊埠號</string>
 
   <string
     name="open_connection_settings"

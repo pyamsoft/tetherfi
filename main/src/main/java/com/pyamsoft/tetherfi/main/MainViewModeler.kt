@@ -87,7 +87,11 @@ internal constructor(
 
     // Port is its own thing, not part of group info
     proxyPreferences.listenForHttpPortChanges().also { f ->
-      scope.launch(context = Dispatchers.Default) { f.collect { s.port.value = it } }
+      scope.launch(context = Dispatchers.Default) { f.collect { s.httpPort.value = it } }
+    }
+
+    proxyPreferences.listenForSocksPortChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) { f.collect { s.socksPort.value = it } }
     }
 
     // Broadcast type

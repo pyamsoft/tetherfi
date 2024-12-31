@@ -28,11 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.util.rememberAsStateList
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
 
@@ -41,6 +43,7 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: MainViewState,
+    featureFlags: FeatureFlags,
     pagerState: PagerState,
     allTabs: List<MainView>,
 
@@ -88,6 +91,7 @@ fun MainScreen(
                   .heightIn(
                       min = remember(pv) { pv.calculateBottomPadding() },
                   ),
+          featureFlags = featureFlags,
           appName = appName,
           pagerState = pagerState,
           state = state,
@@ -122,7 +126,9 @@ private fun PreviewMainScreen(
         override val isShowingSlowSpeedHelp = MutableStateFlow(isShowingSlowSpeedHelp)
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-        override val port = MutableStateFlow(0)
+
+        override val httpPort = MutableStateFlow(0)
+        override val socksPort = MutableStateFlow(0)
 
         // TODO support RNDIS
         override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
@@ -143,6 +149,7 @@ private fun PreviewMainScreen(
   val allTabs = MainView.entries.rememberAsStateList()
 
   MainScreen(
+      featureFlags = makeTestFeatureFlags(),
       appName = "TEST",
       state = state,
       pagerState = rememberPagerState { allTabs.size },

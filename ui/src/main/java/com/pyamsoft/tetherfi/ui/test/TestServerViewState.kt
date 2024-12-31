@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.ui.test
 
 import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
@@ -49,6 +50,17 @@ val TEST_CLIENT_LIST: Collection<BroadcastNetworkStatus.GroupInfo.Connected.Devi
 @TestOnly
 @CheckResult
 @VisibleForTesting
+fun makeTestFeatureFlags(
+    isSocksProxyEnabled: Boolean = false,
+): FeatureFlags {
+  return object : FeatureFlags {
+    override val isSocksProxyEnabled = isSocksProxyEnabled
+  }
+}
+
+@TestOnly
+@CheckResult
+@VisibleForTesting
 fun makeTestServerState(
     state: TestServerState,
     broadcastType: BroadcastType? = BroadcastType.WIFI_DIRECT,
@@ -58,7 +70,8 @@ fun makeTestServerState(
           object : ServerViewState {
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
-            override val port = MutableStateFlow(TEST_PORT)
+            override val httpPort = MutableStateFlow(TEST_PORT)
+            override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)
 
@@ -81,7 +94,8 @@ fun makeTestServerState(
             override val connection =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
-            override val port = MutableStateFlow(TEST_PORT)
+            override val httpPort = MutableStateFlow(TEST_PORT)
+            override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)
 
@@ -102,7 +116,8 @@ fun makeTestServerState(
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Error(
                         error = RuntimeException("Test Connection Error")))
-            override val port = MutableStateFlow(TEST_PORT)
+            override val httpPort = MutableStateFlow(TEST_PORT)
+            override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)
 

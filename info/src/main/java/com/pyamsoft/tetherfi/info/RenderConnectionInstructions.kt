@@ -25,12 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.info.sections.renderAppSetup
 import com.pyamsoft.tetherfi.info.sections.renderConnectionComplete
 import com.pyamsoft.tetherfi.info.sections.renderDeviceIdentifiers
 import com.pyamsoft.tetherfi.info.sections.renderDeviceSetup
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -41,6 +43,7 @@ private enum class ConnectionInstructionContentTypes {
 internal fun LazyListScope.renderConnectionInstructions(
     itemModifier: Modifier = Modifier,
     appName: String,
+    featureFlags: FeatureFlags,
     state: InfoViewState,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
@@ -85,6 +88,7 @@ internal fun LazyListScope.renderConnectionInstructions(
       itemModifier = itemModifier,
       appName = appName,
       state = state,
+      featureFlags = featureFlags,
       serverViewState = serverViewState,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
@@ -119,6 +123,7 @@ private fun PreviewConnectionInstructions(state: InfoViewState, server: TestServ
   LazyColumn {
     renderConnectionInstructions(
         appName = "TEST",
+        featureFlags = makeTestFeatureFlags(),
         serverViewState = makeTestServerState(server),
         state = state,
         onTogglePasswordVisibility = {},

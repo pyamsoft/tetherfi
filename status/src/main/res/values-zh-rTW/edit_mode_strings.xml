@@ -16,10 +16,8 @@
   ~ limitations under the License.
   -->
 <resources>
-  <string name="editmode_hotspot_port">代理服務通訊埠號</string>
   <string name="editmode_system_defined">由作業系統設定：無法變更</string>
 
-  <string name="editmode_type_port">通訊埠號</string>
   <string name="editmode_type_ssid">網路名稱(SSID)</string>
 
   <string name="editmode_label_map">%1$s是%2$s</string>

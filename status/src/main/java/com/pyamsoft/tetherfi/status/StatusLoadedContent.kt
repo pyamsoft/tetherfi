@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
@@ -44,6 +45,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -56,6 +58,7 @@ internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
+    featureFlags: FeatureFlags,
     serverViewState: ServerViewState,
     isEditable: Boolean,
 
@@ -65,7 +68,8 @@ internal fun LazyListScope.renderLoadedContent(
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
-    onPortChanged: (String) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
 
     // Battery
@@ -104,12 +108,14 @@ internal fun LazyListScope.renderLoadedContent(
       isEditable = isEditable,
       appName = appName,
       state = state,
+      featureFlags = featureFlags,
       serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,
       proxyStatus = proxyStatus,
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
-      onPortChanged = onPortChanged,
+      onHttpPortChanged = onHttpPortChanged,
+      onSocksPortChanged = onSocksPortChanged,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
@@ -213,16 +219,18 @@ private fun PreviewLoadedContent(
               loadingState.value = StatusViewState.LoadingState.DONE
               this.ssid.value = TEST_SSID
               this.password.value = TEST_PASSWORD
-              this.port.value = "$TEST_PORT"
+              this.httpPort.value = "$TEST_PORT"
               band.value = ServerNetworkBand.LEGACY
             },
         serverViewState = makeTestServerState(state),
+        featureFlags = makeTestFeatureFlags(),
         appName = "TEST",
         onRequestNotificationPermission = {},
         onSelectBand = {},
         onOpenBatterySettings = {},
         onPasswordChanged = {},
-        onPortChanged = {},
+        onHttpPortChanged = {},
+        onSocksPortChanged = {},
         onSsidChanged = {},
         onTogglePasswordVisibility = {},
         onShowQRCode = {},

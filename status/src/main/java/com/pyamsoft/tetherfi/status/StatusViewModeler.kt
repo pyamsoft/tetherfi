@@ -59,7 +59,8 @@ internal constructor(
   private data class LoadConfig(
       var ssid: Boolean,
       var password: Boolean,
-      var port: Boolean,
+      var httpPort: Boolean,
+      var socksPort: Boolean,
       var band: Boolean,
       var tweakIgnoreVpn: Boolean,
       var tweakIgnoreLocation: Boolean,
@@ -70,7 +71,8 @@ internal constructor(
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.port &&
+    if (config.httpPort &&
+        config.socksPort &&
         config.tweakIgnoreVpn &&
         config.tweakShutdownWithNoClients &&
         config.ssid &&
@@ -125,7 +127,8 @@ internal constructor(
         LoadConfig(
             ssid = false,
             password = false,
-            port = false,
+            httpPort = false,
+            socksPort = false,
             band = false,
             tweakIgnoreVpn = false,
             tweakIgnoreLocation = false,
@@ -251,9 +254,19 @@ internal constructor(
     proxyPreferences.listenForHttpPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
         val p = f.first()
-        s.port.value = if (p == 0) "" else "$p"
+        s.httpPort.value = if (p == 0) "" else "$p"
 
-        config.port = true
+        config.httpPort = true
+        markPreferencesLoaded(config)
+      }
+    }
+
+    proxyPreferences.listenForSocksPortChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        val p = f.first()
+        s.socksPort.value = if (p == 0) "" else "$p"
+
+        config.socksPort = true
         markPreferencesLoaded(config)
       }
     }
@@ -350,12 +363,19 @@ internal constructor(
     wifiPreferences.setPassword(password)
   }
 
-  fun handlePortChanged(port: String) {
-    state.port.value = port
-
-    val portValue = port.toIntOrNull()
-    proxyPreferences.setHttpPort(portValue ?: 0)
-  }
+  fun handlePortChanged(port: String, type: ServerPortTypes) =
+      when (type) {
+        ServerPortTypes.HTTP -> {
+          state.httpPort.value = port
+          val portValue = port.toIntOrNull()
+          proxyPreferences.setHttpPort(portValue ?: 0)
+        }
+        ServerPortTypes.SOCKS -> {
+          state.socksPort.value = port
+          val portValue = port.toIntOrNull()
+          proxyPreferences.setSocksPort(portValue ?: 0)
+        }
+      }
 
   fun handleChangeBand(band: ServerNetworkBand) {
     state.band.value = band

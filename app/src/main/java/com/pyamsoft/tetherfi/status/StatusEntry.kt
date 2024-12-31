@@ -35,6 +35,7 @@ import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
@@ -140,6 +141,7 @@ fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
     serverViewState: ServerViewState,
+    featureFlags: FeatureFlags,
 
     // Actions
     onShowQRCode: () -> Unit,
@@ -186,6 +188,7 @@ fun StatusEntry(
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,
+      featureFlags = featureFlags,
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onJumpToHowTo = onJumpToHowTo,
@@ -196,7 +199,8 @@ fun StatusEntry(
       },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
-      onPortChanged = { viewModel.handlePortChanged(it) },
+      onHttpPortChanged = { viewModel.handlePortChanged(it, ServerPortTypes.HTTP) },
+      onSocksPortChanged = { viewModel.handlePortChanged(it, ServerPortTypes.SOCKS) },
       onViewSlowSpeedHelp = onShowSlowSpeedHelp,
       onOpenBatterySettings = {
         onLaunchIntent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)

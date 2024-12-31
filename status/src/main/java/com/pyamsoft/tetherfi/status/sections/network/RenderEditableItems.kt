@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -36,6 +38,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -47,11 +50,13 @@ private enum class RenderEditableItemsContentTypes {
 
 internal fun LazyListScope.renderEditableItems(
     modifier: Modifier = Modifier,
+    featureFlags: FeatureFlags,
     state: StatusViewState,
     serverViewState: ServerViewState,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onPortChanged: (String) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
 ) {
   item(
@@ -86,11 +91,30 @@ internal fun LazyListScope.renderEditableItems(
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_PORT,
   ) {
-    EditPort(
+    Row(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        onPortChanged = onPortChanged,
-    )
+    ) {
+      EditHttpPort(
+          modifier =
+              Modifier.weight(1F).run {
+                if (featureFlags.isSocksProxyEnabled) {
+                  padding(end = MaterialTheme.keylines.content)
+                } else {
+                  this
+                }
+              },
+          state = state,
+          onPortChanged = onHttpPortChanged,
+      )
+
+      if (featureFlags.isSocksProxyEnabled) {
+        EditSocksPort(
+            modifier = Modifier.weight(1F),
+            state = state,
+            onPortChanged = onSocksPortChanged,
+        )
+      }
+    }
   }
 }
 
@@ -108,9 +132,11 @@ private fun PreviewEditableItems(
             MutableStatusViewState().apply {
               this.ssid.value = ssid
               this.password.value = password
-              this.port.value = port
+              this.httpPort.value = port
             },
-        onPortChanged = {},
+        featureFlags = makeTestFeatureFlags(),
+        onHttpPortChanged = {},
+        onSocksPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},

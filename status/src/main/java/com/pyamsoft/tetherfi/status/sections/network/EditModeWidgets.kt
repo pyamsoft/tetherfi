@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -48,18 +49,18 @@ import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
 
 @Composable
-internal fun EditPort(
+private fun EditPort(
     modifier: Modifier = Modifier,
-    state: StatusViewState,
+    port: String,
+    @StringRes portLabelRes: Int,
     onPortChanged: (String) -> Unit,
 ) {
-  val port by state.port.collectAsStateWithLifecycle()
   val portNumber = remember(port) { port.toIntOrNull() }
   val isValid = remember(portNumber) { portNumber != null && portNumber in 1025..65000 }
 
   StatusEditor(
       modifier = modifier,
-      title = stringResource(R.string.editmode_hotspot_port),
+      title = stringResource(portLabelRes),
       value = port,
       onChange = onPortChanged,
       keyboardOptions =
@@ -72,12 +73,43 @@ internal fun EditPort(
             description =
                 stringResource(
                     R.string.editmode_label_map,
-                    stringResource(R.string.editmode_type_port),
+                    stringResource(portLabelRes),
                     stringResource(
                         if (isValid) R.string.editmode_label_valid
                         else R.string.editmode_label_invalid),
-                ))
+                ),
+        )
       },
+  )
+}
+
+@Composable
+internal fun EditHttpPort(
+    modifier: Modifier = Modifier,
+    state: StatusViewState,
+    onPortChanged: (String) -> Unit,
+) {
+  val port by state.httpPort.collectAsStateWithLifecycle()
+  EditPort(
+      modifier = modifier,
+      port = port,
+      portLabelRes = R.string.editmode_type_http_port,
+      onPortChanged = onPortChanged,
+  )
+}
+
+@Composable
+internal fun EditSocksPort(
+    modifier: Modifier = Modifier,
+    state: StatusViewState,
+    onPortChanged: (String) -> Unit,
+) {
+  val port by state.socksPort.collectAsStateWithLifecycle()
+  EditPort(
+      modifier = modifier,
+      port = port,
+      portLabelRes = R.string.editmode_type_socks_port,
+      onPortChanged = onPortChanged,
   )
 }
 
