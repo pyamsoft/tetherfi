@@ -43,7 +43,7 @@ buildscript {
 
     desugar = "2.1.4"
 
-    ktor = "3.0.2-PYAMSOFT"
+    ktor = "3.0.3-PYAMSOFT"
 
     // Testing
     testRunner = "1.6.2"
