@@ -33,7 +33,6 @@ import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -55,7 +54,6 @@ internal constructor(
     private val wifiPreferences: WifiPreferences,
     private val notifyGuard: NotifyGuard,
     private val batteryOptimizer: BatteryOptimizer,
-    private val serviceLauncher: ServiceLauncher,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -250,7 +248,7 @@ internal constructor(
     }
 
     // Only pull once since after this point, the state will be driven by the input
-    proxyPreferences.listenForPortChanges().also { f ->
+    proxyPreferences.listenForHttpPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
         val p = f.first()
         s.port.value = if (p == 0) "" else "$p"
@@ -356,7 +354,7 @@ internal constructor(
     state.port.value = port
 
     val portValue = port.toIntOrNull()
-    proxyPreferences.setPort(portValue ?: 0)
+    proxyPreferences.setHttpPort(portValue ?: 0)
   }
 
   fun handleChangeBand(band: ServerNetworkBand) {

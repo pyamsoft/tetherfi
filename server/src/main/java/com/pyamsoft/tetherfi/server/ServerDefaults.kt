@@ -22,20 +22,26 @@ import androidx.annotation.ChecksSdkIntAtLeast
 
 object ServerDefaults {
 
-  const val SSID = "TetherFi"
-  const val PORT = 8228
-  val NETWORK_BAND = ServerNetworkBand.LEGACY
+  const val WIFI_SSID = "TetherFi"
+
+  /** Default port for HTTP server */
+  const val HTTP_PORT = 8228
+
+  /** Default port for SOCKS server */
+  const val SOCKS_PORT = 8229
+
+  val WIFI_NETWORK_BAND = ServerNetworkBand.LEGACY
 
   @JvmStatic
   @CheckResult
-  fun getSsidPrefix(): String {
+  fun getWifiSsidPrefix(): String {
     return "DIRECT-TF-"
   }
 
   @JvmStatic
   @CheckResult
-  fun asSsid(ssid: String): String {
-    return "${getSsidPrefix()}${ssid}"
+  fun asWifiSsid(ssid: String): String {
+    return "${getWifiSsidPrefix()}${ssid}"
   }
 
   @CheckResult

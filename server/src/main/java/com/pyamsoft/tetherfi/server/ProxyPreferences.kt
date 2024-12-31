@@ -21,7 +21,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProxyPreferences {
 
-  @CheckResult fun listenForPortChanges(): Flow<Int>
+  @CheckResult fun listenForHttpPortChanges(): Flow<Int>
 
-  fun setPort(port: Int)
+  fun setHttpPort(port: Int)
+
+  @CheckResult fun listenForSocksPortChanges(): Flow<Int>
+
+  fun setSocksPort(port: Int)
 }

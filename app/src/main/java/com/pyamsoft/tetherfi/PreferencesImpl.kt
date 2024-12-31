@@ -39,9 +39,6 @@ import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +48,9 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -121,7 +121,7 @@ internal constructor(
   }
 
   override fun listenForSsidChanges(): Flow<String> =
-      preferenceStringFlow(SSID, ServerDefaults.SSID) { preferences }
+      preferenceStringFlow(SSID, ServerDefaults.WIFI_SSID) { preferences }
           .flowOn(context = Dispatchers.IO)
 
   override fun setSsid(ssid: String) = setPreference { putString(SSID, ssid) }
@@ -141,13 +141,20 @@ internal constructor(
     preferences.updatePassword(password)
   }
 
-  override fun listenForPortChanges(): Flow<Int> =
-      preferenceIntFlow(PORT, ServerDefaults.PORT) { preferences }.flowOn(context = Dispatchers.IO)
+  override fun listenForHttpPortChanges(): Flow<Int> =
+      preferenceIntFlow(HTTP_PORT, ServerDefaults.HTTP_PORT) { preferences }
+          .flowOn(context = Dispatchers.IO)
 
-  override fun setPort(port: Int) = setPreference { putInt(PORT, port) }
+  override fun setHttpPort(port: Int) = setPreference { putInt(HTTP_PORT, port) }
+
+  override fun listenForSocksPortChanges(): Flow<Int> =
+      preferenceIntFlow(SOCKS_PORT, ServerDefaults.SOCKS_PORT) { preferences }
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setSocksPort(port: Int) = setPreference { putInt(SOCKS_PORT, port) }
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
-      preferenceStringFlow(NETWORK_BAND, ServerDefaults.NETWORK_BAND.name) { preferences }
+      preferenceStringFlow(NETWORK_BAND, ServerDefaults.WIFI_NETWORK_BAND.name) { preferences }
           .map { ServerNetworkBand.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
@@ -213,14 +220,14 @@ internal constructor(
 
             Timber.d {
               "In app rating check: ${
-                mapOf(
-                    "lastVersion" to lastVersionShown,
-                    "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
-                    "hotspotUsed" to hotspotUsed,
-                    "devicesConnected" to devicesConnected,
-                    "appOpened" to appOpened,
-                )
-            }"
+                    mapOf(
+                        "lastVersion" to lastVersionShown,
+                        "isAlreadyShown" to lastVersionShown.isInAppRatingAlreadyShown(),
+                        "hotspotUsed" to hotspotUsed,
+                        "devicesConnected" to devicesConnected,
+                        "appOpened" to appOpened,
+                    )
+                }"
             }
 
             if (lastVersionShown.isInAppRatingAlreadyShown()) {
@@ -352,7 +359,8 @@ internal constructor(
 
     private const val SSID = "key_ssid_1"
     private const val PASSWORD = "key_password_1"
-    private const val PORT = "key_port_1"
+    private const val HTTP_PORT = "key_port_1"
+    private const val SOCKS_PORT = "key_socks_port_1"
     private const val NETWORK_BAND = "key_network_band_1"
 
     private const val IN_APP_HOTSPOT_USED = "key_in_app_hotspot_used_1"

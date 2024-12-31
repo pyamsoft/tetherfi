@@ -91,7 +91,7 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = proxyPreferences.listenForPortChanges().first()
+    val port = proxyPreferences.listenForHttpPortChanges().first()
 
     return createTcp(
         proxyType = SharedProxy.Type.HTTP,
@@ -111,7 +111,7 @@ internal constructor(
   ): ProxyManager {
     enforcer.assertOffMainThread()
 
-    val port = proxyPreferences.listenForPortChanges().first()
+    val port = proxyPreferences.listenForHttpPortChanges().first()
 
     return createTcp(
         proxyType = SharedProxy.Type.SOCKS,

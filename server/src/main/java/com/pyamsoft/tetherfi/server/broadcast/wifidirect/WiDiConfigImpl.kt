@@ -61,7 +61,7 @@ internal constructor(
           return@withContext null
         }
 
-        val ssid = ServerDefaults.asSsid(getPreferredSsid())
+        val ssid = ServerDefaults.asWifiSsid(getPreferredSsid())
         val passwd = getPreferredPassword()
         val band = getPreferredBand()
 

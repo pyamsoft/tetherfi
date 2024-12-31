@@ -86,7 +86,7 @@ internal constructor(
     val s = state
 
     // Port is its own thing, not part of group info
-    proxyPreferences.listenForPortChanges().also { f ->
+    proxyPreferences.listenForHttpPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.port.value = it } }
     }
 
