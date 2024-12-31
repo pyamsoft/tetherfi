@@ -16,8 +16,11 @@
 
 package com.pyamsoft.tetherfi.main
 
-enum class MainView(val displayName: String) {
-  STATUS("Hotspot"),
-  INFO("How To"),
-  CONNECTIONS("Connections")
+import androidx.annotation.StringRes
+
+enum class MainView(@StringRes val displayNameRes: Int) {
+  STATUS(R.string.main_tab_name_status),
+  BEHAVIOR(R.string.main_tab_name_behavior),
+  INFO(R.string.main_tab_name_info),
+  CONNECTIONS(R.string.main_tab_name_connections)
 }

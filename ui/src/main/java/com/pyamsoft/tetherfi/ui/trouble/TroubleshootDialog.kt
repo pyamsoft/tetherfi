@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.ui.trouble
 
+import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 
 private enum class TroubleshootDialogContentTypes {
   STEPS
@@ -90,7 +91,7 @@ fun TroubleshootDialog(
             },
         ) {
           Text(
-              text = stringResource(android.R.string.cancel),
+              text = stringResource(R.string.cancel),
           )
         }
       }

@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.status.common.StatusItem
+import com.pyamsoft.tetherfi.status.sections.StatusItem
 
 internal enum class StatusSize {
   SMALL,

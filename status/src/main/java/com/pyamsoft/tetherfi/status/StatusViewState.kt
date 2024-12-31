@@ -20,27 +20,13 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.pydroid.arch.UiViewState
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
-import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-enum class StatusViewDialogs {
-  POWER_BALANCE,
-  SOCKET_TIMEOUT
-}
-
 enum class ServerPortTypes {
   HTTP,
   SOCKS
-}
-
-enum class StatusViewTweaks {
-  IGNORE_VPN,
-  IGNORE_LOCATION,
-  KEEP_SCREEN_ON,
-  SHUTDOWN_NO_CLIENTS,
 }
 
 @Stable
@@ -55,24 +41,6 @@ interface StatusViewState : UiViewState {
   val httpPort: StateFlow<String>
   val socksPort: StateFlow<String>
   val band: StateFlow<ServerNetworkBand?>
-
-  // Operating Settings
-  val hasNotificationPermission: StateFlow<Boolean>
-  val isBatteryOptimizationsIgnored: StateFlow<Boolean>
-
-  // Tweaks
-  val isIgnoreVpn: StateFlow<Boolean>
-  val isIgnoreLocation: StateFlow<Boolean>
-  val isShutdownWithNoClients: StateFlow<Boolean>
-  val isKeepScreenOn: StateFlow<Boolean>
-
-  // Expert
-  val powerBalance: StateFlow<ServerPerformanceLimit>
-  val socketTimeout: StateFlow<ServerSocketTimeout>
-
-  // Dialogs
-  val isShowingPowerBalance: StateFlow<Boolean>
-  val isShowingSocketTimeout: StateFlow<Boolean>
 
   @Stable
   @Immutable
@@ -93,20 +61,4 @@ class MutableStatusViewState @Inject internal constructor() : StatusViewState {
   override val httpPort = MutableStateFlow("")
   override val socksPort = MutableStateFlow("")
   override val band = MutableStateFlow<ServerNetworkBand?>(null)
-
-  override val hasNotificationPermission = MutableStateFlow(false)
-
-  override val isBatteryOptimizationsIgnored = MutableStateFlow(false)
-  override val powerBalance =
-      MutableStateFlow<ServerPerformanceLimit>(ServerPerformanceLimit.Defaults.BOUND_N_CPU)
-  override val socketTimeout =
-      MutableStateFlow<ServerSocketTimeout>(ServerSocketTimeout.Defaults.BALANCED)
-
-  override val isShowingPowerBalance = MutableStateFlow(false)
-  override val isShowingSocketTimeout = MutableStateFlow(false)
-
-  override val isIgnoreVpn = MutableStateFlow(false)
-  override val isIgnoreLocation = MutableStateFlow(false)
-  override val isShutdownWithNoClients = MutableStateFlow(false)
-  override val isKeepScreenOn = MutableStateFlow(false)
 }

@@ -48,7 +48,7 @@ import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.icons.RadioButtonUnchecked
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 import kotlinx.coroutines.delay
 
 private val CONNECTOR_SIZE = 16.dp

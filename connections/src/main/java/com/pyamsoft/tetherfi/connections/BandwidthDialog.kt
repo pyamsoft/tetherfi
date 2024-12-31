@@ -50,7 +50,7 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.clients.TransferAmount
 import com.pyamsoft.tetherfi.server.clients.TransferUnit
-import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 import org.jetbrains.annotations.TestOnly
 
 @Composable

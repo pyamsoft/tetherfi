@@ -54,6 +54,7 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.icons.QrCode
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
+import com.pyamsoft.tetherfi.ui.rememberPortNumber
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
@@ -62,7 +63,6 @@ import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
-import rememberPortNumber
 
 private enum class DeviceSetupContentTypes {
   SETTINGS,

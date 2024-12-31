@@ -45,8 +45,8 @@ import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.ui.DialogToolbar
 import com.pyamsoft.tetherfi.ui.R
+import com.pyamsoft.tetherfi.ui.dialog.DialogToolbar
 import com.pyamsoft.tetherfi.ui.qr.QRCodeScreen
 import com.pyamsoft.tetherfi.ui.qr.QRCodeViewModeler
 import com.pyamsoft.tetherfi.ui.qr.QRCodeViewState

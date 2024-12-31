@@ -45,16 +45,16 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.status.common.StatusItem
+import com.pyamsoft.tetherfi.status.sections.StatusItem
 import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.SlowSpeedsUpsell
+import com.pyamsoft.tetherfi.ui.dialog.SlowSpeedsUpsell
 import com.pyamsoft.tetherfi.ui.icons.Visibility
 import com.pyamsoft.tetherfi.ui.icons.VisibilityOff
+import com.pyamsoft.tetherfi.ui.rememberPortNumber
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
-import rememberPortNumber
 
 @Composable
 internal fun ViewProxy(

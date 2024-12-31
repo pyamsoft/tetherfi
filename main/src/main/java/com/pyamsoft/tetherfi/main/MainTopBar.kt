@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
@@ -153,14 +154,18 @@ private fun MainTab(
     isSelected: Boolean,
     onSelected: () -> Unit,
 ) {
+  val context = LocalContext.current
   val textStyle = LocalTextStyle.current
+
+  val tabName = remember(context, tab) { context.getString(tab.displayNameRes) }
+
   Tab(
       modifier = modifier,
       selected = isSelected,
       onClick = onSelected,
       text = {
         Text(
-            text = tab.displayName,
+            text = tabName,
             style =
                 textStyle.copy(
                     fontWeight = if (isSelected) FontWeight.W700 else null,

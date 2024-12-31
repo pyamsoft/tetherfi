@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.status
 
-import android.os.Build
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -33,15 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
-import com.pyamsoft.tetherfi.server.ServerSocketTimeout
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import com.pyamsoft.tetherfi.ui.LoadingSpinner
+import com.pyamsoft.tetherfi.ui.STATIC_HOTSPOT_ERROR
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
@@ -56,11 +52,6 @@ private enum class StatusScreenContentTypes {
   BUTTON,
   LOADING,
 }
-
-private val staticHotspotError =
-    RunningStatus.HotspotError(
-        RuntimeException("Unable to start Hotspot"),
-    )
 
 @Composable
 fun StatusScreen(
@@ -82,12 +73,6 @@ fun StatusScreen(
     onHttpPortChanged: (String) -> Unit,
     onSocksPortChanged: (String) -> Unit,
 
-    // Battery Optimization
-    onOpenBatterySettings: () -> Unit,
-
-    // Notification
-    onRequestNotificationPermission: () -> Unit,
-
     // Status buttons
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
@@ -98,25 +83,9 @@ fun StatusScreen(
     onShowBroadcastError: () -> Unit,
     onShowProxyError: () -> Unit,
 
-    // Tweaks
-    onToggleIgnoreVpn: () -> Unit,
-    onToggleIgnoreLocation: () -> Unit,
-    onToggleShutdownWithNoClients: () -> Unit,
-    onToggleKeepScreenOn: () -> Unit,
-
     // Jump links
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
-
-    // Expert
-    onShowPowerBalance: () -> Unit,
-    onHidePowerBalance: () -> Unit,
-    onUpdatePowerBalance: (ServerPerformanceLimit) -> Unit,
-    onShowSocketTimeout: () -> Unit,
-    onHideSocketTimeout: () -> Unit,
-    onUpdateSocketTimeout: (ServerSocketTimeout) -> Unit,
-    onSelectBroadcastType: (BroadcastType) -> Unit,
-    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   val wiDiStatus by serverViewState.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by serverViewState.proxyStatus.collectAsStateWithLifecycle()
@@ -127,7 +96,7 @@ fun StatusScreen(
           proxyStatus,
       ) {
         if (wiDiStatus is RunningStatus.Error || proxyStatus is RunningStatus.Error) {
-          return@remember staticHotspotError
+          return@remember STATIC_HOTSPOT_ERROR
         }
 
         // If either is starting, mark us starting
@@ -171,7 +140,6 @@ fun StatusScreen(
         }
       }
 
-  val showNotificationSettings = remember { Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU }
   val loadingState by state.loadingState.collectAsStateWithLifecycle()
 
   val handleStatusUpdated by rememberUpdatedState(onStatusUpdated)
@@ -214,7 +182,7 @@ fun StatusScreen(
         item(
             contentType = StatusScreenContentTypes.LOADING,
         ) {
-          StatusLoading(
+          LoadingSpinner(
               modifier =
                   Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH)
                       .padding(MaterialTheme.keylines.content),
@@ -232,42 +200,22 @@ fun StatusScreen(
             isEditable = isEditable,
             wiDiStatus = wiDiStatus,
             proxyStatus = proxyStatus,
-            showNotificationSettings = showNotificationSettings,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
             onHttpPortChanged = onHttpPortChanged,
             onSocksPortChanged = onSocksPortChanged,
-            onOpenBatterySettings = onOpenBatterySettings,
             onSelectBand = onSelectBand,
-            onRequestNotificationPermission = onRequestNotificationPermission,
             onTogglePasswordVisibility = onTogglePasswordVisibility,
             onShowQRCode = onShowQRCode,
             onRefreshConnection = onRefreshConnection,
             onShowHotspotError = onShowHotspotError,
             onShowNetworkError = onShowNetworkError,
-            onToggleIgnoreVpn = onToggleIgnoreVpn,
-            onToggleIgnoreLocation = onToggleIgnoreLocation,
-            onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onJumpToHowTo = onJumpToHowTo,
-            onShowPowerBalance = onShowPowerBalance,
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
-            onToggleKeepScreenOn = onToggleKeepScreenOn,
-            onSelectBroadcastType = onSelectBroadcastType,
-            onSelectPreferredNetwork = onSelectPreferredNetwork,
-            onShowSocketTimeout = onShowSocketTimeout,
         )
       }
     }
   }
-
-  StatusDialogs(
-      dialogModifier = Modifier.fillUpToPortraitSize().widthIn(max = LANDSCAPE_MAX_WIDTH),
-      state = state,
-      onHidePowerBalance = onHidePowerBalance,
-      onUpdatePowerBalance = onUpdatePowerBalance,
-      onHideSocketTimeout = onHideSocketTimeout,
-      onUpdateSocketTimeout = onUpdateSocketTimeout,
-  )
 }
 
 @TestOnly
@@ -293,9 +241,7 @@ private fun PreviewStatusScreen(
       appName = "TEST",
       featureFlags = makeTestFeatureFlags(),
       onStatusUpdated = {},
-      onRequestNotificationPermission = {},
       onSelectBand = {},
-      onOpenBatterySettings = {},
       onPasswordChanged = {},
       onHttpPortChanged = {},
       onSocksPortChanged = {},
@@ -306,22 +252,10 @@ private fun PreviewStatusScreen(
       onRefreshConnection = {},
       onShowHotspotError = {},
       onShowNetworkError = {},
-      onToggleIgnoreVpn = {},
-      onToggleIgnoreLocation = {},
-      onToggleShutdownWithNoClients = {},
       onJumpToHowTo = {},
       onShowBroadcastError = {},
       onShowProxyError = {},
-      onUpdatePowerBalance = {},
-      onHidePowerBalance = {},
-      onShowPowerBalance = {},
       onViewSlowSpeedHelp = {},
-      onToggleKeepScreenOn = {},
-      onSelectBroadcastType = {},
-      onSelectPreferredNetwork = {},
-      onUpdateSocketTimeout = {},
-      onHideSocketTimeout = {},
-      onShowSocketTimeout = {},
   )
 }
 

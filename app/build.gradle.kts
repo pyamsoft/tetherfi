@@ -167,6 +167,7 @@ dependencies {
   implementation("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
   implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
 
+  implementation(project(":behavior"))
   implementation(project(":connections"))
   implementation(project(":core"))
   implementation(project(":info"))

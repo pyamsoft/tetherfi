@@ -30,7 +30,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
-import com.pyamsoft.tetherfi.status.sections.tiiles.RunningTiles
+import com.pyamsoft.tetherfi.status.sections.tiles.RunningTiles
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD

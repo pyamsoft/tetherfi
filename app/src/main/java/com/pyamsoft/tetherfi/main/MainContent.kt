@@ -22,6 +22,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.pyamsoft.tetherfi.behavior.BehaviorEntry
 import com.pyamsoft.tetherfi.connections.ConnectionEntry
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.info.InfoEntry
@@ -78,6 +79,15 @@ fun MainContent(
             onShowSlowSpeedHelp = onShowSlowSpeedHelp,
         )
       }
+      MainView.BEHAVIOR -> {
+        BehaviorEntry(
+            modifier = Modifier.fillMaxSize(),
+            appName = appName,
+            serverViewState = state,
+            onRefreshConnection = onRefreshConnection,
+            onLaunchIntent = onLaunchIntent,
+        )
+      }
       MainView.STATUS -> {
         StatusEntry(
             modifier = Modifier.fillMaxSize(),
@@ -88,7 +98,6 @@ fun MainContent(
             onRefreshConnection = onRefreshConnection,
             onJumpToHowTo = onJumpToHowTo,
             onUpdateTile = onUpdateTile,
-            onLaunchIntent = onLaunchIntent,
             onShowSlowSpeedHelp = onShowSlowSpeedHelp,
             onToggleProxy = onToggleProxy,
             onOpenNetworkError = onOpenNetworkError,

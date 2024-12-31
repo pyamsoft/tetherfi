@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.rememberUriHandler
 import com.pyamsoft.tetherfi.info.R
-import com.pyamsoft.tetherfi.ui.SlowSpeedsUpsell
+import com.pyamsoft.tetherfi.ui.dialog.SlowSpeedsUpsell
 
 private enum class ConnectionCompleteContentTypes {
   SHARING,

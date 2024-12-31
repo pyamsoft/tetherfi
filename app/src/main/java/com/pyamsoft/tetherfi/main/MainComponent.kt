@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.behavior.BehaviorComponent
 import com.pyamsoft.tetherfi.connections.ConnectionComponent
 import com.pyamsoft.tetherfi.core.ActivityScope
 import com.pyamsoft.tetherfi.info.InfoComponent
@@ -27,6 +28,8 @@ import dagger.Subcomponent
 @Subcomponent
 @ActivityScope
 internal interface MainComponent {
+
+  @CheckResult fun plusBehavior(): BehaviorComponent.Factory
 
   @CheckResult fun plusStatus(): StatusComponent.Factory
 

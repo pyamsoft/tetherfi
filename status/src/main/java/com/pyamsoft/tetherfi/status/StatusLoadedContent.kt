@@ -30,14 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
-import com.pyamsoft.tetherfi.status.sections.expert.renderExpertSettings
 import com.pyamsoft.tetherfi.status.sections.network.renderNetworkInformation
-import com.pyamsoft.tetherfi.status.sections.operating.renderOperatingSettings
-import com.pyamsoft.tetherfi.status.sections.tweaks.renderTweaks
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.renderLinks
@@ -71,14 +66,6 @@ internal fun LazyListScope.renderLoadedContent(
     onHttpPortChanged: (String) -> Unit,
     onSocksPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
-
-    // Battery
-    onOpenBatterySettings: () -> Unit,
-
-    // Notification
-    showNotificationSettings: Boolean,
-    onRequestNotificationPermission: () -> Unit,
-
     // Status button
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
@@ -86,22 +73,9 @@ internal fun LazyListScope.renderLoadedContent(
     // Errors
     onShowNetworkError: () -> Unit,
     onShowHotspotError: () -> Unit,
-
-    // Tweaks
-    onToggleIgnoreVpn: () -> Unit,
-    onToggleIgnoreLocation: () -> Unit,
-    onToggleShutdownWithNoClients: () -> Unit,
-    onToggleKeepScreenOn: () -> Unit,
-
     // Jump links
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
-
-    // Expert
-    onShowPowerBalance: () -> Unit,
-    onShowSocketTimeout: () -> Unit,
-    onSelectBroadcastType: (BroadcastType) -> Unit,
-    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   renderNetworkInformation(
       itemModifier = itemModifier,
@@ -141,46 +115,6 @@ internal fun LazyListScope.renderLoadedContent(
     )
   }
 
-  renderOperatingSettings(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-      state = state,
-      showNotificationSettings = showNotificationSettings,
-      onDisableBatteryOptimizations = onOpenBatterySettings,
-      onNotificationPermissionRequest = onRequestNotificationPermission,
-  )
-
-  item(
-      contentType = StatusLoadedContentTypes.SPACER,
-  ) {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.content * 2),
-    )
-  }
-
-  renderTweaks(
-      itemModifier = itemModifier,
-      isEditable = isEditable,
-      appName = appName,
-      state = state,
-      onToggleIgnoreVpn = onToggleIgnoreVpn,
-      onToggleIgnoreLocation = onToggleIgnoreLocation,
-      onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
-      onToggleKeepScreenOn = onToggleKeepScreenOn,
-  )
-
-  renderExpertSettings(
-      itemModifier = itemModifier,
-      serverViewState = serverViewState,
-      isEditable = isEditable,
-      appName = appName,
-      onShowPowerBalance = onShowPowerBalance,
-      onShowSocketTimeout = onShowSocketTimeout,
-      onSelectBroadcastType = onSelectBroadcastType,
-      onSelectPreferredNetwork = onSelectPreferredNetwork,
-  )
-
   item(
       contentType = StatusLoadedContentTypes.SPACER,
   ) {
@@ -209,7 +143,6 @@ internal fun LazyListScope.renderLoadedContent(
 private fun PreviewLoadedContent(
     state: TestServerState,
     isEditable: Boolean,
-    showNotifications: Boolean,
 ) {
   LazyColumn {
     renderLoadedContent(
@@ -225,9 +158,7 @@ private fun PreviewLoadedContent(
         serverViewState = makeTestServerState(state),
         featureFlags = makeTestFeatureFlags(),
         appName = "TEST",
-        onRequestNotificationPermission = {},
         onSelectBand = {},
-        onOpenBatterySettings = {},
         onPasswordChanged = {},
         onHttpPortChanged = {},
         onSocksPortChanged = {},
@@ -237,112 +168,61 @@ private fun PreviewLoadedContent(
         onRefreshConnection = {},
         onShowHotspotError = {},
         onShowNetworkError = {},
-        onToggleIgnoreVpn = {},
-        onToggleShutdownWithNoClients = {},
         onJumpToHowTo = {},
-        onShowPowerBalance = {},
-        onShowSocketTimeout = {},
         isEditable = isEditable,
         wiDiStatus = RunningStatus.NotRunning,
         proxyStatus = RunningStatus.NotRunning,
-        showNotificationSettings = showNotifications,
         onViewSlowSpeedHelp = {},
-        onToggleKeepScreenOn = {},
-        onToggleIgnoreLocation = {},
-        onSelectBroadcastType = {},
-        onSelectPreferredNetwork = {},
     )
   }
 }
 
 @TestOnly
 @Composable
-private fun PreviewEmpty(isEditable: Boolean, showNotifications: Boolean) {
+private fun PreviewEmpty(isEditable: Boolean) {
   PreviewLoadedContent(
       state = TestServerState.EMPTY,
       isEditable = isEditable,
-      showNotifications = showNotifications,
   )
 }
 
 @TestOnly
 @Composable
-private fun PreviewConnected(isEditable: Boolean, showNotifications: Boolean) {
+private fun PreviewConnected(isEditable: Boolean) {
   PreviewLoadedContent(
       state = TestServerState.CONNECTED,
       isEditable = isEditable,
-      showNotifications = showNotifications,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyEditableNoNotifications() {
+private fun PreviewEmptyEditable() {
   PreviewEmpty(
       isEditable = true,
-      showNotifications = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyEditableWithNotifications() {
-  PreviewEmpty(
-      isEditable = true,
-      showNotifications = true,
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-private fun PreviewEmptyNoEditableNoNotifications() {
+private fun PreviewEmptyNoEditable() {
   PreviewEmpty(
       isEditable = false,
-      showNotifications = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyNoEditableWithNotifications() {
-  PreviewEmpty(
-      isEditable = false,
-      showNotifications = true,
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-private fun PreviewConnectedEditableNoNotifications() {
+private fun PreviewConnectedEditable() {
   PreviewConnected(
       isEditable = true,
-      showNotifications = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectedEditableWithNotifications() {
-  PreviewConnected(
-      isEditable = true,
-      showNotifications = true,
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-private fun PreviewConnectedNoEditableNoNotifications() {
+private fun PreviewConnectedNoEditable() {
   PreviewConnected(
       isEditable = false,
-      showNotifications = false,
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-private fun PreviewConnectedNoEditableWithNotifications() {
-  PreviewConnected(
-      isEditable = false,
-      showNotifications = true,
   )
 }

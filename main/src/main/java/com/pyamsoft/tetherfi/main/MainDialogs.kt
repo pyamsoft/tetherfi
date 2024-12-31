@@ -30,7 +30,7 @@ import com.pyamsoft.tetherfi.main.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import com.pyamsoft.tetherfi.ui.ServerErrorDialog
+import com.pyamsoft.tetherfi.ui.dialog.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.trouble.TroubleshootDialog
 
 @Composable

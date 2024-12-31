@@ -43,7 +43,7 @@ import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.settings.SettingsPage
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.ui.DialogToolbar
+import com.pyamsoft.tetherfi.ui.dialog.DialogToolbar
 
 private enum class SettingsContentTypes {
   DEBUG_YOLO_ERROR,

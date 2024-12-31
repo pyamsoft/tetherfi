@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.connections
 
+import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
-import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 import com.pyamsoft.tetherfi.ui.test.TEST_HOSTNAME
 import java.time.Clock
 import org.jetbrains.annotations.TestOnly
@@ -77,7 +78,7 @@ internal fun NickNameDialog(
             onClick = onDismiss,
         ) {
           Text(
-              text = stringResource(android.R.string.cancel),
+              text = stringResource(R.string.cancel),
           )
         }
         Button(
@@ -88,7 +89,7 @@ internal fun NickNameDialog(
             },
         ) {
           Text(
-              text = stringResource(android.R.string.ok),
+              text = stringResource(R.string.ok),
           )
         }
       }

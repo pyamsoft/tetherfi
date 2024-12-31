@@ -53,7 +53,7 @@ import com.pyamsoft.tetherfi.settings.SettingsDialog
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import com.pyamsoft.tetherfi.ui.SlowSpeedsDialog
+import com.pyamsoft.tetherfi.ui.dialog.SlowSpeedsDialog
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

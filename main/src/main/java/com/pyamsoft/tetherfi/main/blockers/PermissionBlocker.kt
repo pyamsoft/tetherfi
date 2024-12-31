@@ -36,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.main.R
-import com.pyamsoft.tetherfi.ui.CardDialog
+import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 
 private enum class PermissionBlockerContentTypes {
   EXPLAIN,

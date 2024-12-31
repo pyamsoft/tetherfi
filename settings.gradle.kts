@@ -26,6 +26,8 @@ rootProject.name = "TetherFi"
 
 include(":app")
 
+include(":behavior")
+
 include(":connections")
 
 include(":core")

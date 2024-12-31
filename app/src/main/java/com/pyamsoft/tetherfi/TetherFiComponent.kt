@@ -29,6 +29,7 @@ import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.pydroid.ui.theme.Theming
+import com.pyamsoft.tetherfi.behavior.BehaviorAppModule
 import com.pyamsoft.tetherfi.core.CoreAppModule
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.foreground.ForegroundServiceComponent
@@ -45,7 +46,6 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerAppModule
 import com.pyamsoft.tetherfi.service.ServiceAppModule
 import com.pyamsoft.tetherfi.status.PermissionRequests
 import com.pyamsoft.tetherfi.status.PermissionResponse
-import com.pyamsoft.tetherfi.status.StatusAppModule
 import com.pyamsoft.tetherfi.tile.ProxyTileActivity
 import com.pyamsoft.tetherfi.tile.ProxyTileComponent
 import com.pyamsoft.tetherfi.tile.ProxyTileService
@@ -71,7 +71,7 @@ import kotlinx.coroutines.CoroutineScope
             BroadcastServerAppModule::class,
             TileAppModule::class,
             CoreAppModule::class,
-            StatusAppModule::class,
+            BehaviorAppModule::class,
         ],
 )
 internal interface TetherFiComponent {
