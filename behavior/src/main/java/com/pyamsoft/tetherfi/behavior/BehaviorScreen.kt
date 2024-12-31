@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +56,7 @@ private enum class BehaviorScreenContentTypes {
 fun BehaviorScreen(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     state: BehaviorViewState,
     serverViewState: ServerViewState,
 
@@ -130,6 +133,7 @@ fun BehaviorScreen(
 
   LazyColumn(
       modifier = modifier,
+      state = lazyListState,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -196,6 +200,7 @@ private fun PreviewBehaviorScreen(
                 if (isLoading) BehaviorViewState.LoadingState.LOADING
                 else BehaviorViewState.LoadingState.DONE
           },
+      lazyListState = rememberLazyListState(),
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       appName = "TEST",
       onRequestNotificationPermission = {},

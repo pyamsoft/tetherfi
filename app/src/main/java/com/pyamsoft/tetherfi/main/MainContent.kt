@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.main
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -56,6 +57,11 @@ fun MainContent(
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
 ) {
+  val statusLazyListState = rememberLazyListState()
+  val behaviorLazyListState = rememberLazyListState()
+  val infoLazyListState = rememberLazyListState()
+  val connectionLazyListState = rememberLazyListState()
+
   HorizontalPager(
       modifier = modifier,
       state = pagerState,
@@ -74,6 +80,7 @@ fun MainContent(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
             featureFlags = featureFlags,
+            lazyListState = infoLazyListState,
             serverViewState = state,
             onShowQRCode = onShowQRCode,
             onShowSlowSpeedHelp = onShowSlowSpeedHelp,
@@ -83,6 +90,7 @@ fun MainContent(
         BehaviorEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            lazyListState = behaviorLazyListState,
             serverViewState = state,
             onRefreshConnection = onRefreshConnection,
             onLaunchIntent = onLaunchIntent,
@@ -93,6 +101,7 @@ fun MainContent(
             modifier = Modifier.fillMaxSize(),
             featureFlags = featureFlags,
             appName = appName,
+            lazyListState = statusLazyListState,
             serverViewState = state,
             onShowQRCode = onShowQRCode,
             onRefreshConnection = onRefreshConnection,
@@ -110,6 +119,7 @@ fun MainContent(
         ConnectionEntry(
             modifier = Modifier.fillMaxSize(),
             appName = appName,
+            lazyListState = connectionLazyListState,
             serverViewState = state,
         )
       }

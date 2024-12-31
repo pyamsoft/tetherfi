@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.info
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
@@ -53,6 +54,7 @@ private fun MountHooks(
 fun InfoEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     featureFlags: FeatureFlags,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
@@ -68,6 +70,7 @@ fun InfoEntry(
   InfoScreen(
       modifier = modifier,
       state = viewModel,
+      lazyListState = lazyListState,
       appName = appName,
       featureFlags = featureFlags,
       serverViewState = serverViewState,

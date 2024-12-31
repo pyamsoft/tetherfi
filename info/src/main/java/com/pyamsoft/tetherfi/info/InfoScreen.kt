@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -47,6 +49,7 @@ private enum class InfoContentTypes {
 fun InfoScreen(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     featureFlags: FeatureFlags,
     state: InfoViewState,
     serverViewState: ServerViewState,
@@ -57,6 +60,7 @@ fun InfoScreen(
 ) {
   LazyColumn(
       modifier = modifier,
+      state = lazyListState,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -108,6 +112,7 @@ private fun PreviewInfoScreen() {
       appName = "TEST",
       featureFlags = makeTestFeatureFlags(),
       state = MutableInfoViewState(),
+      lazyListState = rememberLazyListState(),
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       onTogglePasswordVisibility = {},
       onShowQRCode = {},

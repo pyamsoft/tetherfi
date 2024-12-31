@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,6 +58,7 @@ fun ConnectionScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: ConnectionViewState,
+    lazyListState: LazyListState,
     serverViewState: ServerViewState,
     onToggleBlock: (TetherClient) -> Unit,
     onOpenManageNickName: (TetherClient) -> Unit,
@@ -78,6 +81,7 @@ fun ConnectionScreen(
 
   LazyColumn(
       modifier = modifier,
+      state = lazyListState,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -150,6 +154,7 @@ private fun PreviewConnectionScreen(
 ) {
   ConnectionScreen(
       appName = "TEST",
+      lazyListState = rememberLazyListState(),
       state =
           object : ConnectionViewState {
             override val connections =

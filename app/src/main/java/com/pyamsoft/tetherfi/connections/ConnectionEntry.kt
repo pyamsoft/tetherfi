@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.connections
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ private fun MountHooks(
 fun ConnectionEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     serverViewState: ServerViewState,
 ) {
   val component = rememberComposableInjector { ConnectionInjector() }
@@ -75,6 +77,7 @@ fun ConnectionEntry(
   ConnectionScreen(
       modifier = modifier,
       appName = appName,
+      lazyListState = lazyListState,
       state = viewModel,
       serverViewState = serverViewState,
       onToggleBlock = { viewModel.handleToggleBlock(it) },

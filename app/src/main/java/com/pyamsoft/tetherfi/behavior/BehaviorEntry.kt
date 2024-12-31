@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.behavior
 
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -140,6 +141,7 @@ private fun MountHooks(
 fun BehaviorEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     serverViewState: ServerViewState,
 
     // Actions
@@ -165,6 +167,7 @@ fun BehaviorEntry(
 
   BehaviorScreen(
       modifier = modifier,
+      lazyListState = lazyListState,
       state = viewModel,
       serverViewState = serverViewState,
       appName = appName,

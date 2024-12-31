@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +60,7 @@ fun StatusScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
+    lazyListState: LazyListState,
     featureFlags: FeatureFlags,
     serverViewState: ServerViewState,
 
@@ -147,6 +150,7 @@ fun StatusScreen(
 
   LazyColumn(
       modifier = modifier,
+      state = lazyListState,
       contentPadding = PaddingValues(horizontal = MaterialTheme.keylines.content),
       horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -238,6 +242,7 @@ private fun PreviewStatusScreen(
             band.value = ServerNetworkBand.LEGACY
           },
       serverViewState = makeTestServerState(TestServerState.EMPTY),
+      lazyListState = rememberLazyListState(),
       appName = "TEST",
       featureFlags = makeTestFeatureFlags(),
       onStatusUpdated = {},

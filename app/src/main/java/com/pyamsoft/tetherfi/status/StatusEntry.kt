@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.status
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ private fun MountHooks(
 fun StatusEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    lazyListState: LazyListState,
     serverViewState: ServerViewState,
     featureFlags: FeatureFlags,
 
@@ -99,6 +101,7 @@ fun StatusEntry(
   StatusScreen(
       modifier = modifier,
       state = viewModel,
+      lazyListState = lazyListState,
       serverViewState = serverViewState,
       appName = appName,
       featureFlags = featureFlags,
