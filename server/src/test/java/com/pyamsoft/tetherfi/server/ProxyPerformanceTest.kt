@@ -8,6 +8,9 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -15,9 +18,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.minutes
 
 private fun makeGetRequest(port: Int): String {
   return listOf(
