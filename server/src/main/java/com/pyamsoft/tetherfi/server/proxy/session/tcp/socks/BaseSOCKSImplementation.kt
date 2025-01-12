@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -36,12 +37,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import java.net.InetAddress
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
+import java.net.InetAddress
+import kotlin.time.Duration.Companion.minutes
 
 internal abstract class BaseSOCKSImplementation<
     AT : BaseSOCKSImplementation.SOCKSAddressType,
@@ -284,6 +285,7 @@ protected constructor(
       networkBinder: SocketBinder.NetworkBinder,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       command: SOCKSCommand,
       destinationPort: Short,
@@ -336,6 +338,7 @@ protected constructor(
               connectionInfo = connectionInfo,
               proxyInput = proxyInput,
               proxyOutput = proxyOutput,
+              proxyConnectionInfo = proxyConnectionInfo,
               responder = responder,
               client = client,
               destinationAddress = destinationAddress,
@@ -354,6 +357,7 @@ protected constructor(
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       destinationAddress: InetAddress,
       destinationPort: Short,

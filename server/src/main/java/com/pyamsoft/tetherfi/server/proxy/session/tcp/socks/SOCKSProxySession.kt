@@ -27,6 +27,7 @@ import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -36,9 +37,9 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 internal class SOCKSProxySession
@@ -71,6 +72,7 @@ internal constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       socketTracker: SocketTracker,
       client: TetherClient,
       request: SOCKSVersion,
@@ -88,6 +90,7 @@ internal constructor(
           serverDispatcher = serverDispatcher,
           proxyInput = proxyInput,
           proxyOutput = proxyOutput,
+          proxyConnectionInfo = proxyConnectionInfo,
           socketTracker = socketTracker,
           networkBinder = networkBinder,
           client = client,

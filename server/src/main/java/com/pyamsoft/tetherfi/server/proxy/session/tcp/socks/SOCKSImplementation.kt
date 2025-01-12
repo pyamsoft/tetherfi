@@ -22,6 +22,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
 import io.ktor.utils.io.ByteReadChannel
@@ -41,6 +42,7 @@ internal interface SOCKSImplementation<R : SOCKSImplementation.Responder> {
       networkBinder: SocketBinder.NetworkBinder,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
       onReport: suspend (ByteTransferReport) -> Unit,

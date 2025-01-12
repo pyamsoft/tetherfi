@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 pyamsoft
+ * Copyright 2025 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy.session.tcp
+package com.pyamsoft.tetherfi.server.proxy;
 
-import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
-import com.pyamsoft.tetherfi.server.proxy.session.ProxyData
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.network.sockets.InetSocketAddress
 
 @ConsistentCopyVisibility
-internal data class TcpProxyData
-internal constructor(
-    internal val proxyInput: ByteReadChannel,
-    internal val proxyOutput: ByteWriteChannel,
-    internal val proxyConnectionInfo: ProxyConnectionInfo,
-) : ProxyData
+data class ProxyConnectionInfo internal constructor(
+    val address: InetSocketAddress,
+    val hostNameOrIp: String,
+    val port: Int,
+)

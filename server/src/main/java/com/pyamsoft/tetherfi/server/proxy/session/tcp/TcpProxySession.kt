@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
@@ -120,6 +121,7 @@ protected constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       socketTracker: SocketTracker,
       client: TetherClient,
       request: Q,
@@ -145,6 +147,7 @@ protected constructor(
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
+        proxyConnectionInfo = proxyConnectionInfo,
         socketTracker = socketTracker,
         request = request,
         client = client,
@@ -171,11 +174,12 @@ protected constructor(
       networkBinder: SocketBinder.NetworkBinder,
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
       serverDispatcher: ServerDispatcher,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
+      data: TcpProxyData,
       socketTracker: SocketTracker,
-      hostNameOrIp: String,
   ) {
+    val proxyInput = data.proxyInput
+    val proxyOutput = data.proxyOutput
+    val proxyConnectionInfo = data.proxyConnectionInfo
 
     // We use a string parsing to figure out what this HTTP request wants to do
     // Inline to avoid new object allocation
@@ -186,7 +190,7 @@ protected constructor(
       return
     }
 
-    val client = resolveClientOrBlock(hostConnection, hostNameOrIp)
+    val client = resolveClientOrBlock(hostConnection, proxyConnectionInfo.hostNameOrIp)
     if (client == null) {
       transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.BLOCK)
       return
@@ -201,6 +205,7 @@ protected constructor(
         serverDispatcher = serverDispatcher,
         proxyInput = proxyInput,
         proxyOutput = proxyOutput,
+        proxyConnectionInfo = proxyConnectionInfo,
         socketTracker = socketTracker,
         client = client,
         request = request,
@@ -230,9 +235,6 @@ protected constructor(
       data: TcpProxyData,
   ) =
       withContext(context = serverDispatcher.primary) {
-        val proxyInput = data.proxyInput
-        val proxyOutput = data.proxyOutput
-        val hostNameOrIp = data.hostNameOrIp
         try {
           handleClientRequest(
               scope = this,
@@ -241,13 +243,11 @@ protected constructor(
               networkBinder = networkBinder,
               hostConnection = hostConnection,
               serverDispatcher = serverDispatcher,
-              proxyInput = proxyInput,
-              proxyOutput = proxyOutput,
-              hostNameOrIp = hostNameOrIp,
               socketTracker = socketTracker,
+              data = data,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation { errorLog(e) { "Error handling client Request: $hostNameOrIp" } }
+          e.ifNotCancellation { errorLog(e) { "Error handling client Request: ${data.proxyConnectionInfo}" } }
         }
       }
 
@@ -260,6 +260,7 @@ protected constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       socketTracker: SocketTracker,
       client: TetherClient,
       request: Q,

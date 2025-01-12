@@ -22,6 +22,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -32,10 +33,10 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four.SOCKS4Implement
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readByte
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class SOCKSTransport
@@ -95,6 +96,7 @@ internal constructor(
       serverDispatcher: ServerDispatcher,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       socketTracker: SocketTracker,
       client: TetherClient,
       version: SOCKSVersion,
@@ -115,6 +117,7 @@ internal constructor(
                 networkBinder = networkBinder,
                 proxyInput = proxyInput,
                 proxyOutput = proxyOutput,
+                proxyConnectionInfo = proxyConnectionInfo,
                 connectionInfo = connectionInfo,
                 client = client,
                 onReport = onReport,
@@ -130,6 +133,7 @@ internal constructor(
                 networkBinder = networkBinder,
                 proxyInput = proxyInput,
                 proxyOutput = proxyOutput,
+                proxyConnectionInfo = proxyConnectionInfo,
                 connectionInfo = connectionInfo,
                 client = client,
                 onReport = onReport,

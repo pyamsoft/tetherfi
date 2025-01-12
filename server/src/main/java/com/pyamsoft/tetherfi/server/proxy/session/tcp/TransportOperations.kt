@@ -16,13 +16,11 @@
 
 package com.pyamsoft.tetherfi.server.proxy.session.tcp
 
-import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +28,7 @@ import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 internal suspend inline fun relayData(
     scope: CoroutineScope,
@@ -95,8 +94,6 @@ internal suspend inline fun relayData(
 
     // Wait for internet communication to finish
     job.join()
-  } catch (e: Throwable) {
-    e.ifNotCancellation { throw e }
   } finally {
     // After we are done, cancel the periodic report and fire one last report
     reportJob.cancel()

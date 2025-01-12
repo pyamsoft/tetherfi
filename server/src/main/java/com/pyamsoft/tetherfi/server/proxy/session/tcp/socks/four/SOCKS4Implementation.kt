@@ -26,6 +26,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
+import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -44,16 +45,16 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import java.net.Inet4Address
-import java.net.InetAddress
-import java.net.UnknownHostException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.readByteArray
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.UnknownHostException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** https://www.openssh.com/txt/socks4.protocol */
 @Singleton
@@ -86,6 +87,7 @@ internal constructor(
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       destinationAddress: InetAddress,
       destinationPort: Short,
@@ -106,6 +108,7 @@ internal constructor(
       networkBinder: SocketBinder.NetworkBinder,
       proxyInput: ByteReadChannel,
       proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
       onReport: suspend (ByteTransferReport) -> Unit
@@ -187,6 +190,7 @@ internal constructor(
             serverDispatcher = serverDispatcher,
             proxyInput = proxyInput,
             proxyOutput = proxyOutput,
+            proxyConnectionInfo = proxyConnectionInfo,
             responder = responder,
             client = client,
             destinationAddress = finalDestinationAddress,
