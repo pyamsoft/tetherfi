@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy;
+package com.pyamsoft.tetherfi.server.proxy
 
 import io.ktor.network.sockets.InetSocketAddress
 
 @ConsistentCopyVisibility
-data class ProxyConnectionInfo internal constructor(
+data class ProxyConnectionInfo
+internal constructor(
     val address: InetSocketAddress,
     val hostNameOrIp: String,
     val port: Int,

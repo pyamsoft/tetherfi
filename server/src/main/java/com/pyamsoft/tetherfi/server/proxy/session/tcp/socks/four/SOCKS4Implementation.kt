@@ -45,16 +45,16 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
-import kotlinx.io.Buffer
-import kotlinx.io.Sink
-import kotlinx.io.readByteArray
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
+import kotlinx.io.Buffer
+import kotlinx.io.Sink
+import kotlinx.io.readByteArray
 
 /** https://www.openssh.com/txt/socks4.protocol */
 @Singleton

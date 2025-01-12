@@ -247,7 +247,9 @@ protected constructor(
               data = data,
           )
         } catch (e: Throwable) {
-          e.ifNotCancellation { errorLog(e) { "Error handling client Request: ${data.proxyConnectionInfo}" } }
+          e.ifNotCancellation {
+            errorLog(e) { "Error handling client Request: ${data.proxyConnectionInfo}" }
+          }
         }
       }
 

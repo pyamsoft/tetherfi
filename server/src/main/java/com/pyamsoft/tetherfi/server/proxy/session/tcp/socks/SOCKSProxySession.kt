@@ -37,9 +37,9 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TransportWriteCommand
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 internal class SOCKSProxySession

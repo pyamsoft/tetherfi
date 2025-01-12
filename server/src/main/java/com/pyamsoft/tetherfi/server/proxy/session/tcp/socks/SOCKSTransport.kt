@@ -33,10 +33,10 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.four.SOCKS4Implement
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.readByte
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
 
 @Singleton
 internal class SOCKSTransport
