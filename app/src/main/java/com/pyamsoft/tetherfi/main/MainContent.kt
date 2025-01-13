@@ -25,7 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.pyamsoft.tetherfi.behavior.BehaviorEntry
 import com.pyamsoft.tetherfi.connections.ConnectionEntry
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.info.InfoEntry
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.StatusEntry
@@ -35,7 +35,7 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 fun MainContent(
     modifier: Modifier = Modifier,
     appName: String,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     pagerState: PagerState,
     state: ServerViewState,
     allTabs: List<MainView>,
@@ -78,8 +78,8 @@ fun MainContent(
       MainView.INFO -> {
         InfoEntry(
             modifier = Modifier.fillMaxSize(),
+            experimentalRuntimeFlags = experimentalRuntimeFlags,
             appName = appName,
-            featureFlags = featureFlags,
             lazyListState = infoLazyListState,
             serverViewState = state,
             onShowQRCode = onShowQRCode,
@@ -99,7 +99,7 @@ fun MainContent(
       MainView.STATUS -> {
         StatusEntry(
             modifier = Modifier.fillMaxSize(),
-            featureFlags = featureFlags,
+            experimentalRuntimeFlags = experimentalRuntimeFlags,
             appName = appName,
             lazyListState = statusLazyListState,
             serverViewState = state,

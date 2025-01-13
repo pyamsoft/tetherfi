@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.ui.test
 
 import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.core.FeatureFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
@@ -50,11 +51,16 @@ val TEST_CLIENT_LIST: Collection<BroadcastNetworkStatus.GroupInfo.Connected.Devi
 @TestOnly
 @CheckResult
 @VisibleForTesting
-fun makeTestFeatureFlags(
-    isSocksProxyEnabled: Boolean = false,
-): FeatureFlags {
-  return object : FeatureFlags {
-    override val isSocksProxyEnabled = isSocksProxyEnabled
+fun makeTestFeatureFlags(): FeatureFlags {
+  return object : FeatureFlags {}
+}
+
+@TestOnly
+@CheckResult
+@VisibleForTesting
+fun makeTestRuntimeFlags(isSOCKSProxyEnabled: Boolean): ExperimentalRuntimeFlags {
+  return object : ExperimentalRuntimeFlags {
+    override val isSocksProxyEnabled = MutableStateFlow(isSOCKSProxyEnabled)
   }
 }
 

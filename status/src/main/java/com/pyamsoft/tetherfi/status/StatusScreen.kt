@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -46,7 +46,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -61,7 +61,7 @@ fun StatusScreen(
     appName: String,
     state: StatusViewState,
     lazyListState: LazyListState,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     serverViewState: ServerViewState,
 
     // Proxy
@@ -199,7 +199,7 @@ fun StatusScreen(
             itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
             appName = appName,
             state = state,
-            featureFlags = featureFlags,
+            experimentalRuntimeFlags = experimentalRuntimeFlags,
             serverViewState = serverViewState,
             isEditable = isEditable,
             wiDiStatus = wiDiStatus,
@@ -229,6 +229,7 @@ private fun PreviewStatusScreen(
     ssid: String = TEST_SSID,
     password: String = TEST_PASSWORD,
     port: Int = TEST_PORT,
+    socks: Boolean,
 ) {
   StatusScreen(
       state =
@@ -244,7 +245,7 @@ private fun PreviewStatusScreen(
       serverViewState = makeTestServerState(TestServerState.EMPTY),
       lazyListState = rememberLazyListState(),
       appName = "TEST",
-      featureFlags = makeTestFeatureFlags(),
+      experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
       onStatusUpdated = {},
       onSelectBand = {},
       onPasswordChanged = {},
@@ -266,52 +267,116 @@ private fun PreviewStatusScreen(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenLoading() {
+private fun PreviewStatusScreenLoadingNoSocks() {
   PreviewStatusScreen(
       isLoading = true,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditing() {
+private fun PreviewStatusScreenEditingNoSocks() {
   PreviewStatusScreen(
       isLoading = false,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadSsid() {
+private fun PreviewStatusScreenEditingBadSsidNoSocks() {
   PreviewStatusScreen(
       isLoading = false,
       ssid = "nope",
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPassword() {
+private fun PreviewStatusScreenEditingBadPasswordNoSocks() {
   PreviewStatusScreen(
       isLoading = false,
       password = "nope",
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPort1() {
+private fun PreviewStatusScreenEditingBadPort1NoSocks() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPort2() {
+private fun PreviewStatusScreenEditingBadPort2NoSocks() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1_000_000,
+      socks = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenLoadingSocks() {
+  PreviewStatusScreen(
+      isLoading = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingSocks() {
+  PreviewStatusScreen(
+      isLoading = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadSsidSocks() {
+  PreviewStatusScreen(
+      isLoading = false,
+      ssid = "nope",
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPasswordSocks() {
+  PreviewStatusScreen(
+      isLoading = false,
+      password = "nope",
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPort1Socks() {
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPort2Socks() {
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1_000_000,
+      socks = true,
   )
 }

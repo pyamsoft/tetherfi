@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
+import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.settings.SettingsPage
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
@@ -56,6 +57,8 @@ private enum class SettingsContentTypes {
   DEBUG_CONN_GOOD,
   DEBUG_CONN_ERROR,
   BOTTOM_SPACER,
+  EXPERIMENT_EXPLAIN,
+  EXPERIMENT_SOCKS,
 }
 
 @Composable
@@ -101,6 +104,11 @@ fun SettingsDialog(
             customBottomItemMargin = MaterialTheme.keylines.baseline,
             extraDebugContent = {
               if (context.isDebugMode()) {
+                renderExperiments(
+                    itemModifier = itemModifier,
+                    appEnvironment = appEnvironment,
+                )
+
                 renderExtraDebugContent(
                     itemModifier = itemModifier,
                     appEnvironment = appEnvironment,
@@ -143,6 +151,56 @@ private fun DebugItem(
     Checkbox(
         checked = checked,
         onCheckedChange = onCheckedChange,
+    )
+  }
+}
+
+private fun LazyListScope.renderExperiments(
+    itemModifier: Modifier = Modifier,
+    appEnvironment: AppDevEnvironment,
+) {
+  item(
+      contentType = SettingsContentTypes.EXPERIMENT_EXPLAIN,
+  ) {
+    Text(
+        modifier = itemModifier,
+        text = stringResource(R.string.experimental_flags_title),
+        style =
+            MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+            ),
+    )
+    Text(
+        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.baseline),
+        text = stringResource(R.string.experimental_flags_description),
+        style =
+            MaterialTheme.typography.bodySmall.copy(
+                color =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = TypographyDefaults.ALPHA_DISABLED,
+                    ),
+            ),
+    )
+  }
+
+  item(
+      contentType = SettingsContentTypes.EXPERIMENT_SOCKS,
+  ) {
+    val isSocksProxyEnabled by appEnvironment.isSocksProxyEnabled.collectAsStateWithLifecycle()
+    DebugItem(
+        modifier = itemModifier,
+        title = stringResource(R.string.runtime_flag_enable_socks_proxy_title),
+        description = stringResource(R.string.runtime_flag_enable_socks_proxy_description),
+        checked = isSocksProxyEnabled,
+        onCheckedChange = { appEnvironment.handleToggleSocksEnabled() },
+    )
+  }
+
+  item(
+      contentType = SettingsContentTypes.BOTTOM_SPACER,
+  ) {
+    Spacer(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
     )
   }
 }

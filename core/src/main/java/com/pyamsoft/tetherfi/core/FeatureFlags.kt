@@ -16,12 +16,5 @@
 
 package com.pyamsoft.tetherfi.core
 
-interface FeatureFlags {
-
-  /**
-   * SOCKS proxy
-   *
-   * Adapted from https://github.com/torsm/ktor-socks
-   */
-  val isSocksProxyEnabled: Boolean
-}
+/** Build-time feature flags */
+interface FeatureFlags

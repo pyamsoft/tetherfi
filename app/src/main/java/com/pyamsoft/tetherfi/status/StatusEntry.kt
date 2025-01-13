@@ -28,7 +28,7 @@ import com.pyamsoft.pydroid.ui.inject.ComposableInjector
 import com.pyamsoft.pydroid.ui.inject.rememberComposableInjector
 import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import javax.inject.Inject
@@ -66,7 +66,7 @@ fun StatusEntry(
     appName: String,
     lazyListState: LazyListState,
     serverViewState: ServerViewState,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
 
     // Actions
     onShowQRCode: () -> Unit,
@@ -104,7 +104,7 @@ fun StatusEntry(
       lazyListState = lazyListState,
       serverViewState = serverViewState,
       appName = appName,
-      featureFlags = featureFlags,
+      experimentalRuntimeFlags = experimentalRuntimeFlags,
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onJumpToHowTo = onJumpToHowTo,

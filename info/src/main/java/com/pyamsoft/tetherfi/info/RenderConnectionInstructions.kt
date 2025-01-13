@@ -25,14 +25,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.info.sections.renderAppSetup
 import com.pyamsoft.tetherfi.info.sections.renderConnectionComplete
 import com.pyamsoft.tetherfi.info.sections.renderDeviceIdentifiers
 import com.pyamsoft.tetherfi.info.sections.renderDeviceSetup
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -43,7 +43,7 @@ private enum class ConnectionInstructionContentTypes {
 internal fun LazyListScope.renderConnectionInstructions(
     itemModifier: Modifier = Modifier,
     appName: String,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     state: InfoViewState,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
@@ -89,7 +89,7 @@ internal fun LazyListScope.renderConnectionInstructions(
       itemModifier = itemModifier,
       appName = appName,
       state = state,
-      featureFlags = featureFlags,
+      experimentalRuntimeFlags = experimentalRuntimeFlags,
       serverViewState = serverViewState,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
@@ -121,11 +121,15 @@ internal fun LazyListScope.renderConnectionInstructions(
 
 @TestOnly
 @Composable
-private fun PreviewConnectionInstructions(state: InfoViewState, server: TestServerState) {
+private fun PreviewConnectionInstructions(
+    state: InfoViewState,
+    server: TestServerState,
+    socks: Boolean,
+) {
   LazyColumn {
     renderConnectionInstructions(
         appName = "TEST",
-        featureFlags = makeTestFeatureFlags(),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
         serverViewState = makeTestServerState(server),
         state = state,
         onTogglePasswordVisibility = {},
@@ -138,20 +142,60 @@ private fun PreviewConnectionInstructions(state: InfoViewState, server: TestServ
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionInstructionsEmpty() {
-  PreviewConnectionInstructions(state = MutableInfoViewState(), server = TestServerState.EMPTY)
+private fun PreviewConnectionInstructionsEmptyNoSocks() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState(),
+      server = TestServerState.EMPTY,
+      socks = false,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionInstructionsActive() {
-  PreviewConnectionInstructions(state = MutableInfoViewState(), server = TestServerState.CONNECTED)
+private fun PreviewConnectionInstructionsActiveNoSocks() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState(),
+      server = TestServerState.CONNECTED,
+      socks = false,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectionInstructionsActivePassword() {
+private fun PreviewConnectionInstructionsActivePasswordNoSocks() {
   PreviewConnectionInstructions(
       state = MutableInfoViewState().apply { isPasswordVisible.value = true },
-      server = TestServerState.CONNECTED)
+      server = TestServerState.CONNECTED,
+      socks = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsEmptySocks() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState(),
+      server = TestServerState.EMPTY,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsActiveSocks() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState(),
+      server = TestServerState.CONNECTED,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectionInstructionsActivePasswordSocks() {
+  PreviewConnectionInstructions(
+      state = MutableInfoViewState().apply { isPasswordVisible.value = true },
+      server = TestServerState.CONNECTED,
+      socks = true,
+  )
 }

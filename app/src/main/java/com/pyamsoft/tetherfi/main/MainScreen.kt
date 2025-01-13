@@ -28,13 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.ui.util.rememberAsStateList
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
-import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
 
@@ -43,7 +43,7 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     appName: String,
     state: MainViewState,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     pagerState: PagerState,
     allTabs: List<MainView>,
 
@@ -91,7 +91,7 @@ fun MainScreen(
                   .heightIn(
                       min = remember(pv) { pv.calculateBottomPadding() },
                   ),
-          featureFlags = featureFlags,
+          experimentalRuntimeFlags = experimentalRuntimeFlags,
           appName = appName,
           pagerState = pagerState,
           state = state,
@@ -118,6 +118,7 @@ private fun PreviewMainScreen(
     isSettingsOpen: Boolean,
     isShowingQr: Boolean,
     isShowingSlowSpeedHelp: Boolean,
+    socks: Boolean,
 ) {
   val state =
       object : MainViewState {
@@ -149,8 +150,8 @@ private fun PreviewMainScreen(
   val allTabs = MainView.entries.rememberAsStateList()
 
   MainScreen(
-      featureFlags = makeTestFeatureFlags(),
       appName = "TEST",
+      experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
       state = state,
       pagerState = rememberPagerState { allTabs.size },
       allTabs = allTabs,
@@ -172,30 +173,70 @@ private fun PreviewMainScreen(
 
 @Preview
 @Composable
-private fun PreviewMainScreenDefault() {
-  PreviewMainScreen(isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false)
+private fun PreviewMainScreenDefaultNoSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = false)
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenSettings() {
-  PreviewMainScreen(isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false)
+private fun PreviewMainScreenSettingsNoSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = false)
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenQr() {
-  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false)
+private fun PreviewMainScreenQrNoSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false, socks = false)
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenHelp() {
-  PreviewMainScreen(isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true)
+private fun PreviewMainScreenHelpNoSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = false)
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenAll() {
-  PreviewMainScreen(isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true)
+private fun PreviewMainScreenAllNoSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = false)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenDefaultSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenSettingsSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenQrSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false, socks = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenHelpSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = true)
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenAllSocks() {
+  PreviewMainScreen(
+      isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = true)
 }

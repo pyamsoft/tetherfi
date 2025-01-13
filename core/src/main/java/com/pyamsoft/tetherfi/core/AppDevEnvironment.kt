@@ -22,9 +22,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 @Singleton
-class AppDevEnvironment @Inject constructor() {
+class AppDevEnvironment @Inject constructor() : ExperimentalRuntimeFlags {
 
   private val isGroupFakeEmpty = MutableStateFlow(false)
   private val isGroupFakeConnected = MutableStateFlow(false)
@@ -37,6 +38,8 @@ class AppDevEnvironment @Inject constructor() {
   val isBroadcastFakeError = MutableStateFlow(false)
   val isProxyFakeError = MutableStateFlow(false)
   val isYoloError = MutableStateFlow(false)
+
+  override val isSocksProxyEnabled = MutableStateFlow(false)
 
   @get:CheckResult
   val group =
@@ -84,6 +87,10 @@ class AppDevEnvironment @Inject constructor() {
 
   fun updateYolo(isError: Boolean) {
     isYoloError.value = isError
+  }
+
+  fun handleToggleSocksEnabled() {
+    isSocksProxyEnabled.update { !it }
   }
 
   @Stable

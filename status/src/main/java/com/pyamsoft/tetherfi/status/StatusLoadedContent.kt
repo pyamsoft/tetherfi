@@ -28,7 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.sections.broadcast.renderBroadcastFrequency
@@ -40,7 +40,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -53,7 +53,7 @@ internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: StatusViewState,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     serverViewState: ServerViewState,
     isEditable: Boolean,
 
@@ -82,7 +82,7 @@ internal fun LazyListScope.renderLoadedContent(
       isEditable = isEditable,
       appName = appName,
       state = state,
-      featureFlags = featureFlags,
+      experimentalRuntimeFlags = experimentalRuntimeFlags,
       serverViewState = serverViewState,
       wiDiStatus = wiDiStatus,
       proxyStatus = proxyStatus,
@@ -143,6 +143,7 @@ internal fun LazyListScope.renderLoadedContent(
 private fun PreviewLoadedContent(
     state: TestServerState,
     isEditable: Boolean,
+    socks: Boolean,
 ) {
   LazyColumn {
     renderLoadedContent(
@@ -156,7 +157,7 @@ private fun PreviewLoadedContent(
               band.value = ServerNetworkBand.LEGACY
             },
         serverViewState = makeTestServerState(state),
-        featureFlags = makeTestFeatureFlags(),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
         appName = "TEST",
         onSelectBand = {},
         onPasswordChanged = {},
@@ -179,50 +180,92 @@ private fun PreviewLoadedContent(
 
 @TestOnly
 @Composable
-private fun PreviewEmpty(isEditable: Boolean) {
+private fun PreviewEmpty(isEditable: Boolean, socks: Boolean) {
   PreviewLoadedContent(
       state = TestServerState.EMPTY,
       isEditable = isEditable,
+      socks = socks,
   )
 }
 
 @TestOnly
 @Composable
-private fun PreviewConnected(isEditable: Boolean) {
+private fun PreviewConnected(isEditable: Boolean, socks: Boolean) {
   PreviewLoadedContent(
       state = TestServerState.CONNECTED,
       isEditable = isEditable,
+      socks = socks,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyEditable() {
+private fun PreviewEmptyEditableNoSocks() {
   PreviewEmpty(
       isEditable = true,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyNoEditable() {
+private fun PreviewEmptyNoEditableNoSocks() {
   PreviewEmpty(
       isEditable = false,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectedEditable() {
+private fun PreviewConnectedEditableNoSocks() {
   PreviewConnected(
       isEditable = true,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectedNoEditable() {
+private fun PreviewConnectedNoEditableNoSocks() {
   PreviewConnected(
       isEditable = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyEditableSocks() {
+  PreviewEmpty(
+      isEditable = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyNoEditableSocks() {
+  PreviewEmpty(
+      isEditable = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedEditableSocks() {
+  PreviewConnected(
+      isEditable = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedNoEditableSocks() {
+  PreviewConnected(
+      isEditable = false,
+      socks = true,
   )
 }

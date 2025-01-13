@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -38,7 +38,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestFeatureFlags
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -50,7 +50,7 @@ private enum class RenderEditableItemsContentTypes {
 
 internal fun LazyListScope.renderEditableItems(
     modifier: Modifier = Modifier,
-    featureFlags: FeatureFlags,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     state: StatusViewState,
     serverViewState: ServerViewState,
     onSsidChanged: (String) -> Unit,
@@ -91,13 +91,16 @@ internal fun LazyListScope.renderEditableItems(
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_PORT,
   ) {
+    val isSocksProxyEnabled by
+        experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle()
+
     Row(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
     ) {
       EditHttpPort(
           modifier =
               Modifier.weight(1F).run {
-                if (featureFlags.isSocksProxyEnabled) {
+                if (isSocksProxyEnabled) {
                   padding(end = MaterialTheme.keylines.content)
                 } else {
                   this
@@ -107,7 +110,7 @@ internal fun LazyListScope.renderEditableItems(
           onPortChanged = onHttpPortChanged,
       )
 
-      if (featureFlags.isSocksProxyEnabled) {
+      if (isSocksProxyEnabled) {
         EditSocksPort(
             modifier = Modifier.weight(1F),
             state = state,
@@ -124,6 +127,7 @@ private fun PreviewEditableItems(
     ssid: String = TEST_SSID,
     password: String = TEST_PASSWORD,
     port: String = "$TEST_PORT",
+    socks: Boolean,
 ) {
   LazyColumn {
     renderEditableItems(
@@ -134,7 +138,7 @@ private fun PreviewEditableItems(
               this.password.value = password
               this.httpPort.value = port
             },
-        featureFlags = makeTestFeatureFlags(),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
         onHttpPortChanged = {},
         onSocksPortChanged = {},
         onSsidChanged = {},
@@ -147,37 +151,82 @@ private fun PreviewEditableItems(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEditableItemsBlank() {
+private fun PreviewEditableItemsBlankNoSocks() {
   PreviewEditableItems(
       ssid = "",
       password = "",
       port = "",
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEditableItemsOnlySsid() {
+private fun PreviewEditableItemsOnlySsidNoSocks() {
   PreviewEditableItems(
       password = "",
       port = "",
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEditableItemsOnlyPassword() {
+private fun PreviewEditableItemsOnlyPasswordNoSocks() {
   PreviewEditableItems(
       ssid = "",
       port = "",
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEditableItemsOnlyPort() {
+private fun PreviewEditableItemsOnlyPortNoSocks() {
   PreviewEditableItems(
       ssid = "",
       password = "",
+      socks = false,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsBlankSocks() {
+  PreviewEditableItems(
+      ssid = "",
+      password = "",
+      port = "",
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlySsidSocks() {
+  PreviewEditableItems(
+      password = "",
+      port = "",
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlyPasswordSocks() {
+  PreviewEditableItems(
+      ssid = "",
+      port = "",
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEditableItemsOnlyPortSocks() {
+  PreviewEditableItems(
+      ssid = "",
+      password = "",
+      socks = true,
   )
 }

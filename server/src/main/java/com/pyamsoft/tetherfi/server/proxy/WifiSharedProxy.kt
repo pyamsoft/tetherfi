@@ -21,7 +21,7 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.core.FeatureFlags
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
 import com.pyamsoft.tetherfi.server.ServerInternalApi
@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -57,7 +58,7 @@ internal class WifiSharedProxy
 internal constructor(
     @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
     @ServerInternalApi private val factory: ProxyManager.Factory,
-    private val featureFlags: FeatureFlags,
+    private val experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     private val enforcer: ThreadEnforcer,
     private val clientEraser: ClientEraser,
     private val startedClients: StartedClients,
@@ -154,7 +155,8 @@ internal constructor(
     }
   }
 
-  private fun CoroutineScope.proxyLoop(
+  private suspend fun proxyLoop(
+      scope: CoroutineScope,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
@@ -170,7 +172,7 @@ internal constructor(
       return
     }
 
-    launch(context = Dispatchers.Default) {
+    scope.launch(context = Dispatchers.Default) {
       beginProxyLoop(
           type = SharedProxy.Type.HTTP,
           info = info,
@@ -179,8 +181,9 @@ internal constructor(
       )
     }
 
-    if (featureFlags.isSocksProxyEnabled) {
-      launch(context = Dispatchers.Default) {
+    val isSocksProxyEnabled = experimentalRuntimeFlags.isSocksProxyEnabled.first()
+    if (isSocksProxyEnabled) {
+      scope.launch(context = Dispatchers.Default) {
         beginProxyLoop(
             type = SharedProxy.Type.SOCKS,
             info = info,
@@ -214,7 +217,7 @@ internal constructor(
   private fun CoroutineScope.watchServerReadyStatus() {
     // When all proxy bits declare they are ready, the proxy status is "ready"
     overallState
-        .map { it.isReady(featureFlags) }
+        .map { it.isReady(experimentalRuntimeFlags) }
         .filter { it }
         .also { f ->
           launch(context = Dispatchers.Default) {
@@ -257,6 +260,7 @@ internal constructor(
         // Start the proxy server loop
         launch(context = Dispatchers.Default) {
           proxyLoop(
+              scope = this,
               info = info,
               socketCreator = socketCreator,
               serverDispatcher = serverDispatcher,
@@ -370,12 +374,13 @@ internal constructor(
   private data class ProxyState(val http: Boolean, val socks: Boolean) {
 
     @CheckResult
-    fun isReady(featureFlags: FeatureFlags): Boolean {
+    suspend fun isReady(runtimeFlags: ExperimentalRuntimeFlags): Boolean {
       if (!http) {
         return false
       }
 
-      if (featureFlags.isSocksProxyEnabled) {
+      val isSocksProxyEnabled = runtimeFlags.isSocksProxyEnabled.first()
+      if (isSocksProxyEnabled) {
         if (!socks) {
           return false
         }

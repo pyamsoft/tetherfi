@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 pyamsoft
+ * Copyright 2025 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,15 @@
 
 package com.pyamsoft.tetherfi.core
 
-import androidx.annotation.CheckResult
-import dagger.Binds
-import dagger.Module
+import kotlinx.coroutines.flow.StateFlow
 
-@Module
-abstract class CoreAppModule {
+/** Run-time feature flags */
+interface ExperimentalRuntimeFlags {
 
-  @Binds @CheckResult internal abstract fun bindFeatureFlags(impl: AppFeatureFlags): FeatureFlags
-
-  @Binds
-  @CheckResult
-  internal abstract fun bindExperimentalRuntimeFlags(
-      impl: AppDevEnvironment
-  ): ExperimentalRuntimeFlags
+  /**
+   * SOCKS proxy
+   *
+   * Adapted from https://github.com/torsm/ktor-socks
+   */
+  val isSocksProxyEnabled: StateFlow<Boolean>
 }
