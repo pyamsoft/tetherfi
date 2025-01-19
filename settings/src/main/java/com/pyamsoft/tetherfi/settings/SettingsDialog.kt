@@ -91,7 +91,7 @@ fun SettingsDialog(
       Card(
           modifier = Modifier.fillMaxWidth().weight(1F),
           shape =
-              MaterialTheme.shapes.medium.copy(
+              MaterialTheme.shapes.large.copy(
                   topStart = ZeroCornerSize,
                   topEnd = ZeroCornerSize,
               ),

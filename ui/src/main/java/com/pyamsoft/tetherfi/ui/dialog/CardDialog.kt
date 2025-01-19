@@ -41,7 +41,7 @@ fun CardDialog(
   ) {
     Card(
         modifier = modifier.padding(MaterialTheme.keylines.content),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.elevatedCardElevation(),
         colors = CardDefaults.elevatedCardColors(),
         content = content,

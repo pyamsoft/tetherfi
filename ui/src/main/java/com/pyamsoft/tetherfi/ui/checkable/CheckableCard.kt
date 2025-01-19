@@ -127,7 +127,7 @@ private fun CheckableCard(
               width = 2.dp,
               color = borderColor,
           ),
-      shape = MaterialTheme.shapes.medium,
+      shape = MaterialTheme.shapes.large,
   ) {
     Column(
         modifier =

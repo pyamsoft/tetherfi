@@ -132,7 +132,7 @@ fun LazyListScope.renderLinks(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       Text(
           modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),

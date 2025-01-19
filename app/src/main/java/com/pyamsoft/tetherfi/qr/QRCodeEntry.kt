@@ -161,7 +161,7 @@ private fun QRCodeDialog(
 
       Card(
           shape =
-              MaterialTheme.shapes.medium.copy(
+              MaterialTheme.shapes.large.copy(
                   topStart = ZeroCornerSize,
                   topEnd = ZeroCornerSize,
               ),

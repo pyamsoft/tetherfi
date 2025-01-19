@@ -104,7 +104,7 @@ internal fun ConnectionItem(
   ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       Column(
           modifier = Modifier.padding(MaterialTheme.keylines.content),

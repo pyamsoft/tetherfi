@@ -70,7 +70,7 @@ internal fun LazyListScope.renderTweaks(
   ) {
     Card(
         modifier = itemModifier,
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         border =
             BorderStroke(
                 width = 2.dp,

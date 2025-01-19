@@ -172,11 +172,11 @@ private fun FullConnectionInstructions(
               .border(
                   width = 2.dp,
                   color = MaterialTheme.colorScheme.primaryContainer,
-                  shape = MaterialTheme.shapes.medium,
+                  shape = MaterialTheme.shapes.large,
               )
               .background(
                   color = MaterialTheme.colorScheme.surfaceVariant,
-                  shape = MaterialTheme.shapes.medium,
+                  shape = MaterialTheme.shapes.large,
               )
               .padding(MaterialTheme.keylines.content),
       text = linkBlurb,

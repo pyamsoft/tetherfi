@@ -73,7 +73,7 @@ fun MainTopBar(
       contentColor = MaterialTheme.colorScheme.onPrimary,
       color = MaterialTheme.colorScheme.primary,
       shape =
-          MaterialTheme.shapes.medium.copy(
+          MaterialTheme.shapes.large.copy(
               topStart = ZeroCornerSize,
               topEnd = ZeroCornerSize,
           ),

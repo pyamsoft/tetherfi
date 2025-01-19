@@ -55,7 +55,7 @@ fun DialogToolbar(
       contentColor = MaterialTheme.colorScheme.onPrimary,
       color = MaterialTheme.colorScheme.primary,
       shape =
-          MaterialTheme.shapes.medium.copy(
+          MaterialTheme.shapes.large.copy(
               bottomStart = ZeroCornerSize,
               bottomEnd = ZeroCornerSize,
           ),

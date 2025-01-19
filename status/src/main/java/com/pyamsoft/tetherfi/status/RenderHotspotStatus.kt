@@ -63,7 +63,7 @@ internal fun LazyListScope.renderHotspotStatus(
                         alpha = TypographyDefaults.ALPHA_DISABLED,
                     ),
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       Row(
           modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),

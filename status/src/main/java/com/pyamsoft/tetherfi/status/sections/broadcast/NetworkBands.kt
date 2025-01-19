@@ -113,14 +113,14 @@ internal fun NetworkBands(
                           MaterialTheme.colorScheme.secondary.copy(
                               alpha = surfaceAlpha(isEditable),
                           ),
-                      shape = MaterialTheme.shapes.medium,
+                      shape = MaterialTheme.shapes.large,
                   )
                   .background(
                       color =
                           MaterialTheme.colorScheme.secondaryContainer.copy(
                               alpha = surfaceAlpha(isEditable),
                           ),
-                      shape = MaterialTheme.shapes.medium,
+                      shape = MaterialTheme.shapes.large,
                   )
                   .padding(MaterialTheme.keylines.content),
           text = stringResource(R.string.network_bands_system_defined),

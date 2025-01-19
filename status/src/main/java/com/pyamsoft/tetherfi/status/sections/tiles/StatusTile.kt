@@ -38,7 +38,7 @@ internal fun StatusTile(
               width = 2.dp,
               color = if (enabled) borderColor else MaterialTheme.colorScheme.onSurfaceVariant,
           ),
-      shape = MaterialTheme.shapes.medium,
+      shape = MaterialTheme.shapes.large,
   ) {
     content()
   }

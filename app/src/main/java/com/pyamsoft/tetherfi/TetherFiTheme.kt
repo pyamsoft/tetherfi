@@ -22,11 +22,9 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.CheckResult
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -35,9 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.PYDroidTheme
-import com.pyamsoft.pydroid.ui.app.LocalActivity
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.pydroid.ui.haptics.rememberHapticManager
 import com.pyamsoft.pydroid.ui.theme.Theming
@@ -202,17 +198,6 @@ private fun themeColors(
 }
 
 @Composable
-@CheckResult
-private fun themeShapes(): Shapes {
-  return remember {
-    Shapes(
-        // Don't use MaterialTheme here since we are defining the theme
-        medium = RoundedCornerShape(16.dp),
-    )
-  }
-}
-
-@Composable
 fun ComponentActivity.TetherFiTheme(
     theme: Theming.Mode,
     isMaterialYou: Boolean,
@@ -226,7 +211,6 @@ fun ComponentActivity.TetherFiTheme(
 
   PYDroidTheme(
       colorScheme = themeColors(self, isDarkMode, isMaterialYou),
-      shapes = themeShapes(),
   ) {
     CompositionLocalProvider(
         // We update the LocalContentColor to match our onBackground. This allows the default
@@ -235,9 +219,6 @@ fun ComponentActivity.TetherFiTheme(
 
         // We provide the local haptic manager since PYDroid makes it optional
         LocalHapticManager provides hapticManager,
-
-        // We provide the local Activity for performance optimization
-        LocalActivity provides self,
 
         // We provide external URI handler
         LocalExternalUriHandler provides uriHandler,

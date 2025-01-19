@@ -66,7 +66,7 @@ internal fun LazyListScope.renderExpertSettings(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       BroadcastTypeSelection(
           modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
@@ -88,7 +88,7 @@ internal fun LazyListScope.renderExpertSettings(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       PreferredNetworkSelection(
           modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
@@ -110,7 +110,7 @@ internal fun LazyListScope.renderExpertSettings(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       PowerBalance(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
@@ -131,7 +131,7 @@ internal fun LazyListScope.renderExpertSettings(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
     ) {
       SocketTimeout(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
