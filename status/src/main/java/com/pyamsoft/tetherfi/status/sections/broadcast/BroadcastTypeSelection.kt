@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 pyamsoft
+ * Copyright 2025 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.behavior.sections.expert
+package com.pyamsoft.tetherfi.status.sections.broadcast
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,8 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.pyamsoft.tetherfi.behavior.R
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private val BROADCAST_STRINGS =

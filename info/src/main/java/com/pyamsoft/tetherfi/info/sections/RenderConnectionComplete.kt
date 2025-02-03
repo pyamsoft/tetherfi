@@ -16,11 +16,12 @@
 
 package com.pyamsoft.tetherfi.info.sections
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -166,22 +167,21 @@ private fun FullConnectionInstructions(
             .toAnnotatedString()
       }
 
-  Text(
-      modifier =
-          modifier
-              .border(
-                  width = 2.dp,
-                  color = MaterialTheme.colorScheme.primaryContainer,
-                  shape = MaterialTheme.shapes.large,
-              )
-              .background(
-                  color = MaterialTheme.colorScheme.surfaceVariant,
-                  shape = MaterialTheme.shapes.large,
-              )
-              .padding(MaterialTheme.keylines.content),
-      text = linkBlurb,
-      style = MaterialTheme.typography.bodyLarge,
-  )
+  Card(
+      modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
+      border =
+          BorderStroke(
+              width = 2.dp,
+              color = MaterialTheme.colorScheme.primaryContainer,
+          ),
+      shape = MaterialTheme.shapes.large,
+  ) {
+    Text(
+        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.content),
+        text = linkBlurb,
+        style = MaterialTheme.typography.bodyLarge,
+    )
+  }
 }
 
 @Composable

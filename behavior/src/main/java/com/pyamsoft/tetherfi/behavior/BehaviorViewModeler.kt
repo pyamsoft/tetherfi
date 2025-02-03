@@ -27,8 +27,6 @@ import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.StatusPreferences
 import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -299,14 +297,6 @@ internal constructor(
   fun handleUpdatePowerBalance(limit: ServerPerformanceLimit) {
     val newVal = state.powerBalance.updateAndGet { limit }
     expertPreferences.setServerPerformanceLimit(newVal)
-  }
-
-  fun handleUpdateBroadcastType(type: BroadcastType) {
-    expertPreferences.setBroadcastType(type)
-  }
-
-  fun handleUpdatePreferredNetwork(network: PreferredNetwork) {
-    expertPreferences.setPreferredNetwork(network)
   }
 
   fun handleUpdateSocketTimeout(timeout: ServerSocketTimeout) {

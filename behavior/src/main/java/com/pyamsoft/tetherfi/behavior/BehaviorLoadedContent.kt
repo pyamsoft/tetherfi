@@ -31,13 +31,7 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.behavior.sections.expert.renderExpertSettings
 import com.pyamsoft.tetherfi.behavior.sections.operating.renderOperatingSettings
 import com.pyamsoft.tetherfi.behavior.sections.tweaks.renderTweaks
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import com.pyamsoft.tetherfi.ui.ServerViewState
-import com.pyamsoft.tetherfi.ui.renderLinks
-import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
 private enum class BehaviorLoadedContentTypes {
@@ -49,7 +43,6 @@ internal fun LazyListScope.renderLoadedContent(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: BehaviorViewState,
-    serverViewState: ServerViewState,
     isEditable: Boolean,
 
     // Battery
@@ -68,8 +61,6 @@ internal fun LazyListScope.renderLoadedContent(
     // Expert
     onShowPowerBalance: () -> Unit,
     onShowSocketTimeout: () -> Unit,
-    onSelectBroadcastType: (BroadcastType) -> Unit,
-    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   renderOperatingSettings(
       itemModifier = itemModifier,
@@ -102,26 +93,10 @@ internal fun LazyListScope.renderLoadedContent(
 
   renderExpertSettings(
       itemModifier = itemModifier,
-      serverViewState = serverViewState,
       isEditable = isEditable,
       appName = appName,
       onShowPowerBalance = onShowPowerBalance,
       onShowSocketTimeout = onShowSocketTimeout,
-      onSelectBroadcastType = onSelectBroadcastType,
-      onSelectPreferredNetwork = onSelectPreferredNetwork,
-  )
-
-  item(
-      contentType = BehaviorLoadedContentTypes.SPACER,
-  ) {
-    Spacer(
-        modifier = itemModifier.height(MaterialTheme.keylines.baseline),
-    )
-  }
-
-  renderLinks(
-      modifier = itemModifier,
-      appName = appName,
   )
 
   item(
@@ -137,7 +112,6 @@ internal fun LazyListScope.renderLoadedContent(
 @TestOnly
 @Composable
 private fun PreviewLoadedContent(
-    state: TestServerState,
     isEditable: Boolean,
     showNotifications: Boolean,
 ) {
@@ -148,7 +122,6 @@ private fun PreviewLoadedContent(
             MutableBehaviorViewState().apply {
               loadingState.value = BehaviorViewState.LoadingState.DONE
             },
-        serverViewState = makeTestServerState(state),
         appName = "TEST",
         onRequestNotificationPermission = {},
         onOpenBatterySettings = {},
@@ -160,8 +133,6 @@ private fun PreviewLoadedContent(
         showNotificationSettings = showNotifications,
         onToggleKeepScreenOn = {},
         onToggleIgnoreLocation = {},
-        onSelectBroadcastType = {},
-        onSelectPreferredNetwork = {},
     )
   }
 }
@@ -170,7 +141,6 @@ private fun PreviewLoadedContent(
 @Composable
 private fun PreviewEmpty(isEditable: Boolean, showNotifications: Boolean) {
   PreviewLoadedContent(
-      state = TestServerState.EMPTY,
       isEditable = isEditable,
       showNotifications = showNotifications,
   )
@@ -180,7 +150,6 @@ private fun PreviewEmpty(isEditable: Boolean, showNotifications: Boolean) {
 @Composable
 private fun PreviewConnected(isEditable: Boolean, showNotifications: Boolean) {
   PreviewLoadedContent(
-      state = TestServerState.CONNECTED,
       isEditable = isEditable,
       showNotifications = showNotifications,
   )

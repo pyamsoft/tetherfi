@@ -36,6 +36,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.LoadingSpinner
@@ -79,6 +81,10 @@ fun StatusScreen(
     // Status buttons
     onShowQRCode: () -> Unit,
     onRefreshConnection: () -> Unit,
+
+    // Proxy Behavior
+    onSelectBroadcastType: (BroadcastType) -> Unit,
+    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 
     // Errors
     onShowNetworkError: () -> Unit,
@@ -216,6 +222,8 @@ fun StatusScreen(
             onShowNetworkError = onShowNetworkError,
             onJumpToHowTo = onJumpToHowTo,
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
+            onSelectBroadcastType = onSelectBroadcastType,
+            onSelectPreferredNetwork = onSelectPreferredNetwork,
         )
       }
     }
@@ -262,6 +270,8 @@ private fun PreviewStatusScreen(
       onShowBroadcastError = {},
       onShowProxyError = {},
       onViewSlowSpeedHelp = {},
+      onSelectBroadcastType = {},
+      onSelectPreferredNetwork = {},
   )
 }
 

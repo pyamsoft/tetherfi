@@ -44,38 +44,35 @@ fun Label(
     textAlign: TextAlign? = null,
     onAction: (() -> Unit)? = null,
 ) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = text,
-            textAlign = textAlign,
-            style =
+  Row(
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.Center,
+  ) {
+    Text(
+        text = text,
+        textAlign = textAlign,
+        style =
             MaterialTheme.typography.labelMedium.copy(
                 color = color,
             ),
-        )
+    )
 
-        onAction.also { click ->
-            AnimatedVisibility(
-                visible = click != null,
-            ) {
-                Icon(
-                    modifier =
-                    Modifier
-                        .padding(start = MaterialTheme.keylines.content)
-                        .size(24.dp)
-                        .clickable(
-                            enabled = click != null,
-                        ) {
-                            click?.invoke()
-                        },
-                    imageVector = Icons.Filled.Info,
-                    contentDescription = stringResource(R.string.view_information),
-                )
-            }
-        }
+    onAction.also { click ->
+      AnimatedVisibility(
+          visible = click != null,
+      ) {
+        Icon(
+            modifier =
+                Modifier.padding(start = MaterialTheme.keylines.content).size(24.dp).clickable(
+                    enabled = click != null,
+                ) {
+                  click?.invoke()
+                },
+            imageVector = Icons.Filled.Info,
+            contentDescription = stringResource(R.string.view_information),
+        )
+      }
     }
+  }
 }

@@ -36,13 +36,12 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.tetherfi.server.ServerPerformanceLimit
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.LoadingSpinner
 import com.pyamsoft.tetherfi.ui.STATIC_HOTSPOT_ERROR
 import com.pyamsoft.tetherfi.ui.ServerViewState
+import com.pyamsoft.tetherfi.ui.renderLinks
 import com.pyamsoft.tetherfi.ui.renderPYDroidExtras
 import com.pyamsoft.tetherfi.ui.test.TestServerState
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
@@ -79,8 +78,6 @@ fun BehaviorScreen(
     onShowSocketTimeout: () -> Unit,
     onHideSocketTimeout: () -> Unit,
     onUpdateSocketTimeout: (ServerSocketTimeout) -> Unit,
-    onSelectBroadcastType: (BroadcastType) -> Unit,
-    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   val wiDiStatus by serverViewState.wiDiStatus.collectAsStateWithLifecycle()
   val proxyStatus by serverViewState.proxyStatus.collectAsStateWithLifecycle()
@@ -124,6 +121,7 @@ fun BehaviorScreen(
           is RunningStatus.Running,
           is RunningStatus.Starting,
           is RunningStatus.Stopping -> false
+
           else -> true
         }
       }
@@ -141,6 +139,11 @@ fun BehaviorScreen(
         modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
     )
 
+    renderLinks(
+        modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        appName = appName,
+    )
+
     when (loadingState) {
       BehaviorViewState.LoadingState.NONE,
       BehaviorViewState.LoadingState.LOADING -> {
@@ -154,13 +157,13 @@ fun BehaviorScreen(
           )
         }
       }
+
       BehaviorViewState.LoadingState.DONE -> {
         renderLoadedContent(
             // Not widthIn because a TextField does not take up "all" by default
             itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
             appName = appName,
             state = state,
-            serverViewState = serverViewState,
             isEditable = isEditable,
             showNotificationSettings = showNotificationSettings,
             onOpenBatterySettings = onOpenBatterySettings,
@@ -170,8 +173,6 @@ fun BehaviorScreen(
             onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
             onShowPowerBalance = onShowPowerBalance,
             onToggleKeepScreenOn = onToggleKeepScreenOn,
-            onSelectBroadcastType = onSelectBroadcastType,
-            onSelectPreferredNetwork = onSelectPreferredNetwork,
             onShowSocketTimeout = onShowSocketTimeout,
         )
       }
@@ -212,8 +213,6 @@ private fun PreviewBehaviorScreen(
       onHidePowerBalance = {},
       onShowPowerBalance = {},
       onToggleKeepScreenOn = {},
-      onSelectBroadcastType = {},
-      onSelectPreferredNetwork = {},
       onUpdateSocketTimeout = {},
       onHideSocketTimeout = {},
       onShowSocketTimeout = {},

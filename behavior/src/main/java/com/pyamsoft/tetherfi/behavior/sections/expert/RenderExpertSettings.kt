@@ -24,27 +24,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pyamsoft.pydroid.theme.keylines
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
-import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import com.pyamsoft.tetherfi.ui.ServerViewState
 
 private enum class ExpertSettingsContentTypes {
   SETTINGS,
   POWER_BALANCE,
   SOCKET_TIMEOUT,
-  BROADCAST_TYPE,
-  PREFERRED_NETWORK,
 }
 
 internal fun LazyListScope.renderExpertSettings(
     itemModifier: Modifier = Modifier,
-    serverViewState: ServerViewState,
     isEditable: Boolean,
     appName: String,
     onShowPowerBalance: () -> Unit,
     onShowSocketTimeout: () -> Unit,
-    onSelectBroadcastType: (BroadcastType) -> Unit,
-    onSelectPreferredNetwork: (PreferredNetwork) -> Unit,
 ) {
   item(
       contentType = ExpertSettingsContentTypes.SETTINGS,
@@ -54,50 +46,6 @@ internal fun LazyListScope.renderExpertSettings(
         isEditable = isEditable,
         appName = appName,
     )
-  }
-
-  item(
-      contentType = ExpertSettingsContentTypes.BROADCAST_TYPE,
-  ) {
-    Card(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
-        border =
-            BorderStroke(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        shape = MaterialTheme.shapes.large,
-    ) {
-      BroadcastTypeSelection(
-          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
-          serverViewState = serverViewState,
-          appName = appName,
-          isEditable = isEditable,
-          onSelectBroadcastType = onSelectBroadcastType,
-      )
-    }
-  }
-
-  item(
-      contentType = ExpertSettingsContentTypes.PREFERRED_NETWORK,
-  ) {
-    Card(
-        modifier = itemModifier.padding(bottom = MaterialTheme.keylines.content),
-        border =
-            BorderStroke(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        shape = MaterialTheme.shapes.large,
-    ) {
-      PreferredNetworkSelection(
-          modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
-          serverViewState = serverViewState,
-          appName = appName,
-          isEditable = isEditable,
-          onSelectPreferredNetwork = onSelectPreferredNetwork,
-      )
-    }
   }
 
   item(

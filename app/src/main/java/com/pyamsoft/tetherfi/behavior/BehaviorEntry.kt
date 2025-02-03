@@ -189,8 +189,6 @@ fun BehaviorEntry(
       onShowPowerBalance = { viewModel.handleOpenDialog(BehaviorViewDialogs.POWER_BALANCE) },
       onHidePowerBalance = { viewModel.handleCloseDialog(BehaviorViewDialogs.POWER_BALANCE) },
       onUpdatePowerBalance = { viewModel.handleUpdatePowerBalance(it) },
-      onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
-      onSelectPreferredNetwork = { viewModel.handleUpdatePreferredNetwork(it) },
       onHideSocketTimeout = { viewModel.handleCloseDialog(BehaviorViewDialogs.SOCKET_TIMEOUT) },
       onShowSocketTimeout = { viewModel.handleOpenDialog(BehaviorViewDialogs.SOCKET_TIMEOUT) },
       onUpdateSocketTimeout = { viewModel.handleUpdateSocketTimeout(it) },

@@ -125,5 +125,7 @@ fun StatusEntry(
       onShowHotspotError = { handleOpenHotspotError() },
       onShowProxyError = { handleOpenProxyError() },
       onShowBroadcastError = { handleOpenBroadcastError() },
+      onSelectBroadcastType = { viewModel.handleUpdateBroadcastType(it) },
+      onSelectPreferredNetwork = { viewModel.handleUpdatePreferredNetwork(it) },
   )
 }
