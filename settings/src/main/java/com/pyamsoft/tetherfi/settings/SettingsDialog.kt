@@ -232,7 +232,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isYoloError by
         appEnvironment.isYoloError.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_YOLO_FAKE_ERROR_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.yolo_title),
@@ -247,7 +247,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isBroadcastFakeError by
         appEnvironment.isBroadcastFakeError.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_BROADCAST_FAKE_ERROR_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.broadcast_title),
@@ -262,7 +262,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isProxyFakeError by
         appEnvironment.isProxyFakeError.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_PROXY_FAKE_ERROR_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.proxy_title),
@@ -277,7 +277,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isGroupFakeEmpty by
         appEnvironment.group.isEmpty.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.empty_group_title),
@@ -292,7 +292,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isGroupFakeConnected by
         appEnvironment.group.isConnected.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.connected_group_title),
@@ -307,7 +307,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isGroupFakeError by
         appEnvironment.group.isError.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.error_group_title),
@@ -322,7 +322,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isConnectionFakeEmpty by
         appEnvironment.connection.isEmpty.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.empty_connection_title),
@@ -337,7 +337,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isConnectionFakeConnected by
         appEnvironment.connection.isConnected.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.connected_connection_title),
@@ -352,7 +352,7 @@ private fun LazyListScope.renderExtraDebugContent(
   ) {
     val isConnectionFakeError by
         appEnvironment.connection.isError.collectAsStateWithLifecycle(
-            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+            AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
         title = stringResource(R.string.error_connection_title),

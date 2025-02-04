@@ -133,4 +133,13 @@ constructor(
       val isConnected: Flow<Boolean>,
       val isError: Flow<Boolean>,
   )
+
+  object Defaults {
+    const val IS_BROADCAST_FAKE_ERROR_INITIAL_STATE: Boolean = false
+    const val IS_PROXY_FAKE_ERROR_INITIAL_STATE: Boolean = false
+    const val IS_YOLO_FAKE_ERROR_INITIAL_STATE: Boolean = false
+
+    const val IS_GROUP_FIELD_INITIAL_STATE: Boolean = false
+    const val IS_CONNECTION_FIELD_INITIAL_STATE: Boolean = false
+  }
 }
