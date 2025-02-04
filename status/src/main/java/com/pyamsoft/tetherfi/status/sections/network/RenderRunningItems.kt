@@ -183,26 +183,26 @@ private fun PreviewRunningItemsErrorNoSocks() {
 @Composable
 @Preview(showBackground = true)
 private fun PreviewRunningItemsEmptySocks() {
-    PreviewRunningItems(
-        server = TestServerState.EMPTY,
-        socks = true,
-    )
+  PreviewRunningItems(
+      server = TestServerState.EMPTY,
+      socks = true,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewRunningItemsConnectedSocks() {
-    PreviewRunningItems(
-        server = TestServerState.CONNECTED,
-        socks = true,
-    )
+  PreviewRunningItems(
+      server = TestServerState.CONNECTED,
+      socks = true,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewRunningItemsErrorSocks() {
-    PreviewRunningItems(
-        server = TestServerState.ERROR,
-        socks = true,
-    )
+  PreviewRunningItems(
+      server = TestServerState.ERROR,
+      socks = true,
+  )
 }

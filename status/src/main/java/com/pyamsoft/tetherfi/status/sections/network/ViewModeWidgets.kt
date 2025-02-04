@@ -47,6 +47,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.status.sections.StatusItem
+import com.pyamsoft.tetherfi.ui.R as R2
 import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.dialog.SlowSpeedsUpsell
 import com.pyamsoft.tetherfi.ui.icons.Visibility
@@ -55,7 +56,6 @@ import com.pyamsoft.tetherfi.ui.rememberPortNumber
 import com.pyamsoft.tetherfi.ui.rememberServerHostname
 import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
-import com.pyamsoft.tetherfi.ui.R as R2
 
 @Composable
 internal fun ViewProxy(
@@ -63,57 +63,58 @@ internal fun ViewProxy(
     experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     serverViewState: ServerViewState,
 ) {
-    val connection by serverViewState.connection.collectAsStateWithLifecycle()
-    val ipAddress = rememberServerHostname(connection)
+  val connection by serverViewState.connection.collectAsStateWithLifecycle()
+  val ipAddress = rememberServerHostname(connection)
 
-    val httpPortNumber by serverViewState.httpPort.collectAsStateWithLifecycle()
-    val socksPortNumber by serverViewState.socksPort.collectAsStateWithLifecycle()
-    val httpPort = rememberPortNumber(httpPortNumber)
-    val socksPort = rememberPortNumber(socksPortNumber)
+  val httpPortNumber by serverViewState.httpPort.collectAsStateWithLifecycle()
+  val socksPortNumber by serverViewState.socksPort.collectAsStateWithLifecycle()
+  val httpPort = rememberPortNumber(httpPortNumber)
+  val socksPort = rememberPortNumber(socksPortNumber)
 
-    val isSocksProxyEnabled by experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle()
+  val isSocksProxyEnabled by
+      experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = modifier,
-    ) {
-        StatusItem(
-            modifier = Modifier.padding(vertical = MaterialTheme.keylines.baseline),
-            title = stringResource(R.string.viewmode_hotspot_hostname),
-            value = ipAddress,
-            valueStyle =
+  Column(
+      modifier = modifier,
+  ) {
+    StatusItem(
+        modifier = Modifier.padding(vertical = MaterialTheme.keylines.baseline),
+        title = stringResource(R.string.viewmode_hotspot_hostname),
+        value = ipAddress,
+        valueStyle =
             MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
-        )
+    )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            StatusItem(
-                modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-                title = stringResource(R.string.viewmode_hotspot_http_port),
-                value = httpPort,
-                valueStyle =
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+      StatusItem(
+          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+          title = stringResource(R.string.viewmode_hotspot_http_port),
+          value = httpPort,
+          valueStyle =
+              MaterialTheme.typography.titleLarge.copy(
+                  fontWeight = FontWeight.W400,
+                  fontFamily = FontFamily.Monospace,
+              ),
+      )
+
+      if (isSocksProxyEnabled) {
+        StatusItem(
+            title = stringResource(R.string.viewmode_hotspot_socks_port),
+            value = socksPort,
+            valueStyle =
                 MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.W400,
                     fontFamily = FontFamily.Monospace,
                 ),
-            )
-
-            if (isSocksProxyEnabled) {
-                StatusItem(
-                    title = stringResource(R.string.viewmode_hotspot_socks_port),
-                    value = socksPort,
-                    valueStyle =
-                    MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.W400,
-                        fontFamily = FontFamily.Monospace,
-                    ),
-                )
-            }
-        }
+        )
+      }
     }
+  }
 }
 
 @Composable
@@ -123,50 +124,49 @@ internal fun ViewPassword(
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
 ) {
-    val hapticManager = LocalHapticManager.current
-    val group by serverViewState.group.collectAsStateWithLifecycle()
-    val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
-    val password = rememberServerPassword(group, isPasswordVisible)
+  val hapticManager = LocalHapticManager.current
+  val group by serverViewState.group.collectAsStateWithLifecycle()
+  val isPasswordVisible by state.isPasswordVisible.collectAsStateWithLifecycle()
+  val password = rememberServerPassword(group, isPasswordVisible)
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        StatusItem(
-            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-            title = stringResource(R.string.viewmode_hotspot_password),
-            value = password,
-            valueStyle =
+  Row(
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
+  ) {
+    StatusItem(
+        modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+        title = stringResource(R.string.viewmode_hotspot_password),
+        value = password,
+        valueStyle =
             MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.W400,
                 fontFamily = FontFamily.Monospace,
             ),
-        )
+    )
 
-        if (group is BroadcastNetworkStatus.GroupInfo.Connected) {
-            IconToggleButton(
-                checked = isPasswordVisible,
-                onCheckedChange = { newVisible ->
-                    if (newVisible) {
-                        hapticManager?.toggleOn()
-                    } else {
-                        hapticManager?.toggleOff()
-                    }
-                    onTogglePasswordVisibility()
-                },
-            ) {
-                Icon(
-                    imageVector =
-                    if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                    contentDescription =
-                    stringResource(
-                        if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden
-                    ),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
+    if (group is BroadcastNetworkStatus.GroupInfo.Connected) {
+      IconToggleButton(
+          checked = isPasswordVisible,
+          onCheckedChange = { newVisible ->
+            if (newVisible) {
+              hapticManager?.toggleOn()
+            } else {
+              hapticManager?.toggleOff()
             }
-        }
+            onTogglePasswordVisibility()
+          },
+      ) {
+        Icon(
+            imageVector =
+                if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+            contentDescription =
+                stringResource(
+                    if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+      }
     }
+  }
 }
 
 @Composable
@@ -174,19 +174,19 @@ internal fun ViewSsid(
     modifier: Modifier = Modifier,
     serverViewState: ServerViewState,
 ) {
-    val group by serverViewState.group.collectAsStateWithLifecycle()
-    val ssid = rememberServerSSID(group)
+  val group by serverViewState.group.collectAsStateWithLifecycle()
+  val ssid = rememberServerSSID(group)
 
-    StatusItem(
-        modifier = modifier.padding(end = MaterialTheme.keylines.content),
-        title = stringResource(R.string.viewmode_hotspot_name),
-        value = ssid,
-        valueStyle =
-        MaterialTheme.typography.titleLarge.copy(
-            fontWeight = FontWeight.W400,
-            fontFamily = FontFamily.Monospace,
-        ),
-    )
+  StatusItem(
+      modifier = modifier.padding(end = MaterialTheme.keylines.content),
+      title = stringResource(R.string.viewmode_hotspot_name),
+      value = ssid,
+      valueStyle =
+          MaterialTheme.typography.titleLarge.copy(
+              fontWeight = FontWeight.W400,
+              fontFamily = FontFamily.Monospace,
+          ),
+  )
 }
 
 @Composable
@@ -195,77 +195,77 @@ internal fun ViewInstructions(
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
 ) {
-    val handlePlaceholderLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
-        if (link is LinkAnnotation.Clickable) {
-            onJumpToHowTo()
-        }
+  val handlePlaceholderLinkClicked by rememberUpdatedState { link: LinkAnnotation ->
+    if (link is LinkAnnotation.Clickable) {
+      onJumpToHowTo()
     }
+  }
 
-    val linkColor = MaterialTheme.colorScheme.primary
+  val linkColor = MaterialTheme.colorScheme.primary
 
-    val setupText = stringResource(R.string.viewmode_setup_instructions)
-    val rawBlurb = stringResource(R.string.viewmode_setup_view_instructions, setupText)
-    val text =
-        remember(
-            linkColor,
-            rawBlurb,
-            setupText,
-        ) {
-            val setupIndex = rawBlurb.indexOf(setupText)
+  val setupText = stringResource(R.string.viewmode_setup_instructions)
+  val rawBlurb = stringResource(R.string.viewmode_setup_view_instructions, setupText)
+  val text =
+      remember(
+          linkColor,
+          rawBlurb,
+          setupText,
+      ) {
+        val setupIndex = rawBlurb.indexOf(setupText)
 
-            val linkStyle =
-                SpanStyle(
-                    color = linkColor,
-                    textDecoration = TextDecoration.Underline,
-                )
+        val linkStyle =
+            SpanStyle(
+                color = linkColor,
+                textDecoration = TextDecoration.Underline,
+            )
 
-            val spanStyles =
-                listOf(
-                    AnnotatedString.Range(
-                        linkStyle,
-                        start = setupIndex,
-                        end = setupIndex + setupText.length,
-                    ),
-                )
+        val spanStyles =
+            listOf(
+                AnnotatedString.Range(
+                    linkStyle,
+                    start = setupIndex,
+                    end = setupIndex + setupText.length,
+                ),
+            )
 
-            val visualString =
-                AnnotatedString(
-                    rawBlurb,
-                    spanStyles = spanStyles,
-                )
+        val visualString =
+            AnnotatedString(
+                rawBlurb,
+                spanStyles = spanStyles,
+            )
 
-            // Can only add annotations to builders
-            return@remember AnnotatedString.Builder(visualString)
-                .apply {
-                    addLink(
-                        clickable =
-                        LinkAnnotation.Clickable(
-                            tag = "Placeholder, onClick handled in code",
-                            linkInteractionListener = { handlePlaceholderLinkClicked(it) },
-                        ),
-                        start = setupIndex,
-                        end = setupIndex + setupText.length,
-                    )
-                }
-                .toAnnotatedString()
-        }
+        // Can only add annotations to builders
+        return@remember AnnotatedString.Builder(visualString)
+            .apply {
+              addLink(
+                  clickable =
+                      LinkAnnotation.Clickable(
+                          tag = "Placeholder, onClick handled in code",
+                          linkInteractionListener = { handlePlaceholderLinkClicked(it) },
+                      ),
+                  start = setupIndex,
+                  end = setupIndex + setupText.length,
+              )
+            }
+            .toAnnotatedString()
+      }
 
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            style =
+  Column(
+      modifier = modifier,
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center,
+  ) {
+    Text(
+        style =
             MaterialTheme.typography.bodyMedium.copy(
                 textAlign = TextAlign.Center,
             ),
-            text = text,
-        )
+        text = text,
+    )
 
-        SlowSpeedsUpsell(
-            style = MaterialTheme.typography.bodyMedium,
-            onClick = onViewSlowSpeedHelp,
-        )
-    }
+    SlowSpeedsUpsell(
+        style = MaterialTheme.typography.bodyMedium,
+        onClick = onViewSlowSpeedHelp,
+    )
+  }
 }

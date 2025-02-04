@@ -88,8 +88,6 @@ protected constructor(
                               port = destinationPort.toInt(),
                           )
 
-                      Timber.d { "SOCKS CONNECT => $remote" }
-
                       // This function uses our custom build of KTOR
                       // which adds the [onBeforeConnect] hook to allow us
                       // to use the socket created BEFORE connection starts.

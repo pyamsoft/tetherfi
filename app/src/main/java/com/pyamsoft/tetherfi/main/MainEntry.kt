@@ -291,6 +291,7 @@ fun MainEntry(
                     max = LANDSCAPE_MAX_WIDTH,
                 ),
         appEnvironment = appEnvironment,
+        serverViewState = viewModel,
         onDismiss = { viewModel.handleCloseDialog(MainViewDialogs.SETTINGS) },
     )
   }

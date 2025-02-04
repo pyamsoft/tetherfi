@@ -44,6 +44,8 @@ import com.pyamsoft.pydroid.ui.defaults.TypographyDefaults
 import com.pyamsoft.pydroid.ui.settings.SettingsPage
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.ui.ServerViewState
 import com.pyamsoft.tetherfi.ui.dialog.DialogToolbar
 
 private enum class SettingsContentTypes {
@@ -65,12 +67,20 @@ private enum class SettingsContentTypes {
 fun SettingsDialog(
     modifier: Modifier = Modifier,
     appEnvironment: AppDevEnvironment,
+    serverViewState: ServerViewState,
     onDismiss: () -> Unit,
 ) {
   val context = LocalContext.current
   val baselinePadding = MaterialTheme.keylines.baseline
   val itemModifier =
       remember(baselinePadding) { Modifier.fillMaxWidth().padding(bottom = baselinePadding) }
+
+  val wifiStatus by serverViewState.wiDiStatus.collectAsStateWithLifecycle()
+  val proxyStatus by serverViewState.proxyStatus.collectAsStateWithLifecycle()
+  val isEnabled =
+      remember(wifiStatus, proxyStatus) {
+        wifiStatus == RunningStatus.NotRunning && proxyStatus == RunningStatus.NotRunning
+      }
 
   Dialog(
       properties = rememberDialogProperties(),
@@ -106,6 +116,7 @@ fun SettingsDialog(
               if (context.isDebugMode()) {
                 renderExperiments(
                     itemModifier = itemModifier,
+                    isEnabled = isEnabled,
                     appEnvironment = appEnvironment,
                 )
 
@@ -124,6 +135,7 @@ fun SettingsDialog(
 @Composable
 private fun DebugItem(
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     title: String,
     description: String,
     checked: Boolean,
@@ -149,6 +161,7 @@ private fun DebugItem(
       )
     }
     Checkbox(
+        enabled = isEnabled,
         checked = checked,
         onCheckedChange = onCheckedChange,
     )
@@ -157,6 +170,7 @@ private fun DebugItem(
 
 private fun LazyListScope.renderExperiments(
     itemModifier: Modifier = Modifier,
+    isEnabled: Boolean,
     appEnvironment: AppDevEnvironment,
 ) {
   item(
@@ -189,6 +203,7 @@ private fun LazyListScope.renderExperiments(
     val isSocksProxyEnabled by appEnvironment.isSocksProxyEnabled.collectAsStateWithLifecycle()
     DebugItem(
         modifier = itemModifier,
+        isEnabled = isEnabled,
         title = stringResource(R.string.runtime_flag_enable_socks_proxy_title),
         description = stringResource(R.string.runtime_flag_enable_socks_proxy_description),
         checked = isSocksProxyEnabled,

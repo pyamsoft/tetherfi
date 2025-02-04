@@ -55,4 +55,5 @@ dependencies {
 
   implementation(project(":core"))
   implementation(project(":ui"))
+  implementation(project(":server"))
 }
