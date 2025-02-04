@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
+import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -37,6 +38,7 @@ import com.pyamsoft.tetherfi.ui.test.TEST_PASSWORD
 import com.pyamsoft.tetherfi.ui.test.TEST_PORT
 import com.pyamsoft.tetherfi.ui.test.TEST_SSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
+import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -50,6 +52,7 @@ private enum class RenderRunningItemsContentTypes {
 
 internal fun LazyListScope.renderRunningItems(
     modifier: Modifier = Modifier,
+    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     state: StatusViewState,
     serverViewState: ServerViewState,
     onTogglePasswordVisibility: () -> Unit,
@@ -103,6 +106,7 @@ internal fun LazyListScope.renderRunningItems(
   ) {
     ViewProxy(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+        experimentalRuntimeFlags = experimentalRuntimeFlags,
         serverViewState = serverViewState,
     )
   }
@@ -125,11 +129,13 @@ internal fun LazyListScope.renderRunningItems(
 @Composable
 private fun PreviewRunningItems(
     server: TestServerState,
+    socks: Boolean,
 ) {
   LazyColumn {
     renderRunningItems(
         modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
         serverViewState = makeTestServerState(server),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
         state =
             MutableStatusViewState().apply {
               this.ssid.value = TEST_SSID
@@ -149,24 +155,54 @@ private fun PreviewRunningItems(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsEmpty() {
+private fun PreviewRunningItemsEmptyNoSocks() {
   PreviewRunningItems(
       server = TestServerState.EMPTY,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsConnected() {
+private fun PreviewRunningItemsConnectedNoSocks() {
   PreviewRunningItems(
       server = TestServerState.CONNECTED,
+      socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsError() {
+private fun PreviewRunningItemsErrorNoSocks() {
   PreviewRunningItems(
       server = TestServerState.ERROR,
+      socks = false,
   )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsEmptySocks() {
+    PreviewRunningItems(
+        server = TestServerState.EMPTY,
+        socks = true,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsConnectedSocks() {
+    PreviewRunningItems(
+        server = TestServerState.CONNECTED,
+        socks = true,
+    )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsErrorSocks() {
+    PreviewRunningItems(
+        server = TestServerState.ERROR,
+        socks = true,
+    )
 }

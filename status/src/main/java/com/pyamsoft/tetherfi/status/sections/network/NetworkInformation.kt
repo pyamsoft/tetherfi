@@ -140,6 +140,7 @@ internal fun LazyListScope.renderNetworkInformation(
     renderRunningItems(
         modifier = itemModifier,
         state = state,
+        experimentalRuntimeFlags = experimentalRuntimeFlags,
         serverViewState = serverViewState,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
         onShowQRCode = onShowQRCode,
