@@ -36,11 +36,6 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertEquals
-import kotlin.test.fail
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -50,6 +45,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertEquals
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
@@ -177,7 +177,11 @@ internal suspend inline fun setupProxy(
   val manager =
       TcpProxyManager(
           proxyType = SharedProxy.Type.HTTP,
-          appEnvironment = AppDevEnvironment().apply(appEnv),
+          appEnvironment =
+              AppDevEnvironment(
+                      inAppDebug = flowOf(true),
+                  )
+                  .apply(appEnv),
           session =
               HttpProxySession(
                   transport = transport,

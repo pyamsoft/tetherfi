@@ -47,6 +47,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Singleton
@@ -172,14 +173,16 @@ internal constructor(
     Timber.d { "Creating new wifi p2p group" }
     val conf = config.getConfiguration()
 
+    val fakeError = appEnvironment.isBroadcastFakeError
+    val isFakeError = fakeError.first()
+
     return suspendCoroutine { cont ->
       val listener =
           object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
               Timber.d { "New network created" }
 
-              val fakeError = appEnvironment.isBroadcastFakeError
-              if (fakeError.value) {
+              if (isFakeError) {
                 Timber.w { "DEBUG forcing Fake Broadcast Error" }
                 cont.resumeWithException(RuntimeException("DEBUG: Force Fake Broadcast Error"))
               } else {

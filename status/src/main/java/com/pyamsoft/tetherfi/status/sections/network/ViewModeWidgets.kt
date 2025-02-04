@@ -72,7 +72,8 @@ internal fun ViewProxy(
   val socksPort = rememberPortNumber(socksPortNumber)
 
   val isSocksProxyEnabled by
-      experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle()
+      experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle(
+          ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
 
   Column(
       modifier = modifier,

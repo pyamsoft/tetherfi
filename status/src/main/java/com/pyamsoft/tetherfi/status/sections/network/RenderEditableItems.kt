@@ -92,7 +92,8 @@ internal fun LazyListScope.renderEditableItems(
       contentType = RenderEditableItemsContentTypes.EDIT_PORT,
   ) {
     val isSocksProxyEnabled by
-        experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle()
+        experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle(
+            ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
 
     Row(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),

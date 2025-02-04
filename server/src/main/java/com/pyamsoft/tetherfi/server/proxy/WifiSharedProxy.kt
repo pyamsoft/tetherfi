@@ -162,7 +162,7 @@ internal constructor(
       serverDispatcher: ServerDispatcher,
   ) {
     val fakeError = appEnvironment.isProxyFakeError
-    if (fakeError.value) {
+    if (fakeError.first()) {
       Timber.w { "DEBUG forcing Fake Proxy Error" }
       status.set(
           RunningStatus.ProxyError(

@@ -22,6 +22,7 @@ import com.pyamsoft.pydroid.bootstrap.libraries.OssLibraries
 import com.pyamsoft.pydroid.bootstrap.libraries.OssLicenses
 import com.pyamsoft.pydroid.ui.ModuleProvider
 import com.pyamsoft.pydroid.ui.PYDroid
+import com.pyamsoft.pydroid.ui.debug.InAppDebugStatus
 import com.pyamsoft.pydroid.ui.installPYDroid
 import com.pyamsoft.pydroid.util.isDebugMode
 import com.pyamsoft.tetherfi.core.PRIVACY_POLICY_URL
@@ -56,12 +57,14 @@ class TetherFi : Application() {
   private fun installComponent(
       scope: CoroutineScope,
       moduleProvider: ModuleProvider,
+      inAppDebugStatus: InAppDebugStatus,
   ) {
     val mods = moduleProvider.get()
     val component =
         DaggerTetherFiComponent.factory()
             .create(
                 debug = isDebugMode(),
+                inAppDebug = inAppDebugStatus.listenForInAppDebuggingEnabled(),
                 scope = scope,
                 application = this,
                 imageLoader = mods.imageLoader(),
@@ -80,14 +83,17 @@ class TetherFi : Application() {
         CoroutineScope(
             context = SupervisorJob() + Dispatchers.Default + CoroutineName(this::class.java.name),
         )
+
+    val inAppDebugStatus = modules.get().inAppDebugStatus()
     installLogger(
         scope = scope,
-        inAppDebugStatus = modules.get().inAppDebugStatus(),
+        inAppDebugStatus = inAppDebugStatus,
     )
 
     installComponent(
         scope = scope,
         moduleProvider = modules,
+        inAppDebugStatus = inAppDebugStatus,
     )
     addLibraries()
   }

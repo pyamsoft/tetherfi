@@ -252,23 +252,23 @@ internal constructor(
       }
 
   @CheckResult
-  private fun handleGroupDebugEnvironment(): BroadcastNetworkStatus.GroupInfo? {
+  private suspend fun handleGroupDebugEnvironment(): BroadcastNetworkStatus.GroupInfo? {
     enforcer.assertOffMainThread()
 
     val debugGroup = appEnvironment.group
-    if (debugGroup.isEmpty.value) {
+    if (debugGroup.isEmpty.first()) {
       Timber.w { "DEBUG forcing Empty group response" }
       return BroadcastNetworkStatus.GroupInfo.Empty
     }
 
-    if (debugGroup.isError.value) {
+    if (debugGroup.isError.first()) {
       Timber.w { "DEBUG forcing Error group response" }
       return BroadcastNetworkStatus.GroupInfo.Error(
           error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
       )
     }
 
-    if (debugGroup.isConnected.value) {
+    if (debugGroup.isConnected.first()) {
       Timber.w { "DEBUG forcing Connected group response" }
       return BroadcastNetworkStatus.GroupInfo.Connected(
           ssid = "DEBUG SSID",
@@ -320,23 +320,23 @@ internal constructor(
   }
 
   @CheckResult
-  private fun handleConnectionDebugEnvironment(): BroadcastNetworkStatus.ConnectionInfo? {
+  private suspend fun handleConnectionDebugEnvironment(): BroadcastNetworkStatus.ConnectionInfo? {
     enforcer.assertOffMainThread()
 
     val debugConnection = appEnvironment.connection
-    if (debugConnection.isEmpty.value) {
+    if (debugConnection.isEmpty.first()) {
       Timber.w { "DEBUG forcing Empty connection response" }
       return BroadcastNetworkStatus.ConnectionInfo.Empty
     }
 
-    if (debugConnection.isError.value) {
+    if (debugConnection.isError.first()) {
       Timber.w { "DEBUG forcing Error connection response" }
       return BroadcastNetworkStatus.ConnectionInfo.Error(
           error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
       )
     }
 
-    if (debugConnection.isConnected.value) {
+    if (debugConnection.isConnected.first()) {
       Timber.w { "DEBUG forcing Connected connection response" }
       return BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = "DEBUG HOSTNAME")
     }

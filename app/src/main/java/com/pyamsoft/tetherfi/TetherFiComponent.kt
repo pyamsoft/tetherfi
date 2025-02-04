@@ -60,6 +60,7 @@ import java.time.Clock
 import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 
 @Singleton
 @Component(
@@ -90,6 +91,7 @@ internal interface TetherFiComponent {
     @CheckResult
     fun create(
         @Named("debug") @BindsInstance debug: Boolean,
+        @Named("in_app_debug") @BindsInstance inAppDebug: Flow<Boolean>,
         @Named("app_scope") @BindsInstance scope: CoroutineScope,
         @BindsInstance application: Application,
         @BindsInstance imageLoader: ImageLoader,

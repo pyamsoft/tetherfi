@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.core
 
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
 /** Run-time feature flags */
 interface ExperimentalRuntimeFlags {
@@ -26,5 +26,9 @@ interface ExperimentalRuntimeFlags {
    *
    * Adapted from https://github.com/torsm/ktor-socks
    */
-  val isSocksProxyEnabled: StateFlow<Boolean>
+  val isSocksProxyEnabled: Flow<Boolean>
+
+  object Defaults {
+    const val IS_SOCKS_PROXY_ENABLED_INITIAL_STATE: Boolean = false
+  }
 }

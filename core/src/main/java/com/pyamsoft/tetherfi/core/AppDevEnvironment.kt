@@ -19,42 +19,54 @@ package com.pyamsoft.tetherfi.core
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Stable
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.update
 
 @Singleton
-class AppDevEnvironment @Inject constructor() : ExperimentalRuntimeFlags {
+class AppDevEnvironment
+@Inject
+constructor(
+    @Named("in_app_debug") private val inAppDebug: Flow<Boolean>,
+) : ExperimentalRuntimeFlags {
 
-  private val isGroupFakeEmpty = MutableStateFlow(false)
-  private val isGroupFakeConnected = MutableStateFlow(false)
-  private val isGroupFakeError = MutableStateFlow(false)
+  private val mutableGroupFakeEmpty = MutableStateFlow(false)
+  private val mutableGroupFakeConnected = MutableStateFlow(false)
+  private val mutableGroupFakeError = MutableStateFlow(false)
 
-  private val isConnectionFakeEmpty = MutableStateFlow(false)
-  private val isConnectionFakeConnected = MutableStateFlow(false)
-  private val isConnectionFakeError = MutableStateFlow(false)
+  private val mutableConnectionFakeEmpty = MutableStateFlow(false)
+  private val mutableConnectionFakeConnected = MutableStateFlow(false)
+  private val mutableConnectionFakeError = MutableStateFlow(false)
 
-  val isBroadcastFakeError = MutableStateFlow(false)
-  val isProxyFakeError = MutableStateFlow(false)
-  val isYoloError = MutableStateFlow(false)
+  private val mutableBroadcastFakeError = MutableStateFlow(false)
+  private val mutableProxyFakeError = MutableStateFlow(false)
+  private val mutableYoloError = MutableStateFlow(false)
+  private val mutableSocksProxyEnabled = MutableStateFlow(false)
 
-  override val isSocksProxyEnabled = MutableStateFlow(false)
+  val isBroadcastFakeError = mutableBroadcastFakeError.whenInAppDebugEnabled()
+  val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
+  val isYoloError = mutableYoloError.whenInAppDebugEnabled()
+
+  override val isSocksProxyEnabled = mutableSocksProxyEnabled.whenInAppDebugEnabled()
 
   @get:CheckResult
   val group =
       GroupInfo(
-          isEmpty = isGroupFakeEmpty,
-          isConnected = isGroupFakeConnected,
-          isError = isGroupFakeError,
+          isEmpty = mutableGroupFakeEmpty.whenInAppDebugEnabled(),
+          isConnected = mutableGroupFakeConnected.whenInAppDebugEnabled(),
+          isError = mutableGroupFakeError.whenInAppDebugEnabled(),
       )
 
   @get:CheckResult
   val connection =
       ConnectionInfo(
-          isEmpty = isConnectionFakeEmpty,
-          isConnected = isConnectionFakeConnected,
-          isError = isConnectionFakeError,
+          isEmpty = mutableConnectionFakeEmpty.whenInAppDebugEnabled(),
+          isConnected = mutableConnectionFakeConnected.whenInAppDebugEnabled(),
+          isError = mutableConnectionFakeError.whenInAppDebugEnabled(),
       )
 
   fun updateGroup(
@@ -62,9 +74,9 @@ class AppDevEnvironment @Inject constructor() : ExperimentalRuntimeFlags {
       isConnected: Boolean? = null,
       isError: Boolean? = null,
   ) {
-    isEmpty?.also { isGroupFakeEmpty.value = it }
-    isConnected?.also { isGroupFakeConnected.value = it }
-    isError?.also { isGroupFakeError.value = it }
+    isEmpty?.also { mutableGroupFakeEmpty.value = it }
+    isConnected?.also { mutableGroupFakeConnected.value = it }
+    isError?.also { mutableGroupFakeError.value = it }
   }
 
   fun updateConnection(
@@ -72,42 +84,53 @@ class AppDevEnvironment @Inject constructor() : ExperimentalRuntimeFlags {
       isConnected: Boolean? = null,
       isError: Boolean? = null,
   ) {
-    isEmpty?.also { isConnectionFakeEmpty.value = it }
-    isConnected?.also { isConnectionFakeConnected.value = it }
-    isError?.also { isConnectionFakeError.value = it }
+    isEmpty?.also { mutableConnectionFakeEmpty.value = it }
+    isConnected?.also { mutableConnectionFakeConnected.value = it }
+    isError?.also { mutableConnectionFakeError.value = it }
   }
 
   fun updateBroadcast(isError: Boolean) {
-    isBroadcastFakeError.value = isError
+    mutableBroadcastFakeError.value = isError
   }
 
   fun updateProxy(isError: Boolean) {
-    isProxyFakeError.value = isError
+    mutableProxyFakeError.value = isError
   }
 
   fun updateYolo(isError: Boolean) {
-    isYoloError.value = isError
+    mutableYoloError.value = isError
   }
 
   fun handleToggleSocksEnabled() {
-    isSocksProxyEnabled.update { !it }
+    mutableSocksProxyEnabled.update { !it }
+  }
+
+  @CheckResult
+  private fun StateFlow<Boolean>.whenInAppDebugEnabled(): Flow<Boolean> {
+    return this.combineTransform(inAppDebug) { flag, isEnabled ->
+      if (isEnabled) {
+        emit(flag)
+      } else {
+        emit(false)
+      }
+    }
   }
 
   @Stable
   @ConsistentCopyVisibility
   data class GroupInfo
   internal constructor(
-      val isEmpty: StateFlow<Boolean>,
-      val isConnected: StateFlow<Boolean>,
-      val isError: StateFlow<Boolean>,
+      val isEmpty: Flow<Boolean>,
+      val isConnected: Flow<Boolean>,
+      val isError: Flow<Boolean>,
   )
 
   @Stable
   @ConsistentCopyVisibility
   data class ConnectionInfo
   internal constructor(
-      val isEmpty: StateFlow<Boolean>,
-      val isConnected: StateFlow<Boolean>,
-      val isError: StateFlow<Boolean>,
+      val isEmpty: Flow<Boolean>,
+      val isConnected: Flow<Boolean>,
+      val isError: Flow<Boolean>,
   )
 }
