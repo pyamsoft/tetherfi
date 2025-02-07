@@ -23,17 +23,17 @@ import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import coil.ComponentRegistry
-import coil.ImageLoader
-import coil.decode.DataSource
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
-import coil.request.DefaultRequestOptions
-import coil.request.Disposable
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.ImageResult
-import coil.request.SuccessResult
+import coil3.ComponentRegistry
+import coil3.ImageLoader
+import coil3.asImage
+import coil3.decode.DataSource
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.Disposable
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.ImageResult
+import coil3.request.SuccessResult
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
@@ -42,55 +42,55 @@ import org.jetbrains.annotations.TestOnly
 /** Only use for tests/previews */
 private class TestImageLoader(context: Context) : ImageLoader {
 
-  private val context = context.applicationContext
-  private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
-  private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
+    private val context = context.applicationContext
+    private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
+    private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
 
-  private val disposable =
-      object : Disposable {
+    private val disposable =
+        object : Disposable {
 
-        override val isDisposed: Boolean = true
-        override val job: Deferred<ImageResult> =
-            MainScope().async<ImageResult> {
-              ErrorResult(
-                  drawable = null,
-                  request = ImageRequest.Builder(context).build(),
-                  throwable = RuntimeException("Test"),
-              )
-            }
+            override val isDisposed: Boolean = true
+            override val job: Deferred<ImageResult> =
+                MainScope().async<ImageResult> {
+                    ErrorResult(
+                        image = null,
+                        request = ImageRequest.Builder(context).build(),
+                        throwable = RuntimeException("Test"),
+                    )
+                }
 
-        override fun dispose() {}
-      }
+            override fun dispose() {}
+        }
 
-  override val components: ComponentRegistry = ComponentRegistry()
+    override val components = ComponentRegistry()
 
-  override val defaults: DefaultRequestOptions = DefaultRequestOptions()
+    override val defaults = ImageRequest.Defaults()
 
-  override val diskCache: DiskCache? = null
+    override val diskCache: DiskCache? = null
 
-  override val memoryCache: MemoryCache? = null
+    override val memoryCache: MemoryCache? = null
 
-  override fun enqueue(request: ImageRequest): Disposable {
-    request.apply {
-      target?.onStart(placeholder = loadingDrawable)
-      target?.onSuccess(result = successDrawable)
+    override fun enqueue(request: ImageRequest): Disposable {
+        request.apply {
+            target?.onStart(placeholder = loadingDrawable.asImage())
+            target?.onSuccess(result = successDrawable.asImage())
+        }
+        return disposable
     }
-    return disposable
-  }
 
-  override suspend fun execute(request: ImageRequest): ImageResult {
-    return SuccessResult(
-        drawable = successDrawable,
-        request = request,
-        dataSource = DataSource.MEMORY,
-    )
-  }
+    override suspend fun execute(request: ImageRequest): ImageResult {
+        return SuccessResult(
+            image = successDrawable.asImage(),
+            request = request,
+            dataSource = DataSource.MEMORY,
+        )
+    }
 
-  override fun newBuilder(): ImageLoader.Builder {
-    return ImageLoader.Builder(context)
-  }
+    override fun newBuilder(): ImageLoader.Builder {
+        return ImageLoader.Builder(context)
+    }
 
-  override fun shutdown() {}
+    override fun shutdown() {}
 }
 
 /** Only use for tests/previews */

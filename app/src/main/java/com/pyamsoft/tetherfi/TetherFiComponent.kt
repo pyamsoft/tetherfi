@@ -22,7 +22,7 @@ import android.app.Service
 import android.content.Context
 import android.service.quicksettings.TileService
 import androidx.annotation.CheckResult
-import coil.ImageLoader
+import coil3.ImageLoader
 import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.bus.EventConsumer
 import com.pyamsoft.pydroid.bus.internal.DefaultEventBus

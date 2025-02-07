@@ -41,8 +41,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.isUnspecified
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.ImageLoader
-import coil.compose.AsyncImage
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.theme.ZeroSize
 import com.pyamsoft.tetherfi.ui.R
