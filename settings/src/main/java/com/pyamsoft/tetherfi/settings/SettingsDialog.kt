@@ -114,11 +114,11 @@ fun SettingsDialog(
             dialogModifier = modifier,
             customBottomItemMargin = MaterialTheme.keylines.baseline,
             extraDebugContent = {
-                renderExperiments(
-                    itemModifier = itemModifier,
-                    isEnabled = isEnabled,
-                    appEnvironment = appEnvironment,
-                )
+              renderExperiments(
+                  itemModifier = itemModifier,
+                  isEnabled = isEnabled,
+                  appEnvironment = appEnvironment,
+              )
 
               if (context.isDebugMode()) {
                 renderExtraDebugContent(

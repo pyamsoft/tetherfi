@@ -63,8 +63,10 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Added SOCKS Proxy Experimental Feature. It is very experimental and things will break. To use this feature, you must enable Debug Mode to access this feature.")
-                    feature("Added dialog to configure Socket timeout instead of hard-coding it to 30. Different options may improve performance but can be less compatible with websites or slow connections.")
+                    feature(
+                        "Added SOCKS Proxy Experimental Feature. It is very experimental and things will break. To use this feature, you must enable Debug Mode to access this feature.")
+                    feature(
+                        "Added dialog to configure Socket timeout instead of hard-coding it to 30. Different options may improve performance but can be less compatible with websites or slow connections.")
                     change("Split Hotspot tweaks and expert settings into a separate Behavior page")
                     bugfix("Fix a crash caused by proxy memory usage on certain devices")
                     bugfix("Fixed Error dialog getting stuck on the Status screen")

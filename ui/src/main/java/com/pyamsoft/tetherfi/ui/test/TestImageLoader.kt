@@ -42,55 +42,55 @@ import org.jetbrains.annotations.TestOnly
 /** Only use for tests/previews */
 private class TestImageLoader(context: Context) : ImageLoader {
 
-    private val context = context.applicationContext
-    private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
-    private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
+  private val context = context.applicationContext
+  private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
+  private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
 
-    private val disposable =
-        object : Disposable {
+  private val disposable =
+      object : Disposable {
 
-            override val isDisposed: Boolean = true
-            override val job: Deferred<ImageResult> =
-                MainScope().async<ImageResult> {
-                    ErrorResult(
-                        image = null,
-                        request = ImageRequest.Builder(context).build(),
-                        throwable = RuntimeException("Test"),
-                    )
-                }
+        override val isDisposed: Boolean = true
+        override val job: Deferred<ImageResult> =
+            MainScope().async<ImageResult> {
+              ErrorResult(
+                  image = null,
+                  request = ImageRequest.Builder(context).build(),
+                  throwable = RuntimeException("Test"),
+              )
+            }
 
-            override fun dispose() {}
-        }
+        override fun dispose() {}
+      }
 
-    override val components = ComponentRegistry()
+  override val components = ComponentRegistry()
 
-    override val defaults = ImageRequest.Defaults()
+  override val defaults = ImageRequest.Defaults()
 
-    override val diskCache: DiskCache? = null
+  override val diskCache: DiskCache? = null
 
-    override val memoryCache: MemoryCache? = null
+  override val memoryCache: MemoryCache? = null
 
-    override fun enqueue(request: ImageRequest): Disposable {
-        request.apply {
-            target?.onStart(placeholder = loadingDrawable.asImage())
-            target?.onSuccess(result = successDrawable.asImage())
-        }
-        return disposable
+  override fun enqueue(request: ImageRequest): Disposable {
+    request.apply {
+      target?.onStart(placeholder = loadingDrawable.asImage())
+      target?.onSuccess(result = successDrawable.asImage())
     }
+    return disposable
+  }
 
-    override suspend fun execute(request: ImageRequest): ImageResult {
-        return SuccessResult(
-            image = successDrawable.asImage(),
-            request = request,
-            dataSource = DataSource.MEMORY,
-        )
-    }
+  override suspend fun execute(request: ImageRequest): ImageResult {
+    return SuccessResult(
+        image = successDrawable.asImage(),
+        request = request,
+        dataSource = DataSource.MEMORY,
+    )
+  }
 
-    override fun newBuilder(): ImageLoader.Builder {
-        return ImageLoader.Builder(context)
-    }
+  override fun newBuilder(): ImageLoader.Builder {
+    return ImageLoader.Builder(context)
+  }
 
-    override fun shutdown() {}
+  override fun shutdown() {}
 }
 
 /** Only use for tests/previews */
