@@ -140,6 +140,12 @@ class TetherFi : Application() {
       )
 
       OssLibraries.add(
+          "Ktor (pyamsoft fork)",
+          "https://github.com/pyamsoft/ktor",
+          "A fork of Ktor that adds support for Socket customization (used for the 'Preferred Network' feature)",
+      )
+
+      OssLibraries.add(
           "AndroidX Appcompat",
           "https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/appcompat/",
           "AndroidX compatibility library for older versions of Android",
