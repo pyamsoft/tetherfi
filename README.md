@@ -5,19 +5,28 @@ Share your Android device's Internet connection with other devices without needi
 
 ### Get TetherFi
 
+#### Google Play (Google Play APK)
+
 [<img
 src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
 alt="Get it on Google Play"
 height="80">](https://play.google.com/store/apps/details?id=com.pyamsoft.tetherfi)
+
+#### FDroid (FDroid APK) (IzzyOnDroid Repository)
+
 [<img
 src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
 alt="Get it on IzzyOnDroid"
 height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.pyamsoft.tetherfi)
+
+#### OpenAPK (FDroid APK)
+
 [<img
 src="https://www.openapk.net/images/openapk-badge.png"
 alt="Get it on OpenAPK"
 height="80">](https://www.openapk.net/tetherfi/com.pyamsoft.tetherfi/)
 
+#### Github Releases (FDroid APK)
 or get the APK from the
 [Releases Section](https://github.com/pyamsoft/tetherfi/releases/latest).
 
@@ -25,47 +34,123 @@ or get the APK from the
 
 #### Hotspot Status
 
+##### Status Overview
+
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png"
-alt="Light Mode: Hotspot Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306185.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-status.png"
+alt="Light Mode: Hotspot Status"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-status.png)
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png"
-alt="Light Mode: Hotspot Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306400.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-status.png"
+alt="Dark Mode: Hotspot Status"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-status.png)
+
+##### Hotspot Network Type
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-transport.png"
+alt="Light Mode: Network Type"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-transport.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-transport.png"
+alt="Dark Mode: Network Type"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-transport.png)
+
+##### Hotspot Transport Type
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-usb.png"
+alt="Light Mode: USB Mode"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-usb.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-usb.png"
+alt="Dark Mode: USB Mode"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-usb.png)
+
+#### Hotspot Behavior
+
+##### Operation Settings
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-operation.png"
+alt="Light Mode: Operating Settings"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-operation.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-operation.png"
+alt="Dark Mode: Operating Settings"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-operation.png)
+
+##### Expert Tweaks
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-tweaks.png"
+alt="Light Mode: Behavior Tweaks"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-tweaks.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-tweaks.png"
+alt="Dark Mode: Behavior Tweaks"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-tweaks.png)
 
 #### Setup Instructions
 
+##### Generic Proxy Setup Information
+
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png"
-alt="Light Mode: Instructions Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306191.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-info.png"
+alt="Light Mode: Info Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-info.png)
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png"
-alt="Light Mode: Instructions Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306448.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-info.png"
+alt="Dark Mode: Info Screen"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-info.png)
 
 #### Manage Connections
 
+##### Hotspot Off
+
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png"
-alt="Light Mode: Connections Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306373.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-connection-off.png"
+alt="Light Mode: Connections Screen Off"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-connection-off.png)
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png"
-alt="Light Mode: Connections Screen"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306450.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-connection-off.png"
+alt="Dark Mode: Connections Screen Off"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-connection-off.png)
+
+##### Hotspot On
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-connection-on.png"
+alt="Light Mode: Connections Screen On"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-connection-on.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-connection-on.png"
+alt="Dark Mode: Connections Screen On"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-connection-on.png)
 
 #### Hotspot Active
 
+##### In-App
+
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png"
-alt="Light Mode: Hotspot Active"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306341.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-running.png"
+alt="Light Mode: Hotspot On"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-running.png)
 [<img
-src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png"
-alt="Light Mode: Hotspot Active"
-height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/Screenshot_1715306443.png)
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-running.png"
+alt="Dark Mode: Hotspot On"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-running.png)
+
+##### Quick Tile
+
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-tile.png"
+alt="Light Mode: Quick Tile"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/light-tile.png)
+[<img
+src="https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-tile.png"
+alt="Dark Mode: Quick Tile"
+height="200">](https://raw.githubusercontent.com/pyamsoft/tetherfi/main/art/screens/phone/raw/dark-tile.png)
 
 ### What is TetherFi
 
