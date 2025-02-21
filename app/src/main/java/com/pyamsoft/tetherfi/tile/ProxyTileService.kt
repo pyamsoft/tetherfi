@@ -28,12 +28,12 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.tile.TileHandler
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import javax.inject.Inject
 
 internal class ProxyTileService internal constructor() : TileService() {
 
@@ -150,15 +150,22 @@ internal class ProxyTileService internal constructor() : TileService() {
       // re-injects each time. If we inject directly from the AppComponent, Dagger internally tracks
       // the injection and does not inject again even though the service lifecycle requires it.
       Timber.d { "Injecting handler!" }
-      ObjectGraph.ApplicationScope.retrieve(this)
+
+      // This can crash if the TileService spins up BEFORE the application class is created
+      // /vitals/crashes/fc7545d4e783dd108d01983e58d70f43/details?days=28&versionCode=53
+      try {
+        ObjectGraph.ApplicationScope.retrieve(this)
           .plusTileService()
           .create(
-              service = this,
+            service = this,
           )
           .inject(this)
+      } catch (e: Throwable) {
+        Timber.e(e) { "Failed to inject Tile handler, application not ready!" }
+      }
     }
 
-    block(tileHandler.requireNotNull())
+    tileHandler?.also { block(it) }
   }
 
   override fun onClick() {
