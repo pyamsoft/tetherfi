@@ -37,12 +37,12 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
-import java.net.InetAddress
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withTimeout
+import java.net.InetAddress
+import kotlin.time.Duration.Companion.minutes
 
 internal abstract class BaseSOCKSImplementation<
     AT : BaseSOCKSImplementation.SOCKSAddressType,
@@ -63,7 +63,7 @@ protected constructor(
       proxyOutput: ByteWriteChannel,
       client: TetherClient,
       destinationAddress: InetAddress,
-      destinationPort: Short,
+      destinationPort: UShort,
       addressType: AT,
       responder: R,
       onReport: suspend (ByteTransferReport) -> Unit
@@ -286,7 +286,7 @@ protected constructor(
       proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       command: SOCKSCommand,
-      destinationPort: Short,
+      destinationPort: UShort,
       destinationAddress: InetAddress,
       addressType: AT,
       responder: R,
@@ -358,7 +358,7 @@ protected constructor(
       proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       destinationAddress: InetAddress,
-      destinationPort: Short,
+      destinationPort: UShort,
       addressType: AT,
       responder: R,
       onReport: suspend (ByteTransferReport) -> Unit
@@ -384,7 +384,7 @@ protected constructor(
 
     companion object {
 
-      internal val DEBUG_SOCKS_REPLIES = false
+      internal const val DEBUG_SOCKS_REPLIES = false
 
       /** The zero IP, we send to this IP for error commands */
       internal val INVALID_IPV6_BYTES = ByteArray(16) { 0 }

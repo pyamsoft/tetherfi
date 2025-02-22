@@ -45,16 +45,16 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import java.net.Inet4Address
-import java.net.InetAddress
-import java.net.UnknownHostException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
 import kotlinx.io.readByteArray
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.UnknownHostException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** https://www.openssh.com/txt/socks4.protocol */
 @Singleton
@@ -90,7 +90,7 @@ internal constructor(
       proxyConnectionInfo: ProxyConnectionInfo,
       client: TetherClient,
       destinationAddress: InetAddress,
-      destinationPort: Short,
+      destinationPort: UShort,
       addressType: SOCKS4AddressType,
       responder: Responder,
       onReport: suspend (ByteTransferReport) -> Unit
@@ -128,14 +128,10 @@ internal constructor(
           return@withContext
         }
 
-        // 2 bytes for port
-        val destinationPort = proxyInput.readShort()
-
-        if (destinationPort <= 0) {
-          Timber.w { "Invalid destination port $destinationPort" }
-          usingResponder(proxyOutput) { sendError() }
-          return@withContext
-        }
+          // A short max is 32767 but ports can go up to 65k
+          // Sometimes the short value is negative, in that case, we
+          // "fix" it by converting back to an unsigned number
+        val destinationPort = proxyInput.readShort().toUShort()
 
         // 4 bytes IP
         val destinationPacket = proxyInput.readPacket(4)
