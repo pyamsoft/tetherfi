@@ -83,8 +83,6 @@ internal constructor(
         proxyOutput: ByteWriteChannel,
         proxyConnectionInfo: ProxyConnectionInfo,
         client: TetherClient,
-        destinationAddress: InetAddress,
-        destinationPort: UShort,
         addressType: SOCKS5AddressType,
         responder: Responder,
         onReport: suspend (ByteTransferReport) -> Unit
@@ -103,8 +101,7 @@ internal constructor(
                         .let { b ->
                             Timber.d { "SOCKS UDP_ASSOC -> ${connectionInfo.hostName}" }
                             b.bind(
-                                localAddress =
-                                InetSocketAddress(
+                                localAddress = InetSocketAddress(
                                     hostname = connectionInfo.hostName,
                                     port = 0,
                                 ),
@@ -137,9 +134,13 @@ internal constructor(
 
             bound.use { server ->
                 val udpServer = UDPRelayServer(
+                    socketCreator = socketCreator,
+                    socketTracker = socketTracker,
+                    socketTagger = socketTagger,
                     serverDispatcher = serverDispatcher,
-                    server = server,
                     proxyConnectionInfo = proxyConnectionInfo,
+                    server = server,
+                    client = client,
                 )
 
                 val relayConnection = udpServer.relay(scope)
@@ -151,13 +152,8 @@ internal constructor(
                         bound = server.localAddress.cast(),
                     )
 
-                    // The client should never send any more data on the control socket, so
-                    // we can attempt a read() which will keep this suspended open until
-                    // we either interrupt it, or the client closes the connection
-                    while (!proxyInput.isClosedForRead) {
-                        val extraByte = proxyInput.readByte()
-                        Timber.w { "Client sent extra unexpected bytes over UDP control socket: $extraByte" }
-                    }
+                    // Wait for the relay to finish
+                    relayConnection.join()
                 } finally {
                     relayConnection.cancel()
                     Timber.d { "UDP association complete" }

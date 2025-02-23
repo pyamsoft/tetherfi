@@ -79,25 +79,23 @@ internal constructor(
     Responder(proxyOutput).also { block(it) }
   }
 
-  override suspend fun udpAssociate(
-      scope: CoroutineScope,
-      socketCreator: SocketCreator,
-      serverDispatcher: ServerDispatcher,
-      socketTracker: SocketTracker,
-      connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      proxyInput: ByteReadChannel,
-      proxyOutput: ByteWriteChannel,
-      proxyConnectionInfo: ProxyConnectionInfo,
-      client: TetherClient,
-      destinationAddress: InetAddress,
-      destinationPort: UShort,
-      addressType: SOCKS4AddressType,
-      responder: Responder,
-      onReport: suspend (ByteTransferReport) -> Unit
-  ) {
-    Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
-    usingResponder(proxyOutput) { sendRefusal() }
-  }
+    override suspend fun udpAssociate(
+        scope: CoroutineScope,
+        socketCreator: SocketCreator,
+        serverDispatcher: ServerDispatcher,
+        socketTracker: SocketTracker,
+        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+        proxyInput: ByteReadChannel,
+        proxyOutput: ByteWriteChannel,
+        proxyConnectionInfo: ProxyConnectionInfo,
+        client: TetherClient,
+        addressType: SOCKS4AddressType,
+        responder: Responder,
+        onReport: suspend (ByteTransferReport) -> Unit
+    ) {
+        Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
+        usingResponder(proxyOutput) { sendRefusal() }
+    }
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
