@@ -28,63 +28,55 @@ import kotlinx.io.readByteString
 
 internal sealed interface SourceOrByteReadChannel {
 
-    @CheckResult
-    suspend fun readByte(): Byte
+  @CheckResult suspend fun readByte(): Byte
 
-    @CheckResult
-    suspend fun readShort(): Short
+  @CheckResult suspend fun readShort(): Short
 
-    @CheckResult
-    suspend fun readByteArray(byteCount: Int): ByteArray
+  @CheckResult suspend fun readByteArray(byteCount: Int): ByteArray
 
-    @CheckResult
-    suspend fun readByteString(byteCount: Int): ByteString
+  @CheckResult suspend fun readByteString(byteCount: Int): ByteString
 
-    @JvmInline
-    value class FromSource(
-        private val source: Source,
-    ) : SourceOrByteReadChannel {
+  @JvmInline
+  value class FromSource(
+      private val source: Source,
+  ) : SourceOrByteReadChannel {
 
-        override suspend fun readByte(): Byte {
-            return source.readByte()
-        }
-
-        override suspend fun readShort(): Short {
-            return source.readShort()
-        }
-
-        override suspend fun readByteArray(byteCount: Int): ByteArray {
-            return source.readByteArray(byteCount)
-        }
-
-        override suspend fun readByteString(byteCount: Int): ByteString {
-            return source.readByteString(byteCount)
-        }
-
+    override suspend fun readByte(): Byte {
+      return source.readByte()
     }
 
-    @JvmInline
-    value class FromByteReadChannel(
-        private val channel: ByteReadChannel,
-    ) : SourceOrByteReadChannel {
-
-        override suspend fun readByte(): Byte {
-            return channel.readByte()
-        }
-
-        override suspend fun readShort(): Short {
-            return channel.readShort()
-        }
-
-        override suspend fun readByteArray(byteCount: Int): ByteArray {
-            return channel.readPacket(byteCount).readByteArray()
-        }
-
-        override suspend fun readByteString(byteCount: Int): ByteString {
-            return channel.readPacket(byteCount).readByteString()
-        }
-
+    override suspend fun readShort(): Short {
+      return source.readShort()
     }
 
+    override suspend fun readByteArray(byteCount: Int): ByteArray {
+      return source.readByteArray(byteCount)
+    }
+
+    override suspend fun readByteString(byteCount: Int): ByteString {
+      return source.readByteString(byteCount)
+    }
+  }
+
+  @JvmInline
+  value class FromByteReadChannel(
+      private val channel: ByteReadChannel,
+  ) : SourceOrByteReadChannel {
+
+    override suspend fun readByte(): Byte {
+      return channel.readByte()
+    }
+
+    override suspend fun readShort(): Short {
+      return channel.readShort()
+    }
+
+    override suspend fun readByteArray(byteCount: Int): ByteArray {
+      return channel.readPacket(byteCount).readByteArray()
+    }
+
+    override suspend fun readByteString(byteCount: Int): ByteString {
+      return channel.readPacket(byteCount).readByteString()
+    }
+  }
 }
-

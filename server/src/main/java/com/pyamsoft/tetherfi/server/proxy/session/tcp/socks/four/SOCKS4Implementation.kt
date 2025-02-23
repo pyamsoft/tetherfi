@@ -45,16 +45,16 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
 import io.ktor.utils.io.readShort
 import io.ktor.utils.io.writePacket
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
-import kotlinx.io.Buffer
-import kotlinx.io.Sink
-import kotlinx.io.readByteArray
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
+import kotlinx.io.Buffer
+import kotlinx.io.Sink
+import kotlinx.io.readByteArray
 
 /** https://www.openssh.com/txt/socks4.protocol */
 @Singleton
@@ -79,23 +79,25 @@ internal constructor(
     Responder(proxyOutput).also { block(it) }
   }
 
-    override suspend fun udpAssociate(
-        scope: CoroutineScope,
-        socketCreator: SocketCreator,
-        serverDispatcher: ServerDispatcher,
-        socketTracker: SocketTracker,
-        connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
-        proxyInput: ByteReadChannel,
-        proxyOutput: ByteWriteChannel,
-        proxyConnectionInfo: ProxyConnectionInfo,
-        client: TetherClient,
-        addressType: SOCKS4AddressType,
-        responder: Responder,
-        onReport: suspend (ByteTransferReport) -> Unit
-    ) {
-        Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
-        usingResponder(proxyOutput) { sendRefusal() }
-    }
+  override suspend fun udpAssociate(
+      scope: CoroutineScope,
+      timeout: ServerSocketTimeout,
+      networkBinder: SocketBinder.NetworkBinder,
+      socketCreator: SocketCreator,
+      serverDispatcher: ServerDispatcher,
+      socketTracker: SocketTracker,
+      connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
+      proxyInput: ByteReadChannel,
+      proxyOutput: ByteWriteChannel,
+      proxyConnectionInfo: ProxyConnectionInfo,
+      client: TetherClient,
+      addressType: SOCKS4AddressType,
+      responder: Responder,
+      onReport: suspend (ByteTransferReport) -> Unit
+  ) {
+    Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
+    usingResponder(proxyOutput) { sendRefusal() }
+  }
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
@@ -126,9 +128,9 @@ internal constructor(
           return@withContext
         }
 
-          // A short max is 32767 but ports can go up to 65k
-          // Sometimes the short value is negative, in that case, we
-          // "fix" it by converting back to an unsigned number
+        // A short max is 32767 but ports can go up to 65k
+        // Sometimes the short value is negative, in that case, we
+        // "fix" it by converting back to an unsigned number
         val destinationPort = proxyInput.readShort().toUShort()
 
         // 4 bytes IP

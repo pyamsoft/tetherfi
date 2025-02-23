@@ -30,12 +30,13 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import io.ktor.network.selector.Selectable
 import io.ktor.network.sockets.Socket
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import java.net.DatagramSocket
 import java.nio.channels.SocketChannel
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 
 // https://github.com/pyamsoft/tetherfi/issues/154
 // https://github.com/pyamsoft/tetherfi/issues/331
@@ -95,10 +96,12 @@ internal constructor(
                   }
                   return@run this
                 }
+
                 PreferredNetwork.WIFI -> {
                   Timber.d { "Prefer Wi-Fi connection for transport" }
                   return@run addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                 }
+
                 PreferredNetwork.CELLULAR -> {
                   Timber.d { "Prefer Cellular Data connection for transport" }
                   return@run addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -160,9 +163,29 @@ internal constructor(
         Timber.w { "Cannot attempt bindSocket - Socket is not selectable: $socket" }
       }
     }
+
+    override suspend fun bindToNetwork(datagramSocket: DatagramSocket) {
+      val network = preferredNetwork.first()
+      if (network != null) {
+        bindToNetwork(datagramSocket, network)
+      }
+    }
   }
 
   companion object {
+
+    @JvmStatic
+    private fun bindToNetwork(datagram: DatagramSocket, network: Network) {
+      try {
+        // IF you are connected to a VPN, binding to a socket may not work unless you "whitelist"
+        // TetherFi in your VPN settings
+        network.bindSocket(datagram)
+      } catch (e: Throwable) {
+        Timber.w {
+          "Error binding datagram socket to network $network, continue anyway!: ${e.message.orEmpty()}"
+        }
+      }
+    }
 
     @JvmStatic
     private fun bindToNetwork(channel: SocketChannel, network: Network) {
