@@ -18,20 +18,21 @@ package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Stable
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 @Singleton
 class AppDevEnvironment
 @Inject
 constructor(
     @Named("in_app_debug") private val inAppDebug: Flow<Boolean>,
+    @Named("debug") isDebugMode: Boolean,
 ) : ExperimentalRuntimeFlags {
 
   private val mutableGroupFakeEmpty = MutableStateFlow(false)
@@ -45,7 +46,9 @@ constructor(
   private val mutableBroadcastFakeError = MutableStateFlow(false)
   private val mutableProxyFakeError = MutableStateFlow(false)
   private val mutableYoloError = MutableStateFlow(false)
-  private val mutableSocksProxyEnabled = MutableStateFlow(false)
+
+  // Runtime flag
+  private val mutableSocksProxyEnabled = MutableStateFlow(isDebugMode)
 
   val isBroadcastFakeError = mutableBroadcastFakeError.whenInAppDebugEnabled()
   val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
