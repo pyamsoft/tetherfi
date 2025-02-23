@@ -43,6 +43,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.five.SOCKS5Implement
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.core.build
 import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.readByte
 import io.ktor.utils.io.writePacket
@@ -151,7 +152,11 @@ internal constructor(
                   client = client,
               )
 
-          val relayConnection = udpServer.relay(scope)
+          val relayConnection =
+              udpServer.relay(
+                  scope = scope,
+                  onReport = onReport,
+              )
           try {
             // Once the bind is open, we send the initial reply telling the client
             // the IP and the port
@@ -266,13 +271,15 @@ internal constructor(
 
     private suspend inline fun sendPacket(builder: Sink.() -> Unit) {
       val packet =
-          Buffer().apply {
-            // VN
-            writeByte(SOCKS_VERSION_BYTE)
+          Buffer()
+              .apply {
+                // VN
+                writeByte(SOCKS_VERSION_BYTE)
 
-            // Builder
-            builder()
-          }
+                // Builder
+                builder()
+              }
+              .build()
 
       if (DEBUG_SOCKS_REPLIES) {
         Timber.d {

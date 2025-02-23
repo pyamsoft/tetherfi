@@ -37,7 +37,7 @@ const val SOCKET_EOL = "\r\n"
 private val BANDWIDTH_INTERVAL_NANOS = 1.seconds.inWholeNanoseconds
 
 @CheckResult
-private suspend fun enforceBandwidthLimit(
+internal suspend fun enforceBandwidthLimit(
     client: TetherClient,
     bandwidthLimit: Long,
     startTimeNanos: Long,

@@ -23,12 +23,14 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.SocketCreator
+import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.TetherClient
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SocketTagger
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
+import com.pyamsoft.tetherfi.server.proxy.session.tcp.enforceBandwidthLimit
 import io.ktor.network.sockets.BoundDatagramSocket
 import io.ktor.network.sockets.Datagram
 import io.ktor.network.sockets.InetSocketAddress
@@ -37,12 +39,17 @@ import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.core.build
 import java.net.DatagramSocket
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
+import kotlinx.io.InternalIoApi
 import kotlinx.io.Source
 import kotlinx.io.writeUShort
 
@@ -101,40 +108,40 @@ internal data class UDPRelayServer(
 
   @CheckResult
   private fun buildResponsePacket(data: Source): Source {
-    // Build the response message format
-    val responseWriter = Buffer()
+    return Buffer()
+        .apply {
+          // 2 reserved
+          writeByte(RESERVED_BYTE)
+          writeByte(RESERVED_BYTE)
 
-    // 2 reserved
-    responseWriter.writeByte(RESERVED_BYTE)
-    responseWriter.writeByte(RESERVED_BYTE)
+          // No fragment
+          writeByte(FRAGMENT_ZERO)
 
-    // No fragment
-    responseWriter.writeByte(FRAGMENT_ZERO)
+          // Address type is IPv4
+          writeByte(SOCKS5AddressType.IPV4.byte)
+          write(
+              server.localAddress
+                  .toJavaAddress()
+                  .cast<java.net.InetSocketAddress>()
+                  .requireNotNull { "server.localAddress was NOT  a java.net.InetSocketAddress" }
+                  .address
+                  .requireNotNull { "server.localAddress.address is NULL" }
+                  .address
+                  .requireNotNull { "server.localAddress.address bytes is NULL" },
+          )
+          writeUShort(proxyConnectionInfo.port.toUShort())
 
-    // Address type is IPv4
-    responseWriter.writeByte(SOCKS5AddressType.IPV4.byte)
-    responseWriter.write(
-        server.localAddress
-            .toJavaAddress()
-            .cast<java.net.InetSocketAddress>()
-            .requireNotNull { "server.localAddress was NOT  a java.net.InetSocketAddress" }
-            .address
-            .requireNotNull { "server.localAddress.address is NULL" }
-            .address
-            .requireNotNull { "server.localAddress.address bytes is NULL" },
-    )
-    responseWriter.writeUShort(proxyConnectionInfo.port.toUShort())
-
-    // Data
-    responseWriter.transferFrom(data)
-
-    // Respond with our message back to the client
-    return responseWriter.build()
+          // Data
+          transferFrom(data)
+        }
+        .build()
   }
 
   @CheckResult
-  fun relay(
+  @OptIn(InternalIoApi::class)
+  inline fun relay(
       scope: CoroutineScope,
+      crossinline onReport: suspend (ByteTransferReport) -> Unit,
   ): Job =
       scope.launch(context = serverDispatcher.primary) {
         // We need to create another bound socket that has a "output" port and address to send data
@@ -175,7 +182,7 @@ internal data class UDPRelayServer(
           if (!timeoutAfter.isInfinite()) {
             Timber.d { "Watch for UDP relay timeout $timeoutAfter" }
             scope.launch(context = serverDispatcher.sideEffect) {
-              while (isActive) {
+              while (!server.isClosed && isActive) {
                 delay(timeoutAfter)
 
                 val nowNano = System.nanoTime()
@@ -188,66 +195,137 @@ internal data class UDPRelayServer(
             }
           }
 
-          bound.use { socket ->
-            while (!server.isClosed) {
-              // Wait for a client message
-              val proxyReadPacket = server.receive()
+          // Proxy Reporting
+          val proxyToInternetBytes = MutableStateFlow(0L)
+          val internetToProxyBytes = MutableStateFlow(0L)
 
-              // Record activity
-              lastActivityNano = System.nanoTime()
+          val sendReport = suspend {
+            val report =
+                ByteTransferReport(
+                    // Reset back to 0 on send
+                    // If you don't reset, we will keep on sending a higher and higher number
+                    internetToProxy = internetToProxyBytes.getAndUpdate { 0 },
+                    proxyToInternet = proxyToInternetBytes.getAndUpdate { 0 },
+                )
+            onReport(report)
+          }
 
-              val proxyClientAddress =
-                  proxyReadPacket.address.cast<InetSocketAddress>().requireNotNull {
-                    "proxyReadPacket.address is not InetSocketAddress"
-                  }
-
-              // We expect this to be from the initial connection port
-              if (!isPacketFromClient(proxyClientAddress, proxyConnectionInfo)) {
-                Timber.w { "DROP: Packet was not from expected client: $proxyClientAddress" }
-                return@use
+          // Periodically report the transfer status
+          val reportJob =
+              scope.launch(context = serverDispatcher.sideEffect) {
+                while (!server.isClosed && isActive) {
+                  delay(5.seconds)
+                  sendReport()
+                }
               }
 
-              val packetDestination = readInputPacket(proxyReadPacket) ?: return@use
+          // Rate Limiting (inline for performance)
+          val bandwidthLimit = client.bandwidthLimit?.bytes ?: 0L
+          val mustEnforceBandwidthLimit = bandwidthLimit > 0
+          var startTimeNanos = System.nanoTime()
 
-              // Copy the input data for writing
-              val byteWriter =
-                  Buffer().apply {
-                    // Read the remaining back into a writer
-                    proxyReadPacket.packet.transferTo(this)
+          try {
+            bound.use { socket ->
+              while (!server.isClosed && isActive) {
+                // Wait for a client message
+                val proxyReadPacket = server.receive()
+
+                // Record activity
+                lastActivityNano = System.nanoTime()
+
+                val proxyClientAddress =
+                    proxyReadPacket.address.cast<InetSocketAddress>().requireNotNull {
+                      "proxyReadPacket.address is not InetSocketAddress"
+                    }
+
+                // We expect this to be from the initial connection port
+                if (!isPacketFromClient(proxyClientAddress, proxyConnectionInfo)) {
+                  Timber.w { "DROP: Packet was not from expected client: $proxyClientAddress" }
+                  return@use
+                }
+
+                val packetDestination = readInputPacket(proxyReadPacket) ?: return@use
+
+                // Copy the input data for writing
+                val byteWriter =
+                    Buffer()
+                        .apply {
+                          // Read the remaining back into a writer
+                          proxyReadPacket.packet.transferTo(this)
+                        }
+                        .build()
+
+                // Grab the amount we are going to write
+                val writeAmount = byteWriter.buffer.size
+
+                // Send the message we got from the client
+                socket.send(
+                    Datagram(
+                        address =
+                            InetSocketAddress(
+                                hostname = packetDestination.address.hostAddress.requireNotNull(),
+                                port = packetDestination.port.toInt(),
+                            ),
+                        packet = byteWriter,
+                    ),
+                )
+
+                // Record the write
+                if (writeAmount > 0) {
+                  proxyToInternetBytes.update { it + writeAmount }
+                }
+
+                // Record activity
+                lastActivityNano = System.nanoTime()
+
+                // Wait for a UDP response from real upstream
+                val response = socket.receive()
+
+                // Record activity
+                lastActivityNano = System.nanoTime()
+
+                // Respond with our message back to the client
+                val responsePacket = buildResponsePacket(response.packet)
+
+                // Grab the size we have read
+                val readAmount = responsePacket.buffer.size
+
+                server.send(
+                    Datagram(
+                        address = proxyClientAddress,
+                        packet = responsePacket,
+                    ),
+                )
+
+                // Record the read
+                if (readAmount > 0) {
+                  internetToProxyBytes.update { it + readAmount }
+                }
+
+                // Record activity
+                lastActivityNano = System.nanoTime()
+
+                // Rate Limiting
+                if (mustEnforceBandwidthLimit) {
+                  val resetNewTimeNanos =
+                      enforceBandwidthLimit(
+                          client = client,
+                          bandwidthLimit = bandwidthLimit,
+                          startTimeNanos = startTimeNanos,
+                          read = readAmount,
+                      )
+                  if (resetNewTimeNanos > 0) {
+                    startTimeNanos = resetNewTimeNanos
                   }
 
-              // Send the message we got from the client
-              socket.send(
-                  Datagram(
-                      address =
-                          InetSocketAddress(
-                              hostname = packetDestination.address.hostAddress.requireNotNull(),
-                              port = packetDestination.port.toInt(),
-                          ),
-                      packet = byteWriter.build()))
-
-              // Record activity
-              lastActivityNano = System.nanoTime()
-
-              // Wait for a UDP response from real upstream
-              val response = socket.receive()
-
-              // Record activity
-              lastActivityNano = System.nanoTime()
-
-              // Respond with our message back to the client
-              val responsePacket = buildResponsePacket(response.packet)
-
-              server.send(
-                  Datagram(
-                      address = proxyClientAddress,
-                      packet = responsePacket,
-                  ),
-              )
-
-              // Record activity
-              lastActivityNano = System.nanoTime()
+                  // Record activity again in case we were delayed by bandwidth limiter
+                  lastActivityNano = System.nanoTime()
+                }
+              }
             }
+          } finally {
+            reportJob.cancel()
+            sendReport()
           }
         }
       }

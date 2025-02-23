@@ -18,14 +18,14 @@ package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Stable
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Singleton
 class AppDevEnvironment

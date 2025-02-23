@@ -40,6 +40,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.socks.readUntilNullTermina
 import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
+import io.ktor.utils.io.core.build
 import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.readByte
 import io.ktor.utils.io.readPacket
@@ -205,13 +206,15 @@ internal constructor(
 
     private suspend inline fun sendPacket(builder: Sink.() -> Unit) {
       val packet =
-          Buffer().apply {
-            // VN
-            writeByte(SOCKS_VERSION_BYTE)
+          Buffer()
+              .apply {
+                // VN
+                writeByte(SOCKS_VERSION_BYTE)
 
-            // Builder
-            builder()
-          }
+                // Builder
+                builder()
+              }
+              .build()
 
       if (DEBUG_SOCKS_REPLIES) {
         Timber.d {
