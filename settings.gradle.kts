@@ -36,6 +36,8 @@ include(":info")
 
 include(":main")
 
+include(":networktest")
+
 include(":server")
 
 include(":service")

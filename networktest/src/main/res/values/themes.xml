@@ -1,0 +1,3 @@
+<resources>
+  <style name="Theme.TetherFi" parent="@android:style/Theme" />
+</resources>
