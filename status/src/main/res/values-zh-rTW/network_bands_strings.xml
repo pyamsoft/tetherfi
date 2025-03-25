@@ -30,4 +30,8 @@
   <string
     name="network_bands_modern_description"
   >較快但是並不相容於所有裝置</string>
+  <string name="network_bands_modern_6_title">6GHz</string>
+  <string
+    name="network_bands_modern_6_description"
+  >較快但是並不相容於所有裝置 (Wi-Fi 6)</string>
 </resources>

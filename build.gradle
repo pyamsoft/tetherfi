@@ -20,11 +20,11 @@ buildscript {
   ext {
     // SDK
     minSdk = 24
-    targetSdk = 35
-    compileSdk = 35
+    targetSdk = 36
+    compileSdk = 36
 
     // Kotlin
-    kotlin = "2.1.10"
+    kotlin = "2.1.20"
     coroutines = "1.10.1"
 
     // Us

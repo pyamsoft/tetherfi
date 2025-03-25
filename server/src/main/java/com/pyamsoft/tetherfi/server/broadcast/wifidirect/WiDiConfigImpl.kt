@@ -48,11 +48,32 @@ internal constructor(
 
   @CheckResult
   @RequiresApi(Build.VERSION_CODES.Q)
+  private fun getPreferredBandQ(band: ServerNetworkBand): Int =
+      when (band) {
+        ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
+        ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+        // API Q does not have support for other bands, just use the newest we can
+        else -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
+      }
+
+  @CheckResult
+  @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+  private fun getPreferredBandBaklava(band: ServerNetworkBand): Int =
+      when (band) {
+        // Baklava is the first to support Wifi 6
+        ServerNetworkBand.MODERN_6 -> WifiP2pConfig.GROUP_OWNER_BAND_6GHZ
+        else -> getPreferredBandQ(band)
+      }
+
+  @CheckResult
+  @RequiresApi(Build.VERSION_CODES.Q)
   private suspend fun getPreferredBand(): Int {
-    return when (preferences.listenForNetworkBandChanges().first()) {
-      ServerNetworkBand.MODERN -> WifiP2pConfig.GROUP_OWNER_BAND_5GHZ
-      ServerNetworkBand.LEGACY -> WifiP2pConfig.GROUP_OWNER_BAND_2GHZ
+    val band = preferences.listenForNetworkBandChanges().first()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+      return getPreferredBandBaklava(band)
     }
+
+    return getPreferredBandQ(band)
   }
 
   override suspend fun getConfiguration(): WifiP2pConfig? =

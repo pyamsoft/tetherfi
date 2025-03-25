@@ -16,12 +16,22 @@
 
 package com.pyamsoft.tetherfi.server
 
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 
 @Stable
 @Immutable
-enum class ServerNetworkBand {
-  LEGACY,
-  MODERN
+enum class ServerNetworkBand(val enabled: Boolean) {
+  // 2.4GHz
+  LEGACY(true),
+
+  // 5GHz
+  @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.Q)
+  MODERN(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q),
+
+  // 6GHz
+  @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.BAKLAVA)
+  MODERN_6(Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA),
 }
