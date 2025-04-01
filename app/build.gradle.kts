@@ -155,13 +155,16 @@ dependencies {
   debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
 
   // AndroidX
-  implementation("androidx.appcompat:appcompat:1.7.0")
+  implementation("androidx.appcompat:appcompat:${rootProject.extra["appCompat"]}")
   implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
 
   // Needed just for androidx.preference.PreferenceManager
   // Eventually, big G may push for DataStore being a requirement, which will be pain
   // This pulls in all the UI bits too, which is a little lame.
-  implementation("androidx.preference:preference:1.2.1")
+  implementation("androidx.preference:preference:${rootProject.extra["preferences"]}")
+
+  // DataStore
+  implementation("androidx.datastore:datastore-preferences:${rootProject.extra["dataStore"]}")
 
   // PYDroid
   implementation("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
