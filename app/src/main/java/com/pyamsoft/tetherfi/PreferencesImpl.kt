@@ -108,7 +108,6 @@ internal constructor(
       )
 
   private val preferences by lazy {
-    enforcer.assertOffMainThread()
     context.applicationContext.dataStore
   }
 
