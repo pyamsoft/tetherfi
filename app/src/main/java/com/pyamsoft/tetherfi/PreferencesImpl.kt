@@ -107,9 +107,7 @@ internal constructor(
           },
       )
 
-  private val preferences by lazy {
-    context.applicationContext.dataStore
-  }
+  private val preferences by lazy { context.applicationContext.dataStore }
 
   // Keep this lazy so that the fallback password is always the same
   private val fallbackPassword by lazy { PasswordGenerator.generate() }

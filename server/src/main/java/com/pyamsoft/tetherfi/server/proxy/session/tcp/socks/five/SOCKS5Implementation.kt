@@ -49,9 +49,12 @@ import io.ktor.utils.io.readByte
 import io.ktor.utils.io.writePacket
 import java.net.InetAddress
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.Buffer
 import kotlinx.io.Sink
@@ -62,10 +65,12 @@ import kotlinx.io.readByteArray
 internal class SOCKS5Implementation
 @Inject
 internal constructor(
+    @Named("app_scope") appScope: CoroutineScope,
     private val enforcer: ThreadEnforcer,
     socketTagger: SocketTagger,
 ) :
     BaseSOCKSImplementation<SOCKS5AddressType, SOCKS5Implementation.Responder>(
+        appScope = appScope,
         socketTagger = socketTagger,
     ) {
 
@@ -90,89 +95,101 @@ internal constructor(
       client: TetherClient,
       addressType: SOCKS5AddressType,
       responder: Responder,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      socketCreator.create { builder ->
-        val bound =
-            try {
-              builder
-                  .udp()
-                  .configure {
-                    reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
-                  }
-                  .also { socketTagger.tagSocket() }
-                  .let { b ->
-                    b.bind(
-                        localAddress =
-                            InetSocketAddress(
-                                hostname = connectionInfo.hostName,
-                                port = 0,
-                            ),
-                        configure = {
-                          reuseAddress = true
-                          // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                          // reusePort = true
-                        },
-                    )
-                  }
-                  .also {
-                    // Track server socket
-                    socketTracker.track(it)
-                  }
-            } catch (e: Throwable) {
-              if (e is TimeoutCancellationException) {
-                Timber.w { "Timeout while waiting for socket udp_assoc()" }
-                responder.sendRefusal()
+      socketCreator.create(
+          onError = {
+            // This error comes from the SelectorManager launch {} scope,
+            // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed
+            // that
+            // our custom dispatcher pool is around
+            appScope.launch(context = Dispatchers.IO) { onError(it) }
+          },
+          onBuild = { builder ->
+            val bound =
+                try {
+                  builder
+                      .udp()
+                      .configure {
+                        reuseAddress = true
+                        // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                        // reusePort = true
+                      }
+                      .also { socketTagger.tagSocket() }
+                      .let { b ->
+                        b.bind(
+                            localAddress =
+                                InetSocketAddress(
+                                    hostname = connectionInfo.hostName,
+                                    port = 0,
+                                ),
+                            configure = {
+                              reuseAddress = true
+                              // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                              // reusePort = true
+                            },
+                        )
+                      }
+                      .also {
+                        // Track server socket
+                        socketTracker.track(it)
+                      }
+                } catch (e: Throwable) {
+                  if (e is TimeoutCancellationException) {
+                    Timber.w { "Timeout while waiting for socket udp_assoc()" }
+                    responder.sendRefusal()
 
-                // Rethrow a cancellation exception
-                throw e
-              } else {
-                e.ifNotCancellation {
-                  Timber.e(e) { "Error during socket udp_assoc()" }
-                  responder.sendError()
-                  return@create
+                    // Rethrow a cancellation exception
+                    throw e
+                  } else {
+                    e.ifNotCancellation {
+                      Timber.e(e) { "Error during socket udp_assoc()" }
+                      responder.sendError()
+                      return@create
+                    }
+                  }
                 }
+
+            bound.use { server ->
+              val udpServer =
+                  UDPRelayServer(
+                      appScope = appScope,
+                      enforcer = enforcer,
+                      socketTagger = socketTagger,
+                      timeout = timeout,
+                      networkBinder = networkBinder,
+                      socketCreator = socketCreator,
+                      socketTracker = socketTracker,
+                      serverDispatcher = serverDispatcher,
+                      proxyConnectionInfo = proxyConnectionInfo,
+                      server = server,
+                      client = client,
+                  )
+
+              val relayConnection =
+                  udpServer.relay(
+                      scope = scope,
+                      onError = onError,
+                      onReport = onReport,
+                  )
+              try {
+                // Once the bind is open, we send the initial reply telling the client
+                // the IP and the port
+                responder.sendBindInitialized(
+                    addressType = addressType,
+                    bound = server.localAddress.cast(),
+                )
+
+                // Wait for the relay to finish
+                relayConnection.join()
+              } finally {
+                relayConnection.cancel()
+                Timber.d { "UDP association complete" }
               }
             }
-
-        bound.use { server ->
-          val udpServer =
-              UDPRelayServer(
-                  enforcer = enforcer,
-                  socketTagger = socketTagger,
-                  timeout = timeout,
-                  networkBinder = networkBinder,
-                  socketCreator = socketCreator,
-                  socketTracker = socketTracker,
-                  serverDispatcher = serverDispatcher,
-                  proxyConnectionInfo = proxyConnectionInfo,
-                  server = server,
-                  client = client,
-              )
-
-          val relayConnection =
-              udpServer.relay(
-                  scope = scope,
-                  onReport = onReport,
-              )
-          try {
-            // Once the bind is open, we send the initial reply telling the client
-            // the IP and the port
-            responder.sendBindInitialized(
-                addressType = addressType,
-                bound = server.localAddress.cast(),
-            )
-
-            // Wait for the relay to finish
-            relayConnection.join()
-          } finally {
-            relayConnection.cancel()
-            Timber.d { "UDP association complete" }
-          }
-        }
-      }
+          },
+      )
 
   override suspend fun handleSocksCommand(
       scope: CoroutineScope,
@@ -186,6 +203,7 @@ internal constructor(
       proxyConnectionInfo: ProxyConnectionInfo,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       withContext(context = serverDispatcher.primary) {
@@ -259,6 +277,7 @@ internal constructor(
             destinationAddress = packetDestination.address,
             destinationPort = packetDestination.port,
             addressType = packetDestination.addressType,
+            onError = onError,
             onReport = onReport,
         )
       }

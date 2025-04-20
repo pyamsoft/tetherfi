@@ -37,6 +37,7 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.TcpProxyData
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -45,6 +46,7 @@ internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
     @ServerInternalApi private val socketBinder: SocketBinder,
+    @Named("app_scope") private val appScope: CoroutineScope,
     @Named("http") private val httpSession: ProxySession<TcpProxyData>,
     @Named("socks") private val socksSession: ProxySession<TcpProxyData>,
     private val expertPreferences: ExpertPreferences,
@@ -67,17 +69,18 @@ internal constructor(
     enforcer.assertOffMainThread()
 
     return TcpProxyManager(
-        proxyType = proxyType,
+        appScope = appScope,
         socketTagger = socketTagger,
         appEnvironment = appEnvironment,
         yoloRepeatDelay = 3.seconds,
         enforcer = enforcer,
         serverStopConsumer = serverStopConsumer,
         socketBinder = socketBinder,
+        expertPreferences = expertPreferences,
+        proxyType = proxyType,
         session = session,
         hostConnection = info,
         port = port,
-        expertPreferences = expertPreferences,
         serverDispatcher = dispatcher,
         socketCreator = socketCreator,
     )

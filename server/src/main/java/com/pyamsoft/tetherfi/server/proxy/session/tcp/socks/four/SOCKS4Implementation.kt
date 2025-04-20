@@ -50,6 +50,7 @@ import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.UnknownHostException
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withContext
@@ -62,9 +63,11 @@ import kotlinx.io.readByteArray
 internal class SOCKS4Implementation
 @Inject
 internal constructor(
+    @Named("app_scope") appScope: CoroutineScope,
     socketTagger: SocketTagger,
 ) :
     BaseSOCKSImplementation<SOCKS4AddressType, SOCKS4Implementation.Responder>(
+        appScope = appScope,
         socketTagger = socketTagger,
     ) {
 
@@ -94,6 +97,7 @@ internal constructor(
       client: TetherClient,
       addressType: SOCKS4AddressType,
       responder: Responder,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) {
     Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
@@ -112,6 +116,7 @@ internal constructor(
       proxyConnectionInfo: ProxyConnectionInfo,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       withContext(context = serverDispatcher.primary) {
@@ -194,6 +199,7 @@ internal constructor(
             destinationPort = destinationPort,
             command = command,
             connectionInfo = connectionInfo,
+            onError = onError,
             onReport = onReport,
         )
       }

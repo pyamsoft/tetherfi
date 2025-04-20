@@ -22,7 +22,11 @@ import io.ktor.network.sockets.SocketBuilder
 
 interface SocketCreator {
 
-  @CheckResult suspend fun <T> create(block: suspend (SocketBuilder) -> T): T
+  @CheckResult
+  suspend fun <T> create(
+      onError: (Throwable) -> Unit,
+      onBuild: suspend (SocketBuilder) -> T,
+  ): T
 
   companion object {
 

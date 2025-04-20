@@ -25,7 +25,13 @@ internal constructor(
     private val serverDispatcher: ServerDispatcher,
 ) : SocketCreator {
 
-  override suspend fun <T> create(block: suspend (SocketBuilder) -> T): T {
-    return usingSocketBuilder(dispatcher = serverDispatcher.primary) { block(it) }
-  }
+  override suspend fun <T> create(
+      onError: (Throwable) -> Unit,
+      onBuild: suspend (SocketBuilder) -> T,
+  ): T =
+      usingSocketBuilder(
+          dispatcher = serverDispatcher.primary,
+          onError = onError,
+          onBuild = { onBuild(it) },
+      )
 }

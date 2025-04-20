@@ -40,8 +40,10 @@ import io.ktor.utils.io.ByteWriteChannel
 import java.net.InetAddress
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
 internal abstract class BaseSOCKSImplementation<
@@ -49,6 +51,7 @@ internal abstract class BaseSOCKSImplementation<
     R : BaseSOCKSImplementation.Responder<AT>,
 >
 protected constructor(
+    protected val appScope: CoroutineScope,
     protected val socketTagger: SocketTagger,
 ) : SOCKSImplementation<R> {
 
@@ -66,98 +69,109 @@ protected constructor(
       destinationPort: UShort,
       addressType: AT,
       responder: R,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      socketCreator.create { builder ->
-        val connected =
-            try {
-              builder
-                  .tcp()
-                  .configure {
-                    reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
-                  }
-                  .also { socketTagger.tagSocket() }
-                  .let { b ->
-                    // SOCKS protocol says you MUST time out after 2 minutes
-                    withTimeout(2.minutes) {
-                      val remote =
-                          InetSocketAddress(
-                              hostname = destinationAddress.hostName,
-                              port = destinationPort.toInt(),
-                          )
+      socketCreator.create(
+          onError = {
+            // This error comes from the SelectorManager launch {} scope,
+            // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed
+            // that
+            // our custom dispatcher pool is around
+            appScope.launch(context = Dispatchers.IO) { onError(it) }
+          },
+          onBuild = { builder ->
+            val connected =
+                try {
+                  builder
+                      .tcp()
+                      .configure {
+                        reuseAddress = true
+                        // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                        // reusePort = true
+                      }
+                      .also { socketTagger.tagSocket() }
+                      .let { b ->
+                        // SOCKS protocol says you MUST time out after 2 minutes
+                        withTimeout(2.minutes) {
+                          val remote =
+                              InetSocketAddress(
+                                  hostname = destinationAddress.hostName,
+                                  port = destinationPort.toInt(),
+                              )
 
-                      // This function uses our custom build of KTOR
-                      // which adds the [onBeforeConnect] hook to allow us
-                      // to use the socket created BEFORE connection starts.
-                      b.connectWithConfiguration(
-                          remoteAddress = remote,
-                          configure = {
-                            // By default KTOR does not close sockets until "infinity" is reached.
-                            val duration = timeout.timeoutDuration
-                            if (!duration.isInfinite()) {
-                              socketTimeout = duration.inWholeMilliseconds
-                            }
-                          },
-                          onBeforeConnect = { networkBinder.bindToNetwork(it) },
-                      )
+                          // This function uses our custom build of KTOR
+                          // which adds the [onBeforeConnect] hook to allow us
+                          // to use the socket created BEFORE connection starts.
+                          b.connectWithConfiguration(
+                              remoteAddress = remote,
+                              configure = {
+                                // By default KTOR does not close sockets until "infinity" is
+                                // reached.
+                                val duration = timeout.timeoutDuration
+                                if (!duration.isInfinite()) {
+                                  socketTimeout = duration.inWholeMilliseconds
+                                }
+                              },
+                              onBeforeConnect = { networkBinder.bindToNetwork(it) },
+                          )
+                        }
+                      }
+                      .also {
+                        // Track this socket for when we fully shut down
+                        socketTracker.track(it)
+                      }
+                } catch (e: Throwable) {
+                  if (e is TimeoutCancellationException) {
+                    Timber.w { "Timeout while waiting for socket connect()" }
+                    responder.sendRefusal()
+
+                    // Re-throw cancellation exceptions
+                    throw e
+                  } else {
+                    e.ifNotCancellation {
+                      Timber.e(e) { "Error during socket connect()" }
+                      responder.sendRefusal()
+                      return@create
                     }
                   }
-                  .also {
-                    // Track this socket for when we fully shut down
-                    socketTracker.track(it)
-                  }
-            } catch (e: Throwable) {
-              if (e is TimeoutCancellationException) {
-                Timber.w { "Timeout while waiting for socket connect()" }
-                responder.sendRefusal()
+                }
 
-                // Re-throw cancellation exceptions
-                throw e
-              } else {
+            connected.use { socket ->
+              val remote = socket.remoteAddress
+              Timber.d { "SOCKS CONNECTED: $remote" }
+              try {
+                // We've successfully connected, tell the client
+                responder.sendConnectSuccess(
+                    addressType = addressType,
+                    remote = remote.cast<InetSocketAddress>(),
+                )
+              } catch (e: Throwable) {
                 e.ifNotCancellation {
-                  Timber.e(e) { "Error during socket connect()" }
-                  responder.sendRefusal()
+                  Timber.e(e) { "Error sending connect() SUCCESS notification" }
                   return@create
                 }
               }
-            }
 
-        connected.use { socket ->
-          val remote = socket.remoteAddress
-          Timber.d { "SOCKS CONNECTED: $remote" }
-          try {
-            // We've successfully connected, tell the client
-            responder.sendConnectSuccess(
-                addressType = addressType,
-                remote = remote.cast<InetSocketAddress>(),
-            )
-          } catch (e: Throwable) {
-            e.ifNotCancellation {
-              Timber.e(e) { "Error sending connect() SUCCESS notification" }
-              return@create
+              socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
+                try {
+                  relayData(
+                      scope = scope,
+                      client = client,
+                      proxyInput = proxyInput,
+                      proxyOutput = proxyOutput,
+                      internetInput = internetInput,
+                      internetOutput = internetOutput,
+                      serverDispatcher = serverDispatcher,
+                      onReport = onReport,
+                  )
+                } finally {
+                  internetOutput.flush()
+                }
+              }
             }
-          }
-
-          socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
-            try {
-              relayData(
-                  scope = scope,
-                  client = client,
-                  proxyInput = proxyInput,
-                  proxyOutput = proxyOutput,
-                  internetInput = internetInput,
-                  internetOutput = internetOutput,
-                  serverDispatcher = serverDispatcher,
-                  onReport = onReport,
-              )
-            } finally {
-              internetOutput.flush()
-            }
-          }
-        }
-      }
+          },
+      )
 
   private suspend fun bind(
       scope: CoroutineScope,
@@ -171,107 +185,117 @@ protected constructor(
       destinationAddress: InetAddress,
       addressType: AT,
       responder: R,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
-      socketCreator.create { builder ->
-        val bound =
-            try {
-              builder
-                  .tcp()
-                  .configure {
-                    reuseAddress = true
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
-                  }
-                  .also { socketTagger.tagSocket() }
-                  .let { b ->
-                    Timber.d { "SOCKS BIND -> ${connectionInfo.hostName}" }
-                    b.bind(
-                        hostname = connectionInfo.hostName,
-                        port = 0,
-                        configure = {
-                          reuseAddress = true
-                          // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                          // reusePort = true
-                        },
-                    )
-                  }
-                  .also {
-                    // Track server socket
-                    socketTracker.track(it)
-                  }
-                  .use { server ->
+      socketCreator.create(
+          onError = {
+            // This error comes from the SelectorManager launch {} scope,
+            // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed
+            // that
+            // our custom dispatcher pool is around
+            appScope.launch(context = Dispatchers.IO) { onError(it) }
+          },
+          onBuild = { builder ->
+            val bound =
+                try {
+                  builder
+                      .tcp()
+                      .configure {
+                        reuseAddress = true
+                        // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                        // reusePort = true
+                      }
+                      .also { socketTagger.tagSocket() }
+                      .let { b ->
+                        Timber.d { "SOCKS BIND -> ${connectionInfo.hostName}" }
+                        b.bind(
+                            hostname = connectionInfo.hostName,
+                            port = 0,
+                            configure = {
+                              reuseAddress = true
+                              // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                              // reusePort = true
+                            },
+                        )
+                      }
+                      .also {
+                        // Track server socket
+                        socketTracker.track(it)
+                      }
+                      .use { server ->
 
-                    // SOCKS protocol says you MUST time out after 2 minutes
-                    val boundSocket = scope.async { withTimeout(2.minutes) { server.accept() } }
+                        // SOCKS protocol says you MUST time out after 2 minutes
+                        val boundSocket = scope.async { withTimeout(2.minutes) { server.accept() } }
 
-                    // Once the bind is open, we send the initial reply telling the client
-                    // the IP and the port
-                    responder.sendBindInitialized(
-                        addressType = addressType,
-                        bound = server.localAddress.cast(),
-                    )
+                        // Once the bind is open, we send the initial reply telling the client
+                        // the IP and the port
+                        responder.sendBindInitialized(
+                            addressType = addressType,
+                            bound = server.localAddress.cast(),
+                        )
 
-                    boundSocket.await()
+                        boundSocket.await()
+                      }
+                } catch (e: Throwable) {
+                  if (e is TimeoutCancellationException) {
+                    Timber.w { "Timeout while waiting for socket bind()" }
+                    responder.sendRefusal()
+
+                    // Rethrow a cancellation exception
+                    throw e
+                  } else {
+                    e.ifNotCancellation {
+                      Timber.e(e) { "Error during socket bind()" }
+                      responder.sendError()
+                      return@create
+                    }
                   }
-            } catch (e: Throwable) {
-              if (e is TimeoutCancellationException) {
-                Timber.w { "Timeout while waiting for socket bind()" }
+                }
+
+            // Track this socket for when we fully shut down
+            socketTracker.track(bound)
+
+            bound.use { socket ->
+              val hostAddress = socket.remoteAddress.cast<InetSocketAddress>().requireNotNull()
+              if (hostAddress.toJavaAddress() != destinationAddress) {
+                Timber.w { "bind() address $hostAddress != original $destinationAddress" }
                 responder.sendRefusal()
+                return@create
+              }
 
-                // Rethrow a cancellation exception
-                throw e
-              } else {
+              try {
+                responder.sendBindInitialized(
+                    addressType = addressType,
+                    bound = hostAddress,
+                )
+              } catch (e: Throwable) {
                 e.ifNotCancellation {
-                  Timber.e(e) { "Error during socket bind()" }
+                  Timber.e(e) { "Error sending bind() SUCCESS notification" }
                   responder.sendError()
                   return@create
                 }
               }
+
+              socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
+                try {
+                  relayData(
+                      scope = scope,
+                      client = client,
+                      serverDispatcher = serverDispatcher,
+                      proxyInput = proxyInput,
+                      proxyOutput = proxyOutput,
+                      internetInput = internetInput,
+                      internetOutput = internetOutput,
+                      onReport = onReport,
+                  )
+                } finally {
+                  internetOutput.flush()
+                }
+              }
             }
-
-        // Track this socket for when we fully shut down
-        socketTracker.track(bound)
-
-        bound.use { socket ->
-          val hostAddress = socket.remoteAddress.cast<InetSocketAddress>().requireNotNull()
-          if (hostAddress.toJavaAddress() != destinationAddress) {
-            Timber.w { "bind() address $hostAddress != original $destinationAddress" }
-            responder.sendRefusal()
-            return@create
-          }
-
-          try {
-            responder.sendBindInitialized(
-                addressType = addressType,
-                bound = hostAddress,
-            )
-          } catch (e: Throwable) {
-            e.ifNotCancellation {
-              Timber.e(e) { "Error sending bind() SUCCESS notification" }
-              responder.sendError()
-              return@create
-            }
-          }
-
-          socket.usingConnection(autoFlush = false) { internetInput, internetOutput ->
-            try {
-              relayData(
-                  scope = scope,
-                  client = client,
-                  serverDispatcher = serverDispatcher,
-                  proxyInput = proxyInput,
-                  proxyOutput = proxyOutput,
-                  internetInput = internetInput,
-                  internetOutput = internetOutput,
-                  onReport = onReport,
-              )
-            } finally {
-              internetOutput.flush()
-            }
-          }
-        }
-      }
+          },
+      )
 
   protected suspend fun performSOCKSCommand(
       scope: CoroutineScope,
@@ -290,6 +314,7 @@ protected constructor(
       destinationAddress: InetAddress,
       addressType: AT,
       responder: R,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       when (command) {
@@ -308,6 +333,7 @@ protected constructor(
               destinationPort = destinationPort,
               addressType = addressType,
               timeout = timeout,
+              onError = onError,
               onReport = onReport,
           )
         }
@@ -325,6 +351,7 @@ protected constructor(
               client = client,
               destinationAddress = destinationAddress,
               addressType = addressType,
+              onError = onError,
               onReport = onReport,
           )
         }
@@ -344,6 +371,7 @@ protected constructor(
               responder = responder,
               client = client,
               addressType = addressType,
+              onError = onError,
               onReport = onReport,
           )
         }
@@ -363,6 +391,7 @@ protected constructor(
       client: TetherClient,
       addressType: AT,
       responder: R,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   )
 

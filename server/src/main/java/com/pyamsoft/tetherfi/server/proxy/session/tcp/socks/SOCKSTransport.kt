@@ -100,6 +100,7 @@ internal constructor(
       socketTracker: SocketTracker,
       client: TetherClient,
       version: SOCKSVersion,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       withContext(context = serverDispatcher.primary) {
@@ -120,6 +121,7 @@ internal constructor(
                 proxyConnectionInfo = proxyConnectionInfo,
                 connectionInfo = connectionInfo,
                 client = client,
+                onError = onError,
                 onReport = onReport,
             )
           }
@@ -136,6 +138,7 @@ internal constructor(
                 proxyConnectionInfo = proxyConnectionInfo,
                 connectionInfo = connectionInfo,
                 client = client,
+                onError = onError,
                 onReport = onReport,
             )
           }

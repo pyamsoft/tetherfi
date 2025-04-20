@@ -45,6 +45,7 @@ internal interface SOCKSImplementation<R : SOCKSImplementation.Responder> {
       proxyConnectionInfo: ProxyConnectionInfo,
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
+      onError: suspend (Throwable) -> Unit,
       onReport: suspend (ByteTransferReport) -> Unit,
   )
 

@@ -61,6 +61,24 @@ internal constructor(
         transport = transport,
     ) {
 
+  private suspend fun handleProxyToInternetError(
+      throwable: Throwable,
+      client: TetherClient,
+      request: SOCKSVersion,
+      proxyOutput: ByteWriteChannel,
+  ) {
+    throwable.ifNotCancellation {
+      // Generally, the Transport should handle SocketTimeoutException itself.
+      // We capture here JUST in case
+      if (throwable is SocketTimeoutException) {
+        warnLog { "Proxy:Internet socket timeout! $request $client" }
+      } else {
+        errorLog(throwable) { "Error during Internet exchange $request $client" }
+        transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
+      }
+    }
+  }
+
   override val proxyType = SharedProxy.Type.SOCKS
 
   override suspend fun proxyToInternet(
@@ -95,19 +113,23 @@ internal constructor(
           networkBinder = networkBinder,
           client = client,
           version = request,
+          onError = {
+            handleProxyToInternetError(
+                throwable = it,
+                client = client,
+                request = request,
+                proxyOutput = proxyOutput,
+            )
+          },
           onReport = onReport,
       )
     } catch (e: Throwable) {
-      e.ifNotCancellation {
-        // Generally, the Transport should handle SocketTimeoutException itself.
-        // We capture here JUST in case
-        if (e is SocketTimeoutException) {
-          warnLog { "Proxy:Internet socket timeout! $request $client" }
-        } else {
-          errorLog(e) { "Error during Internet exchange $request $client" }
-          transport.writeProxyOutput(proxyOutput, request, TransportWriteCommand.ERROR)
-        }
-      }
+      handleProxyToInternetError(
+          throwable = e,
+          client = client,
+          request = request,
+          proxyOutput = proxyOutput,
+      )
     }
   }
 }

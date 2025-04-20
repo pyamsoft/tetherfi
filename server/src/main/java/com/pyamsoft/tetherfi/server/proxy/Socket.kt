@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.proxy
 
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.Timber
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
@@ -28,15 +29,24 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.cancel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 
 /** Build a socket in scope for a selector manager */
 internal inline fun <T> usingSocketBuilder(
     dispatcher: CoroutineDispatcher,
-    block: (SocketBuilder) -> T
+    crossinline onError: (Throwable) -> Unit,
+    onBuild: (SocketBuilder) -> T,
 ): T {
-  SelectorManager(dispatcher = dispatcher).use { manager ->
+  val exceptionHandler = CoroutineExceptionHandler { context, throwable ->
+    throwable.ifNotCancellation {
+      Timber.e(throwable) { "Error launching SelectorManager socket builder" }
+      onError(throwable)
+    }
+  }
+
+  return SelectorManager(dispatcher = dispatcher + exceptionHandler).use { manager ->
     val rawSocket = aSocket(manager)
-    return block(rawSocket)
+    return@use onBuild(rawSocket)
   }
 }
 

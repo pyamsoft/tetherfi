@@ -41,6 +41,7 @@ import java.net.DatagramSocket
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,7 @@ import kotlinx.io.Source
 import kotlinx.io.writeUShort
 
 internal data class UDPRelayServer(
+    private val appScope: CoroutineScope,
     private val enforcer: ThreadEnforcer,
     private val socketTagger: SocketTagger,
     private val timeout: ServerSocketTimeout,
@@ -141,193 +143,205 @@ internal data class UDPRelayServer(
   @OptIn(InternalIoApi::class)
   inline fun relay(
       scope: CoroutineScope,
+      crossinline onError: suspend (Throwable) -> Unit,
       crossinline onReport: suspend (ByteTransferReport) -> Unit,
   ): Job =
       scope.launch(context = serverDispatcher.primary) {
         // We need to create another bound socket that has a "output" port and address to send data
-        socketCreator.create { builder ->
-          val bound =
-              builder
-                  .udp()
-                  .configure {
-                    reuseAddress = true
+        socketCreator.create(
+            onError = {
+              // This error comes from the SelectorManager launch {} scope,
+              // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed
+              // that
+              // our custom dispatcher pool is around
+              appScope.launch(context = Dispatchers.IO) { onError(it) }
+            },
+            onBuild = { builder ->
+              val bound =
+                  builder
+                      .udp()
+                      .configure {
+                        reuseAddress = true
 
-                    // As of KTOR-3.0.0, this is not supported and crashes at runtime
-                    // reusePort = true
+                        // As of KTOR-3.0.0, this is not supported and crashes at runtime
+                        // reusePort = true
+                      }
+                      .also { socketTagger.tagSocket() }
+                      .bindWithConfiguration(
+                          onBeforeBind = { maybeDatagramSocket ->
+                            // This is an Any type because ktor itself does not rely on any Java
+                            //
+                            // so we have to pass an Any and then cast it out here in a context
+                            // where
+                            // we DO understand java
+                            val datagramSocket = maybeDatagramSocket.cast<DatagramSocket>()
+                            if (datagramSocket != null) {
+                              networkBinder.bindToNetwork(datagramSocket)
+                            }
+                          })
+                      .also {
+                        // Track server socket
+                        socketTracker.track(it)
+                      }
+
+              var lastActivityNano = System.nanoTime()
+
+              // Watch the client for timeout
+              //
+              // IF the last message we saw/sent was outside of the timeout period,
+              // kill this loop
+              val timeoutAfter = timeout.timeoutDuration
+              if (!timeoutAfter.isInfinite()) {
+                Timber.d { "Watch for UDP relay timeout $timeoutAfter" }
+                scope.launch(context = serverDispatcher.sideEffect) {
+                  while (!server.isClosed && isActive) {
+                    delay(timeoutAfter)
+
+                    val nowNano = System.nanoTime()
+                    val timeDiff = nowNano.nanoseconds - lastActivityNano.nanoseconds
+                    if (timeDiff > timeoutAfter) {
+                      Timber.w { "UDP relay has gone too long without activity. Close $client" }
+                      server.close()
+                    }
                   }
-                  .also { socketTagger.tagSocket() }
-                  .bindWithConfiguration(
-                      onBeforeBind = { maybeDatagramSocket ->
-                        // This is an Any type because ktor itself does not rely on any Java
-                        //
-                        // so we have to pass an Any and then cast it out here in a context where
-                        // we DO understand java
-                        val datagramSocket = maybeDatagramSocket.cast<DatagramSocket>()
-                        if (datagramSocket != null) {
-                          networkBinder.bindToNetwork(datagramSocket)
+                }
+              }
+
+              // Proxy Reporting
+              val proxyToInternetBytes = MutableStateFlow(0L)
+              val internetToProxyBytes = MutableStateFlow(0L)
+
+              val sendReport = suspend {
+                val report =
+                    ByteTransferReport(
+                        // Reset back to 0 on send
+                        // If you don't reset, we will keep on sending a higher and higher number
+                        internetToProxy = internetToProxyBytes.getAndUpdate { 0 },
+                        proxyToInternet = proxyToInternetBytes.getAndUpdate { 0 },
+                    )
+                onReport(report)
+              }
+
+              // Periodically report the transfer status
+              val reportJob =
+                  scope.launch(context = serverDispatcher.sideEffect) {
+                    while (!server.isClosed && isActive) {
+                      delay(5.seconds)
+                      sendReport()
+                    }
+                  }
+
+              // Rate Limiting (inline for performance)
+              val bandwidthLimit = client.bandwidthLimit?.bytes ?: 0L
+              val mustEnforceBandwidthLimit = bandwidthLimit > 0
+              var startTimeNanos = System.nanoTime()
+
+              try {
+                bound.use { socket ->
+                  while (!server.isClosed && isActive) {
+                    // Wait for a client message
+                    val proxyReadPacket = server.receive()
+
+                    // Record activity
+                    lastActivityNano = System.nanoTime()
+
+                    val proxyClientAddress =
+                        proxyReadPacket.address.cast<InetSocketAddress>().requireNotNull {
+                          "proxyReadPacket.address is not InetSocketAddress"
                         }
-                      })
-                  .also {
-                    // Track server socket
-                    socketTracker.track(it)
-                  }
 
-          var lastActivityNano = System.nanoTime()
-
-          // Watch the client for timeout
-          //
-          // IF the last message we saw/sent was outside of the timeout period,
-          // kill this loop
-          val timeoutAfter = timeout.timeoutDuration
-          if (!timeoutAfter.isInfinite()) {
-            Timber.d { "Watch for UDP relay timeout $timeoutAfter" }
-            scope.launch(context = serverDispatcher.sideEffect) {
-              while (!server.isClosed && isActive) {
-                delay(timeoutAfter)
-
-                val nowNano = System.nanoTime()
-                val timeDiff = nowNano.nanoseconds - lastActivityNano.nanoseconds
-                if (timeDiff > timeoutAfter) {
-                  Timber.w { "UDP relay has gone too long without activity. Close $client" }
-                  server.close()
-                }
-              }
-            }
-          }
-
-          // Proxy Reporting
-          val proxyToInternetBytes = MutableStateFlow(0L)
-          val internetToProxyBytes = MutableStateFlow(0L)
-
-          val sendReport = suspend {
-            val report =
-                ByteTransferReport(
-                    // Reset back to 0 on send
-                    // If you don't reset, we will keep on sending a higher and higher number
-                    internetToProxy = internetToProxyBytes.getAndUpdate { 0 },
-                    proxyToInternet = proxyToInternetBytes.getAndUpdate { 0 },
-                )
-            onReport(report)
-          }
-
-          // Periodically report the transfer status
-          val reportJob =
-              scope.launch(context = serverDispatcher.sideEffect) {
-                while (!server.isClosed && isActive) {
-                  delay(5.seconds)
-                  sendReport()
-                }
-              }
-
-          // Rate Limiting (inline for performance)
-          val bandwidthLimit = client.bandwidthLimit?.bytes ?: 0L
-          val mustEnforceBandwidthLimit = bandwidthLimit > 0
-          var startTimeNanos = System.nanoTime()
-
-          try {
-            bound.use { socket ->
-              while (!server.isClosed && isActive) {
-                // Wait for a client message
-                val proxyReadPacket = server.receive()
-
-                // Record activity
-                lastActivityNano = System.nanoTime()
-
-                val proxyClientAddress =
-                    proxyReadPacket.address.cast<InetSocketAddress>().requireNotNull {
-                      "proxyReadPacket.address is not InetSocketAddress"
+                    // We expect this to be from the initial connection port
+                    if (!isPacketFromClient(proxyClientAddress, proxyConnectionInfo)) {
+                      Timber.w { "DROP: Packet was not from expected client: $proxyClientAddress" }
+                      return@use
                     }
 
-                // We expect this to be from the initial connection port
-                if (!isPacketFromClient(proxyClientAddress, proxyConnectionInfo)) {
-                  Timber.w { "DROP: Packet was not from expected client: $proxyClientAddress" }
-                  return@use
-                }
+                    val packetDestination = readInputPacket(proxyReadPacket) ?: return@use
 
-                val packetDestination = readInputPacket(proxyReadPacket) ?: return@use
+                    // Copy the input data for writing
+                    val byteWriter =
+                        Buffer()
+                            .apply {
+                              // Read the remaining back into a writer
+                              proxyReadPacket.packet.transferTo(this)
+                            }
+                            .build()
 
-                // Copy the input data for writing
-                val byteWriter =
-                    Buffer()
-                        .apply {
-                          // Read the remaining back into a writer
-                          proxyReadPacket.packet.transferTo(this)
-                        }
-                        .build()
+                    // Grab the amount we are going to write
+                    val writeAmount = byteWriter.buffer.size
 
-                // Grab the amount we are going to write
-                val writeAmount = byteWriter.buffer.size
+                    // Send the message we got from the client
+                    socket.send(
+                        Datagram(
+                            address =
+                                InetSocketAddress(
+                                    hostname =
+                                        packetDestination.address.hostAddress.requireNotNull(),
+                                    port = packetDestination.port.toInt(),
+                                ),
+                            packet = byteWriter,
+                        ),
+                    )
 
-                // Send the message we got from the client
-                socket.send(
-                    Datagram(
-                        address =
-                            InetSocketAddress(
-                                hostname = packetDestination.address.hostAddress.requireNotNull(),
-                                port = packetDestination.port.toInt(),
-                            ),
-                        packet = byteWriter,
-                    ),
-                )
+                    // Record the write
+                    if (writeAmount > 0) {
+                      proxyToInternetBytes.update { it + writeAmount }
+                    }
 
-                // Record the write
-                if (writeAmount > 0) {
-                  proxyToInternetBytes.update { it + writeAmount }
-                }
+                    // Record activity
+                    lastActivityNano = System.nanoTime()
 
-                // Record activity
-                lastActivityNano = System.nanoTime()
+                    // Wait for a UDP response from real upstream
+                    val response = socket.receive()
 
-                // Wait for a UDP response from real upstream
-                val response = socket.receive()
+                    // Record activity
+                    lastActivityNano = System.nanoTime()
 
-                // Record activity
-                lastActivityNano = System.nanoTime()
+                    // Respond with our message back to the client
+                    val responsePacket = buildResponsePacket(response.packet)
 
-                // Respond with our message back to the client
-                val responsePacket = buildResponsePacket(response.packet)
+                    // Grab the size we have read
+                    val readAmount = responsePacket.buffer.size
 
-                // Grab the size we have read
-                val readAmount = responsePacket.buffer.size
+                    server.send(
+                        Datagram(
+                            address = proxyClientAddress,
+                            packet = responsePacket,
+                        ),
+                    )
 
-                server.send(
-                    Datagram(
-                        address = proxyClientAddress,
-                        packet = responsePacket,
-                    ),
-                )
+                    // Record the read
+                    if (readAmount > 0) {
+                      internetToProxyBytes.update { it + readAmount }
+                    }
 
-                // Record the read
-                if (readAmount > 0) {
-                  internetToProxyBytes.update { it + readAmount }
-                }
+                    // Record activity
+                    lastActivityNano = System.nanoTime()
 
-                // Record activity
-                lastActivityNano = System.nanoTime()
+                    // Rate Limiting
+                    if (mustEnforceBandwidthLimit) {
+                      val resetNewTimeNanos =
+                          enforceBandwidthLimit(
+                              client = client,
+                              bandwidthLimit = bandwidthLimit,
+                              startTimeNanos = startTimeNanos,
+                              read = readAmount,
+                          )
+                      if (resetNewTimeNanos > 0) {
+                        startTimeNanos = resetNewTimeNanos
+                      }
 
-                // Rate Limiting
-                if (mustEnforceBandwidthLimit) {
-                  val resetNewTimeNanos =
-                      enforceBandwidthLimit(
-                          client = client,
-                          bandwidthLimit = bandwidthLimit,
-                          startTimeNanos = startTimeNanos,
-                          read = readAmount,
-                      )
-                  if (resetNewTimeNanos > 0) {
-                    startTimeNanos = resetNewTimeNanos
+                      // Record activity again in case we were delayed by bandwidth limiter
+                      lastActivityNano = System.nanoTime()
+                    }
                   }
-
-                  // Record activity again in case we were delayed by bandwidth limiter
-                  lastActivityNano = System.nanoTime()
                 }
+              } finally {
+                reportJob.cancel()
+                sendReport()
               }
-            }
-          } finally {
-            reportJob.cancel()
-            sendReport()
-          }
-        }
+            },
+        )
       }
 
   companion object {

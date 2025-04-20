@@ -34,6 +34,7 @@ import io.ktor.network.sockets.isClosed
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -46,6 +47,7 @@ import kotlinx.coroutines.withContext
 internal abstract class BaseProxyManager<S : ASocket>
 protected constructor(
     protected val socketCreator: SocketCreator,
+    private val appScope: CoroutineScope,
     private val proxyType: SharedProxy.Type,
     private val enforcer: ThreadEnforcer,
     private val serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
@@ -265,28 +267,37 @@ protected constructor(
         val scope = this
 
         try {
-          return@withContext socketCreator.create { builder ->
-            openServer(builder = builder).use { server ->
-              onOpened()
+          return@withContext socketCreator.create(
+              onError = {
+                // This error comes from the SelectorManager launch {} scope,
+                // so everything may be dead. fallback to Dispatchers.IO since we cannot be
+                // guaranteed that
+                // our custom dispatcher pool is around
+                appScope.launch(context = Dispatchers.IO) { onError(it) }
+              },
+              onBuild = { builder ->
+                openServer(builder = builder).use { server ->
+                  onOpened()
 
-              // Track the sockets we open so that we can close them later
-              trackSockets(scope = scope) { tracker ->
-                try {
-                  runServer(
-                      server = server,
-                      tracker = tracker,
-                  )
-                } catch (e: Throwable) {
-                  e.ifNotCancellation {
-                    Timber.e(e) { "Error running server" }
-                    onError(e)
+                  // Track the sockets we open so that we can close them later
+                  trackSockets(scope = scope) { tracker ->
+                    try {
+                      runServer(
+                          server = server,
+                          tracker = tracker,
+                      )
+                    } catch (e: Throwable) {
+                      e.ifNotCancellation {
+                        Timber.e(e) { "Error running server" }
+                        onError(e)
+                      }
+                    }
                   }
-                }
-              }
 
-              onClosing()
-            }
-          }
+                  onClosing()
+                }
+              },
+          )
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error occurred while opening server" }

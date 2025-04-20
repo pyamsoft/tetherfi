@@ -63,6 +63,7 @@ internal constructor(
     private val yoloRepeatDelay: Duration,
     private val session: ProxySession<TcpProxyData>,
     private val expertPreferences: ExpertPreferences,
+    appScope: CoroutineScope,
     socketCreator: SocketCreator,
     proxyType: SharedProxy.Type,
     serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
@@ -70,6 +71,7 @@ internal constructor(
     serverDispatcher: ServerDispatcher
 ) :
     BaseProxyManager<ServerSocket>(
+        appScope = appScope,
         proxyType = proxyType,
         enforcer = enforcer,
         socketCreator = socketCreator,
