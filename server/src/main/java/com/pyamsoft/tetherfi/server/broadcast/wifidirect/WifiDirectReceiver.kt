@@ -33,8 +33,6 @@ import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +45,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiDirectReceiver
@@ -80,7 +80,7 @@ internal constructor(
         //
         // The service shutdown will properly clean up things like this WDN, as well as wakelocks
         // and notifications
-        shutdownBus.emit(ServerShutdownEvent)
+        shutdownBus.emit(ServerShutdownEvent(throwable = null))
       }
       else -> Timber.w { "Unknown Wifi p2p state: $p2pState" }
     }

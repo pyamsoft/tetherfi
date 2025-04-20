@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.event
+package com.pyamsoft.tetherfi.service.notification
 
-/**
- * Shut the server down
- *
- * Did it shut down because of an error?
- */
-data class ServerShutdownEvent(val throwable: Throwable?)
+import com.pyamsoft.pydroid.notify.NotifyData
+
+@ConsistentCopyVisibility
+internal data class ErrorNotificationData
+internal constructor(
+    val throwable: Throwable
+) : NotifyData

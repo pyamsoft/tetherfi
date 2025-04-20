@@ -23,8 +23,6 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
 import com.pyamsoft.tetherfi.service.foreground.ForegroundLauncher
 import com.pyamsoft.tetherfi.service.foreground.ForegroundWatcher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -32,6 +30,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ServiceRunner
@@ -77,11 +77,16 @@ internal constructor(
             Timber.d { "Refresh event received, start notification again" }
             notificationLauncher.update()
           },
-          onShutdownService = {
+          onShutdownService = { e ->
             Timber.d { "Shutdown event received!" }
 
             // Ensure we are on the main thread
             withContext(context = Dispatchers.Main) { serviceLauncher.stopForeground() }
+
+            // Show an error notification
+            if (e != null) {
+              notificationLauncher.showError(e)
+            }
           },
       )
     }

@@ -32,9 +32,6 @@ import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -52,6 +49,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 @Singleton
 internal class WifiSharedProxy
@@ -111,7 +111,7 @@ internal constructor(
 
     reset()
     status.set(RunningStatus.ProxyError(e))
-    shutdownBus.emit(ServerShutdownEvent)
+    shutdownBus.emit(ServerShutdownEvent(throwable = e))
   }
 
   private suspend fun beginProxyLoop(
