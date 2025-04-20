@@ -19,7 +19,5 @@ package com.pyamsoft.tetherfi.service.notification
 import com.pyamsoft.pydroid.notify.NotifyData
 
 @ConsistentCopyVisibility
-internal data class ErrorNotificationData
-internal constructor(
-    val throwable: Throwable
-) : NotifyData
+internal data class ErrorNotificationData internal constructor(val throwable: Throwable) :
+    NotifyData

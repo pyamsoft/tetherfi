@@ -47,6 +47,7 @@ fun TroubleshootDialog(
     broadcastType: BroadcastType?,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
+    throwable: Throwable?,
     onDismiss: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
@@ -72,6 +73,7 @@ fun TroubleshootDialog(
               broadcastType = broadcastType,
               isBroadcastError = isBroadcastError,
               isProxyError = isProxyError,
+              throwable = throwable,
           )
         }
       }
@@ -110,6 +112,7 @@ private fun PreviewTroubleshootDialog(
       broadcastType = broadcastType,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
+      throwable = RuntimeException("PREVIEW"),
       onDismiss = {},
   )
 }

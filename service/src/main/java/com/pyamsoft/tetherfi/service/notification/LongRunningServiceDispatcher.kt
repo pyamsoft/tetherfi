@@ -39,71 +39,72 @@ internal constructor(
     @Named("main_activity") mainActivityClass: Class<out Activity>,
     @StringRes @Named("app_name") appNameRes: Int,
     @Named("service") private val serviceClass: Class<out Service>,
-) : BaseDispatcher<ServerNotificationData>(
-    context = context,
-    mainActivityClass = mainActivityClass,
-    appNameRes = appNameRes,
-) {
+) :
+    BaseDispatcher<ServerNotificationData>(
+        context = context,
+        mainActivityClass = mainActivityClass,
+        appNameRes = appNameRes,
+    ) {
 
-    @CheckResult
-    private fun getServiceStopPendingIntent(): PendingIntent {
-        val appContext = context.applicationContext
-        val serviceIntent =
-            Intent(appContext, serviceClass).apply {
-                putExtra(
-                    NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION,
-                    NotificationLauncher.Actions.STOP.name
-                )
-            }
-        return PendingIntent.getService(
-            appContext,
-            REQUEST_CODE_SERVICE,
-            serviceIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-    }
-
-    override fun onCreateNotificationBuilder(
-        appName: String,
-        notification: ServerNotificationData,
-        builder: NotificationCompat.Builder
-    ): NotificationCompat.Builder = builder
-        .setSmallIcon(R.drawable.ic_wifi_tethering_24)
-        .setPriority(NotificationCompat.PRIORITY_LOW)
-        .setCategory(NotificationCompat.CATEGORY_SERVICE)
-        .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-        .addAction(
-            R.drawable.ic_wifi_tethering_off_24,
-            "Stop $appName Hotspot",
-            getServiceStopPendingIntent(),
-        )
-        .setContentTitle("$appName Running")
-        .setContentInfo("$appName Running")
-        .setSubText("$appName Running")
-        .setContentText(resolveContentText(appName, notification))
-
-    @CheckResult
-    private fun resolveContentText(
-        appName: String,
-        notification: ServerNotificationData,
-    ): String {
-        return when (notification.status) {
-            is RunningStatus.Error -> "Hotspot Error. Please open $appName and restart the Hotspot."
-            is RunningStatus.NotRunning -> "Hotspot preparing..."
-            is RunningStatus.Running ->
-                "Hotspot Ready. ${notification.clientCount} Clients. ${notification.blockCount} Blocked."
-
-            is RunningStatus.Starting -> "Hotspot starting..."
-            is RunningStatus.Stopping -> "Hotspot stopping..."
+  @CheckResult
+  private fun getServiceStopPendingIntent(): PendingIntent {
+    val appContext = context.applicationContext
+    val serviceIntent =
+        Intent(appContext, serviceClass).apply {
+          putExtra(
+              NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION,
+              NotificationLauncher.Actions.STOP.name)
         }
-    }
+    return PendingIntent.getService(
+        appContext,
+        REQUEST_CODE_SERVICE,
+        serviceIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+  }
 
-    override fun canShow(notification: NotifyData): Boolean {
-        return notification is ServerNotificationData
-    }
+  override fun onCreateNotificationBuilder(
+      appName: String,
+      notification: ServerNotificationData,
+      builder: NotificationCompat.Builder
+  ): NotificationCompat.Builder =
+      builder
+          .setSmallIcon(R.drawable.ic_wifi_tethering_24)
+          .setPriority(NotificationCompat.PRIORITY_LOW)
+          .setCategory(NotificationCompat.CATEGORY_SERVICE)
+          .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+          .addAction(
+              R.drawable.ic_wifi_tethering_off_24,
+              "Stop $appName Hotspot",
+              getServiceStopPendingIntent(),
+          )
+          .setContentTitle("$appName Running")
+          .setContentInfo("$appName Running")
+          .setSubText("$appName Running")
+          .setContentText(resolveContentText(appName, notification))
 
-    companion object {
+  @CheckResult
+  private fun resolveContentText(
+      appName: String,
+      notification: ServerNotificationData,
+  ): String {
+    return when (notification.status) {
+      is RunningStatus.Error -> "Hotspot Error. Please open $appName and restart the Hotspot."
+      is RunningStatus.NotRunning -> "Hotspot preparing..."
+      is RunningStatus.Running ->
+          "Hotspot Ready. ${notification.clientCount} Clients. ${notification.blockCount} Blocked."
 
-        private const val REQUEST_CODE_SERVICE = 133769
+      is RunningStatus.Starting -> "Hotspot starting..."
+      is RunningStatus.Stopping -> "Hotspot stopping..."
     }
+  }
+
+  override fun canShow(notification: NotifyData): Boolean {
+    return notification is ServerNotificationData
+  }
+
+  companion object {
+
+    private const val REQUEST_CODE_SERVICE = 133769
+  }
 }

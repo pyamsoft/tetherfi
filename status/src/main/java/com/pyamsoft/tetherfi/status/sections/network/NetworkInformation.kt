@@ -91,6 +91,20 @@ internal fun LazyListScope.renderNetworkInformation(
     val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
+
+    val errorThrowable =
+        remember(wiDiStatus, proxyStatus) {
+          if (wiDiStatus is RunningStatus.Error) {
+            return@remember wiDiStatus.throwable
+          }
+
+          if (proxyStatus is RunningStatus.Error) {
+            return@remember proxyStatus.throwable
+          }
+
+          return@remember null
+        }
+
     val showErrorHintMessage =
         remember(
             isBroadcastError,
@@ -119,6 +133,7 @@ internal fun LazyListScope.renderNetworkInformation(
             broadcastType = broadcastType,
             isBroadcastError = isBroadcastError,
             isProxyError = isProxyError,
+            throwable = errorThrowable,
         )
       }
     }

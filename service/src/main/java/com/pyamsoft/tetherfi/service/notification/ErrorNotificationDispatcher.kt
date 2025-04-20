@@ -33,29 +33,31 @@ internal constructor(
     context: Context,
     @Named("main_activity") mainActivityClass: Class<out Activity>,
     @StringRes @Named("app_name") appNameRes: Int,
-) : BaseDispatcher<ErrorNotificationData>(
-    context = context,
-    mainActivityClass = mainActivityClass,
-    appNameRes = appNameRes,
-) {
+) :
+    BaseDispatcher<ErrorNotificationData>(
+        context = context,
+        mainActivityClass = mainActivityClass,
+        appNameRes = appNameRes,
+    ) {
 
-    override fun onCreateNotificationBuilder(
-        appName: String,
-        notification: ErrorNotificationData,
-        builder: NotificationCompat.Builder
-    ): NotificationCompat.Builder = builder
-        .setSmallIcon(R.drawable.ic_wifi_tethering_24)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setCategory(NotificationCompat.CATEGORY_ERROR)
-        .setContentTitle("$appName Error")
-        .setContentInfo("$appName Error")
-        .setSubText("$appName Error")
-        .setContentText(
-            notification.throwable.message.orEmpty()
-                .ifBlank { "An unexpected error occurred. Please restart the $appName Hotspot." })
+  override fun onCreateNotificationBuilder(
+      appName: String,
+      notification: ErrorNotificationData,
+      builder: NotificationCompat.Builder
+  ): NotificationCompat.Builder =
+      builder
+          .setSmallIcon(R.drawable.ic_wifi_tethering_24)
+          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+          .setCategory(NotificationCompat.CATEGORY_ERROR)
+          .setContentTitle("$appName Error")
+          .setContentInfo("$appName Error")
+          .setSubText("$appName Error")
+          .setContentText(
+              notification.throwable.message.orEmpty().ifBlank {
+                "An unexpected error occurred. Please restart the $appName Hotspot."
+              })
 
-    override fun canShow(notification: NotifyData): Boolean {
-        return notification is ErrorNotificationData
-    }
-
+  override fun canShow(notification: NotifyData): Boolean {
+    return notification is ErrorNotificationData
+  }
 }

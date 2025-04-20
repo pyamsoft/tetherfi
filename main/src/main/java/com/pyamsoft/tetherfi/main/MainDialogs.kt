@@ -115,12 +115,30 @@ fun MainDialogs(
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
+    val errorThrowable =
+        remember(wiDiStatus, proxyStatus) {
+          wiDiStatus.also { w ->
+            if (w is RunningStatus.Error) {
+              return@remember w.throwable
+            }
+          }
+
+          proxyStatus.also { p ->
+            if (p is RunningStatus.Error) {
+              return@remember p.throwable
+            }
+          }
+
+          return@remember null
+        }
+
     TroubleshootDialog(
         modifier = dialogModifier,
         appName = appName,
         broadcastType = broadcastType,
         isBroadcastError = isBroadcastError,
         isProxyError = isProxyError,
+        throwable = errorThrowable,
         onDismiss = onDismissSetupError,
     )
   }

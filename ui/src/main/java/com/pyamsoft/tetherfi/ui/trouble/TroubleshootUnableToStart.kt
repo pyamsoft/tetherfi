@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
@@ -39,6 +40,7 @@ fun TroubleshootUnableToStart(
     broadcastType: BroadcastType?,
     isBroadcastError: Boolean,
     isProxyError: Boolean,
+    throwable: Throwable?,
 ) {
   val context = LocalContext.current
   val errType =
@@ -59,6 +61,7 @@ fun TroubleshootUnableToStart(
   val showTroubleshooting =
       remember(isBroadcastError, isProxyError) { isBroadcastError || isProxyError }
 
+  // TODO(Peter): Lazy column
   Column(
       modifier = modifier.padding(horizontal = MaterialTheme.keylines.content),
   ) {
@@ -149,6 +152,26 @@ fun TroubleshootUnableToStart(
           style = MaterialTheme.typography.bodyLarge,
       )
     }
+
+    throwable?.also { err ->
+      val title = remember(err) { err.message.orEmpty().ifBlank { "Unexpected Hotspot Error" } }
+      Text(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          text = title,
+          style = MaterialTheme.typography.bodyMedium,
+      )
+
+      val trace = remember(err) { err.stackTraceToString() }
+
+      Text(
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
+          text = trace,
+          style =
+              MaterialTheme.typography.bodySmall.copy(
+                  fontFamily = FontFamily.Monospace,
+              ),
+      )
+    }
   }
 }
 
@@ -164,6 +187,7 @@ private fun PreviewTroubleshootUnableToStart(
       broadcastType = broadcastType,
       isBroadcastError = isBroadcastError,
       isProxyError = isProxyError,
+      throwable = RuntimeException("PREVIEW"),
   )
 }
 

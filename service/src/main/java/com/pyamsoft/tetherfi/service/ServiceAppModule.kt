@@ -50,7 +50,9 @@ abstract class ServiceAppModule {
   @Binds
   @IntoSet
   @ServiceInternalApi
-  internal abstract fun bindLongRunningServiceDispatcher(impl: LongRunningServiceDispatcher): NotifyDispatcher<*>
+  internal abstract fun bindLongRunningServiceDispatcher(
+      impl: LongRunningServiceDispatcher
+  ): NotifyDispatcher<*>
 
   @Binds
   @IntoSet
