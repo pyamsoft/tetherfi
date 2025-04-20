@@ -62,6 +62,7 @@ fun TroubleshootUnableToStart(
       remember(isBroadcastError, isProxyError) { isBroadcastError || isProxyError }
 
   // TODO(Peter): Lazy column
+  // TODO(Peter): Checkbox to show stacktrace
   Column(
       modifier = modifier.padding(horizontal = MaterialTheme.keylines.content),
   ) {

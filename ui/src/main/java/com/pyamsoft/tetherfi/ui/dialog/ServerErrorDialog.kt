@@ -124,6 +124,8 @@ fun ServerErrorDialog(
             // Intentionally blank
           },
       )
+
+      // TODO(Peter): Checkbox to show stacktrace
       Card(
           shape =
               MaterialTheme.shapes.large.copy(
