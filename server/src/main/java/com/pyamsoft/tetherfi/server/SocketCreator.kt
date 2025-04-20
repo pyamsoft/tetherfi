@@ -17,23 +17,33 @@
 package com.pyamsoft.tetherfi.server
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import io.ktor.network.sockets.SocketBuilder
+import kotlinx.coroutines.CoroutineScope
 
 interface SocketCreator {
 
-  @CheckResult
-  suspend fun <T> create(
-      onError: (Throwable) -> Unit,
-      onBuild: suspend (SocketBuilder) -> T,
-  ): T
-
-  companion object {
-
-    @JvmStatic
     @CheckResult
-    fun create(dispatcher: ServerDispatcher): SocketCreator {
-      return DefaultSocketCreator(serverDispatcher = dispatcher)
+    suspend fun <T> create(
+        onError: (Throwable) -> Unit,
+        onBuild: suspend (SocketBuilder) -> T,
+    ): T
+
+    companion object {
+
+        @JvmStatic
+        @CheckResult
+        fun create(
+            appScope: CoroutineScope,
+            appEnvironment: AppDevEnvironment,
+            dispatcher: ServerDispatcher
+        ): SocketCreator {
+            return DefaultSocketCreator(
+                appScope = appScope,
+                appEnvironment = appEnvironment,
+                serverDispatcher = dispatcher,
+            )
+        }
     }
-  }
 }

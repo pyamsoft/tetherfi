@@ -16,22 +16,34 @@
 
 package com.pyamsoft.tetherfi.server
 
+import com.pyamsoft.tetherfi.core.AppDevEnvironment
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
 import io.ktor.network.sockets.SocketBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 
 internal class DefaultSocketCreator
 internal constructor(
+    private val appScope: CoroutineScope,
+    private val appEnvironment: AppDevEnvironment,
     private val serverDispatcher: ServerDispatcher,
 ) : SocketCreator {
 
   override suspend fun <T> create(
       onError: (Throwable) -> Unit,
       onBuild: suspend (SocketBuilder) -> T,
-  ): T =
-      usingSocketBuilder(
+  ): T {
+      val isFakeBuildError = appEnvironment.isSocketBuilderFake.first()
+      val isFakeOOM = appEnvironment.isSocketBuilderOOM.first()
+
+      return usingSocketBuilder(
+          appScope = appScope,
+          isFakeOOM = isFakeOOM,
+          isFakeBuildError = isFakeBuildError,
           dispatcher = serverDispatcher.primary,
           onError = onError,
           onBuild = { onBuild(it) },
       )
+  }
 }

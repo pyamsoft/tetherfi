@@ -30,9 +30,15 @@ import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.cancel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 
 /** Build a socket in scope for a selector manager */
 internal inline fun <T> usingSocketBuilder(
+    appScope: CoroutineScope,
+    // TODO
+    isFakeBuildError: Boolean,
+    // TODO
+    isFakeOOM: Boolean,
     dispatcher: CoroutineDispatcher,
     crossinline onError: (Throwable) -> Unit,
     onBuild: (SocketBuilder) -> T,

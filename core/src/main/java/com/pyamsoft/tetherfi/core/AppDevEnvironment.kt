@@ -18,14 +18,14 @@ package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Stable
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
 @Singleton
 class AppDevEnvironment
@@ -47,12 +47,18 @@ constructor(
   private val mutableProxyFakeError = MutableStateFlow(false)
   private val mutableYoloError = MutableStateFlow(false)
 
+  private val mutableSocketBuilderOOM = MutableStateFlow(false)
+  private val mutableSocketBuilderFake = MutableStateFlow(false)
+
   // Runtime flag
   private val mutableSocksProxyEnabled = MutableStateFlow(isDebugMode)
 
   val isBroadcastFakeError = mutableBroadcastFakeError.whenInAppDebugEnabled()
   val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
   val isYoloError = mutableYoloError.whenInAppDebugEnabled()
+
+    val isSocketBuilderOOM = mutableSocketBuilderOOM.whenInAppDebugEnabled()
+    val isSocketBuilderFake = mutableSocketBuilderFake.whenInAppDebugEnabled()
 
   override val isSocksProxyEnabled = mutableSocksProxyEnabled.whenInAppDebugEnabled()
 
@@ -108,6 +114,14 @@ constructor(
     mutableSocksProxyEnabled.update { !it }
   }
 
+    fun handleToggleSocketBuilderBuildErrorEnabled() {
+        mutableSocksProxyEnabled.update { !it }
+    }
+
+    fun handleToggleSocketBuilderOOMEnabled() {
+        mutableSocksProxyEnabled.update { !it }
+    }
+
   @CheckResult
   private fun StateFlow<Boolean>.whenInAppDebugEnabled(): Flow<Boolean> {
     return this.combineTransform(inAppDebug) { flag, isEnabled ->
@@ -144,5 +158,8 @@ constructor(
 
     const val IS_GROUP_FIELD_INITIAL_STATE: Boolean = false
     const val IS_CONNECTION_FIELD_INITIAL_STATE: Boolean = false
+
+    const val IS_SOCKET_FAKE_BUILD_FAILURE_INITIAL_STATE: Boolean = false
+    const val IS_SOCKET_FAKE_OOM_INITIAL_STATE: Boolean = false
   }
 }
