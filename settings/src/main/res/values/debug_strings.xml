@@ -59,4 +59,12 @@
   <string
     name="runtime_flag_enable_socks_proxy_description"
   >Enable experimental support for SOCKS proxy (4A / 5H)</string>
+  <string name="error_socket_oom_title">Fake Socket OOM</string>
+  <string
+    name="error_socket_oom_explain"
+  >Force the socket builder to simulate an OOM error</string>
+  <string name="error_socket_error_title">Fake Socket Error</string>
+  <string
+    name="error_socket_error_explain"
+  >Force the socket builder to simulate an a runtime error</string>
 </resources>

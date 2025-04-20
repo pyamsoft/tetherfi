@@ -18,14 +18,14 @@ package com.pyamsoft.tetherfi.core
 
 import androidx.annotation.CheckResult
 import androidx.compose.runtime.Stable
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Singleton
 class AppDevEnvironment
@@ -57,8 +57,8 @@ constructor(
   val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
   val isYoloError = mutableYoloError.whenInAppDebugEnabled()
 
-    val isSocketBuilderOOM = mutableSocketBuilderOOM.whenInAppDebugEnabled()
-    val isSocketBuilderFake = mutableSocketBuilderFake.whenInAppDebugEnabled()
+  override val isSocketBuilderOOM = mutableSocketBuilderOOM.whenInAppDebugEnabled()
+  override val isSocketBuilderFake = mutableSocketBuilderFake.whenInAppDebugEnabled()
 
   override val isSocksProxyEnabled = mutableSocksProxyEnabled.whenInAppDebugEnabled()
 
@@ -114,13 +114,13 @@ constructor(
     mutableSocksProxyEnabled.update { !it }
   }
 
-    fun handleToggleSocketBuilderBuildErrorEnabled() {
-        mutableSocksProxyEnabled.update { !it }
-    }
+  fun handleToggleSocketBuilderBuildErrorEnabled() {
+    mutableSocketBuilderFake.update { !it }
+  }
 
-    fun handleToggleSocketBuilderOOMEnabled() {
-        mutableSocksProxyEnabled.update { !it }
-    }
+  fun handleToggleSocketBuilderOOMEnabled() {
+    mutableSocketBuilderOOM.update { !it }
+  }
 
   @CheckResult
   private fun StateFlow<Boolean>.whenInAppDebugEnabled(): Flow<Boolean> {

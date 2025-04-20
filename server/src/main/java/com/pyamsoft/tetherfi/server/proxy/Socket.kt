@@ -31,13 +31,15 @@ import io.ktor.utils.io.cancel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 /** Build a socket in scope for a selector manager */
 internal inline fun <T> usingSocketBuilder(
     appScope: CoroutineScope,
-    // TODO
     isFakeBuildError: Boolean,
-    // TODO
     isFakeOOM: Boolean,
     dispatcher: CoroutineDispatcher,
     crossinline onError: (Throwable) -> Unit,
@@ -50,7 +52,21 @@ internal inline fun <T> usingSocketBuilder(
     }
   }
 
+  if (isFakeOOM) {
+    appScope.launch(context = Dispatchers.IO) {
+      delay(5.seconds)
+      onError(RuntimeException("DEBUG: Fake SocketBuilder OOM"))
+    }
+  }
+
   return SelectorManager(dispatcher = dispatcher + exceptionHandler).use { manager ->
+    if (isFakeBuildError) {
+      appScope.launch(context = Dispatchers.IO) {
+        delay(5.seconds)
+        onError(RuntimeException("DEBUG: Fake SocketBuilder Build Error"))
+      }
+    }
+
     val rawSocket = aSocket(manager)
     return@use onBuild(rawSocket)
   }

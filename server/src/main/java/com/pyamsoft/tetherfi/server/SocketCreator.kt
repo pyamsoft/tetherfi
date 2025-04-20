@@ -24,26 +24,26 @@ import kotlinx.coroutines.CoroutineScope
 
 interface SocketCreator {
 
+  @CheckResult
+  suspend fun <T> create(
+      onError: (Throwable) -> Unit,
+      onBuild: suspend (SocketBuilder) -> T,
+  ): T
+
+  companion object {
+
+    @JvmStatic
     @CheckResult
-    suspend fun <T> create(
-        onError: (Throwable) -> Unit,
-        onBuild: suspend (SocketBuilder) -> T,
-    ): T
-
-    companion object {
-
-        @JvmStatic
-        @CheckResult
-        fun create(
-            appScope: CoroutineScope,
-            appEnvironment: AppDevEnvironment,
-            dispatcher: ServerDispatcher
-        ): SocketCreator {
-            return DefaultSocketCreator(
-                appScope = appScope,
-                appEnvironment = appEnvironment,
-                serverDispatcher = dispatcher,
-            )
-        }
+    fun create(
+        appScope: CoroutineScope,
+        appEnvironment: AppDevEnvironment,
+        dispatcher: ServerDispatcher
+    ): SocketCreator {
+      return DefaultSocketCreator(
+          appScope = appScope,
+          appEnvironment = appEnvironment,
+          serverDispatcher = dispatcher,
+      )
     }
+  }
 }

@@ -59,6 +59,8 @@ private enum class SettingsContentTypes {
   DEBUG_CONN_EMPTY,
   DEBUG_CONN_GOOD,
   DEBUG_CONN_ERROR,
+  DEBUG_SOCKET_OOM,
+  DEBUG_SOCKET_ERROR,
   BOTTOM_SPACER,
   EXPERIMENT_EXPLAIN,
   EXPERIMENT_SOCKS,
@@ -359,6 +361,36 @@ private fun LazyListScope.renderExtraDebugContent(
         description = stringResource(R.string.error_connection_explain),
         checked = isConnectionFakeError,
         onCheckedChange = { appEnvironment.updateConnection(isError = it) },
+    )
+  }
+
+  item(
+      contentType = SettingsContentTypes.DEBUG_SOCKET_OOM,
+  ) {
+    val isSocketOOM by
+        appEnvironment.isSocketBuilderOOM.collectAsStateWithLifecycle(
+            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_OOM_INITIAL_STATE)
+    DebugItem(
+        modifier = itemModifier,
+        title = stringResource(R.string.error_socket_oom_title),
+        description = stringResource(R.string.error_socket_oom_explain),
+        checked = isSocketOOM,
+        onCheckedChange = { appEnvironment.handleToggleSocketBuilderOOMEnabled() },
+    )
+  }
+
+  item(
+      contentType = SettingsContentTypes.DEBUG_SOCKET_ERROR,
+  ) {
+    val isSocketFake by
+        appEnvironment.isSocketBuilderFake.collectAsStateWithLifecycle(
+            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_BUILD_FAILURE_INITIAL_STATE)
+    DebugItem(
+        modifier = itemModifier,
+        title = stringResource(R.string.error_socket_error_title),
+        description = stringResource(R.string.error_socket_error_explain),
+        checked = isSocketFake,
+        onCheckedChange = { appEnvironment.handleToggleSocketBuilderBuildErrorEnabled() },
     )
   }
 

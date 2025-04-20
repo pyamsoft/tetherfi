@@ -34,16 +34,16 @@ internal constructor(
       onError: (Throwable) -> Unit,
       onBuild: suspend (SocketBuilder) -> T,
   ): T {
-      val isFakeBuildError = appEnvironment.isSocketBuilderFake.first()
-      val isFakeOOM = appEnvironment.isSocketBuilderOOM.first()
+    val isFakeBuildError = appEnvironment.isSocketBuilderFake.first()
+    val isFakeOOM = appEnvironment.isSocketBuilderOOM.first()
 
-      return usingSocketBuilder(
-          appScope = appScope,
-          isFakeOOM = isFakeOOM,
-          isFakeBuildError = isFakeBuildError,
-          dispatcher = serverDispatcher.primary,
-          onError = onError,
-          onBuild = { onBuild(it) },
-      )
+    return usingSocketBuilder(
+        appScope = appScope,
+        isFakeOOM = isFakeOOM,
+        isFakeBuildError = isFakeBuildError,
+        dispatcher = serverDispatcher.primary,
+        onError = onError,
+        onBuild = { onBuild(it) },
+    )
   }
 }

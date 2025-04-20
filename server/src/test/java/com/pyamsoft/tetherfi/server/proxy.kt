@@ -36,6 +36,11 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertEquals
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -45,11 +50,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertEquals
-import kotlin.test.fail
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend inline fun setupProxy(
@@ -165,19 +165,20 @@ internal suspend inline fun setupProxy(
         override fun setPreferredNetwork(network: PreferredNetwork) {}
       }
 
-    val appEnvironment = AppDevEnvironment(
-        inAppDebug = flowOf(true),
-        isDebugMode = false,
-    )
-        .apply(appEnv)
+  val appEnvironment =
+      AppDevEnvironment(
+              inAppDebug = flowOf(true),
+              isDebugMode = true,
+          )
+          .apply(appEnv)
 
   val socketCreator =
       if (testSocketCrash)
           object : SocketCreator {
-              override suspend fun <T> create(
-                  onError: (Throwable) -> Unit,
-                  onBuild: suspend (SocketBuilder) -> T
-              ): T {
+            override suspend fun <T> create(
+                onError: (Throwable) -> Unit,
+                onBuild: suspend (SocketBuilder) -> T
+            ): T {
               throw IllegalStateException("Expected CRASH: Too many files")
             }
           }
