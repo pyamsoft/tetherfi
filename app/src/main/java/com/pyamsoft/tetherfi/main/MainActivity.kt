@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.pyamsoft.pydroid.arch.SaveStateDisposableEffect
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.pydroid.ui.app.PYDroidActivityDelegate
@@ -40,17 +41,21 @@ import com.pyamsoft.tetherfi.behavior.tweaks.ScreenOnHandler
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.service.ServiceLauncher
+import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var themeViewModeler: ThemeViewModeler? = null
-  @Inject @JvmField internal var launcher: ServiceLauncher? = null
+  @Inject @JvmField internal var serviceLauncher: ServiceLauncher? = null
   @Inject @JvmField internal var screenOnHandler: ScreenOnHandler? = null
   @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
+  @Inject @JvmField internal var notificationLauncher: NotificationLauncher? = null
 
   private var pydroid: PYDroidActivityDelegate? = null
 
@@ -160,14 +165,20 @@ class MainActivity : AppCompatActivity() {
   override fun onResume() {
     super.onResume()
     reportFullyDrawn()
+
+    // Cancel any old notifications
+    notificationLauncher?.also { l ->
+      lifecycleScope.launch(context = Dispatchers.Default) { l.hideError() }
+    }
   }
 
   override fun onDestroy() {
     super.onDestroy()
     pydroid = null
     themeViewModeler = null
-    launcher = null
+    serviceLauncher = null
     screenOnHandler = null
     mainViewModel = null
+    notificationLauncher = null
   }
 }

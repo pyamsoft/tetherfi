@@ -149,6 +149,7 @@ internal data class UDPRelayServer(
       scope.launch(context = serverDispatcher.primary) {
         // We need to create another bound socket that has a "output" port and address to send data
         socketCreator.create(
+            type = SocketCreator.Type.CLIENT,
             onError = {
               // This error comes from the SelectorManager launch {} scope,
               // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed

@@ -18,14 +18,13 @@ package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Activity
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.CheckResult
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
@@ -41,7 +40,7 @@ protected constructor(
     private val appNameRes: Int,
 ) : NotifyDispatcher<T> {
 
-  private val channelCreator by lazy {
+  protected val channelCreator by lazy {
     context.applicationContext.getSystemService<NotificationManager>().requireNotNull()
   }
 
@@ -62,27 +61,7 @@ protected constructor(
 
   private fun guaranteeNotificationChannelExists(channelInfo: NotifyChannelInfo) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val notificationGroup =
-          NotificationChannelGroup("${channelInfo.id} Group", "${channelInfo.title} Group")
-      val notificationChannel =
-          NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_LOW)
-              .apply {
-                group = notificationGroup.id
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                description = channelInfo.description
-                enableLights(false)
-                enableVibration(true)
-              }
-
-      channelCreator.apply {
-        // Delete the group if it already exists with a bad group ID
-        // Group ID and channel ID cannot match
-        if (notificationChannelGroups.firstOrNull { it.id == channelInfo.id } != null) {
-          deleteNotificationChannelGroup(channelInfo.id)
-        }
-        createNotificationChannelGroup(notificationGroup)
-        createNotificationChannel(notificationChannel)
-      }
+      onGuaranteeNotificationChannelExists(channelInfo)
     }
   }
 
@@ -95,8 +74,6 @@ protected constructor(
     return NotificationCompat.Builder(context.applicationContext, channelInfo.id)
         .setShowWhen(false)
         .setAutoCancel(false)
-        .setOngoing(true)
-        .setSilent(true)
         .setContentIntent(getActivityPendingIntent())
         .let { onCreateNotificationBuilder(appName, notification, it) }
   }
@@ -112,6 +89,9 @@ protected constructor(
         .setContentTitle(appName)
         .build()
   }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  protected abstract fun onGuaranteeNotificationChannelExists(channelInfo: NotifyChannelInfo)
 
   @CheckResult
   protected abstract fun onCreateNotificationBuilder(

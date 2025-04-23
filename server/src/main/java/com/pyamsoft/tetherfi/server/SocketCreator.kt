@@ -26,9 +26,15 @@ interface SocketCreator {
 
   @CheckResult
   suspend fun <T> create(
+      type: Type,
       onError: (Throwable) -> Unit,
       onBuild: suspend (SocketBuilder) -> T,
   ): T
+
+  enum class Type {
+    SERVER,
+    CLIENT,
+  }
 
   companion object {
 

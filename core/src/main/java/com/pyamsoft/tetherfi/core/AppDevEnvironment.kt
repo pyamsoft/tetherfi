@@ -47,8 +47,8 @@ constructor(
   private val mutableProxyFakeError = MutableStateFlow(false)
   private val mutableYoloError = MutableStateFlow(false)
 
-  private val mutableSocketBuilderOOM = MutableStateFlow(false)
-  private val mutableSocketBuilderFake = MutableStateFlow(false)
+  private val mutableSocketBuilderOOMServer = MutableStateFlow(false)
+  private val mutableSocketBuilderOOMClient = MutableStateFlow(false)
 
   // Runtime flag
   private val mutableSocksProxyEnabled = MutableStateFlow(isDebugMode)
@@ -57,8 +57,8 @@ constructor(
   val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
   val isYoloError = mutableYoloError.whenInAppDebugEnabled()
 
-  override val isSocketBuilderOOM = mutableSocketBuilderOOM.whenInAppDebugEnabled()
-  override val isSocketBuilderFake = mutableSocketBuilderFake.whenInAppDebugEnabled()
+  override val isSocketBuilderOOMServer = mutableSocketBuilderOOMServer.whenInAppDebugEnabled()
+  override val isSocketBuilderOOMClient = mutableSocketBuilderOOMClient.whenInAppDebugEnabled()
 
   override val isSocksProxyEnabled = mutableSocksProxyEnabled.whenInAppDebugEnabled()
 
@@ -114,12 +114,12 @@ constructor(
     mutableSocksProxyEnabled.update { !it }
   }
 
-  fun handleToggleSocketBuilderBuildErrorEnabled() {
-    mutableSocketBuilderFake.update { !it }
+  fun handleToggleSocketBuilderOOMClientEnabled() {
+    mutableSocketBuilderOOMClient.update { !it }
   }
 
-  fun handleToggleSocketBuilderOOMEnabled() {
-    mutableSocketBuilderOOM.update { !it }
+  fun handleToggleSocketBuilderOOMServerEnabled() {
+    mutableSocketBuilderOOMServer.update { !it }
   }
 
   @CheckResult
@@ -159,7 +159,7 @@ constructor(
     const val IS_GROUP_FIELD_INITIAL_STATE: Boolean = false
     const val IS_CONNECTION_FIELD_INITIAL_STATE: Boolean = false
 
-    const val IS_SOCKET_FAKE_BUILD_FAILURE_INITIAL_STATE: Boolean = false
-    const val IS_SOCKET_FAKE_OOM_INITIAL_STATE: Boolean = false
+    const val IS_SOCKET_FAKE_OOM_CLIENT_INITIAL_STATE: Boolean = false
+    const val IS_SOCKET_FAKE_OOM_SERVER_INITIAL_STATE: Boolean = false
   }
 }

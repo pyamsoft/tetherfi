@@ -368,14 +368,14 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_SOCKET_OOM,
   ) {
     val isSocketOOM by
-        appEnvironment.isSocketBuilderOOM.collectAsStateWithLifecycle(
-            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_OOM_INITIAL_STATE)
+        appEnvironment.isSocketBuilderOOMServer.collectAsStateWithLifecycle(
+            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_OOM_SERVER_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
-        title = stringResource(R.string.error_socket_oom_title),
-        description = stringResource(R.string.error_socket_oom_explain),
+        title = stringResource(R.string.error_socket_oom_server_title),
+        description = stringResource(R.string.error_socket_oom_server_explain),
         checked = isSocketOOM,
-        onCheckedChange = { appEnvironment.handleToggleSocketBuilderOOMEnabled() },
+        onCheckedChange = { appEnvironment.handleToggleSocketBuilderOOMServerEnabled() },
     )
   }
 
@@ -383,14 +383,14 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_SOCKET_ERROR,
   ) {
     val isSocketFake by
-        appEnvironment.isSocketBuilderFake.collectAsStateWithLifecycle(
-            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_BUILD_FAILURE_INITIAL_STATE)
+        appEnvironment.isSocketBuilderOOMClient.collectAsStateWithLifecycle(
+            AppDevEnvironment.Defaults.IS_SOCKET_FAKE_OOM_CLIENT_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
-        title = stringResource(R.string.error_socket_error_title),
-        description = stringResource(R.string.error_socket_error_explain),
+        title = stringResource(R.string.error_socket_oom_client_title),
+        description = stringResource(R.string.error_socket_oom_client_explain),
         checked = isSocketFake,
-        onCheckedChange = { appEnvironment.handleToggleSocketBuilderBuildErrorEnabled() },
+        onCheckedChange = { appEnvironment.handleToggleSocketBuilderOOMClientEnabled() },
     )
   }
 

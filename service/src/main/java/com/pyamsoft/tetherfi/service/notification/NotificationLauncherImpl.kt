@@ -21,7 +21,6 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
-import com.pyamsoft.pydroid.notify.NotifyId
 import com.pyamsoft.pydroid.notify.toNotifyId
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -29,17 +28,16 @@ import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class NotificationLauncherImpl
@@ -52,7 +50,6 @@ internal constructor(
     private val blockedClients: BlockedClients,
 ) : NotificationLauncher {
 
-  private val showingError = MutableStateFlow<NotifyId?>(null)
   private val showing = MutableStateFlow(false)
 
   private val clientCount = MutableStateFlow(0)
@@ -80,7 +77,7 @@ internal constructor(
       notifier
           .show(
               id = LONG_RUNNING_ID,
-              channelInfo = CHANNEL_INFO,
+              channelInfo = LONG_RUNNING_CHANNEL_INFO,
               notification = data,
           )
           .also { Timber.d { "Updated foreground notification: $it: $data" } }
@@ -185,25 +182,32 @@ internal constructor(
         .startForeground(
             service = service,
             id = LONG_RUNNING_ID,
-            channelInfo = CHANNEL_INFO,
+            channelInfo = LONG_RUNNING_CHANNEL_INFO,
             notification = data,
         )
         .also { Timber.d { "Started foreground notification: $it: $data" } }
   }
 
+  override suspend fun hideError() =
+      withContext(context = Dispatchers.Default) {
+        notifier.cancel(ERROR_ID)
+        return@withContext
+      }
+
   override suspend fun showError(throwable: Throwable) =
       withContext(context = Dispatchers.Default) {
-        showingError.update { existing ->
-          if (existing != null) {
-            notifier.cancel(existing)
-          }
+        // Hide any old ones first
+        hideError()
 
-          notifier.show(
-              id = ERROR_ID,
-              channelInfo = CHANNEL_INFO,
-              notification = ErrorNotificationData(throwable),
-          )
-        }
+        // Show a new one
+        notifier
+            .show(
+                id = ERROR_ID,
+                channelInfo = ERROR_CHANNEL_INFO,
+                notification = ErrorNotificationData(throwable),
+            )
+            .also { Timber.d { "Show error notification: $it: $throwable" } }
+        return@withContext
       }
 
   override suspend fun update() =
@@ -255,14 +259,19 @@ internal constructor(
             clientCount = 0,
             blockCount = 0,
         )
-
-    private val ERROR_ID = 133710.toNotifyId()
-
-    private val CHANNEL_INFO =
+    private val LONG_RUNNING_CHANNEL_INFO =
         NotifyChannelInfo(
             id = "channel_tetherfi_service_1",
             title = "TetherFi Proxy",
             description = "TetherFi Proxy Service",
+        )
+
+    private val ERROR_ID = 133710.toNotifyId()
+    private val ERROR_CHANNEL_INFO =
+        NotifyChannelInfo(
+            id = "channel_tetherfi_error_1",
+            title = "TetherFi Errors",
+            description = "TetherFi Errors",
         )
 
     private val EMPTY_WATCHER = NotificationLauncher.Watcher {}

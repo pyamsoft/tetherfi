@@ -22,18 +22,18 @@ import kotlinx.coroutines.flow.Flow
 interface ExperimentalRuntimeFlags {
 
   /**
-   * Fake an error during the socker builder launch{} hook
+   * Fake an error during the socket builder launch{} hook
    *
    * Simulates what happens when a low power device runs out of memory/FS handles
    */
-  val isSocketBuilderOOM: Flow<Boolean>
+  val isSocketBuilderOOMServer: Flow<Boolean>
 
   /**
    * Fake an error building the socket
    *
    * Simulates what happens when we can't allocate our own logic but are granted an FS handle
    */
-  val isSocketBuilderFake: Flow<Boolean>
+  val isSocketBuilderOOMClient: Flow<Boolean>
 
   /**
    * SOCKS proxy

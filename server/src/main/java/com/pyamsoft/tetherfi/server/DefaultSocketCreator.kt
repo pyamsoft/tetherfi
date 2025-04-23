@@ -31,16 +31,18 @@ internal constructor(
 ) : SocketCreator {
 
   override suspend fun <T> create(
+      type: SocketCreator.Type,
       onError: (Throwable) -> Unit,
       onBuild: suspend (SocketBuilder) -> T,
   ): T {
-    val isFakeBuildError = appEnvironment.isSocketBuilderFake.first()
-    val isFakeOOM = appEnvironment.isSocketBuilderOOM.first()
+    val isFakeClient = appEnvironment.isSocketBuilderOOMClient.first()
+    val isFakeOOMServer = appEnvironment.isSocketBuilderOOMServer.first()
 
     return usingSocketBuilder(
         appScope = appScope,
-        isFakeOOM = isFakeOOM,
-        isFakeBuildError = isFakeBuildError,
+        type = type,
+        isFakeOOMServer = isFakeOOMServer,
+        isFakeOOMClient = isFakeClient,
         dispatcher = serverDispatcher.primary,
         onError = onError,
         onBuild = { onBuild(it) },

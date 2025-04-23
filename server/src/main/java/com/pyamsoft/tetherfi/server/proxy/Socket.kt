@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy
 
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.server.SocketCreator
 import io.ktor.network.selector.SelectorManager
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.SocketBuilder
@@ -39,8 +40,9 @@ import kotlinx.coroutines.launch
 /** Build a socket in scope for a selector manager */
 internal inline fun <T> usingSocketBuilder(
     appScope: CoroutineScope,
-    isFakeBuildError: Boolean,
-    isFakeOOM: Boolean,
+    type: SocketCreator.Type,
+    isFakeOOMClient: Boolean,
+    isFakeOOMServer: Boolean,
     dispatcher: CoroutineDispatcher,
     crossinline onError: (Throwable) -> Unit,
     onBuild: (SocketBuilder) -> T,
@@ -52,21 +54,25 @@ internal inline fun <T> usingSocketBuilder(
     }
   }
 
-  if (isFakeOOM) {
-    appScope.launch(context = Dispatchers.IO) {
-      delay(5.seconds)
-      onError(RuntimeException("DEBUG: Fake SocketBuilder OOM"))
+  if (type == SocketCreator.Type.SERVER) {
+    if (isFakeOOMServer) {
+      appScope.launch(context = Dispatchers.IO) {
+        delay(5.seconds)
+        onError(RuntimeException("DEBUG: Fake Server SocketBuilder OOM"))
+      }
+    }
+  }
+
+  if (type == SocketCreator.Type.CLIENT) {
+    if (isFakeOOMClient) {
+      appScope.launch(context = Dispatchers.IO) {
+        delay(5.seconds)
+        onError(RuntimeException("DEBUG: Fake Client SocketBuilder OOM"))
+      }
     }
   }
 
   return SelectorManager(dispatcher = dispatcher + exceptionHandler).use { manager ->
-    if (isFakeBuildError) {
-      appScope.launch(context = Dispatchers.IO) {
-        delay(5.seconds)
-        onError(RuntimeException("DEBUG: Fake SocketBuilder Build Error"))
-      }
-    }
-
     val rawSocket = aSocket(manager)
     return@use onBuild(rawSocket)
   }

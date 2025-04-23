@@ -17,13 +17,20 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationChannelGroup
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.annotation.CheckResult
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.NotifyData
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.R
@@ -63,12 +70,39 @@ internal constructor(
     )
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
+  override fun onGuaranteeNotificationChannelExists(channelInfo: NotifyChannelInfo) {
+    val notificationGroup =
+        NotificationChannelGroup("${channelInfo.id} Group", "${channelInfo.title} Group")
+    val notificationChannel =
+        NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_LOW)
+            .apply {
+              group = notificationGroup.id
+              lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+              description = channelInfo.description
+              enableLights(false)
+              enableVibration(true)
+            }
+
+    channelCreator.apply {
+      // Delete the group if it already exists with a bad group ID
+      // Group ID and channel ID cannot match
+      if (notificationChannelGroups.firstOrNull { it.id == channelInfo.id } != null) {
+        deleteNotificationChannelGroup(channelInfo.id)
+      }
+      createNotificationChannelGroup(notificationGroup)
+      createNotificationChannel(notificationChannel)
+    }
+  }
+
   override fun onCreateNotificationBuilder(
       appName: String,
       notification: ServerNotificationData,
       builder: NotificationCompat.Builder
   ): NotificationCompat.Builder =
       builder
+          .setOngoing(true)
+          .setSilent(true)
           .setSmallIcon(R.drawable.ic_wifi_tethering_24)
           .setPriority(NotificationCompat.PRIORITY_LOW)
           .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -79,8 +113,6 @@ internal constructor(
               getServiceStopPendingIntent(),
           )
           .setContentTitle("$appName Running")
-          .setContentInfo("$appName Running")
-          .setSubText("$appName Running")
           .setContentText(resolveContentText(appName, notification))
 
   @CheckResult

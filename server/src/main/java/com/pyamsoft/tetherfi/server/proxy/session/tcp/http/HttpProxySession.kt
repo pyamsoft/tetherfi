@@ -87,6 +87,7 @@ internal constructor(
       crossinline block: suspend (ByteReadChannel, ByteWriteChannel) -> T
   ): T =
       socketCreator.create(
+          type = SocketCreator.Type.CLIENT,
           onError = onError,
           onBuild = { builder ->
             // We don't actually use the socket tls() method here since we are not a TLS server
