@@ -45,9 +45,9 @@ import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 

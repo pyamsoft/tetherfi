@@ -61,6 +61,10 @@ fun makeTestFeatureFlags(): FeatureFlags {
 fun makeTestRuntimeFlags(isSOCKSProxyEnabled: Boolean): ExperimentalRuntimeFlags {
   return object : ExperimentalRuntimeFlags {
     override val isSocksProxyEnabled = MutableStateFlow(isSOCKSProxyEnabled)
+
+    override val isSocketBuilderOOMClient = MutableStateFlow(false)
+
+    override val isSocketBuilderOOMServer = MutableStateFlow(false)
   }
 }
 
