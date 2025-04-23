@@ -70,7 +70,8 @@ class MainActivity : AppCompatActivity() {
                   override val changelog = buildChangeLog {
                     feature("Support Android 16 (API 36)")
                     feature("Support 6GHz Wi-Fi band on Android 16 devices")
-                    feature("Add an error notification when the hotspot is forced to shutdown due to errors")
+                    feature(
+                        "Add an error notification when the hotspot is forced to shutdown due to errors")
                     bugfix("Experimental: Fix some bugs in SOCKS UDP proxy")
                     bugfix("Fix a crash affecting devices with less than 2GB of RAM")
                     bugfix("Fix a crash encountered sometimes when starting the hotspot")
