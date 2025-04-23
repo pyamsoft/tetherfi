@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.server.proxy.session.tcp.http
 
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncher
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -51,6 +52,7 @@ internal class HttpProxySession
 @Inject
 internal constructor(
     @Named("app_scope") private val appScope: CoroutineScope,
+    private val notificationErrorLauncher: NotificationErrorLauncher,
     private val transport: HttpTransport,
     socketTagger: SocketTagger,
     blockedClients: BlockedClients,
@@ -88,7 +90,7 @@ internal constructor(
   ): T =
       socketCreator.create(
           type = SocketCreator.Type.CLIENT,
-          onError = onError,
+          onError = { onError },
           onBuild = { builder ->
             // We don't actually use the socket tls() method here since we are not a TLS server
             // We do the CONNECT based workaround to handle HTTPS connections
@@ -183,12 +185,20 @@ internal constructor(
             // that
             // our custom dispatcher pool is around
             appScope.launch(context = Dispatchers.IO) {
+              // Handle the error by killing the connection
               handleProxyToInternetError(
                   throwable = e,
                   proxyOutput = proxyOutput,
                   request = request,
                   client = client,
               )
+
+              // Also inform the user via error notification
+              // but do NOT shut down the hotspot
+              //
+              // Since this could potentially fire a lot, just update the notification to the latest
+              // one
+              notificationErrorLauncher.showError(e)
             }
           },
           block = { internetInput, internetOutput ->

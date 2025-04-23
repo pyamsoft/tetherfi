@@ -27,7 +27,6 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
 import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.status.RunningStatus
-import com.pyamsoft.tetherfi.service.ServiceInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +42,7 @@ import kotlinx.coroutines.withContext
 internal class NotificationLauncherImpl
 @Inject
 internal constructor(
-    @ServiceInternalApi private val notifier: Notifier,
+    private val notifier: Notifier,
     private val enforcer: ThreadEnforcer,
     private val networkStatus: BroadcastNetworkStatus,
     private val allowedClients: AllowedClients,
@@ -188,28 +187,6 @@ internal constructor(
         .also { Timber.d { "Started foreground notification: $it: $data" } }
   }
 
-  override suspend fun hideError() =
-      withContext(context = Dispatchers.Default) {
-        notifier.cancel(ERROR_ID)
-        return@withContext
-      }
-
-  override suspend fun showError(throwable: Throwable) =
-      withContext(context = Dispatchers.Default) {
-        // Hide any old ones first
-        hideError()
-
-        // Show a new one
-        notifier
-            .show(
-                id = ERROR_ID,
-                channelInfo = ERROR_CHANNEL_INFO,
-                notification = ErrorNotificationData(throwable),
-            )
-            .also { Timber.d { "Show error notification: $it: $throwable" } }
-        return@withContext
-      }
-
   override suspend fun update() =
       withContext(context = Dispatchers.Default) {
         if (!showing.value) {
@@ -264,14 +241,6 @@ internal constructor(
             id = "channel_tetherfi_service_1",
             title = "TetherFi Proxy",
             description = "TetherFi Proxy Service",
-        )
-
-    private val ERROR_ID = 133710.toNotifyId()
-    private val ERROR_CHANNEL_INFO =
-        NotifyChannelInfo(
-            id = "channel_tetherfi_error_1",
-            title = "TetherFi Errors",
-            description = "TetherFi Errors",
         )
 
     private val EMPTY_WATCHER = NotificationLauncher.Watcher {}

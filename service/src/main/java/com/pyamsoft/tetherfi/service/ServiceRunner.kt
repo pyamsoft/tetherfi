@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.service
 
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncher
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastEvent
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkUpdater
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastObserver
@@ -37,6 +38,7 @@ import kotlinx.coroutines.withContext
 class ServiceRunner
 @Inject
 internal constructor(
+    private val notificationErrorLauncher: NotificationErrorLauncher,
     private val notificationLauncher: NotificationLauncher,
     private val broadcastObserver: BroadcastObserver,
     private val foregroundWatcher: ForegroundWatcher,
@@ -59,9 +61,11 @@ internal constructor(
             is BroadcastEvent.ConnectionChanged -> {
               networkUpdater.updateNetworkInfo()
             }
+
             is BroadcastEvent.RequestPeers -> {
               networkUpdater.updateNetworkInfo()
             }
+
             is BroadcastEvent.Other -> {
               networkUpdater.updateNetworkInfo()
             }
@@ -85,7 +89,13 @@ internal constructor(
 
             // Show an error notification
             if (e != null) {
-              notificationLauncher.showError(e)
+              notificationErrorLauncher.apply {
+                // Hide the existing one
+                hideError()
+
+                // Show a new one
+                showError(e)
+              }
             }
           },
       )

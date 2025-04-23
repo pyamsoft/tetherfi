@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 pyamsoft
+ * Copyright 2025 pyamsoft
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.notification
+package com.pyamsoft.tetherfi.core.notification
 
-import com.pyamsoft.pydroid.notify.NotifyData
+/** TODO(Peter): Move out of core into a module shared by service and server */
+interface NotificationErrorLauncher {
 
-@ConsistentCopyVisibility
-internal data class ErrorNotificationData internal constructor(val throwable: Throwable) :
-    NotifyData
+  suspend fun showError(throwable: Throwable)
+
+  suspend fun hideError()
+}

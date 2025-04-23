@@ -37,10 +37,6 @@ interface NotificationLauncher {
 
   suspend fun update()
 
-  suspend fun showError(throwable: Throwable)
-
-  suspend fun hideError()
-
   enum class Actions {
     STOP
   }

@@ -16,17 +16,23 @@
 
 package com.pyamsoft.tetherfi.core
 
-import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncher
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncherImpl
 import dagger.Binds
 import dagger.Module
 
 @Module
 abstract class CoreAppModule {
 
-  @Binds @CheckResult internal abstract fun bindFeatureFlags(impl: AppFeatureFlags): FeatureFlags
+  // TODO(Peter): Move into slim shared module
+  @Binds
+  internal abstract fun bindErrorLauncher(
+      impl: NotificationErrorLauncherImpl
+  ): NotificationErrorLauncher
+
+  @Binds internal abstract fun bindFeatureFlags(impl: AppFeatureFlags): FeatureFlags
 
   @Binds
-  @CheckResult
   internal abstract fun bindExperimentalRuntimeFlags(
       impl: AppDevEnvironment
   ): ExperimentalRuntimeFlags

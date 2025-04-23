@@ -28,6 +28,7 @@ import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import com.pyamsoft.pydroid.notify.NotifyChannelInfo
 import com.pyamsoft.pydroid.notify.NotifyData
+import com.pyamsoft.tetherfi.core.notification.ErrorNotificationData
 import com.pyamsoft.tetherfi.service.R
 import javax.inject.Inject
 import javax.inject.Named

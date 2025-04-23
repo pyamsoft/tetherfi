@@ -39,9 +39,9 @@ import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
 import com.pyamsoft.tetherfi.behavior.tweaks.ScreenOnHandler
 import com.pyamsoft.tetherfi.core.Timber
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncher
 import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.service.ServiceLauncher
-import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
   @Inject @JvmField internal var serviceLauncher: ServiceLauncher? = null
   @Inject @JvmField internal var screenOnHandler: ScreenOnHandler? = null
   @Inject @JvmField internal var mainViewModel: MainViewModeler? = null
-  @Inject @JvmField internal var notificationLauncher: NotificationLauncher? = null
+  @Inject @JvmField internal var notificationErrorLauncher: NotificationErrorLauncher? = null
 
   private var pydroid: PYDroidActivityDelegate? = null
 
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
     reportFullyDrawn()
 
     // Cancel any old notifications
-    notificationLauncher?.also { l ->
+    notificationErrorLauncher?.also { l ->
       lifecycleScope.launch(context = Dispatchers.Default) { l.hideError() }
     }
   }
@@ -179,6 +179,6 @@ class MainActivity : AppCompatActivity() {
     serviceLauncher = null
     screenOnHandler = null
     mainViewModel = null
-    notificationLauncher = null
+    notificationErrorLauncher = null
   }
 }

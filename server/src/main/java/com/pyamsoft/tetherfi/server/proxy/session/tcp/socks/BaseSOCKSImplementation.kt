@@ -190,7 +190,7 @@ protected constructor(
       onReport: suspend (ByteTransferReport) -> Unit
   ) =
       socketCreator.create(
-          type = SocketCreator.Type.CLIENT,
+          type = SocketCreator.Type.SERVER,
           onError = {
             // This error comes from the SelectorManager launch {} scope,
             // so everything may be dead. fallback to Dispatchers.IO since we cannot be guaranteed

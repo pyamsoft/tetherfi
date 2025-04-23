@@ -47,6 +47,7 @@ abstract class ServiceAppModule {
 
   @Binds internal abstract fun bindPrereqs(impl: AndroidHotspotRequirements): HotspotRequirements
 
+  // TODO(Peter): Move into some shared module and scope
   @Binds
   @IntoSet
   @ServiceInternalApi
@@ -54,6 +55,7 @@ abstract class ServiceAppModule {
       impl: LongRunningServiceDispatcher
   ): NotifyDispatcher<*>
 
+  // TODO(Peter): Move into some shared module and scope
   @Binds
   @IntoSet
   @ServiceInternalApi
@@ -82,11 +84,11 @@ abstract class ServiceAppModule {
       return DefaultEventBus()
     }
 
+    // TODO(Peter): Move into some shared module and scope
     @Provides
     @Singleton
     @JvmStatic
     @CheckResult
-    @ServiceInternalApi
     internal fun provideNotifier(
         // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
         @ServiceInternalApi dispatchers: MutableSet<NotifyDispatcher<*>>,

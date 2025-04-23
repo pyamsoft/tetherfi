@@ -67,7 +67,7 @@ internal inline fun <T> usingSocketBuilder(
   if (type == SocketCreator.Type.CLIENT) {
     if (isFakeOOMClient) {
       appScope.launch(context = Dispatchers.IO) {
-        delay(100.milliseconds)
+        delay(10.milliseconds)
         onError(RuntimeException("DEBUG: Fake Client SocketBuilder OOM"))
       }
     }
