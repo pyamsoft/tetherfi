@@ -104,7 +104,6 @@ class TetherFi : Application() {
     private fun addLibraries() {
       OssLibraries.apply {
         usingNotify = true
-        usingAutopsy = true
         usingArch = true
         usingUi = true
       }

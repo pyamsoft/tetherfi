@@ -63,48 +63,56 @@ class ProxyPerformanceTest {
             for (i in 0 until jobCount) {
               val job =
                   async(context = Dispatchers.IO) {
-                    usingSocketBuilder(dispatcher) { builder ->
-                      try {
-                        builder
-                            .tcp()
-                            .connect(
-                                remoteAddress = proxyRemote,
-                                configure = {
-                                  reuseAddress = true
-                                  // As of KTOR-3.0.0, this is not supported and crashes at
-                                  // runtime
-                                  // reusePort = true
-                                },
-                            )
-                            .usingConnection(autoFlush = true) { read, write ->
-                              println("Send request $i")
-                              write.writeStringUtf8(request)
+                    usingSocketBuilder(
+                        type = SocketCreator.Type.SERVER,
+                        isFakeOOMServer = false,
+                        isFakeOOMClient = false,
+                        dispatcher = dispatcher,
+                        appScope = this,
+                        onError = {},
+                        onBuild = { builder ->
+                          try {
+                            builder
+                                .tcp()
+                                .connect(
+                                    remoteAddress = proxyRemote,
+                                    configure = {
+                                      reuseAddress = true
+                                      // As of KTOR-3.0.0, this is not supported and crashes at
+                                      // runtime
+                                      // reusePort = true
+                                    },
+                                )
+                                .usingConnection(autoFlush = true) { read, write ->
+                                  println("Send request $i")
+                                  write.writeStringUtf8(request)
 
-                              val dst = pool.borrow()
-                              try {
-                                val amt = read.readAvailable(dst)
+                                  val dst = pool.borrow()
+                                  try {
+                                    val amt = read.readAvailable(dst)
 
-                                val res =
-                                    String(dst.array(), 0, amt, Charsets.UTF_8)
-                                        // Correct all the CRLF newlines to normal newlines
-                                        // This is just for test correctness.
-                                        .replace(SOCKET_EOL, System.lineSeparator())
+                                    val res =
+                                        String(dst.array(), 0, amt, Charsets.UTF_8)
+                                            // Correct all the CRLF newlines to normal newlines
+                                            // This is just for test correctness.
+                                            .replace(SOCKET_EOL, System.lineSeparator())
 
-                                assertEquals(GET_EXPECT_RESPONSE, res)
-                                println("Got response $i")
-                                completed.update { it + 1 }
-                              } finally {
-                                pool.recycle(dst)
-                              }
+                                    assertEquals(GET_EXPECT_RESPONSE, res)
+                                    println("Got response $i")
+                                    completed.update { it + 1 }
+                                  } finally {
+                                    pool.recycle(dst)
+                                  }
+                                }
+                          } catch (e: Throwable) {
+                            e.ifNotCancellation {
+                              println("Error connecting proxy: $proxyRemote")
+                              e.printStackTrace()
+                              throw e
                             }
-                      } catch (e: Throwable) {
-                        e.ifNotCancellation {
-                          println("Error connecting proxy: $proxyRemote")
-                          e.printStackTrace()
-                          throw e
-                        }
-                      }
-                    }
+                          }
+                        },
+                    )
                   }
 
               jobs.add(job)

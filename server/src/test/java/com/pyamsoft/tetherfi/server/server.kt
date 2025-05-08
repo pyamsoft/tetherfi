@@ -99,28 +99,36 @@ internal suspend inline fun setupServer(
   delay(2.seconds)
 
   if (testServer) {
-    usingSocketBuilder(newSingleThreadContext("KTOR")) { b ->
-      b.tcp().connect(serverRemote).usingConnection(autoFlush = true) { read, write ->
-        val get =
-            """
+    usingSocketBuilder(
+        dispatcher = newSingleThreadContext("KTOR"),
+        type = SocketCreator.Type.SERVER,
+        isFakeOOMServer = false,
+        isFakeOOMClient = false,
+        appScope = scope,
+        onError = {},
+        onBuild = { b ->
+          b.tcp().connect(serverRemote).usingConnection(autoFlush = true) { read, write ->
+            val get =
+                """
               GET / HTTP/1.1${SOCKET_EOL}
 
               Host: ${HOSTNAME}:${serverPort}"""
-                .trimIndent() + SOCKET_EOL
+                    .trimIndent() + SOCKET_EOL
 
-        write.writeStringUtf8(get)
-        ByteBufferPool().use { pool ->
-          val dst = pool.borrow()
-          try {
-            val amt = read.readAvailable(dst)
-            val res = String(dst.array(), 0, amt, Charsets.UTF_8)
-            println("RESP: \"$res\"")
-          } finally {
-            pool.recycle(dst)
+            write.writeStringUtf8(get)
+            ByteBufferPool().use { pool ->
+              val dst = pool.borrow()
+              try {
+                val amt = read.readAvailable(dst)
+                val res = String(dst.array(), 0, amt, Charsets.UTF_8)
+                println("RESP: \"$res\"")
+              } finally {
+                pool.recycle(dst)
+              }
+            }
           }
-        }
-      }
-    }
+        },
+    )
   }
 
   println("Run test with live server")

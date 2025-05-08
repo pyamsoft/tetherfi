@@ -19,6 +19,7 @@ package com.pyamsoft.tetherfi.server
 import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
+import com.pyamsoft.tetherfi.core.notification.NotificationErrorLauncher
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.clients.AllowedClients
@@ -176,6 +177,7 @@ internal suspend inline fun setupProxy(
       if (testSocketCrash)
           object : SocketCreator {
             override suspend fun <T> create(
+                type: SocketCreator.Type,
                 onError: (Throwable) -> Unit,
                 onBuild: suspend (SocketBuilder) -> T
             ): T {
@@ -183,6 +185,13 @@ internal suspend inline fun setupProxy(
             }
           }
       else SocketCreator.create(scope, appEnvironment, dispatcher)
+
+  val notificationErrorLauncher =
+      object : NotificationErrorLauncher {
+        override suspend fun showError(throwable: Throwable) {}
+
+        override suspend fun hideError() {}
+      }
 
   val manager =
       TcpProxyManager(
@@ -198,6 +207,7 @@ internal suspend inline fun setupProxy(
                   enforcer = enforcer,
                   socketTagger = socketTagger,
                   clientResolver = resolver,
+                  notificationErrorLauncher = notificationErrorLauncher,
               ),
           hostConnection =
               BroadcastNetworkStatus.ConnectionInfo.Connected(

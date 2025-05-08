@@ -151,9 +151,6 @@ dependencies {
       "com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}")
   implementation("com.squareup.leakcanary:plumber-android:${rootProject.extra["leakCanary"]}")
 
-  // Autopsy
-  debugImplementation("com.github.pyamsoft.pydroid:autopsy:${rootProject.extra["pydroid"]}")
-
   // AndroidX
   implementation("androidx.appcompat:appcompat:${rootProject.extra["appCompat"]}")
   implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
