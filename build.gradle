@@ -25,38 +25,38 @@ buildscript {
 
     // Kotlin
     kotlin = "2.1.20"
-    coroutines = "1.10.1"
+    coroutines = "1.10.2"
 
     // Us
-    pydroid = "28.0.1"
+    pydroid = "29.0.0"
 
     // Square
     leakCanary = "2.14"
     timber = "5.0.1"
 
     // Compose
-    compose = "1.7.8"
-    composeMaterial3 = "1.3.1"
+    compose = "1.8.1"
+    composeMaterial3 = "1.3.2"
     composeActivity = "1.10.1"
 
     // AndroidX
-    core = "1.15.0"
+    core = "1.16.0"
     preferences = "1.2.1"
     appCompat = "1.7.0"
-    lifecycle = "2.8.7"
-    dataStore = "1.1.4"
+    lifecycle = "2.9.0"
+    dataStore = "1.1.6"
 
     // Coil
     coil = "3.1.0"
 
     // QR code
-    qrCode = "4.3.0"
+    qrCode = "4.4.1"
 
     // KTOR
     ktor = "3.1.1-PYAMSOFT"
 
     // Build and Sugar
-    dagger = "2.56.1"
+    dagger = "2.56.2"
     desugar = "2.1.5"
 
     // Testing
@@ -95,7 +95,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-1.0.32" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-2.0.1" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
