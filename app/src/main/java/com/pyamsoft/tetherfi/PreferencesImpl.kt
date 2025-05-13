@@ -44,6 +44,9 @@ import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,9 +57,6 @@ import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -179,7 +179,11 @@ internal constructor(
       )
 
   override fun listenForPasswordChanges(): Flow<String> =
-      getPreference(key = PASSWORD, value = fallbackPassword).flowOn(context = Dispatchers.IO)
+      getPreference(
+              key = PASSWORD,
+              value = fallbackPassword,
+          )
+          .flowOn(context = Dispatchers.IO)
 
   override fun setPassword(password: String) =
       setPreference(
