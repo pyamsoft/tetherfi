@@ -18,17 +18,19 @@ package com.pyamsoft.tetherfi
 
 import android.content.Context
 import androidx.annotation.CheckResult
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.SharedPreferencesMigration
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceManager
 import com.pyamsoft.pydroid.core.ThreadEnforcer
+import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.InAppRatingPreferences
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.ExpertPreferences
@@ -42,18 +44,19 @@ import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.random.Random
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 internal class PreferencesImpl
@@ -72,6 +75,11 @@ internal constructor(
   private val Context.dataStore by
       preferencesDataStore(
           name = "tetherfi_preferences",
+          corruptionHandler =
+              ReplaceFileCorruptionHandler { err ->
+                Timber.e(err) { "File corruption detected, start with empty Preferences" }
+                return@ReplaceFileCorruptionHandler emptyPreferences()
+              },
           produceMigrations = {
             listOf(
                 // NOTE(Peter): Since our shared preferences was the DEFAULT process one, loading up
@@ -118,16 +126,31 @@ internal constructor(
     )
   }
 
-  private inline fun setPreference(crossinline block: suspend (MutablePreferences) -> Unit) {
+  private inline fun <T : Any> setPreference(
+      key: Preferences.Key<T>,
+      fallbackValue: T,
+      crossinline value: suspend (Preferences) -> T
+  ) {
     scope.launch(context = Dispatchers.IO) {
-      enforcer.assertOffMainThread()
-
-      preferences.edit { settings ->
-        enforcer.assertOffMainThread()
-        block(settings)
+      try {
+        preferences.edit { it[key] = value(it) }
+      } catch (e: Throwable) {
+        e.ifNotCancellation { preferences.edit { it[key] = fallbackValue } }
       }
     }
   }
+
+  private fun <T : Any> getPreference(
+      key: Preferences.Key<T>,
+      value: T,
+  ): Flow<T> =
+      preferences.data
+          .map { it[key] ?: value }
+          .catch { err ->
+            Timber.e(err) { "Error reading from dataStore: ${key.name}" }
+            preferences.edit { it[key] = value }
+            emit(value)
+          }
 
   @CheckResult
   private fun Int.isInAppRatingAlreadyShown(): Boolean {
@@ -142,102 +165,139 @@ internal constructor(
       preferences[IN_APP_RATING_SHOWN_VERSION] ?: 0
 
   override fun listenForSsidChanges(): Flow<String> =
-      preferences.data.map { it[SSID] ?: ServerDefaults.WIFI_SSID }.flowOn(context = Dispatchers.IO)
+      getPreference(
+              key = SSID,
+              value = ServerDefaults.WIFI_SSID,
+          )
+          .flowOn(context = Dispatchers.IO)
 
-  override fun setSsid(ssid: String) = setPreference { it[SSID] = ssid }
+  override fun setSsid(ssid: String) =
+      setPreference(
+          key = SSID,
+          fallbackValue = ServerDefaults.WIFI_SSID,
+          value = { ssid },
+      )
 
   override fun listenForPasswordChanges(): Flow<String> =
-      preferences.data
-          .map { settings ->
-            val existingPassword = settings[PASSWORD]
+      getPreference(key = PASSWORD, value = fallbackPassword).flowOn(context = Dispatchers.IO)
 
-            if (existingPassword == null) {
-              // Side effect, create default password
-              preferences.edit { it[PASSWORD] = fallbackPassword }
-              return@map fallbackPassword
-            }
-
-            return@map existingPassword
-          }
-          .flowOn(context = Dispatchers.IO)
-
-  override fun setPassword(password: String) = setPreference { it[PASSWORD] = password }
+  override fun setPassword(password: String) =
+      setPreference(
+          key = PASSWORD,
+          fallbackValue = fallbackPassword,
+          value = { password },
+      )
 
   override fun listenForHttpPortChanges(): Flow<Int> =
-      preferences.data
-          .map { it[HTTP_PORT] ?: ServerDefaults.HTTP_PORT }
+      getPreference(key = HTTP_PORT, value = ServerDefaults.HTTP_PORT)
           .flowOn(context = Dispatchers.IO)
 
-  override fun setHttpPort(port: Int) = setPreference { it[HTTP_PORT] = port }
+  override fun setHttpPort(port: Int) =
+      setPreference(
+          key = HTTP_PORT,
+          fallbackValue = ServerDefaults.HTTP_PORT,
+          value = { port },
+      )
 
   override fun listenForSocksPortChanges(): Flow<Int> =
-      preferences.data
-          .map { it[SOCKS_PORT] ?: ServerDefaults.SOCKS_PORT }
+      getPreference(key = SOCKS_PORT, value = ServerDefaults.SOCKS_PORT)
           .flowOn(context = Dispatchers.IO)
 
-  override fun setSocksPort(port: Int) = setPreference { it[SOCKS_PORT] = port }
+  override fun setSocksPort(port: Int) =
+      setPreference(
+          key = SOCKS_PORT,
+          fallbackValue = ServerDefaults.SOCKS_PORT,
+          value = { port },
+      )
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
-      preferences.data
-          .map { it[NETWORK_BAND] ?: ServerDefaults.WIFI_NETWORK_BAND.name }
+      getPreference(key = NETWORK_BAND, value = ServerDefaults.WIFI_NETWORK_BAND.name)
           .map { ServerNetworkBand.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
-  override fun setNetworkBand(band: ServerNetworkBand) = setPreference {
-    it[NETWORK_BAND] = band.name
-  }
+  override fun setNetworkBand(band: ServerNetworkBand) =
+      setPreference(
+          key = NETWORK_BAND,
+          fallbackValue = ServerDefaults.WIFI_NETWORK_BAND.name,
+          value = { band.name },
+      )
 
   override fun listenForStartIgnoreVpn(): Flow<Boolean> =
-      preferences.data
-          .map { it[START_IGNORE_VPN] ?: DEFAULT_START_IGNORE_VPN }
+      getPreference(
+              key = START_IGNORE_VPN,
+              value = DEFAULT_START_IGNORE_VPN,
+          )
           .flowOn(context = Dispatchers.IO)
 
-  override fun setStartIgnoreVpn(ignore: Boolean) = setPreference { it[START_IGNORE_VPN] = ignore }
+  override fun setStartIgnoreVpn(ignore: Boolean) =
+      setPreference(
+          key = START_IGNORE_VPN,
+          fallbackValue = DEFAULT_START_IGNORE_VPN,
+          value = { ignore },
+      )
 
   override fun listenForStartIgnoreLocation(): Flow<Boolean> =
-      preferences.data
-          .map { it[START_IGNORE_LOCATION] ?: DEFAULT_START_IGNORE_LOCATION }
+      getPreference(
+              key = START_IGNORE_LOCATION,
+              value = DEFAULT_START_IGNORE_LOCATION,
+          )
           .flowOn(context = Dispatchers.IO)
 
-  override fun setStartIgnoreLocation(ignore: Boolean) = setPreference {
-    it[START_IGNORE_LOCATION] = ignore
-  }
+  override fun setStartIgnoreLocation(ignore: Boolean) =
+      setPreference(
+          key = START_IGNORE_LOCATION,
+          fallbackValue = DEFAULT_START_IGNORE_LOCATION,
+          value = { ignore },
+      )
 
   override fun listenForShutdownWithNoClients(): Flow<Boolean> =
-      preferences.data
-          .map { it[SHUTDOWN_NO_CLIENTS] ?: DEFAULT_SHUTDOWN_NO_CLIENTS }
+      getPreference(
+              key = SHUTDOWN_NO_CLIENTS,
+              value = DEFAULT_SHUTDOWN_NO_CLIENTS,
+          )
           .flowOn(context = Dispatchers.IO)
 
-  override fun setShutdownWithNoClients(shutdown: Boolean) = setPreference {
-    it[SHUTDOWN_NO_CLIENTS] = shutdown
-  }
+  override fun setShutdownWithNoClients(shutdown: Boolean) =
+      setPreference(
+          key = SHUTDOWN_NO_CLIENTS,
+          fallbackValue = DEFAULT_SHUTDOWN_NO_CLIENTS,
+          value = { shutdown },
+      )
 
   override fun listenForKeepScreenOn(): Flow<Boolean> =
-      preferences.data
-          .map { it[KEEP_SCREEN_ON] ?: DEFAULT_KEEP_SCREEN_ON }
+      getPreference(key = KEEP_SCREEN_ON, value = DEFAULT_KEEP_SCREEN_ON)
           .flowOn(context = Dispatchers.IO)
 
-  override fun setKeepScreenOn(keep: Boolean) = setPreference { it[KEEP_SCREEN_ON] = keep }
+  override fun setKeepScreenOn(keep: Boolean) =
+      setPreference(
+          key = KEEP_SCREEN_ON,
+          fallbackValue = DEFAULT_KEEP_SCREEN_ON,
+          value = { keep },
+      )
 
   override fun listenForBroadcastType(): Flow<BroadcastType> =
-      preferences.data
-          .map { it[BROADCAST_TYPE] ?: BroadcastType.WIFI_DIRECT.name }
+      getPreference(key = BROADCAST_TYPE, value = BroadcastType.WIFI_DIRECT.name)
           .map { BroadcastType.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
-  override fun setBroadcastType(type: BroadcastType) = setPreference {
-    it[BROADCAST_TYPE] = type.name
-  }
+  override fun setBroadcastType(type: BroadcastType) =
+      setPreference(
+          key = BROADCAST_TYPE,
+          fallbackValue = BroadcastType.WIFI_DIRECT.name,
+          value = { type.name },
+      )
 
   override fun listenForPreferredNetwork(): Flow<PreferredNetwork> =
-      preferences.data
-          .map { it[PREFERRED_NETWORK] ?: PreferredNetwork.NONE.name }
+      getPreference(key = PREFERRED_NETWORK, value = PreferredNetwork.NONE.name)
           .map { PreferredNetwork.valueOf(it) }
           .flowOn(context = Dispatchers.IO)
 
-  override fun setPreferredNetwork(network: PreferredNetwork) = setPreference {
-    it[PREFERRED_NETWORK] = network.name
-  }
+  override fun setPreferredNetwork(network: PreferredNetwork) =
+      setPreference(
+          key = PREFERRED_NETWORK,
+          fallbackValue = PreferredNetwork.NONE.name,
+          value = { network.name },
+      )
 
   override fun listenShowInAppRating(): Flow<Boolean> =
       combineTransform(
@@ -281,61 +341,93 @@ internal constructor(
               }
             }
           }
+          .catch { err ->
+            Timber.e(err) { "Error listening for composite showAppRating" }
+            preferences.edit { settings ->
+              settings[IN_APP_APP_OPENED] = 0
+              settings[IN_APP_HOTSPOT_USED] = 0
+              settings[IN_APP_DEVICES_CONNECTED] = 0
+              settings[IN_APP_RATING_SHOWN_VERSION] = 0
+            }
+            emit(false)
+          }
           // Need this or we run on the main thread
           .flowOn(context = Dispatchers.IO)
 
-  private inline fun updateInt(
-      preferences: MutablePreferences,
-      key: Preferences.Key<Int>,
-      mutate: (Int) -> Int,
-  ) {
-    val current = preferences[key] ?: 0
-    preferences[key] = mutate(current)
-  }
+  override fun markHotspotUsed() =
+      setPreference(
+          key = IN_APP_HOTSPOT_USED,
+          fallbackValue = 0,
+          value = { settings ->
+            val version = getInAppRatingShownVersion(settings)
+            val current = settings[IN_APP_HOTSPOT_USED] ?: 0
+            if (version.isInAppRatingAlreadyShown()) {
+              return@setPreference current
+            }
 
-  override fun markHotspotUsed() = setPreference { settings ->
-    val version = getInAppRatingShownVersion(settings)
-    if (!version.isInAppRatingAlreadyShown()) {
-      updateInt(settings, IN_APP_HOTSPOT_USED) { it + 1 }
-    }
-  }
+            return@setPreference current + 1
+          },
+      )
 
-  override fun markAppOpened() = setPreference { settings ->
-    val version = getInAppRatingShownVersion(settings)
-    if (!version.isInAppRatingAlreadyShown()) {
-      updateInt(settings, IN_APP_APP_OPENED) { it + 1 }
-    }
-  }
+  override fun markAppOpened() =
+      setPreference(
+          key = IN_APP_APP_OPENED,
+          fallbackValue = 0,
+          value = { settings ->
+            val version = getInAppRatingShownVersion(settings)
+            val current = settings[IN_APP_APP_OPENED] ?: 0
+            if (version.isInAppRatingAlreadyShown()) {
+              return@setPreference current
+            }
 
-  override fun markDeviceConnected() = setPreference { settings ->
-    val version = getInAppRatingShownVersion(settings)
-    if (!version.isInAppRatingAlreadyShown()) {
-      updateInt(settings, IN_APP_DEVICES_CONNECTED) { it + 1 }
-    }
-  }
+            return@setPreference current + 1
+          },
+      )
+
+  override fun markDeviceConnected() =
+      setPreference(
+          key = IN_APP_DEVICES_CONNECTED,
+          fallbackValue = 0,
+          value = { settings ->
+            val version = getInAppRatingShownVersion(settings)
+            val current = settings[IN_APP_DEVICES_CONNECTED] ?: 0
+            if (version.isInAppRatingAlreadyShown()) {
+              return@setPreference current
+            }
+
+            return@setPreference current + 1
+          },
+      )
 
   override fun listenForPerformanceLimits(): Flow<ServerPerformanceLimit> =
-      preferences.data
-          .map { it[SERVER_LIMITS] ?: ServerPerformanceLimit.Defaults.BOUND_3N_CPU.coroutineLimit }
+      getPreference(
+              key = SERVER_LIMITS,
+              value = ServerPerformanceLimit.Defaults.BOUND_3N_CPU.coroutineLimit,
+          )
           .map { ServerPerformanceLimit.create(it) }
 
-  override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) = setPreference {
-    it[SERVER_LIMITS] = limit.coroutineLimit
-  }
+  override fun setServerPerformanceLimit(limit: ServerPerformanceLimit) =
+      setPreference(
+          key = SERVER_LIMITS,
+          fallbackValue = ServerPerformanceLimit.Defaults.BOUND_3N_CPU.coroutineLimit,
+          value = { limit.coroutineLimit },
+      )
 
   override fun listenForSocketTimeout(): Flow<ServerSocketTimeout> =
-      preferences.data
-          .map {
-            it[SOCKET_TIMEOUT]
-                ?: ServerSocketTimeout.Defaults.BALANCED.timeoutDuration.inWholeSeconds
-          }
+      getPreference(
+              key = SOCKET_TIMEOUT,
+              value = ServerSocketTimeout.Defaults.BALANCED.timeoutDuration.inWholeSeconds,
+          )
           .map { ServerSocketTimeout.create(it) }
 
-  override fun setSocketTimeout(limit: ServerSocketTimeout) = setPreference { settings ->
-    val seconds =
-        if (limit.timeoutDuration.isInfinite()) -1 else limit.timeoutDuration.inWholeSeconds
-    settings[SOCKET_TIMEOUT] = seconds
-  }
+  override fun setSocketTimeout(limit: ServerSocketTimeout) =
+      setPreference(
+          key = SOCKET_TIMEOUT,
+          fallbackValue = ServerSocketTimeout.Defaults.BALANCED.timeoutDuration.inWholeSeconds,
+          value = {
+            if (limit.timeoutDuration.isInfinite()) -1 else limit.timeoutDuration.inWholeSeconds
+          },
+      )
 
   private object PasswordGenerator {
 
