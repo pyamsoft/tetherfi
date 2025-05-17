@@ -24,7 +24,7 @@ buildscript {
     compileSdk = 36
 
     // Kotlin
-    kotlin = "2.1.20"
+    kotlin = "2.1.21"
     coroutines = "1.10.2"
 
     // Us
@@ -47,7 +47,7 @@ buildscript {
     dataStore = "1.1.6"
 
     // Coil
-    coil = "3.1.0"
+    coil = "3.2.0"
 
     // QR code
     qrCode = "4.4.1"
@@ -67,7 +67,7 @@ buildscript {
 plugins {
   // Android AGP
   // https://developer.android.com/studio/build#top-level
-  id("com.android.library") version '8.9.2' apply false
+  id("com.android.library") version '8.10.0' apply false
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
