@@ -159,9 +159,15 @@ allprojects {
       endWithNewline()
       leadingTabsToSpaces(2)
     }
+    kotlinGradle {
+      target("*.gradle.kts")
+
+      trimTrailingWhitespace()
+      endWithNewline()
+      leadingTabsToSpaces(2)
+    }
     groovyGradle {
       target("*.gradle")
-      greclipse()
 
       trimTrailingWhitespace()
       endWithNewline()
