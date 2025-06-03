@@ -89,16 +89,22 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
   ) {}
 
   companion object {
+    // Ordered by preferred interface prefix
     private val EXPECTED_RNDIS_NAME_PREFIX_LIST =
         arrayOf(
             // Samsung?
             "rndis",
 
             // https://github.com/pyamsoft/tetherfi/issues/351
-            "ncm")
+            "ncm",
+
+            // https://github.com/pyamsoft/tetherfi/issues/394#issuecomment-2930177923
+            "usb",
+        )
     private val EXPECTED_RNDIS_IP_PREFIX_LIST =
         arrayOf(
             // Samsung? and others?
-            "192.168.")
+            "192.168.",
+        )
   }
 }
