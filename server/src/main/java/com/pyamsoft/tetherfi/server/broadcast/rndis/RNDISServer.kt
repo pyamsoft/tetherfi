@@ -21,14 +21,15 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
-import java.net.NetworkInterface
-import java.util.Enumeration
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.util.Enumeration
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class RNDISServer @Inject internal constructor() : BroadcastServerImplementation<String> {
@@ -57,7 +58,27 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         }
 
         // Couldn't find RNDIS
-        throw IllegalStateException("Missing USB Tethering connection")
+        val allIfaceNames =
+            allIfaces
+                ?.asSequence()
+                .orEmpty()
+                .map { iface ->
+                  return@map IfacePairing(
+                      name = iface.name.orEmpty(),
+                      address =
+                          iface.inetAddresses
+                              .asSequence()
+                              .filter { it is Inet4Address }
+                              .filterNot { it.isLoopbackAddress }
+                              .map { it.hostName.orEmpty() }
+                              .toList(),
+                  )
+                }
+                .filter { it.name.isNotBlank() }
+                .filter { it.address.isNotEmpty() }
+                .toList()
+
+        throw IllegalStateException("Missing USB Tethering connection. Tried=${allIfaceNames}")
       }
 
   override suspend fun withLockStartBroadcast(
@@ -87,6 +108,11 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
       scope: CoroutineScope,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
   ) {}
+
+  private data class IfacePairing(
+      val name: String,
+      val address: List<String>,
+  )
 
   companion object {
     // Ordered by preferred interface prefix
