@@ -161,6 +161,7 @@ allprojects {
     }
     kotlinGradle {
       target("*.gradle.kts")
+      ktfmt()
 
       trimTrailingWhitespace()
       endWithNewline()
