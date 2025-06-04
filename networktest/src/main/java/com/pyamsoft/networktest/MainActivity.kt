@@ -30,10 +30,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.net.NetworkInterface
-import java.util.Enumeration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.util.Enumeration
 
 class MainActivity : ComponentActivity() {
 
@@ -48,14 +49,25 @@ class MainActivity : ComponentActivity() {
           if (allIfaces != null) {
             val newLines = mutableListOf<String>()
             for (iface in allIfaces) {
-              val name = iface.name.orEmpty().ifBlank { "MISSING NAME" }
+              val name = iface.name.orEmpty()
+              if (name.isBlank()) {
+                continue
+              }
+                
               val addresses =
                   iface.inetAddresses
                       .asSequence()
+                      .filter { it is Inet4Address }
+                      .filterNot { it.isLoopbackAddress }
                       .mapIndexed { index, addr ->
                         addr.hostName.orEmpty().ifBlank { "$index: MISSING HOSTNAME" }
                       }
                       .toList()
+
+              if (addresses.isEmpty()) {
+                continue
+              }
+
               newLines.add("NAME: $name\nADDRESSES: $addresses")
             }
             setLines(newLines)
