@@ -21,15 +21,15 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.util.Enumeration
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 
 @Singleton
 internal class RNDISServer @Inject internal constructor() : BroadcastServerImplementation<String> {
@@ -40,16 +40,45 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         // On some devices, this method does not return interfaces?
         // https://github.com/pyamsoft/tetherfi/issues/351
         val allIfaces: Enumeration<NetworkInterface>? = NetworkInterface.getNetworkInterfaces()
+        val candidates = mutableListOf<RNDISCandidate>()
         if (allIfaces != null) {
+          // Collect all known interfaces here
           for (iface in allIfaces) {
-            for (prefix in EXPECTED_RNDIS_NAME_PREFIX_LIST) {
-              if (iface.name.orEmpty().lowercase().startsWith(prefix)) {
-                for (address in iface.inetAddresses) {
+            val name = iface.name.orEmpty().lowercase()
+            if (name.isBlank()) {
+              continue
+            }
+
+            val hostNames = mutableListOf<String>()
+            iface.inetAddresses?.also { addresses ->
+              for (address in addresses) {
+                if (address is Inet4Address && !address.isLoopbackAddress) {
                   val hostName = address.hostName.orEmpty()
-                  for (ip in EXPECTED_RNDIS_IP_PREFIX_LIST) {
-                    if (hostName.startsWith(ip)) {
-                      return@withContext hostName
-                    }
+                  hostNames.add(hostName)
+                }
+              }
+            }
+
+            if (hostNames.isEmpty()) {
+              continue
+            }
+
+            candidates.add(
+                RNDISCandidate(
+                    name = name,
+                    hostNames = hostNames,
+                ))
+          }
+        }
+
+        // Then try to find a valid interface to use
+        for (pairing in candidates) {
+          for (prefix in EXPECTED_RNDIS_NAME_PREFIX_LIST) {
+            if (pairing.name.startsWith(prefix)) {
+              for (ip in EXPECTED_RNDIS_IP_PREFIX_LIST) {
+                for (hostName in pairing.hostNames) {
+                  if (hostName.startsWith(ip)) {
+                    return@withContext hostName
                   }
                 }
               }
@@ -58,27 +87,7 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         }
 
         // Couldn't find RNDIS
-        val allIfaceNames =
-            allIfaces
-                ?.asSequence()
-                .orEmpty()
-                .map { iface ->
-                  return@map IfacePairing(
-                      name = iface.name.orEmpty(),
-                      address =
-                          iface.inetAddresses
-                              .asSequence()
-                              .filter { it is Inet4Address }
-                              .filterNot { it.isLoopbackAddress }
-                              .map { it.hostName.orEmpty() }
-                              .toList(),
-                  )
-                }
-                .filter { it.name.isNotBlank() }
-                .filter { it.address.isNotEmpty() }
-                .toList()
-
-        throw IllegalStateException("Missing USB Tethering connection. Tried=${allIfaceNames}")
+        throw RNDISInitializeException(candidates)
       }
 
   override suspend fun withLockStartBroadcast(
@@ -108,11 +117,6 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
       scope: CoroutineScope,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
   ) {}
-
-  private data class IfacePairing(
-      val name: String,
-      val address: List<String>,
-  )
 
   companion object {
     // Ordered by preferred interface prefix

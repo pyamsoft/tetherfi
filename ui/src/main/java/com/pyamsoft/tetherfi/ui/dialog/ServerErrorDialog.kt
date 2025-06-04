@@ -45,12 +45,14 @@ import androidx.compose.ui.window.Dialog
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.app.rememberDialogProperties
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
+import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISInitializeException
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.R
 import kotlinx.coroutines.delay
 
 private enum class ServerErrorDialogContentTypes {
   TITLE,
+  EXTRA,
   TRACE,
 }
 
@@ -144,6 +146,22 @@ fun ServerErrorDialog(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
             )
+          }
+
+          if (error is RNDISInitializeException) {
+            item(
+                contentType = ServerErrorDialogContentTypes.EXTRA,
+            ) {
+              val trace = remember(error) { error.candidateMessage }
+              Text(
+                  modifier = Modifier.padding(MaterialTheme.keylines.content),
+                  text = trace,
+                  style =
+                      MaterialTheme.typography.bodyMedium.copy(
+                          fontFamily = FontFamily.Monospace,
+                      ),
+              )
+            }
           }
 
           item(

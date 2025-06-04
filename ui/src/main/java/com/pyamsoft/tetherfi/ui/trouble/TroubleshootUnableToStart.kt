@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISInitializeException
 import com.pyamsoft.tetherfi.ui.R
 import org.jetbrains.annotations.TestOnly
 
@@ -155,7 +156,16 @@ fun TroubleshootUnableToStart(
     }
 
     throwable?.also { err ->
-      val title = remember(err) { err.message.orEmpty().ifBlank { "Unexpected Hotspot Error" } }
+      val title =
+          remember(err) {
+            // Special message handling for RNDIS initialization errors
+            if (err is RNDISInitializeException) {
+              return@remember err.candidateMessage
+            }
+
+            return@remember err.message.orEmpty().ifBlank { "Unexpected Hotspot Error" }
+          }
+
       Text(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
           text = title,
