@@ -106,7 +106,6 @@ internal fun LazyListScope.renderRunningItems(
   ) {
     ViewProxy(
         modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        experimentalRuntimeFlags = experimentalRuntimeFlags,
         serverViewState = serverViewState,
     )
   }
@@ -129,13 +128,14 @@ internal fun LazyListScope.renderRunningItems(
 @Composable
 private fun PreviewRunningItems(
     server: TestServerState,
+    http: Boolean,
     socks: Boolean,
 ) {
   LazyColumn {
     renderRunningItems(
         modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
-        serverViewState = makeTestServerState(server),
-        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+        serverViewState = makeTestServerState(server, http, socks),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(),
         state =
             MutableStatusViewState().apply {
               this.ssid.value = TEST_SSID
@@ -155,27 +155,30 @@ private fun PreviewRunningItems(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsEmptyNoSocks() {
+private fun PreviewRunningItemsEmptyHttp() {
   PreviewRunningItems(
       server = TestServerState.EMPTY,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsConnectedNoSocks() {
+private fun PreviewRunningItemsConnectedHttp() {
   PreviewRunningItems(
       server = TestServerState.CONNECTED,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewRunningItemsErrorNoSocks() {
+private fun PreviewRunningItemsErrorHttp() {
   PreviewRunningItems(
       server = TestServerState.ERROR,
+      http = true,
       socks = false,
   )
 }
@@ -185,6 +188,7 @@ private fun PreviewRunningItemsErrorNoSocks() {
 private fun PreviewRunningItemsEmptySocks() {
   PreviewRunningItems(
       server = TestServerState.EMPTY,
+      http = false,
       socks = true,
   )
 }
@@ -194,6 +198,7 @@ private fun PreviewRunningItemsEmptySocks() {
 private fun PreviewRunningItemsConnectedSocks() {
   PreviewRunningItems(
       server = TestServerState.CONNECTED,
+      http = false,
       socks = true,
   )
 }
@@ -203,6 +208,37 @@ private fun PreviewRunningItemsConnectedSocks() {
 private fun PreviewRunningItemsErrorSocks() {
   PreviewRunningItems(
       server = TestServerState.ERROR,
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsEmptyBoth() {
+  PreviewRunningItems(
+      server = TestServerState.EMPTY,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsConnectedBoth() {
+  PreviewRunningItems(
+      server = TestServerState.CONNECTED,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewRunningItemsErrorBoth() {
+  PreviewRunningItems(
+      server = TestServerState.ERROR,
+      http = true,
       socks = true,
   )
 }

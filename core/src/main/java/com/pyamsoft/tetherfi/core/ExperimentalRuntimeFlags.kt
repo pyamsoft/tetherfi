@@ -34,15 +34,4 @@ interface ExperimentalRuntimeFlags {
    * Simulates what happens when we can't allocate our own logic but are granted an FS handle
    */
   val isSocketBuilderOOMClient: Flow<Boolean>
-
-  /**
-   * SOCKS proxy
-   *
-   * Adapted from https://github.com/torsm/ktor-socks
-   */
-  val isSocksProxyEnabled: Flow<Boolean>
-
-  object Defaults {
-    const val IS_SOCKS_PROXY_ENABLED_INITIAL_STATE: Boolean = false
-  }
 }

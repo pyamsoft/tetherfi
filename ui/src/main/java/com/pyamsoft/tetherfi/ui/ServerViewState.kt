@@ -30,7 +30,10 @@ interface ServerViewState : UiViewState {
   val group: StateFlow<BroadcastNetworkStatus.GroupInfo>
   val connection: StateFlow<BroadcastNetworkStatus.ConnectionInfo>
 
+  val isHttpEnabled: StateFlow<Boolean>
   val httpPort: StateFlow<Int>
+
+  val isSocksEnabled: StateFlow<Boolean>
   val socksPort: StateFlow<Int>
 
   val broadcastType: StateFlow<BroadcastType?>

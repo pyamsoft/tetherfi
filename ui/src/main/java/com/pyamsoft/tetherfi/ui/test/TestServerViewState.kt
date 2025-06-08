@@ -58,10 +58,8 @@ fun makeTestFeatureFlags(): FeatureFlags {
 @TestOnly
 @CheckResult
 @VisibleForTesting
-fun makeTestRuntimeFlags(isSOCKSProxyEnabled: Boolean): ExperimentalRuntimeFlags {
+fun makeTestRuntimeFlags(): ExperimentalRuntimeFlags {
   return object : ExperimentalRuntimeFlags {
-    override val isSocksProxyEnabled = MutableStateFlow(isSOCKSProxyEnabled)
-
     override val isSocketBuilderOOMClient = MutableStateFlow(false)
 
     override val isSocketBuilderOOMServer = MutableStateFlow(false)
@@ -73,6 +71,8 @@ fun makeTestRuntimeFlags(isSOCKSProxyEnabled: Boolean): ExperimentalRuntimeFlags
 @VisibleForTesting
 fun makeTestServerState(
     state: TestServerState,
+    isHttpEnabled: Boolean,
+    isSocksEnabled: Boolean,
     broadcastType: BroadcastType? = BroadcastType.WIFI_DIRECT,
 ): ServerViewState =
     when (state) {
@@ -80,7 +80,11 @@ fun makeTestServerState(
           object : ServerViewState {
             override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
             override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+
+            override val isHttpEnabled = MutableStateFlow(isHttpEnabled)
             override val httpPort = MutableStateFlow(TEST_PORT)
+
+            override val isSocksEnabled = MutableStateFlow(isSocksEnabled)
             override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)
@@ -104,7 +108,11 @@ fun makeTestServerState(
             override val connection =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
+
+            override val isHttpEnabled = MutableStateFlow(isHttpEnabled)
             override val httpPort = MutableStateFlow(TEST_PORT)
+
+            override val isSocksEnabled = MutableStateFlow(isSocksEnabled)
             override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)
@@ -126,7 +134,11 @@ fun makeTestServerState(
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Error(
                         error = RuntimeException("Test Connection Error")))
+
+            override val isHttpEnabled = MutableStateFlow(isHttpEnabled)
             override val httpPort = MutableStateFlow(TEST_PORT)
+
+            override val isSocksEnabled = MutableStateFlow(isSocksEnabled)
             override val socksPort = MutableStateFlow(TEST_PORT + 1)
 
             override val broadcastType = MutableStateFlow(broadcastType)

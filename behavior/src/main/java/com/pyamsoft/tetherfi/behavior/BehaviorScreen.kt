@@ -202,7 +202,12 @@ private fun PreviewBehaviorScreen(
                 else BehaviorViewState.LoadingState.DONE
           },
       lazyListState = rememberLazyListState(),
-      serverViewState = makeTestServerState(TestServerState.EMPTY),
+      serverViewState =
+          makeTestServerState(
+              TestServerState.EMPTY,
+              isHttpEnabled = false,
+              isSocksEnabled = false,
+          ),
       appName = "TEST",
       onRequestNotificationPermission = {},
       onOpenBatterySettings = {},

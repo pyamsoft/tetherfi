@@ -118,6 +118,7 @@ private fun PreviewMainScreen(
     isSettingsOpen: Boolean,
     isShowingQr: Boolean,
     isShowingSlowSpeedHelp: Boolean,
+    http: Boolean,
     socks: Boolean,
 ) {
   val state =
@@ -128,7 +129,10 @@ private fun PreviewMainScreen(
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
 
+        override val isHttpEnabled = MutableStateFlow(false)
         override val httpPort = MutableStateFlow(0)
+
+        override val isSocksEnabled = MutableStateFlow(false)
         override val socksPort = MutableStateFlow(0)
 
         // TODO support RNDIS
@@ -151,7 +155,7 @@ private fun PreviewMainScreen(
 
   MainScreen(
       appName = "TEST",
-      experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+      experimentalRuntimeFlags = makeTestRuntimeFlags(),
       state = state,
       pagerState = rememberPagerState { allTabs.size },
       allTabs = allTabs,
@@ -173,70 +177,179 @@ private fun PreviewMainScreen(
 
 @Preview
 @Composable
-private fun PreviewMainScreenDefaultNoSocks() {
+private fun PreviewMainScreenDefaultHttp() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = false)
+      isSettingsOpen = false,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = false,
+  )
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenSettingsNoSocks() {
+private fun PreviewMainScreenSettingsHttp() {
   PreviewMainScreen(
-      isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = false)
+      isSettingsOpen = true,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = false,
+  )
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenQrNoSocks() {
+private fun PreviewMainScreenQrHttp() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false, socks = false)
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = false,
+  )
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenHelpNoSocks() {
+private fun PreviewMainScreenHelpHttp() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = false)
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = true,
+      socks = false,
+  )
 }
 
 @Preview
 @Composable
-private fun PreviewMainScreenAllNoSocks() {
+private fun PreviewMainScreenAllHttp() {
   PreviewMainScreen(
-      isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = false)
+      isSettingsOpen = true,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = true,
+      socks = false,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenDefaultSocks() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = true)
+      isSettingsOpen = false,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = false,
+      socks = true)
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenSettingsSocks() {
   PreviewMainScreen(
-      isSettingsOpen = true, isShowingQr = false, isShowingSlowSpeedHelp = false, socks = true)
+      isSettingsOpen = true,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = false,
+      socks = true,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenQrSocks() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = false, socks = true)
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = false,
+      http = false,
+      socks = true,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenHelpSocks() {
   PreviewMainScreen(
-      isSettingsOpen = false, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = true)
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = false,
+      socks = true,
+  )
 }
 
 @Preview
 @Composable
 private fun PreviewMainScreenAllSocks() {
   PreviewMainScreen(
-      isSettingsOpen = true, isShowingQr = true, isShowingSlowSpeedHelp = true, socks = true)
+      isSettingsOpen = true,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = false,
+      socks = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenDefaultBoth() {
+  PreviewMainScreen(
+      isSettingsOpen = false,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenSettingsBoth() {
+  PreviewMainScreen(
+      isSettingsOpen = true,
+      isShowingQr = false,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenQrBoth() {
+  PreviewMainScreen(
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = false,
+      http = true,
+      socks = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenHelpBoth() {
+  PreviewMainScreen(
+      isSettingsOpen = false,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = true,
+      socks = true,
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainScreenAllBoth() {
+  PreviewMainScreen(
+      isSettingsOpen = true,
+      isShowingQr = true,
+      isShowingSlowSpeedHelp = true,
+      http = true,
+      socks = true,
+  )
 }

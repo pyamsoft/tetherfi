@@ -143,7 +143,6 @@ internal fun LazyListScope.renderNetworkInformation(
     renderEditableItems(
         modifier = itemModifier,
         state = state,
-        experimentalRuntimeFlags = experimentalRuntimeFlags,
         serverViewState = serverViewState,
         onSsidChanged = onSsidChanged,
         onPasswordChanged = onPasswordChanged,
@@ -178,17 +177,18 @@ private fun PreviewNetworkInformation(
     isEditable: Boolean,
     wiDiStatus: RunningStatus,
     proxyStatus: RunningStatus,
+    http: Boolean,
     socks: Boolean,
 ) {
   LazyColumn {
     renderNetworkInformation(
         itemModifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
-        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(),
         wiDiStatus = wiDiStatus,
         proxyStatus = proxyStatus,
         appName = "TEST",
         isEditable = isEditable,
-        serverViewState = makeTestServerState(server),
+        serverViewState = makeTestServerState(server, http, socks),
         state =
             MutableStatusViewState().apply {
               this.ssid.value = ssid
@@ -212,7 +212,7 @@ private fun PreviewNetworkInformation(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationBlankNoSocks() {
+private fun PreviewNetworkInformationBlankHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = true,
@@ -221,13 +221,14 @@ private fun PreviewNetworkInformationBlankNoSocks() {
       ssid = "",
       password = "",
       port = "",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationOnlySsidNoSocks() {
+private fun PreviewNetworkInformationOnlySsidHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = true,
@@ -235,13 +236,14 @@ private fun PreviewNetworkInformationOnlySsidNoSocks() {
       proxyStatus = RunningStatus.NotRunning,
       password = "",
       port = "",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationOnlyPasswordNoSocks() {
+private fun PreviewNetworkInformationOnlyPasswordHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = true,
@@ -249,13 +251,14 @@ private fun PreviewNetworkInformationOnlyPasswordNoSocks() {
       proxyStatus = RunningStatus.NotRunning,
       ssid = "",
       port = "",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationOnlyPortNoSocks() {
+private fun PreviewNetworkInformationOnlyPortHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = true,
@@ -263,114 +266,124 @@ private fun PreviewNetworkInformationOnlyPortNoSocks() {
       proxyStatus = RunningStatus.NotRunning,
       ssid = "",
       password = "",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationEmptyEditableNoSocks() {
+private fun PreviewNetworkInformationEmptyEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationEmptyNotEditableNoSocks() {
+private fun PreviewNetworkInformationEmptyNotEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationConnectedEditableNoSocks() {
+private fun PreviewNetworkInformationConnectedEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.CONNECTED,
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationConnectedNotEditableNoSocks() {
+private fun PreviewNetworkInformationConnectedNotEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.CONNECTED,
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationErrorEditableNoSocks() {
+private fun PreviewNetworkInformationErrorEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.ERROR,
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationErrorNotEditableNoSocks() {
+private fun PreviewNetworkInformationErrorNotEditableHttp() {
   PreviewNetworkInformation(
       server = TestServerState.ERROR,
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationEmptyRunningNoSocks() {
+private fun PreviewNetworkInformationEmptyRunningHttp() {
   PreviewNetworkInformation(
       server = TestServerState.EMPTY,
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationConnectedRunningNoSocks() {
+private fun PreviewNetworkInformationConnectedRunningHttp() {
   PreviewNetworkInformation(
       server = TestServerState.CONNECTED,
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewNetworkInformationErrorRunningNoSocks() {
+private fun PreviewNetworkInformationErrorRunningHttp() {
   PreviewNetworkInformation(
       server = TestServerState.ERROR,
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = true,
       socks = false,
   )
 }
@@ -386,6 +399,7 @@ private fun PreviewNetworkInformationBlankSocks() {
       ssid = "",
       password = "",
       port = "",
+      http = false,
       socks = true,
   )
 }
@@ -400,6 +414,7 @@ private fun PreviewNetworkInformationOnlySsidSocks() {
       proxyStatus = RunningStatus.NotRunning,
       password = "",
       port = "",
+      http = false,
       socks = true,
   )
 }
@@ -414,6 +429,7 @@ private fun PreviewNetworkInformationOnlyPasswordSocks() {
       proxyStatus = RunningStatus.NotRunning,
       ssid = "",
       port = "",
+      http = false,
       socks = true,
   )
 }
@@ -428,6 +444,7 @@ private fun PreviewNetworkInformationOnlyPortSocks() {
       proxyStatus = RunningStatus.NotRunning,
       ssid = "",
       password = "",
+      http = false,
       socks = true,
   )
 }
@@ -440,6 +457,7 @@ private fun PreviewNetworkInformationEmptyEditableSocks() {
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -452,6 +470,7 @@ private fun PreviewNetworkInformationEmptyNotEditableSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -464,6 +483,7 @@ private fun PreviewNetworkInformationConnectedEditableSocks() {
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -476,6 +496,7 @@ private fun PreviewNetworkInformationConnectedNotEditableSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -488,6 +509,7 @@ private fun PreviewNetworkInformationErrorEditableSocks() {
       isEditable = true,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -500,6 +522,7 @@ private fun PreviewNetworkInformationErrorNotEditableSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.NotRunning,
       proxyStatus = RunningStatus.NotRunning,
+      http = false,
       socks = true,
   )
 }
@@ -512,6 +535,7 @@ private fun PreviewNetworkInformationEmptyRunningSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = false,
       socks = true,
   )
 }
@@ -524,6 +548,7 @@ private fun PreviewNetworkInformationConnectedRunningSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = false,
       socks = true,
   )
 }
@@ -536,6 +561,185 @@ private fun PreviewNetworkInformationErrorRunningSocks() {
       isEditable = false,
       wiDiStatus = RunningStatus.Running,
       proxyStatus = RunningStatus.Running,
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationBlankBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      ssid = "",
+      password = "",
+      port = "",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationOnlySsidBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      password = "",
+      port = "",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationOnlyPasswordBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      ssid = "",
+      port = "",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationOnlyPortBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      ssid = "",
+      password = "",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationEmptyEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationEmptyNotEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = false,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationConnectedEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.CONNECTED,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationConnectedNotEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.CONNECTED,
+      isEditable = false,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationErrorEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.ERROR,
+      isEditable = true,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationErrorNotEditableBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.ERROR,
+      isEditable = false,
+      wiDiStatus = RunningStatus.NotRunning,
+      proxyStatus = RunningStatus.NotRunning,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationEmptyRunningBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.EMPTY,
+      isEditable = false,
+      wiDiStatus = RunningStatus.Running,
+      proxyStatus = RunningStatus.Running,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationConnectedRunningBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.CONNECTED,
+      isEditable = false,
+      wiDiStatus = RunningStatus.Running,
+      proxyStatus = RunningStatus.Running,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewNetworkInformationErrorRunningBoth() {
+  PreviewNetworkInformation(
+      server = TestServerState.ERROR,
+      isEditable = false,
+      wiDiStatus = RunningStatus.Running,
+      proxyStatus = RunningStatus.Running,
+      http = true,
       socks = true,
   )
 }

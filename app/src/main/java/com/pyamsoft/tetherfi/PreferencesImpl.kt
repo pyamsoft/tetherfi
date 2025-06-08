@@ -192,6 +192,17 @@ internal constructor(
           value = { password },
       )
 
+  override fun listenForHttpEnabledChanges(): Flow<Boolean> =
+      getPreference(key = IS_HTTP_ENABLED, value = DEFAULT_IS_HTTP_ENABLED)
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setHttpEnabled(enabled: Boolean) =
+      setPreference(
+          key = IS_HTTP_ENABLED,
+          fallbackValue = DEFAULT_IS_HTTP_ENABLED,
+          value = { enabled },
+      )
+
   override fun listenForHttpPortChanges(): Flow<Int> =
       getPreference(key = HTTP_PORT, value = ServerDefaults.HTTP_PORT)
           .flowOn(context = Dispatchers.IO)
@@ -201,6 +212,17 @@ internal constructor(
           key = HTTP_PORT,
           fallbackValue = ServerDefaults.HTTP_PORT,
           value = { port },
+      )
+
+  override fun listenForSocksEnabledChanges(): Flow<Boolean> =
+      getPreference(key = IS_SOCKS_ENABLED, value = DEFAULT_IS_SOCKS_ENABLED)
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setSocksEnabled(enabled: Boolean) =
+      setPreference(
+          key = IS_SOCKS_ENABLED,
+          fallbackValue = DEFAULT_IS_SOCKS_ENABLED,
+          value = { enabled },
       )
 
   override fun listenForSocksPortChanges(): Flow<Int> =
@@ -459,9 +481,15 @@ internal constructor(
 
     private val SSID = stringPreferencesKey("key_ssid_1")
     private val PASSWORD = stringPreferencesKey("key_password_1")
-    private val HTTP_PORT = intPreferencesKey("key_port_1")
-    private val SOCKS_PORT = intPreferencesKey("key_socks_port_1")
     private val NETWORK_BAND = stringPreferencesKey("key_network_band_1")
+
+    private val IS_HTTP_ENABLED = booleanPreferencesKey("key_http_enabled_1")
+    private val HTTP_PORT = intPreferencesKey("key_port_1")
+    private const val DEFAULT_IS_HTTP_ENABLED = true
+
+    private val IS_SOCKS_ENABLED = booleanPreferencesKey("key_socks_enabled_1")
+    private val SOCKS_PORT = intPreferencesKey("key_socks_port_1")
+    private const val DEFAULT_IS_SOCKS_ENABLED = false
 
     private val IN_APP_HOTSPOT_USED = intPreferencesKey("key_in_app_hotspot_used_1")
     private val IN_APP_DEVICES_CONNECTED = intPreferencesKey("key_in_app_devices_connected_1")

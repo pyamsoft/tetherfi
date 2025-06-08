@@ -192,6 +192,7 @@ internal fun LazyListScope.renderLoadedContent(
 private fun PreviewLoadedContent(
     state: TestServerState,
     isEditable: Boolean,
+    http: Boolean,
     socks: Boolean,
 ) {
   LazyColumn {
@@ -205,8 +206,8 @@ private fun PreviewLoadedContent(
               this.httpPort.value = "$TEST_PORT"
               band.value = ServerNetworkBand.LEGACY
             },
-        serverViewState = makeTestServerState(state),
-        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+        serverViewState = makeTestServerState(state, http, socks),
+        experimentalRuntimeFlags = makeTestRuntimeFlags(),
         appName = "TEST",
         onSelectBand = {},
         onPasswordChanged = {},
@@ -231,56 +232,70 @@ private fun PreviewLoadedContent(
 
 @TestOnly
 @Composable
-private fun PreviewEmpty(isEditable: Boolean, socks: Boolean) {
+private fun PreviewEmpty(
+    isEditable: Boolean,
+    http: Boolean,
+    socks: Boolean,
+) {
   PreviewLoadedContent(
       state = TestServerState.EMPTY,
       isEditable = isEditable,
+      http = http,
       socks = socks,
   )
 }
 
 @TestOnly
 @Composable
-private fun PreviewConnected(isEditable: Boolean, socks: Boolean) {
+private fun PreviewConnected(
+    isEditable: Boolean,
+    http: Boolean,
+    socks: Boolean,
+) {
   PreviewLoadedContent(
       state = TestServerState.CONNECTED,
       isEditable = isEditable,
+      http = http,
       socks = socks,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyEditableNoSocks() {
+private fun PreviewEmptyEditableHttp() {
   PreviewEmpty(
       isEditable = true,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewEmptyNoEditableNoSocks() {
+private fun PreviewEmptyNoEditableHttp() {
   PreviewEmpty(
       isEditable = false,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectedEditableNoSocks() {
+private fun PreviewConnectedEditableHttp() {
   PreviewConnected(
       isEditable = true,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewConnectedNoEditableNoSocks() {
+private fun PreviewConnectedNoEditableHttp() {
   PreviewConnected(
       isEditable = false,
+      http = true,
       socks = true,
   )
 }
@@ -290,6 +305,7 @@ private fun PreviewConnectedNoEditableNoSocks() {
 private fun PreviewEmptyEditableSocks() {
   PreviewEmpty(
       isEditable = true,
+      http = false,
       socks = true,
   )
 }
@@ -299,6 +315,7 @@ private fun PreviewEmptyEditableSocks() {
 private fun PreviewEmptyNoEditableSocks() {
   PreviewEmpty(
       isEditable = false,
+      http = false,
       socks = true,
   )
 }
@@ -308,6 +325,7 @@ private fun PreviewEmptyNoEditableSocks() {
 private fun PreviewConnectedEditableSocks() {
   PreviewConnected(
       isEditable = true,
+      http = false,
       socks = true,
   )
 }
@@ -317,6 +335,47 @@ private fun PreviewConnectedEditableSocks() {
 private fun PreviewConnectedNoEditableSocks() {
   PreviewConnected(
       isEditable = false,
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyEditableBoth() {
+  PreviewEmpty(
+      isEditable = true,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewEmptyNoEditableBoth() {
+  PreviewEmpty(
+      isEditable = false,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedEditableBoth() {
+  PreviewConnected(
+      isEditable = true,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewConnectedNoEditableBoth() {
+  PreviewConnected(
+      isEditable = false,
+      http = true,
       socks = true,
   )
 }

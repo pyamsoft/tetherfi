@@ -199,7 +199,12 @@ private fun PreviewConnectionScreen(
             override val managingTransferLimit = MutableStateFlow(transfer)
             override val managingBandwidthLimit = MutableStateFlow(bandwidth)
           },
-      serverViewState = makeTestServerState(serverViewState),
+      serverViewState =
+          makeTestServerState(
+              serverViewState,
+              isHttpEnabled = true,
+              isSocksEnabled = true,
+          ),
       onCloseManageNickName = {},
       onUpdateNickName = {},
       onUpdateTransferLimit = {},

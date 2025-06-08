@@ -85,6 +85,15 @@ internal constructor(
   private fun listenConfigUpdates(scope: CoroutineScope) {
     val s = state
 
+    // Enabled state is its own thing, not part of group info
+    proxyPreferences.listenForHttpEnabledChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) { f.collect { s.isHttpEnabled.value = it } }
+    }
+
+    proxyPreferences.listenForSocksEnabledChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) { f.collect { s.isSocksEnabled.value = it } }
+    }
+
     // Port is its own thing, not part of group info
     proxyPreferences.listenForHttpPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) { f.collect { s.httpPort.value = it } }

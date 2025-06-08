@@ -32,7 +32,6 @@ class AppDevEnvironment
 @Inject
 constructor(
     @Named("in_app_debug") private val inAppDebug: Flow<Boolean>,
-    @Named("debug") isDebugMode: Boolean,
 ) : ExperimentalRuntimeFlags {
 
   private val mutableGroupFakeEmpty = MutableStateFlow(false)
@@ -50,17 +49,12 @@ constructor(
   private val mutableSocketBuilderOOMServer = MutableStateFlow(false)
   private val mutableSocketBuilderOOMClient = MutableStateFlow(false)
 
-  // Runtime flag
-  private val mutableSocksProxyEnabled = MutableStateFlow(isDebugMode)
-
   val isBroadcastFakeError = mutableBroadcastFakeError.whenInAppDebugEnabled()
   val isProxyFakeError = mutableProxyFakeError.whenInAppDebugEnabled()
   val isYoloError = mutableYoloError.whenInAppDebugEnabled()
 
   override val isSocketBuilderOOMServer = mutableSocketBuilderOOMServer.whenInAppDebugEnabled()
   override val isSocketBuilderOOMClient = mutableSocketBuilderOOMClient.whenInAppDebugEnabled()
-
-  override val isSocksProxyEnabled = mutableSocksProxyEnabled.whenInAppDebugEnabled()
 
   @get:CheckResult
   val group =
@@ -108,10 +102,6 @@ constructor(
 
   fun updateYolo(isError: Boolean) {
     mutableYoloError.value = isError
-  }
-
-  fun handleToggleSocksEnabled() {
-    mutableSocksProxyEnabled.update { !it }
   }
 
   fun handleToggleSocketBuilderOOMClientEnabled() {

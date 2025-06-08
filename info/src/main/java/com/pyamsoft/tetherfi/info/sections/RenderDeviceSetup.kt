@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.info.InfoViewOptionsType
 import com.pyamsoft.tetherfi.info.InfoViewState
 import com.pyamsoft.tetherfi.info.MutableInfoViewState
@@ -60,7 +59,6 @@ import com.pyamsoft.tetherfi.ui.rememberServerPassword
 import com.pyamsoft.tetherfi.ui.rememberServerRawPassword
 import com.pyamsoft.tetherfi.ui.rememberServerSSID
 import com.pyamsoft.tetherfi.ui.test.TestServerState
-import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
@@ -73,7 +71,6 @@ internal fun LazyListScope.renderDeviceSetup(
     itemModifier: Modifier = Modifier,
     appName: String,
     state: InfoViewState,
-    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     serverViewState: ServerViewState,
     onShowQRCode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
@@ -239,15 +236,13 @@ internal fun LazyListScope.renderDeviceSetup(
             style = MaterialTheme.typography.bodyLarge,
         )
 
-        val isSocksProxyEnabled by
-            experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle(
-                ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
         Column(
             modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
         ) {
           val showHttpOptions by state.showHttpOptions.collectAsStateWithLifecycle()
 
-          if (isSocksProxyEnabled) {
+          val isHttpEnabled by serverViewState.isHttpEnabled.collectAsStateWithLifecycle()
+          if (isHttpEnabled) {
             Row(
                 modifier = Modifier.clickable { onToggleShowOptions(InfoViewOptionsType.HTTP) },
                 verticalAlignment = Alignment.CenterVertically,
@@ -272,7 +267,7 @@ internal fun LazyListScope.renderDeviceSetup(
           }
 
           AnimatedVisibility(
-              visible = showHttpOptions || !isSocksProxyEnabled,
+              visible = showHttpOptions,
           ) {
             Column(
                 modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
@@ -340,7 +335,8 @@ internal fun LazyListScope.renderDeviceSetup(
           }
         }
 
-        if (isSocksProxyEnabled) {
+        val isSocksEnabled by serverViewState.isSocksEnabled.collectAsStateWithLifecycle()
+        if (isSocksEnabled) {
           Column(
               modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
           ) {
@@ -447,13 +443,13 @@ internal fun LazyListScope.renderDeviceSetup(
 private fun PreviewDeviceSetup(
     state: InfoViewState,
     server: TestServerState,
+    http: Boolean,
     socks: Boolean,
 ) {
   LazyColumn {
     renderDeviceSetup(
         appName = "TEST",
-        experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
-        serverViewState = makeTestServerState(server),
+        serverViewState = makeTestServerState(server, http, socks),
         state = state,
         onTogglePasswordVisibility = {},
         onShowQRCode = {},
@@ -464,30 +460,33 @@ private fun PreviewDeviceSetup(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewDeviceSetupEmptyNoSocks() {
+private fun PreviewDeviceSetupEmptyHttp() {
   PreviewDeviceSetup(
       state = MutableInfoViewState(),
       server = TestServerState.EMPTY,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewDeviceSetupActiveNoSocks() {
+private fun PreviewDeviceSetupActiveHttp() {
   PreviewDeviceSetup(
       state = MutableInfoViewState(),
       server = TestServerState.CONNECTED,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewDeviceSetupActivePasswordNoSocks() {
+private fun PreviewDeviceSetupActivePassword() {
   PreviewDeviceSetup(
       state = MutableInfoViewState().apply { isPasswordVisible.value = true },
       server = TestServerState.CONNECTED,
+      http = true,
       socks = false,
   )
 }
@@ -498,6 +497,7 @@ private fun PreviewDeviceSetupEmptySocks() {
   PreviewDeviceSetup(
       state = MutableInfoViewState(),
       server = TestServerState.EMPTY,
+      http = false,
       socks = true,
   )
 }
@@ -508,6 +508,7 @@ private fun PreviewDeviceSetupActiveSocks() {
   PreviewDeviceSetup(
       state = MutableInfoViewState(),
       server = TestServerState.CONNECTED,
+      http = false,
       socks = true,
   )
 }
@@ -518,6 +519,40 @@ private fun PreviewDeviceSetupActivePasswordSocks() {
   PreviewDeviceSetup(
       state = MutableInfoViewState().apply { isPasswordVisible.value = true },
       server = TestServerState.CONNECTED,
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupEmptyBoth() {
+  PreviewDeviceSetup(
+      state = MutableInfoViewState(),
+      server = TestServerState.EMPTY,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupActiveBoth() {
+  PreviewDeviceSetup(
+      state = MutableInfoViewState(),
+      server = TestServerState.CONNECTED,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewDeviceSetupActivePasswordBoth() {
+  PreviewDeviceSetup(
+      state = MutableInfoViewState().apply { isPasswordVisible.value = true },
+      server = TestServerState.CONNECTED,
+      http = true,
       socks = true,
   )
 }

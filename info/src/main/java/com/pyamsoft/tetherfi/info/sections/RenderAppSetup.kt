@@ -161,10 +161,12 @@ private fun LazyListScope.renderConnectionPrep(
         titleRes = R.string.turn_on_wi_fi
         descRes = R.string.wifi_must_be_on
       }
+
       BroadcastType.RNDIS -> {
         titleRes = R.string.connect_usb_ethernet
         descRes = R.string.usb_tethering_must_be_on
       }
+
       else -> {
         return@item
       }
@@ -200,7 +202,10 @@ private fun PreviewAppSetupWifiDirect() {
             makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = BroadcastType.WIFI_DIRECT,
-            ))
+                isHttpEnabled = false,
+                isSocksEnabled = false,
+            ),
+    )
   }
 }
 
@@ -214,7 +219,10 @@ private fun PreviewAppSetupRndis() {
             makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = BroadcastType.RNDIS,
-            ))
+                isHttpEnabled = false,
+                isSocksEnabled = false,
+            ),
+    )
   }
 }
 
@@ -228,6 +236,9 @@ private fun PreviewAppSetupNone() {
             makeTestServerState(
                 state = TestServerState.CONNECTED,
                 broadcastType = null,
-            ))
+                isHttpEnabled = false,
+                isSocksEnabled = false,
+            ),
+    )
   }
 }

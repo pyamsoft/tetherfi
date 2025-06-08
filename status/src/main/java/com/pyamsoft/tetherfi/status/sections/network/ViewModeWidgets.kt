@@ -42,7 +42,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
-import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.StatusViewState
@@ -60,20 +59,18 @@ import com.pyamsoft.tetherfi.ui.rememberServerSSID
 @Composable
 internal fun ViewProxy(
     modifier: Modifier = Modifier,
-    experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     serverViewState: ServerViewState,
 ) {
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
   val ipAddress = rememberServerHostname(connection)
 
+  val isHttpEnabled by serverViewState.isHttpEnabled.collectAsStateWithLifecycle()
   val httpPortNumber by serverViewState.httpPort.collectAsStateWithLifecycle()
-  val socksPortNumber by serverViewState.socksPort.collectAsStateWithLifecycle()
   val httpPort = rememberPortNumber(httpPortNumber)
-  val socksPort = rememberPortNumber(socksPortNumber)
 
-  val isSocksProxyEnabled by
-      experimentalRuntimeFlags.isSocksProxyEnabled.collectAsStateWithLifecycle(
-          ExperimentalRuntimeFlags.Defaults.IS_SOCKS_PROXY_ENABLED_INITIAL_STATE)
+  val isSocksEnabled by serverViewState.isSocksEnabled.collectAsStateWithLifecycle()
+  val socksPortNumber by serverViewState.socksPort.collectAsStateWithLifecycle()
+  val socksPort = rememberPortNumber(socksPortNumber)
 
   Column(
       modifier = modifier,
@@ -92,18 +89,20 @@ internal fun ViewProxy(
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
-      StatusItem(
-          modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-          title = stringResource(R.string.viewmode_hotspot_http_port),
-          value = httpPort,
-          valueStyle =
-              MaterialTheme.typography.titleLarge.copy(
-                  fontWeight = FontWeight.W400,
-                  fontFamily = FontFamily.Monospace,
-              ),
-      )
+      if (isHttpEnabled) {
+        StatusItem(
+            modifier = Modifier.padding(end = MaterialTheme.keylines.content),
+            title = stringResource(R.string.viewmode_hotspot_http_port),
+            value = httpPort,
+            valueStyle =
+                MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.W400,
+                    fontFamily = FontFamily.Monospace,
+                ),
+        )
+      }
 
-      if (isSocksProxyEnabled) {
+      if (isSocksEnabled) {
         StatusItem(
             title = stringResource(R.string.viewmode_hotspot_socks_port),
             value = socksPort,

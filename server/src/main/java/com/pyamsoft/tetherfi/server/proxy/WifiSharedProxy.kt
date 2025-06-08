@@ -21,9 +21,9 @@ import com.pyamsoft.pydroid.bus.EventBus
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.AppDevEnvironment
-import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.BaseServer
+import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -60,12 +60,12 @@ internal constructor(
     @Named("app_scope") private val appScope: CoroutineScope,
     @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
     @ServerInternalApi private val factory: ProxyManager.Factory,
-    private val experimentalRuntimeFlags: ExperimentalRuntimeFlags,
     private val enforcer: ThreadEnforcer,
     private val clientEraser: ClientEraser,
     private val startedClients: StartedClients,
     private val shutdownBus: EventBus<ServerShutdownEvent>,
     private val appEnvironment: AppDevEnvironment,
+    private val preferences: ProxyPreferences,
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
@@ -174,17 +174,20 @@ internal constructor(
       return
     }
 
-    scope.launch(context = Dispatchers.Default) {
-      beginProxyLoop(
-          type = SharedProxy.Type.HTTP,
-          info = info,
-          socketCreator = socketCreator,
-          serverDispatcher = serverDispatcher,
-      )
+    val isHttpEnabled = preferences.listenForHttpEnabledChanges().first()
+    if (isHttpEnabled) {
+      scope.launch(context = Dispatchers.Default) {
+        beginProxyLoop(
+            type = SharedProxy.Type.HTTP,
+            info = info,
+            socketCreator = socketCreator,
+            serverDispatcher = serverDispatcher,
+        )
+      }
     }
 
-    val isSocksProxyEnabled = experimentalRuntimeFlags.isSocksProxyEnabled.first()
-    if (isSocksProxyEnabled) {
+    val isSocksEnabled = preferences.listenForSocksEnabledChanges().first()
+    if (isSocksEnabled) {
       scope.launch(context = Dispatchers.Default) {
         beginProxyLoop(
             type = SharedProxy.Type.SOCKS,
@@ -193,6 +196,15 @@ internal constructor(
             serverDispatcher = serverDispatcher,
         )
       }
+    }
+
+    if (!isHttpEnabled && !isSocksEnabled) {
+      Timber.w { "Cannot run proxy. HTTP and SOCKS both disabled" }
+      status.set(
+          RunningStatus.ProxyError(
+              RuntimeException("Must enable either HTTP or SOCKS server"),
+          ),
+      )
     }
   }
 
@@ -219,7 +231,7 @@ internal constructor(
   private fun CoroutineScope.watchServerReadyStatus() {
     // When all proxy bits declare they are ready, the proxy status is "ready"
     overallState
-        .map { it.isReady(experimentalRuntimeFlags) }
+        .map { it.isReady(preferences) }
         .filter { it }
         .also { f ->
           launch(context = Dispatchers.Default) {
@@ -384,13 +396,16 @@ internal constructor(
   private data class ProxyState(val http: Boolean, val socks: Boolean) {
 
     @CheckResult
-    suspend fun isReady(runtimeFlags: ExperimentalRuntimeFlags): Boolean {
-      if (!http) {
-        return false
+    suspend fun isReady(preferences: ProxyPreferences): Boolean {
+      val isHttpEnabled = preferences.listenForHttpEnabledChanges().first()
+      if (isHttpEnabled) {
+        if (!http) {
+          return false
+        }
       }
 
-      val isSocksProxyEnabled = runtimeFlags.isSocksProxyEnabled.first()
-      if (isSocksProxyEnabled) {
+      val isSocksEnabled = preferences.listenForSocksEnabledChanges().first()
+      if (isSocksEnabled) {
         if (!socks) {
           return false
         }

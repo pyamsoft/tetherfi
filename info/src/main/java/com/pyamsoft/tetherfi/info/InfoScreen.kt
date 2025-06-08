@@ -108,13 +108,13 @@ fun InfoScreen(
 
 @TestOnly
 @Composable
-private fun PreviewInfoScreen(socks: Boolean) {
+private fun PreviewInfoScreen(http: Boolean, socks: Boolean) {
   InfoScreen(
       appName = "TEST",
-      experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+      experimentalRuntimeFlags = makeTestRuntimeFlags(),
       state = MutableInfoViewState(),
       lazyListState = rememberLazyListState(),
-      serverViewState = makeTestServerState(TestServerState.EMPTY),
+      serverViewState = makeTestServerState(TestServerState.EMPTY, http, socks),
       onTogglePasswordVisibility = {},
       onShowQRCode = {},
       onShowSlowSpeedHelp = {},
@@ -124,12 +124,27 @@ private fun PreviewInfoScreen(socks: Boolean) {
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewInfoScreenNoSocks() {
-  PreviewInfoScreen(socks = false)
+private fun PreviewInfoScreenHttp() {
+  PreviewInfoScreen(
+      http = true,
+      socks = false,
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewInfoScreenSocks() {
-  PreviewInfoScreen(socks = true)
+  PreviewInfoScreen(
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewInfoScreenBoth() {
+  PreviewInfoScreen(
+      http = true,
+      socks = true,
+  )
 }

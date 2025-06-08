@@ -237,6 +237,7 @@ private fun PreviewStatusScreen(
     ssid: String = TEST_SSID,
     password: String = TEST_PASSWORD,
     port: Int = TEST_PORT,
+    http: Boolean,
     socks: Boolean,
 ) {
   StatusScreen(
@@ -250,10 +251,10 @@ private fun PreviewStatusScreen(
             this.httpPort.value = "$port"
             band.value = ServerNetworkBand.LEGACY
           },
-      serverViewState = makeTestServerState(TestServerState.EMPTY),
+      serverViewState = makeTestServerState(TestServerState.EMPTY, http, socks),
       lazyListState = rememberLazyListState(),
       appName = "TEST",
-      experimentalRuntimeFlags = makeTestRuntimeFlags(socks),
+      experimentalRuntimeFlags = makeTestRuntimeFlags(),
       onStatusUpdated = {},
       onSelectBand = {},
       onPasswordChanged = {},
@@ -277,58 +278,64 @@ private fun PreviewStatusScreen(
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenLoadingNoSocks() {
+private fun PreviewStatusScreenLoadingHttp() {
   PreviewStatusScreen(
       isLoading = true,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingNoSocks() {
+private fun PreviewStatusScreenEditingHttp() {
   PreviewStatusScreen(
       isLoading = false,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadSsidNoSocks() {
+private fun PreviewStatusScreenEditingBadSsidHttp() {
   PreviewStatusScreen(
       isLoading = false,
       ssid = "nope",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPasswordNoSocks() {
+private fun PreviewStatusScreenEditingBadPasswordHttp() {
   PreviewStatusScreen(
       isLoading = false,
       password = "nope",
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPort1NoSocks() {
+private fun PreviewStatusScreenEditingBadPort1Http() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1,
+      http = true,
       socks = false,
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-private fun PreviewStatusScreenEditingBadPort2NoSocks() {
+private fun PreviewStatusScreenEditingBadPort2Http() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1_000_000,
+      http = true,
       socks = false,
   )
 }
@@ -338,6 +345,7 @@ private fun PreviewStatusScreenEditingBadPort2NoSocks() {
 private fun PreviewStatusScreenLoadingSocks() {
   PreviewStatusScreen(
       isLoading = true,
+      http = false,
       socks = true,
   )
 }
@@ -347,6 +355,7 @@ private fun PreviewStatusScreenLoadingSocks() {
 private fun PreviewStatusScreenEditingSocks() {
   PreviewStatusScreen(
       isLoading = false,
+      http = false,
       socks = true,
   )
 }
@@ -357,6 +366,7 @@ private fun PreviewStatusScreenEditingBadSsidSocks() {
   PreviewStatusScreen(
       isLoading = false,
       ssid = "nope",
+      http = false,
       socks = true,
   )
 }
@@ -367,6 +377,7 @@ private fun PreviewStatusScreenEditingBadPasswordSocks() {
   PreviewStatusScreen(
       isLoading = false,
       password = "nope",
+      http = false,
       socks = true,
   )
 }
@@ -377,6 +388,7 @@ private fun PreviewStatusScreenEditingBadPort1Socks() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1,
+      http = false,
       socks = true,
   )
 }
@@ -387,6 +399,71 @@ private fun PreviewStatusScreenEditingBadPort2Socks() {
   PreviewStatusScreen(
       isLoading = false,
       port = 1_000_000,
+      http = false,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenLoadingBoth() {
+  PreviewStatusScreen(
+      isLoading = true,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBoth() {
+  PreviewStatusScreen(
+      isLoading = false,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadSsidBoth() {
+  PreviewStatusScreen(
+      isLoading = false,
+      ssid = "nope",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPasswordBoth() {
+  PreviewStatusScreen(
+      isLoading = false,
+      password = "nope",
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPort1Both() {
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1,
+      http = true,
+      socks = true,
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PreviewStatusScreenEditingBadPort2Both() {
+  PreviewStatusScreen(
+      isLoading = false,
+      port = 1_000_000,
+      http = true,
       socks = true,
   )
 }

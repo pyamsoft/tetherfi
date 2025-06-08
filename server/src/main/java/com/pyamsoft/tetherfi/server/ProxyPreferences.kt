@@ -25,7 +25,15 @@ interface ProxyPreferences {
 
   fun setHttpPort(port: Int)
 
+  @CheckResult fun listenForHttpEnabledChanges(): Flow<Boolean>
+
+  fun setHttpEnabled(enabled: Boolean)
+
   @CheckResult fun listenForSocksPortChanges(): Flow<Int>
 
   fun setSocksPort(port: Int)
+
+  @CheckResult fun listenForSocksEnabledChanges(): Flow<Boolean>
+
+  fun setSocksEnabled(enabled: Boolean)
 }

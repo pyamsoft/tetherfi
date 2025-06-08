@@ -54,13 +54,21 @@ internal constructor(
   private data class LoadConfig(
       var ssid: Boolean,
       var password: Boolean,
-      var httpPort: Boolean,
-      var socksPort: Boolean,
       var band: Boolean,
+      var isHttpEnabled: Boolean,
+      var httpPort: Boolean,
+      var isSocksEnabled: Boolean,
+      var socksPort: Boolean,
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.httpPort && config.socksPort && config.ssid && config.password && config.band) {
+    if (config.httpPort &&
+        config.isHttpEnabled &&
+        config.socksPort &&
+        config.isSocksEnabled &&
+        config.ssid &&
+        config.password &&
+        config.band) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }
@@ -84,9 +92,11 @@ internal constructor(
         LoadConfig(
             ssid = false,
             password = false,
-            httpPort = false,
-            socksPort = false,
             band = false,
+            isHttpEnabled = false,
+            httpPort = false,
+            isSocksEnabled = false,
+            socksPort = false,
         )
 
     // Start loading
@@ -100,12 +110,30 @@ internal constructor(
     val s = state
 
     // Only pull once since after this point, the state will be driven by the input
+    proxyPreferences.listenForHttpEnabledChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        s.isHttpEnabled.value = f.first()
+
+        config.isHttpEnabled = true
+        markPreferencesLoaded(config)
+      }
+    }
+
     proxyPreferences.listenForHttpPortChanges().also { f ->
       scope.launch(context = Dispatchers.Default) {
         val p = f.first()
         s.httpPort.value = if (p == 0) "" else "$p"
 
         config.httpPort = true
+        markPreferencesLoaded(config)
+      }
+    }
+
+    proxyPreferences.listenForSocksEnabledChanges().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        s.isSocksEnabled.value = f.first()
+
+        config.isSocksEnabled = true
         markPreferencesLoaded(config)
       }
     }
