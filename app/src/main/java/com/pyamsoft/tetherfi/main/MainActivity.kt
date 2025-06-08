@@ -45,9 +45,9 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,13 +68,14 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature("Support Android 16 (API 36)")
-                    feature("Support 6GHz Wi-Fi band on Android 16 devices")
                     feature(
-                        "Add an error notification when the hotspot is forced to shutdown due to errors")
-                    bugfix("Experimental: Fix some bugs in SOCKS UDP proxy")
-                    bugfix("Fix a crash affecting devices with less than 2GB of RAM")
-                    bugfix("Fix a crash encountered sometimes when starting the hotspot")
+                        """BETA: Support for SOCKS proxy type.
+                      |
+                      |SOCKS has support for simple connections, as well as UDP connection binding.
+                      |
+                      |This feature is for advanced users only, most users will be content with the default HTTP proxy settings.
+                    """
+                            .trimMargin())
                   }
                 },
         )
