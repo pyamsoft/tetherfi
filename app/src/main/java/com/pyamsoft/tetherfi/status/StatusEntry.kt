@@ -83,6 +83,9 @@ fun StatusEntry(
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
+
+    // Error
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 ) {
   val component = rememberComposableInjector { StatusInjector() }
   val viewModel = rememberNotNull(component.viewModel)
@@ -108,6 +111,7 @@ fun StatusEntry(
       onShowQRCode = onShowQRCode,
       onRefreshConnection = onRefreshConnection,
       onJumpToHowTo = onJumpToHowTo,
+      onEnableChangeFailed = onEnableChangeFailed,
       onToggleProxy = {
         viewModel.handleToggleProxy(
             onToggleProxy = handleToggleProxy,
@@ -115,7 +119,9 @@ fun StatusEntry(
       },
       onSsidChanged = { viewModel.handleSsidChanged(it.trim()) },
       onPasswordChanged = { viewModel.handlePasswordChanged(it) },
+      onHttpEnabledChanged = { viewModel.handleEnabledChanged(it, ServerPortTypes.HTTP) },
       onHttpPortChanged = { viewModel.handlePortChanged(it, ServerPortTypes.HTTP) },
+      onSocksEnabledChanged = { viewModel.handleEnabledChanged(it, ServerPortTypes.SOCKS) },
       onSocksPortChanged = { viewModel.handlePortChanged(it, ServerPortTypes.SOCKS) },
       onViewSlowSpeedHelp = onShowSlowSpeedHelp,
       onSelectBand = { viewModel.handleChangeBand(it) },

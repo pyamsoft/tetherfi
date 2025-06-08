@@ -36,6 +36,7 @@ import com.pyamsoft.pydroid.ui.theme.HairlineSize
 import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
+import com.pyamsoft.tetherfi.status.ServerPortTypes
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -69,9 +70,12 @@ internal fun LazyListScope.renderNetworkInformation(
     // Network config
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onHttpPortChanged: (String) -> Unit,
-    onSocksPortChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 
     // Connections
     onShowQRCode: () -> Unit,
@@ -146,9 +150,12 @@ internal fun LazyListScope.renderNetworkInformation(
         serverViewState = serverViewState,
         onSsidChanged = onSsidChanged,
         onPasswordChanged = onPasswordChanged,
+        onHttpEnabledChanged = onHttpEnabledChanged,
         onHttpPortChanged = onHttpPortChanged,
+        onSocksEnabledChanged = onSocksEnabledChanged,
         onSocksPortChanged = onSocksPortChanged,
         onTogglePasswordVisibility = onTogglePasswordVisibility,
+        onEnableChangeFailed = onEnableChangeFailed,
     )
   } else {
     renderRunningItems(
@@ -199,13 +206,16 @@ private fun PreviewNetworkInformation(
         onShowQRCode = {},
         onRefreshConnection = {},
         onJumpToHowTo = {},
+        onHttpEnabledChanged = {},
         onHttpPortChanged = {},
+        onSocksEnabledChanged = {},
         onSocksPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onShowHotspotError = {},
         onTogglePasswordVisibility = {},
         onViewSlowSpeedHelp = {},
+        onEnableChangeFailed = {},
     )
   }
 }

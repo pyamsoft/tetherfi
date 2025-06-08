@@ -28,6 +28,7 @@ import com.pyamsoft.tetherfi.connections.ConnectionEntry
 import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.info.InfoEntry
 import com.pyamsoft.tetherfi.server.status.RunningStatus
+import com.pyamsoft.tetherfi.status.ServerPortTypes
 import com.pyamsoft.tetherfi.status.StatusEntry
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
@@ -56,6 +57,9 @@ fun MainContent(
 
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
+
+    // Error
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 ) {
   val statusLazyListState = rememberLazyListState()
   val behaviorLazyListState = rememberLazyListState()
@@ -113,6 +117,7 @@ fun MainContent(
             onOpenHotspotError = onOpenHotspotError,
             onOpenProxyError = onOpenProxyError,
             onOpenBroadcastError = onOpenBroadcastError,
+            onEnableChangeFailed = onEnableChangeFailed,
         )
       }
       MainView.CONNECTIONS -> {

@@ -17,19 +17,13 @@
 package com.pyamsoft.tetherfi.status
 
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
-import com.pyamsoft.pydroid.bus.EventBus
-import com.pyamsoft.pydroid.notify.NotifyGuard
 import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.ProxyPreferences
 import com.pyamsoft.tetherfi.server.ServerDefaults
 import com.pyamsoft.tetherfi.server.ServerNetworkBand
-import com.pyamsoft.tetherfi.server.StatusPreferences
-import com.pyamsoft.tetherfi.server.TweakPreferences
 import com.pyamsoft.tetherfi.server.WifiPreferences
-import com.pyamsoft.tetherfi.server.battery.BatteryOptimizer
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
-import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,14 +35,9 @@ class StatusViewModeler
 @Inject
 internal constructor(
     override val state: MutableStatusViewState,
-    private val notificationRefreshBus: EventBus<NotificationRefreshEvent>,
-    private val tweakPreferences: TweakPreferences,
     private val expertPreferences: ExpertPreferences,
     private val proxyPreferences: ProxyPreferences,
-    private val statusPreferences: StatusPreferences,
     private val wifiPreferences: WifiPreferences,
-    private val notifyGuard: NotifyGuard,
-    private val batteryOptimizer: BatteryOptimizer,
 ) : StatusViewState by state, AbstractViewModeler<StatusViewState>(state) {
 
   private data class LoadConfig(
@@ -219,10 +208,24 @@ internal constructor(
           val portValue = port.toIntOrNull()
           proxyPreferences.setHttpPort(portValue ?: 0)
         }
+
         ServerPortTypes.SOCKS -> {
           state.socksPort.value = port
           val portValue = port.toIntOrNull()
           proxyPreferences.setSocksPort(portValue ?: 0)
+        }
+      }
+
+  fun handleEnabledChanged(enabled: Boolean, type: ServerPortTypes) =
+      when (type) {
+        ServerPortTypes.HTTP -> {
+          state.isHttpEnabled.value = enabled
+          proxyPreferences.setHttpEnabled(enabled)
+        }
+
+        ServerPortTypes.SOCKS -> {
+          state.isSocksEnabled.value = enabled
+          proxyPreferences.setSocksEnabled(enabled)
         }
       }
 

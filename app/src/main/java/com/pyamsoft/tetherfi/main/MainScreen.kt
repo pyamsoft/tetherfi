@@ -23,7 +23,12 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +39,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
+import com.pyamsoft.tetherfi.status.ServerPortTypes
 import com.pyamsoft.tetherfi.ui.test.makeTestRuntimeFlags
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.annotations.TestOnly
@@ -68,8 +74,23 @@ fun MainScreen(
     // Tile
     onUpdateTile: (RunningStatus) -> Unit,
 ) {
+  val (snackbarError, setSnackbarError) = remember { mutableStateOf<ServerPortTypes?>(null) }
+  val snackbarHostState = remember { SnackbarHostState() }
+
+  LaunchedEffect(snackbarError, snackbarHostState, setSnackbarError) {
+    if (snackbarError != null) {
+      snackbarHostState.showSnackbar(
+          message = "You must enable at least one proxy type.",
+          duration = SnackbarDuration.Short,
+      )
+
+      setSnackbarError(null)
+    }
+  }
+
   Scaffold(
       modifier = modifier.fillMaxSize(),
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
   ) { pv ->
     Column {
       MainTopBar(
@@ -107,6 +128,7 @@ fun MainScreen(
           onOpenHotspotError = onOpenHotspotError,
           onOpenProxyError = onOpenProxyError,
           onOpenBroadcastError = onOpenBroadcastError,
+          onEnableChangeFailed = { setSnackbarError(it) },
       )
     }
   }
@@ -129,10 +151,10 @@ private fun PreviewMainScreen(
         override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
         override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
 
-        override val isHttpEnabled = MutableStateFlow(false)
+        override val isHttpEnabled = MutableStateFlow(http)
         override val httpPort = MutableStateFlow(0)
 
-        override val isSocksEnabled = MutableStateFlow(false)
+        override val isSocksEnabled = MutableStateFlow(socks)
         override val socksPort = MutableStateFlow(0)
 
         // TODO support RNDIS

@@ -75,8 +75,11 @@ fun StatusScreen(
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
     onHttpPortChanged: (String) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
     onSocksPortChanged: (String) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 
     // Status buttons
     onShowQRCode: () -> Unit,
@@ -212,7 +215,9 @@ fun StatusScreen(
             proxyStatus = proxyStatus,
             onSsidChanged = onSsidChanged,
             onPasswordChanged = onPasswordChanged,
+            onHttpEnabledChanged = onHttpEnabledChanged,
             onHttpPortChanged = onHttpPortChanged,
+            onSocksEnabledChanged = onSocksEnabledChanged,
             onSocksPortChanged = onSocksPortChanged,
             onSelectBand = onSelectBand,
             onTogglePasswordVisibility = onTogglePasswordVisibility,
@@ -224,6 +229,7 @@ fun StatusScreen(
             onViewSlowSpeedHelp = onViewSlowSpeedHelp,
             onSelectBroadcastType = onSelectBroadcastType,
             onSelectPreferredNetwork = onSelectPreferredNetwork,
+            onEnableChangeFailed = onEnableChangeFailed,
         )
       }
     }
@@ -258,7 +264,9 @@ private fun PreviewStatusScreen(
       onStatusUpdated = {},
       onSelectBand = {},
       onPasswordChanged = {},
+      onHttpEnabledChanged = {},
       onHttpPortChanged = {},
+      onSocksEnabledChanged = {},
       onSocksPortChanged = {},
       onSsidChanged = {},
       onToggleProxy = {},
@@ -273,6 +281,7 @@ private fun PreviewStatusScreen(
       onViewSlowSpeedHelp = {},
       onSelectBroadcastType = {},
       onSelectPreferredNetwork = {},
+      onEnableChangeFailed = {},
   )
 }
 

@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
+import com.pyamsoft.tetherfi.status.ServerPortTypes
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -55,9 +56,12 @@ internal fun LazyListScope.renderEditableItems(
     serverViewState: ServerViewState,
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onHttpPortChanged: (String) -> Unit,
-    onSocksPortChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 ) {
   item(
       contentType = RenderEditableItemsContentTypes.EDIT_SSID,
@@ -106,7 +110,9 @@ internal fun LazyListScope.renderEditableItems(
           checked = isHttpEnabled,
           onCheckedChange = {
             if (isSocksEnabled) {
-              // TODO toggle
+              onHttpEnabledChanged(it)
+            } else {
+              onEnableChangeFailed(ServerPortTypes.HTTP)
             }
           },
       )
@@ -137,7 +143,9 @@ internal fun LazyListScope.renderEditableItems(
           checked = isSocksEnabled,
           onCheckedChange = {
             if (isHttpEnabled) {
-              // TODO toggle
+              onSocksEnabledChanged(it)
+            } else {
+              onEnableChangeFailed(ServerPortTypes.SOCKS)
             }
           },
       )
@@ -169,11 +177,14 @@ private fun PreviewEditableItems(
               this.password.value = password
               this.httpPort.value = port
             },
+        onHttpEnabledChanged = {},
         onHttpPortChanged = {},
+        onSocksEnabledChanged = {},
         onSocksPortChanged = {},
         onSsidChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},
+        onEnableChangeFailed = {},
         serverViewState = makeTestServerState(TestServerState.EMPTY, http, socks),
     )
   }

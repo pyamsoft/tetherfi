@@ -71,9 +71,12 @@ internal fun LazyListScope.renderLoadedContent(
     onSsidChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
-    onHttpPortChanged: (String) -> Unit,
-    onSocksPortChanged: (String) -> Unit,
     onSelectBand: (ServerNetworkBand) -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 
     // Status button
     onShowQRCode: () -> Unit,
@@ -101,7 +104,9 @@ internal fun LazyListScope.renderLoadedContent(
       proxyStatus = proxyStatus,
       onSsidChanged = onSsidChanged,
       onPasswordChanged = onPasswordChanged,
+      onHttpEnabledChanged = onHttpEnabledChanged,
       onHttpPortChanged = onHttpPortChanged,
+      onSocksEnabledChanged = onSocksEnabledChanged,
       onSocksPortChanged = onSocksPortChanged,
       onTogglePasswordVisibility = onTogglePasswordVisibility,
       onShowQRCode = onShowQRCode,
@@ -110,6 +115,7 @@ internal fun LazyListScope.renderLoadedContent(
       onShowHotspotError = onShowHotspotError,
       onJumpToHowTo = onJumpToHowTo,
       onViewSlowSpeedHelp = onViewSlowSpeedHelp,
+      onEnableChangeFailed = onEnableChangeFailed,
   )
 
   renderBroadcastFrequency(
@@ -211,7 +217,9 @@ private fun PreviewLoadedContent(
         appName = "TEST",
         onSelectBand = {},
         onPasswordChanged = {},
+        onHttpEnabledChanged = {},
         onHttpPortChanged = {},
+        onSocksEnabledChanged = {},
         onSocksPortChanged = {},
         onSsidChanged = {},
         onTogglePasswordVisibility = {},
@@ -226,6 +234,7 @@ private fun PreviewLoadedContent(
         onViewSlowSpeedHelp = {},
         onSelectBroadcastType = {},
         onSelectPreferredNetwork = {},
+        onEnableChangeFailed = {},
     )
   }
 }
