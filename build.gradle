@@ -42,7 +42,7 @@ buildscript {
     // AndroidX
     core = "1.16.0"
     preferences = "1.2.1"
-    appCompat = "1.7.0"
+    appCompat = "1.7.1"
     lifecycle = "2.9.1"
     dataStore = "1.1.7"
 
