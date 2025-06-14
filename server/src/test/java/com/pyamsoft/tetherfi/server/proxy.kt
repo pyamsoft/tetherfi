@@ -37,6 +37,11 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
+import java.io.IOException
+import java.time.Clock
+import kotlin.test.assertEquals
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -49,11 +54,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
-import java.io.IOException
-import java.time.Clock
-import kotlin.test.assertEquals
-import kotlin.test.fail
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 internal suspend fun setupProxy(
@@ -67,10 +67,10 @@ internal suspend fun setupProxy(
     appEnv: AppDevEnvironment.() -> Unit = {},
     withServer: suspend CoroutineScope.(Int, CoroutineDispatcher) -> Unit,
 ) {
-    assert(proxyPort >= 0 && proxyPort <= 65000)
-    assert(nThreads >= 1)
-    assert(scope.isActive)
-    assert(proxyTypes.isNotEmpty())
+  assert(proxyPort >= 0 && proxyPort <= 65000)
+  assert(nThreads >= 1)
+  assert(scope.isActive)
+  assert(proxyTypes.isNotEmpty())
 
   val dispatcher =
       object : ServerDispatcher {
@@ -201,88 +201,89 @@ internal suspend fun setupProxy(
         override suspend fun hideError() {}
       }
 
-    var port = proxyPort
-    val jobs = mutableListOf<Job>()
-    for (proxyType in proxyTypes) {
-        val job = scope.launch {
-            val manager =
-                TcpProxyManager(
-                    appScope = scope,
-                    proxyType = proxyType,
-                    appEnvironment = appEnvironment,
-                    session =
-                        HttpProxySession(
-                            appScope = scope,
-                            transport = transport,
-                            blockedClients = blocked,
-                            allowedClients = allowed,
-                            enforcer = enforcer,
-                            socketTagger = socketTagger,
-                            clientResolver = resolver,
-                            notificationErrorLauncher = notificationErrorLauncher,
-                        ),
-                    hostConnection =
-                        BroadcastNetworkStatus.ConnectionInfo.Connected(
-                            hostName = HOSTNAME,
-                        ),
-                    port = port,
-                    serverDispatcher = dispatcher,
-                    socketTagger = socketTagger,
-                    yoloRepeatDelay = 0.seconds,
-                    enforcer = enforcer,
-                    serverStopConsumer = DefaultEventBus(),
-                    socketBinder = PassthroughSocketBinder(),
-                    expertPreferences = expertPreferences,
-                    socketCreator = socketCreator,
-                )
+  var port = proxyPort
+  val jobs = mutableListOf<Job>()
+  for (proxyType in proxyTypes) {
+    val job =
+        scope.launch {
+          val manager =
+              TcpProxyManager(
+                  appScope = scope,
+                  proxyType = proxyType,
+                  appEnvironment = appEnvironment,
+                  session =
+                      HttpProxySession(
+                          appScope = scope,
+                          transport = transport,
+                          blockedClients = blocked,
+                          allowedClients = allowed,
+                          enforcer = enforcer,
+                          socketTagger = socketTagger,
+                          clientResolver = resolver,
+                          notificationErrorLauncher = notificationErrorLauncher,
+                      ),
+                  hostConnection =
+                      BroadcastNetworkStatus.ConnectionInfo.Connected(
+                          hostName = HOSTNAME,
+                      ),
+                  port = port,
+                  serverDispatcher = dispatcher,
+                  socketTagger = socketTagger,
+                  yoloRepeatDelay = 0.seconds,
+                  enforcer = enforcer,
+                  serverStopConsumer = DefaultEventBus(),
+                  socketBinder = PassthroughSocketBinder(),
+                  expertPreferences = expertPreferences,
+                  socketCreator = socketCreator,
+              )
 
-            val expectedErrorCode =
-                if (expectServerFail) "server" else if (testSocketCrash) "socket" else "none"
-            var errorCode = "none"
+          val expectedErrorCode =
+              if (expectServerFail) "server" else if (testSocketCrash) "socket" else "none"
+          var errorCode = "none"
 
-            val server =
-                scope.async {
-                    val block = suspend {
-                        manager.loop(
-                            onOpened = {},
-                            onClosing = {},
-                            onError = { e ->
-                                if (expectServerFail) {
-                                    errorCode = "server"
-                                    assertEquals(
-                                        IOException::class.java,
-                                        e::class.java,
-                                    )
-                                } else if (testSocketCrash) {
-                                    errorCode = "socket"
-                                    assertEquals(
-                                        IllegalStateException::class.java,
-                                        e::class.java,
-                                    )
-                                } else {
-                                    fail("Got exception but was not expecting one!", e)
-                                }
-                            },
-                        )
-                    }
-
-                    block()
+          val server =
+              scope.async {
+                val block = suspend {
+                  manager.loop(
+                      onOpened = {},
+                      onClosing = {},
+                      onError = { e ->
+                        if (expectServerFail) {
+                          errorCode = "server"
+                          assertEquals(
+                              IOException::class.java,
+                              e::class.java,
+                          )
+                        } else if (testSocketCrash) {
+                          errorCode = "socket"
+                          assertEquals(
+                              IllegalStateException::class.java,
+                              e::class.java,
+                          )
+                        } else {
+                          fail("Got exception but was not expecting one!", e)
+                        }
+                      },
+                  )
                 }
 
-            println("Start TetherFi proxy $HOSTNAME $port")
-            delay(3.seconds)
+                block()
+              }
 
-            println("Run with TetherFi proxy")
-            scope.withServer(port++, dispatcher.primary)
+          println("Start TetherFi proxy $HOSTNAME $port")
+          delay(3.seconds)
 
-            println("Done TetherFi proxy")
-            server.cancel()
+          println("Run with TetherFi proxy")
+          scope.withServer(port++, dispatcher.primary)
 
-            // Make sure we got errors when expected
-            assertEquals(expectedErrorCode, errorCode)
+          println("Done TetherFi proxy")
+          server.cancel()
+
+          // Make sure we got errors when expected
+          assertEquals(expectedErrorCode, errorCode)
         }
-        jobs.add(job)
-    }
+    jobs.add(job)
+  }
 
   // Wait for all jobs to be done
   jobs.forEach { it.join() }

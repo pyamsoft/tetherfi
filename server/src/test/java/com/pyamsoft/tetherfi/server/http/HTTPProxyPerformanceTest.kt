@@ -31,6 +31,8 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
+import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -39,16 +41,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.minutes
 
 private fun makeGetRequest(port: Int): String {
-    return listOf(
-        "GET http://${HOSTNAME}:$port HTTP/1.1",
-        "",
-        "",
-    )
-        .joinToString(SOCKET_EOL)
+  return listOf(
+          "GET http://${HOSTNAME}:$port HTTP/1.1",
+          "",
+          "",
+      )
+      .joinToString(SOCKET_EOL)
 }
 
 private val GET_EXPECT_RESPONSE =
@@ -70,93 +70,85 @@ class HTTPProxyPerformanceTest {
   ) {
     val completed = MutableStateFlow(0)
     try {
-        setupServer(
+      setupServer(
+          this,
+          serverPort = serverPort,
+      ) {
+        setupProxy(
             this,
-            serverPort = serverPort,
-        ) {
-            setupProxy(
-                this,
-                proxyTypes = proxyTypes,
-                proxyPort = proxyPort,
-                nThreads = nThreads,
-                isLoggingEnabled = true,
-            ) { port, dispatcher ->
-                ByteBufferPool().use { pool ->
-                    val proxyRemote = InetSocketAddress(hostname = HOSTNAME, port = port)
-                    val request = makeGetRequest(port = serverPort)
-                    val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
-                    for (i in 0 until jobCount) {
-                        val job =
-                            async(context = Dispatchers.IO) {
-                                usingSocketBuilder(
-                                    type = SocketCreator.Type.SERVER,
-                                    isFakeOOMServer = false,
-                                    isFakeOOMClient = false,
-                                    dispatcher = dispatcher,
-                                    appScope = this,
-                                    onError = {},
-                                    onBuild = { builder ->
-                                        try {
-                                            builder
-                                                .tcp()
-                                                .connect(
-                                                    remoteAddress = proxyRemote,
-                                                    configure = {
-                                                        reuseAddress = true
-                                                        // As of KTOR-3.0.0, this is not supported and crashes at
-                                                        // runtime
-                                                        // reusePort = true
-                                                    },
-                                                )
-                                                .usingConnection(autoFlush = true) { read, write ->
-                                                    println("Send request $i")
-                                                    write.writeStringUtf8(request)
-
-                                                    val dst = pool.borrow()
-                                                    try {
-                                                        val amt = read.readAvailable(dst)
-
-                                                        val res =
-                                                            String(
-                                                                dst.array(),
-                                                                0,
-                                                                amt,
-                                                                Charsets.UTF_8
-                                                            )
-                                                                // Correct all the CRLF newlines to normal newlines
-                                                                // This is just for test correctness.
-                                                                .replace(
-                                                                    SOCKET_EOL,
-                                                                    System.lineSeparator()
-                                                                )
-
-                                                        assertEquals(GET_EXPECT_RESPONSE, res)
-                                                        println("Got response $i")
-                                                        completed.update { it + 1 }
-                                                    } finally {
-                                                        pool.recycle(dst)
-                                                    }
-                                                }
-                                        } catch (e: Throwable) {
-                                            e.ifNotCancellation {
-                                                println("Error connecting proxy: $proxyRemote")
-                                                e.printStackTrace()
-                                                throw e
-                                            }
-                                        }
+            proxyTypes = proxyTypes,
+            proxyPort = proxyPort,
+            nThreads = nThreads,
+            isLoggingEnabled = true,
+        ) { port, dispatcher ->
+          ByteBufferPool().use { pool ->
+            val proxyRemote = InetSocketAddress(hostname = HOSTNAME, port = port)
+            val request = makeGetRequest(port = serverPort)
+            val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
+            for (i in 0 until jobCount) {
+              val job =
+                  async(context = Dispatchers.IO) {
+                    usingSocketBuilder(
+                        type = SocketCreator.Type.SERVER,
+                        isFakeOOMServer = false,
+                        isFakeOOMClient = false,
+                        dispatcher = dispatcher,
+                        appScope = this,
+                        onError = {},
+                        onBuild = { builder ->
+                          try {
+                            builder
+                                .tcp()
+                                .connect(
+                                    remoteAddress = proxyRemote,
+                                    configure = {
+                                      reuseAddress = true
+                                      // As of KTOR-3.0.0, this is not supported and crashes at
+                                      // runtime
+                                      // reusePort = true
                                     },
                                 )
+                                .usingConnection(autoFlush = true) { read, write ->
+                                  println("Send request $i")
+                                  write.writeStringUtf8(request)
+
+                                  val dst = pool.borrow()
+                                  try {
+                                    val amt = read.readAvailable(dst)
+
+                                    val res =
+                                        String(dst.array(), 0, amt, Charsets.UTF_8)
+                                            // Correct all the CRLF newlines to normal newlines
+                                            // This is just for test correctness.
+                                            .replace(SOCKET_EOL, System.lineSeparator())
+
+                                    assertEquals(GET_EXPECT_RESPONSE, res)
+                                    println("Got response $i")
+                                    completed.update { it + 1 }
+                                  } finally {
+                                    pool.recycle(dst)
+                                  }
+                                }
+                          } catch (e: Throwable) {
+                            e.ifNotCancellation {
+                              println("Error connecting proxy: $proxyRemote")
+                              e.printStackTrace()
+                              throw e
                             }
+                          }
+                        },
+                    )
+                  }
 
-                        jobs.add(job)
-                    }
-
-                    jobs.awaitAll()
-                }
+              jobs.add(job)
             }
-        }
 
-        assertEquals(completed.value, jobCount)
+            jobs.awaitAll()
+          }
+        }
+      }
+
+      assertEquals(completed.value, jobCount)
     } finally {
       println("Completed jobs: ${completed.value}")
     }
@@ -166,25 +158,25 @@ class HTTPProxyPerformanceTest {
   @Test
   fun singleThreadedServerPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
-          testServerPerformance(
-              proxyTypes = listOf(SharedProxy.Type.HTTP),
-              nThreads = 1,
-              jobCount = 20,
-              serverPort = 16000,
-              proxyPort = 14141,
-          )
+        testServerPerformance(
+            proxyTypes = listOf(SharedProxy.Type.HTTP),
+            nThreads = 1,
+            jobCount = 20,
+            serverPort = 16000,
+            proxyPort = 14141,
+        )
       }
 
   /** We can open a bunch of HTTP sockets right? */
   @Test
   fun multiThreadedServerPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
-          testServerPerformance(
-              proxyTypes = listOf(SharedProxy.Type.HTTP),
-              nThreads = Runtime.getRuntime().availableProcessors(),
-              jobCount = 40,
-              serverPort = 20000,
-              proxyPort = 15151,
-          )
+        testServerPerformance(
+            proxyTypes = listOf(SharedProxy.Type.HTTP),
+            nThreads = Runtime.getRuntime().availableProcessors(),
+            jobCount = 40,
+            serverPort = 20000,
+            proxyPort = 15151,
+        )
       }
 }

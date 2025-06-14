@@ -19,23 +19,23 @@ package com.pyamsoft.tetherfi.server.socks
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.runBlockingWithDelays
 import com.pyamsoft.tetherfi.server.setupProxy
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import org.junit.Test
-import kotlin.time.Duration.Companion.seconds
 
 class SOCKSProxySetupTest {
 
   /** It works right? */
   @Test
   fun setupNormal(): Unit = runBlockingWithDelays {
-      setupProxy(
-          this,
-          proxyTypes = listOf(SharedProxy.Type.SOCKS),
-          isLoggingEnabled = true,
-          proxyPort = 32191,
-      ) { _, _ ->
-          delay(5.seconds)
-      }
+    setupProxy(
+        this,
+        proxyTypes = listOf(SharedProxy.Type.SOCKS),
+        isLoggingEnabled = true,
+        proxyPort = 32191,
+    ) { _, _ ->
+      delay(5.seconds)
+    }
   }
 
   /**
@@ -45,29 +45,29 @@ class SOCKSProxySetupTest {
    */
   @Test
   fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
-      setupProxy(
-          this,
-          proxyTypes = listOf(SharedProxy.Type.SOCKS),
-          isLoggingEnabled = true,
-          proxyPort = 31657,
-          testSocketCrash = true,
-      ) { _, _ ->
-          delay(5.seconds)
-      }
+    setupProxy(
+        this,
+        proxyTypes = listOf(SharedProxy.Type.SOCKS),
+        isLoggingEnabled = true,
+        proxyPort = 31657,
+        testSocketCrash = true,
+    ) { _, _ ->
+      delay(5.seconds)
+    }
   }
 
   /** We also are prepared to handle when a socket fails to open right? */
   @Test
   fun yoloFailThrows(): Unit = runBlockingWithDelays {
-      setupProxy(
-          this,
-          proxyTypes = listOf(SharedProxy.Type.SOCKS),
-          isLoggingEnabled = true,
-          proxyPort = 27351,
-          expectServerFail = true,
-          appEnv = { updateYolo(true) },
-      ) { _, _ ->
-          delay(5.seconds)
-      }
+    setupProxy(
+        this,
+        proxyTypes = listOf(SharedProxy.Type.SOCKS),
+        isLoggingEnabled = true,
+        proxyPort = 27351,
+        expectServerFail = true,
+        appEnv = { updateYolo(true) },
+    ) { _, _ ->
+      delay(5.seconds)
+    }
   }
 }
