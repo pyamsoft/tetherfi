@@ -20,7 +20,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import com.pyamsoft.tetherfi.server.IPV4_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
@@ -91,8 +91,8 @@ protected constructor(
   ): TetherClient? {
     // If the host is an IP address, and we are an IP address,
     // check that we fall into the host
-    if (hostConnection.isIpAddress) {
-      if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+    if (hostConnection.isIpv4Address) {
+      if (IPV4_ADDRESS_REGEX.matches(hostNameOrIp)) {
         if (!hostConnection.isClientWithinAddressableIpRange(hostNameOrIp)) {
           warnLog { "Reject IP address outside of host range: $hostNameOrIp" }
           return null

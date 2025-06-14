@@ -20,7 +20,7 @@ import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import com.pyamsoft.tetherfi.server.IPV4_ADDRESS_REGEX
 import java.time.Clock
 import java.time.LocalDateTime
 import org.jetbrains.annotations.TestOnly
@@ -71,14 +71,14 @@ sealed class TetherClient(
   fun matches(hostNameOrIp: String): Boolean {
     when (this) {
       is IpAddressClient -> {
-        if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+        if (IPV4_ADDRESS_REGEX.matches(hostNameOrIp)) {
           return ip == hostNameOrIp
         }
 
         return false
       }
       is HostNameClient -> {
-        if (!IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+        if (!IPV4_ADDRESS_REGEX.matches(hostNameOrIp)) {
           return hostname == hostNameOrIp
         }
 
@@ -123,7 +123,7 @@ sealed class TetherClient(
         bandwidthLimit: TransferAmount?,
         totalBytes: ByteTransferReport,
     ): TetherClient {
-      return if (IP_ADDRESS_REGEX.matches(hostNameOrIp)) {
+      return if (IPV4_ADDRESS_REGEX.matches(hostNameOrIp)) {
         IpAddressClient(
             ip = hostNameOrIp,
             mostRecentlySeen = LocalDateTime.now(clock),

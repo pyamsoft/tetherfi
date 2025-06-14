@@ -21,7 +21,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.IP_ADDRESS_REGEX
+import com.pyamsoft.tetherfi.server.IPV4_ADDRESS_REGEX
 import com.pyamsoft.tetherfi.server.Server
 import kotlinx.coroutines.flow.Flow
 
@@ -91,7 +91,7 @@ interface BroadcastNetworkStatus : Server {
 
       // Is this Connection info from the server an IP address or a DNS hostname?
       // It's almost always an IP address
-      val isIpAddress by lazy { IP_ADDRESS_REGEX.matches(hostName) }
+      val isIpv4Address by lazy { IPV4_ADDRESS_REGEX.matches(hostName) }
 
       /**
        * Split up an IP address
@@ -135,7 +135,7 @@ interface BroadcastNetworkStatus : Server {
 
       /** If this is not an IP address, you've done something wrong */
       private fun ensureIpAddress() {
-        if (!isIpAddress) {
+        if (!isIpv4Address) {
           throw NotAnIpAddressException(hostName)
         }
       }
