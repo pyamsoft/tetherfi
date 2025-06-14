@@ -95,7 +95,7 @@ plugins {
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-2.0.1" apply false
+  id("com.google.devtools.ksp") version "${kotlin}-2.0.2" apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
