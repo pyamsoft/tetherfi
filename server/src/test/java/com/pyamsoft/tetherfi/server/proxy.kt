@@ -37,32 +37,41 @@ import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpProxySession
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.HttpTransport
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.http.UrlRequestParser
 import io.ktor.network.sockets.SocketBuilder
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newFixedThreadPoolContext
+import timber.log.Timber
 import java.io.IOException
 import java.time.Clock
 import kotlin.test.assertEquals
 import kotlin.test.fail
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.newFixedThreadPoolContext
-import timber.log.Timber
 
 @OptIn(DelicateCoroutinesApi::class)
-internal suspend inline fun setupProxy(
+internal suspend fun setupProxy(
     scope: CoroutineScope,
+    proxyTypes: Collection<SharedProxy.Type>,
     proxyPort: Int,
     nThreads: Int = 1,
     isLoggingEnabled: Boolean = false,
     expectServerFail: Boolean = false,
     testSocketCrash: Boolean = false,
     appEnv: AppDevEnvironment.() -> Unit = {},
-    withServer: CoroutineScope.(CoroutineDispatcher) -> Unit,
+    withServer: suspend CoroutineScope.(Int, CoroutineDispatcher) -> Unit,
 ) {
+    assert(proxyPort >= 0 && proxyPort <= 65000)
+    assert(nThreads >= 1)
+    assert(scope.isActive)
+    assert(proxyTypes.isNotEmpty())
+
   val dispatcher =
       object : ServerDispatcher {
         override val primary = newFixedThreadPoolContext(nThreads = nThreads, "TEST")
@@ -169,7 +178,6 @@ internal suspend inline fun setupProxy(
   val appEnvironment =
       AppDevEnvironment(
               inAppDebug = flowOf(true),
-              isDebugMode = true,
           )
           .apply(appEnv)
 
@@ -193,81 +201,91 @@ internal suspend inline fun setupProxy(
         override suspend fun hideError() {}
       }
 
-  val manager =
-      TcpProxyManager(
-          appScope = scope,
-          proxyType = SharedProxy.Type.HTTP,
-          appEnvironment = appEnvironment,
-          session =
-              HttpProxySession(
-                  appScope = scope,
-                  transport = transport,
-                  blockedClients = blocked,
-                  allowedClients = allowed,
-                  enforcer = enforcer,
-                  socketTagger = socketTagger,
-                  clientResolver = resolver,
-                  notificationErrorLauncher = notificationErrorLauncher,
-              ),
-          hostConnection =
-              BroadcastNetworkStatus.ConnectionInfo.Connected(
-                  hostName = HOSTNAME,
-              ),
-          port = proxyPort,
-          serverDispatcher = dispatcher,
-          socketTagger = socketTagger,
-          yoloRepeatDelay = 0.seconds,
-          enforcer = enforcer,
-          serverStopConsumer = DefaultEventBus(),
-          socketBinder = PassthroughSocketBinder(),
-          expertPreferences = expertPreferences,
-          socketCreator = socketCreator,
-      )
+    var port = proxyPort
+    val jobs = mutableListOf<Job>()
+    for (proxyType in proxyTypes) {
+        val job = scope.launch {
+            val manager =
+                TcpProxyManager(
+                    appScope = scope,
+                    proxyType = proxyType,
+                    appEnvironment = appEnvironment,
+                    session =
+                        HttpProxySession(
+                            appScope = scope,
+                            transport = transport,
+                            blockedClients = blocked,
+                            allowedClients = allowed,
+                            enforcer = enforcer,
+                            socketTagger = socketTagger,
+                            clientResolver = resolver,
+                            notificationErrorLauncher = notificationErrorLauncher,
+                        ),
+                    hostConnection =
+                        BroadcastNetworkStatus.ConnectionInfo.Connected(
+                            hostName = HOSTNAME,
+                        ),
+                    port = port,
+                    serverDispatcher = dispatcher,
+                    socketTagger = socketTagger,
+                    yoloRepeatDelay = 0.seconds,
+                    enforcer = enforcer,
+                    serverStopConsumer = DefaultEventBus(),
+                    socketBinder = PassthroughSocketBinder(),
+                    expertPreferences = expertPreferences,
+                    socketCreator = socketCreator,
+                )
 
-  val expectedErrorCode =
-      if (expectServerFail) "server" else if (testSocketCrash) "socket" else "none"
-  var errorCode = "none"
+            val expectedErrorCode =
+                if (expectServerFail) "server" else if (testSocketCrash) "socket" else "none"
+            var errorCode = "none"
 
-  val server =
-      scope.async {
-        val block = suspend {
-          manager.loop(
-              onOpened = {},
-              onClosing = {},
-              onError = { e ->
-                if (expectServerFail) {
-                  errorCode = "server"
-                  assertEquals(
-                      IOException::class.java,
-                      e::class.java,
-                  )
-                } else if (testSocketCrash) {
-                  errorCode = "socket"
-                  assertEquals(
-                      IllegalStateException::class.java,
-                      e::class.java,
-                  )
-                } else {
-                  fail("Got exception but was not expecting one!", e)
+            val server =
+                scope.async {
+                    val block = suspend {
+                        manager.loop(
+                            onOpened = {},
+                            onClosing = {},
+                            onError = { e ->
+                                if (expectServerFail) {
+                                    errorCode = "server"
+                                    assertEquals(
+                                        IOException::class.java,
+                                        e::class.java,
+                                    )
+                                } else if (testSocketCrash) {
+                                    errorCode = "socket"
+                                    assertEquals(
+                                        IllegalStateException::class.java,
+                                        e::class.java,
+                                    )
+                                } else {
+                                    fail("Got exception but was not expecting one!", e)
+                                }
+                            },
+                        )
+                    }
+
+                    block()
                 }
-              },
-          )
+
+            println("Start TetherFi proxy $HOSTNAME $port")
+            delay(3.seconds)
+
+            println("Run with TetherFi proxy")
+            scope.withServer(port++, dispatcher.primary)
+
+            println("Done TetherFi proxy")
+            server.cancel()
+
+            // Make sure we got errors when expected
+            assertEquals(expectedErrorCode, errorCode)
         }
+        jobs.add(job)
+    }
 
-        block()
-      }
-
-  println("Start TetherFi proxy $HOSTNAME $proxyPort")
-  delay(3.seconds)
-
-  println("Run with TetherFi proxy")
-  scope.withServer(dispatcher.primary)
-
-  println("Done TetherFi proxy")
-  server.cancel()
-
-  // Make sure we got errors when expected
-  assertEquals(expectedErrorCode, errorCode)
+  // Wait for all jobs to be done
+  jobs.forEach { it.join() }
 
   tree?.also { Timber.uproot(it) }
 }

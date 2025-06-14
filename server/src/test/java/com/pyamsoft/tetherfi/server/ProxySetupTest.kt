@@ -16,20 +16,22 @@
 
 package com.pyamsoft.tetherfi.server
 
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
+import kotlinx.coroutines.delay
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.delay
 
 class ProxySetupTest {
 
   /** It works right? */
   @Test
-  fun setupNormal(): Unit = runBlockingWithDelays {
+  fun setupHTTPNormal(): Unit = runBlockingWithDelays {
     setupProxy(
         this,
+        proxyTypes = listOf(SharedProxy.Type.HTTP),
         isLoggingEnabled = true,
-        proxyPort = 5553,
-    ) {
+        proxyPort = 23191,
+    ) { _, _ ->
       delay(5.seconds)
     }
   }
@@ -40,27 +42,29 @@ class ProxySetupTest {
    * having the app crash and die
    */
   @Test
-  fun socketCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
+  fun socketHTTPCreatorExceptionIsCaught(): Unit = runBlockingWithDelays {
     setupProxy(
         this,
+        proxyTypes = listOf(SharedProxy.Type.HTTP),
         isLoggingEnabled = true,
-        proxyPort = 5555,
+        proxyPort = 24657,
         testSocketCrash = true,
-    ) {
+    ) { _, _ ->
       delay(5.seconds)
     }
   }
 
   /** We also are prepared to handle when a socket fails to open right? */
   @Test
-  fun yoloFailThrows(): Unit = runBlockingWithDelays {
+  fun yoloHTTPFailThrows(): Unit = runBlockingWithDelays {
     setupProxy(
         this,
+        proxyTypes = listOf(SharedProxy.Type.HTTP),
         isLoggingEnabled = true,
-        proxyPort = 5554,
+        proxyPort = 35351,
         expectServerFail = true,
         appEnv = { updateYolo(true) },
-    ) {
+    ) { _, _ ->
       delay(5.seconds)
     }
   }

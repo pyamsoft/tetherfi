@@ -1,6 +1,7 @@
 package com.pyamsoft.tetherfi.server
 
 import com.pyamsoft.pydroid.util.ifNotCancellation
+import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.session.tcp.SOCKET_EOL
 import com.pyamsoft.tetherfi.server.proxy.usingConnection
 import com.pyamsoft.tetherfi.server.proxy.usingSocketBuilder
@@ -8,9 +9,6 @@ import io.ktor.network.sockets.InetSocketAddress
 import io.ktor.utils.io.pool.ByteBufferPool
 import io.ktor.utils.io.readAvailable
 import io.ktor.utils.io.writeStringUtf8
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +16,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.minutes
 
 private fun makeGetRequest(port: Int): String {
   return listOf(
@@ -39,6 +40,7 @@ $RESPONSE_TEXT"""
 class ProxyPerformanceTest {
 
   private suspend fun CoroutineScope.testServerPerformance(
+      proxyTypes: Collection<SharedProxy.Type>,
       nThreads: Int,
       jobCount: Int,
       serverPort: Int,
@@ -52,12 +54,13 @@ class ProxyPerformanceTest {
       ) {
         setupProxy(
             this,
+            proxyTypes = proxyTypes,
             proxyPort = proxyPort,
             nThreads = nThreads,
             isLoggingEnabled = true,
-        ) { dispatcher ->
+        ) { port, dispatcher ->
           ByteBufferPool().use { pool ->
-            val proxyRemote = InetSocketAddress(hostname = HOSTNAME, port = proxyPort)
+            val proxyRemote = InetSocketAddress(hostname = HOSTNAME, port = port)
             val request = makeGetRequest(port = serverPort)
             val jobs: MutableCollection<Deferred<Unit>> = mutableSetOf()
             for (i in 0 until jobCount) {
@@ -129,27 +132,29 @@ class ProxyPerformanceTest {
     }
   }
 
-  /** We can open a bunch of sockets right? */
+  /** We can open a bunch of HTTP sockets right? */
   @Test
-  fun singleThreadedServerPerformanceTest(): Unit =
+  fun singleThreadedHTTPServerPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
         testServerPerformance(
+            proxyTypes = listOf(SharedProxy.Type.HTTP),
             nThreads = 1,
             jobCount = 20,
-            serverPort = 6666,
-            proxyPort = 9999,
+            serverPort = 16000,
+            proxyPort = 14141,
         )
       }
 
-  /** We can open a bunch of sockets right? */
+  /** We can open a bunch of HTTP sockets right? */
   @Test
-  fun multiThreadedServerPerformanceTest(): Unit =
+  fun multiThreadedHTTPServerPerformanceTest(): Unit =
       runBlockingWithDelays(1.minutes) {
         testServerPerformance(
+            proxyTypes = listOf(SharedProxy.Type.HTTP),
             nThreads = Runtime.getRuntime().availableProcessors(),
             jobCount = 40,
-            serverPort = 6667,
-            proxyPort = 9998,
+            serverPort = 20000,
+            proxyPort = 15151,
         )
       }
 }

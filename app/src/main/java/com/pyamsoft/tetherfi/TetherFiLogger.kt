@@ -18,9 +18,9 @@ package com.pyamsoft.tetherfi
 
 import android.app.Application
 import androidx.annotation.CheckResult
-import com.pyamsoft.pydroid.core.PYDroidLogger
 import com.pyamsoft.pydroid.ui.debug.InAppDebugLogger.Companion.createInAppDebugLogger
 import com.pyamsoft.pydroid.ui.debug.InAppDebugStatus
+import com.pyamsoft.pydroid.util.PYDroidLogger
 import com.pyamsoft.pydroid.util.isDebugMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
