@@ -15,6 +15,7 @@
  */
 
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   id("com.android.application")
@@ -49,7 +50,7 @@ android {
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlinOptions { jvmTarget = JavaVersion.VERSION_17.majorVersion }
+  kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
 
   signingConfigs {
     named("debug") {
