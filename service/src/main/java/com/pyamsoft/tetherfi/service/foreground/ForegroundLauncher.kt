@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 class ForegroundLauncher
 @Inject
 internal constructor(
-    @ServiceInternalApi private val locker: Locker,
+    @param:ServiceInternalApi private val locker: Locker,
     private val network: BroadcastNetwork,
 ) {
 

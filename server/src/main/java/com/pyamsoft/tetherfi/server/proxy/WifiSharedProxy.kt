@@ -57,9 +57,9 @@ import kotlinx.coroutines.withContext
 internal class WifiSharedProxy
 @Inject
 internal constructor(
-    @Named("app_scope") private val appScope: CoroutineScope,
-    @ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
-    @ServerInternalApi private val factory: ProxyManager.Factory,
+    @param:Named("app_scope") private val appScope: CoroutineScope,
+    @param:ServerInternalApi private val serverDispatcherFactory: ServerDispatcher.Factory,
+    @param:ServerInternalApi private val factory: ProxyManager.Factory,
     private val enforcer: ThreadEnforcer,
     private val clientEraser: ClientEraser,
     private val startedClients: StartedClients,

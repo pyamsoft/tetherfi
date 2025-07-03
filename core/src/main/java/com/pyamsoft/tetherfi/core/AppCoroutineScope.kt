@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 class AppCoroutineScope
 @Inject
 internal constructor(
-    @Named("app_scope") private val appScope: CoroutineScope,
+    @param:Named("app_scope") private val appScope: CoroutineScope,
 ) {
 
   /* @CheckResult */

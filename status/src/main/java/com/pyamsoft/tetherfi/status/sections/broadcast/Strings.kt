@@ -21,6 +21,6 @@ import androidx.annotation.StringRes
 @ConsistentCopyVisibility
 internal data class Strings
 internal constructor(
-    @StringRes val title: Int,
-    @StringRes val description: Int,
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int,
 )

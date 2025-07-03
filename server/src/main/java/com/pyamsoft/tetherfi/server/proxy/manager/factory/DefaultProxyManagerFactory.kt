@@ -45,10 +45,10 @@ import kotlinx.coroutines.withContext
 internal class DefaultProxyManagerFactory
 @Inject
 internal constructor(
-    @ServerInternalApi private val socketBinder: SocketBinder,
-    @Named("app_scope") private val appScope: CoroutineScope,
-    @Named("http") private val httpSession: ProxySession<TcpProxyData>,
-    @Named("socks") private val socksSession: ProxySession<TcpProxyData>,
+    @param:ServerInternalApi private val socketBinder: SocketBinder,
+    @param:Named("app_scope") private val appScope: CoroutineScope,
+    @param:Named("http") private val httpSession: ProxySession<TcpProxyData>,
+    @param:Named("socks") private val socksSession: ProxySession<TcpProxyData>,
     private val expertPreferences: ExpertPreferences,
     private val socketTagger: SocketTagger,
     private val enforcer: ThreadEnforcer,

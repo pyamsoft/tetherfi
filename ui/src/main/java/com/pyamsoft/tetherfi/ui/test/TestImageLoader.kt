@@ -18,11 +18,11 @@ package com.pyamsoft.tetherfi.ui.test
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import androidx.annotation.CheckResult
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.drawable.toDrawable
 import coil3.ComponentRegistry
 import coil3.ImageLoader
 import coil3.asImage
@@ -43,8 +43,8 @@ import org.jetbrains.annotations.TestOnly
 private class TestImageLoader(context: Context) : ImageLoader {
 
   private val context = context.applicationContext
-  private val loadingDrawable by lazy { ColorDrawable(Color.BLACK) }
-  private val successDrawable by lazy { ColorDrawable(Color.GREEN) }
+  private val loadingDrawable by lazy { Color.BLACK.toDrawable() }
+  private val successDrawable by lazy { Color.GREEN.toDrawable() }
 
   private val disposable =
       object : Disposable {

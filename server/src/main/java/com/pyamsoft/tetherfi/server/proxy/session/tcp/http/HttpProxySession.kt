@@ -51,7 +51,7 @@ import kotlinx.coroutines.launch
 internal class HttpProxySession
 @Inject
 internal constructor(
-    @Named("app_scope") private val appScope: CoroutineScope,
+    @param:Named("app_scope") private val appScope: CoroutineScope,
     private val notificationErrorLauncher: NotificationErrorLauncher,
     private val transport: HttpTransport,
     socketTagger: SocketTagger,

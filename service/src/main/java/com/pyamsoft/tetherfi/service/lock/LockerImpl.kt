@@ -28,7 +28,7 @@ internal class LockerImpl
 @Inject
 internal constructor(
     // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
-    @ServiceInternalApi private val lockers: MutableSet<Locker>,
+    @param:ServiceInternalApi private val lockers: MutableSet<Locker>,
 ) : Locker {
   override suspend fun acquire() =
       withContext(context = NonCancellable) {

@@ -54,8 +54,8 @@ import kotlinx.coroutines.launch
 internal class WifiDirectServer
 @Inject
 internal constructor(
-    @ServerInternalApi private val config: WiDiConfig,
-    @ServerInternalApi private val register: WifiDirectRegister,
+    @param:ServerInternalApi private val config: WiDiConfig,
+    @param:ServerInternalApi private val register: WifiDirectRegister,
     private val appContext: Context,
     private val appEnvironment: AppDevEnvironment,
     private val enforcer: ThreadEnforcer,

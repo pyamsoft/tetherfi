@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.update
 class AppDevEnvironment
 @Inject
 constructor(
-    @Named("in_app_debug") private val inAppDebug: Flow<Boolean>,
+    @param:Named("in_app_debug") private val inAppDebug: Flow<Boolean>,
 ) : ExperimentalRuntimeFlags {
 
   private val mutableGroupFakeEmpty = MutableStateFlow(false)

@@ -31,7 +31,7 @@ internal class UrlRequestParser
 @Inject
 internal constructor(
     /** Need to use MutableSet instead of Set because of Java -> Kotlin fun. */
-    @ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
+    @param:ServerInternalApi private val urlFixers: MutableSet<UrlFixer>,
 ) : RequestParser {
 
   private data class MethodData(

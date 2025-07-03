@@ -31,7 +31,7 @@ import javax.inject.Named
 internal class DefaultProxyTileActivityLauncher
 @Inject
 internal constructor(
-    @Named("tile_activity") private val tileActivityClass: Class<out Activity>,
+    @param:Named("tile_activity") private val tileActivityClass: Class<out Activity>,
     context: Context,
     service: TileService,
 ) : ProxyTileActivityLauncher {

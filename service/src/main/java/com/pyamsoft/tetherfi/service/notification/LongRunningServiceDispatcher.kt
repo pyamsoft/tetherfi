@@ -45,7 +45,7 @@ internal constructor(
     context: Context,
     @Named("main_activity") mainActivityClass: Class<out Activity>,
     @StringRes @Named("app_name") appNameRes: Int,
-    @Named("service") private val serviceClass: Class<out Service>,
+    @param:Named("service") private val serviceClass: Class<out Service>,
 ) :
     BaseDispatcher<ServerNotificationData>(
         context = context,
