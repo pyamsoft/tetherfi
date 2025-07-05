@@ -50,10 +50,10 @@ buildscript {
     coil = "3.2.0"
 
     // QR code
-    qrCode = "4.4.1"
+    qrCode = "4.5.0"
 
     // KTOR
-    ktor = "3.2.0-PYAMSOFT"
+    ktor = "3.2.1-PYAMSOFT"
 
     // Build and Sugar
     dagger = "2.56.2"
