@@ -76,6 +76,8 @@ class MainActivity : AppCompatActivity() {
                       |This feature is for advanced users only, most users will be content with the default HTTP proxy settings.
                     """
                             .trimMargin())
+                    change("Wired Tethering: Add support for devices that use USB connection")
+                    bugfix("Guard against datastore corruption by starting over from scratch when it occurs")
                   }
                 },
         )
