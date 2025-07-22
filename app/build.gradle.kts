@@ -33,8 +33,8 @@ android {
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
 
-    versionCode = 54
-    versionName = "20250422-1"
+    versionCode = 55
+    versionName = "20250712-1"
 
     minSdk = rootProject.extra["minSdk"] as Int
     targetSdk = rootProject.extra["targetSdk"] as Int
@@ -67,10 +67,10 @@ android {
       val properties =
           rootProject.file("local.properties").reader().use { r -> Properties().apply { load(r) } }
 
-      storeFile = file(properties.getProperty("BUNDLE_STORE_FILE")?.toString() ?: "CANNOT BUILD")
-      keyAlias = properties.getProperty("BUNDLE_KEY_ALIAS")?.toString() ?: "CANNOT BUILD"
-      keyPassword = properties.getProperty("BUNDLE_KEY_PASSWD")?.toString() ?: "CANNOT BUILD"
-      storePassword = properties.getProperty("BUNDLE_STORE_PASSWD")?.toString() ?: "CANNOT BUILD"
+      storeFile = file(properties.getProperty("BUNDLE_STORE_FILE") ?: "CANNOT BUILD")
+      keyAlias = properties.getProperty("BUNDLE_KEY_ALIAS") ?: "CANNOT BUILD"
+      keyPassword = properties.getProperty("BUNDLE_KEY_PASSWD") ?: "CANNOT BUILD"
+      storePassword = properties.getProperty("BUNDLE_STORE_PASSWD") ?: "CANNOT BUILD"
     }
   }
 

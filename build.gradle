@@ -43,7 +43,7 @@ buildscript {
     core = "1.16.0"
     preferences = "1.2.1"
     appCompat = "1.7.1"
-    lifecycle = "2.9.1"
+    lifecycle = "2.9.2"
     dataStore = "1.1.7"
 
     // Coil
@@ -56,7 +56,7 @@ buildscript {
     ktor = "3.2.1-PYAMSOFT"
 
     // Build and Sugar
-    dagger = "2.56.2"
+    dagger = "2.57"
     desugar = "2.1.5"
 
     // Testing
@@ -91,7 +91,7 @@ plugins {
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id("com.diffplug.spotless") version "7.1.0" apply false
+  id("com.diffplug.spotless") version "7.2.1" apply false
 
   // KSP
   // https://github.com/google/ksp
