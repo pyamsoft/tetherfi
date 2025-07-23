@@ -18,6 +18,7 @@ package com.pyamsoft.tetherfi.status.sections.network
 
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -25,10 +26,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.VisualTransformation
 
+internal enum class StatusEditorMode {
+  STANDARD,
+  OUTLINED,
+}
+
 @Composable
 internal fun StatusEditor(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    mode: StatusEditorMode,
     title: String,
     value: String,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -37,26 +44,48 @@ internal fun StatusEditor(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
-  val textStyle = LocalTextStyle.current
+  val textStyle =
+      LocalTextStyle.current.copy(
+          fontFamily = FontFamily.Monospace,
+      )
 
-  TextField(
-      modifier = modifier,
-      enabled = enabled,
-      keyboardOptions = keyboardOptions,
-      value = value,
-      textStyle =
-          textStyle.copy(
-              fontFamily = FontFamily.Monospace,
-          ),
-      visualTransformation = visualTransformation,
-      onValueChange = onChange,
-      leadingIcon = leadingIcon,
-      trailingIcon = trailingIcon,
-      singleLine = true,
-      label = {
+  val label =
+      @Composable {
         Text(
             text = title,
         )
-      },
-  )
+      }
+
+  when (mode) {
+    StatusEditorMode.STANDARD -> {
+      TextField(
+          modifier = modifier,
+          enabled = enabled,
+          keyboardOptions = keyboardOptions,
+          value = value,
+          textStyle = textStyle,
+          visualTransformation = visualTransformation,
+          onValueChange = onChange,
+          leadingIcon = leadingIcon,
+          trailingIcon = trailingIcon,
+          singleLine = true,
+          label = label,
+      )
+    }
+    StatusEditorMode.OUTLINED -> {
+      OutlinedTextField(
+          modifier = modifier,
+          enabled = enabled,
+          keyboardOptions = keyboardOptions,
+          value = value,
+          textStyle = textStyle,
+          visualTransformation = visualTransformation,
+          onValueChange = onChange,
+          leadingIcon = leadingIcon,
+          trailingIcon = trailingIcon,
+          singleLine = true,
+          label = label,
+      )
+    }
+  }
 }

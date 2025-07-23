@@ -77,7 +77,8 @@ class MainActivity : AppCompatActivity() {
                     """
                             .trimMargin())
                     change("Wired Tethering: Add support for devices that use USB connection")
-                    bugfix("Guard against datastore corruption by starting over from scratch when it occurs")
+                    bugfix(
+                        "Guard against datastore corruption by starting over from scratch when it occurs")
                   }
                 },
         )

@@ -60,6 +60,7 @@ private fun EditPort(
 
   StatusEditor(
       modifier = modifier,
+      mode = StatusEditorMode.OUTLINED,
       title = stringResource(portLabelRes),
       value = port,
       onChange = onPortChanged,
@@ -93,7 +94,7 @@ internal fun EditHttpPort(
   EditPort(
       modifier = modifier,
       port = port,
-      portLabelRes = R.string.editmode_type_http_port,
+      portLabelRes = R.string.hotspot_proxy_http_port,
       onPortChanged = onPortChanged,
   )
 }
@@ -108,7 +109,7 @@ internal fun EditSocksPort(
   EditPort(
       modifier = modifier,
       port = port,
-      portLabelRes = R.string.editmode_type_socks_port,
+      portLabelRes = R.string.hotspot_proxy_socks_port,
       onPortChanged = onPortChanged,
   )
 }
@@ -208,6 +209,7 @@ internal fun EditPassword(
 
   StatusEditor(
       modifier = modifier,
+      mode = StatusEditorMode.STANDARD,
       enabled = canUseCustomConfig,
       title = stringResource(R.string.editmode_hotspot_password),
       value = hotspotPassword,
@@ -291,6 +293,7 @@ internal fun EditSsid(
 
   StatusEditor(
       modifier = modifier,
+      mode = StatusEditorMode.STANDARD,
       enabled = canUseCustomConfig,
       title = stringResource(R.string.editmode_hotspot_name),
       value = hotspotSsid,

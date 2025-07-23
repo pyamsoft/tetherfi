@@ -29,6 +29,19 @@
   <string name="editmode_hotspot_name">HOTSPOT NAME</string>
 
   <!-- TODO(Peter): Need zh-rTW translation -->
-  <string name="editmode_type_http_port">HTTP PORT</string>
-  <string name="editmode_type_socks_port">SOCKS PORT</string>
+  <string name="editmode_hotspot_proxy_mode_title">Proxy Mode</string>
+
+  <string name="editmode_hotspot_proxy_http_title">HTTP Proxy</string>
+  <string name="editmode_hotspot_proxy_http_description">
+    Both HTTP and HTTPS proxy modes.
+    This proxy mode is simple and fast. It is compatible with most online services.
+    Most users will want to use this option (recommended)
+  </string>
+
+  <string name="editmode_hotspot_proxy_socks_title">SOCKS Proxy (BETA)</string>
+  <string name="editmode_hotspot_proxy_socks_description">
+    Both SOCKS4A and SOCKS5H proxy modes (CONNECT/CONNECT-UDP).
+    This proxy mode is slow and is only meant for specific use-cases.
+    Most users will not need this option, and should leave this disabled.
+  </string>
 </resources>

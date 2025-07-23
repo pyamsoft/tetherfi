@@ -92,7 +92,7 @@ internal fun ViewProxy(
       if (isHttpEnabled) {
         StatusItem(
             modifier = Modifier.padding(end = MaterialTheme.keylines.content),
-            title = stringResource(R.string.viewmode_hotspot_http_port),
+            title = stringResource(R.string.hotspot_proxy_http_port),
             value = httpPort,
             valueStyle =
                 MaterialTheme.typography.titleLarge.copy(
@@ -104,7 +104,7 @@ internal fun ViewProxy(
 
       if (isSocksEnabled) {
         StatusItem(
-            title = stringResource(R.string.viewmode_hotspot_socks_port),
+            title = stringResource(R.string.hotspot_proxy_socks_port),
             value = socksPort,
             valueStyle =
                 MaterialTheme.typography.titleLarge.copy(

@@ -16,22 +16,32 @@
 
 package com.pyamsoft.tetherfi.status.sections.network
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
+import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.status.ServerPortTypes
 import com.pyamsoft.tetherfi.status.StatusViewState
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
@@ -46,8 +56,7 @@ import org.jetbrains.annotations.TestOnly
 private enum class RenderEditableItemsContentTypes {
   EDIT_SSID,
   EDIT_PASSWD,
-  EDIT_HTTP,
-  EDIT_SOCKS,
+  EDIT_PORTS,
 }
 
 internal fun LazyListScope.renderEditableItems(
@@ -93,68 +102,126 @@ internal fun LazyListScope.renderEditableItems(
   }
 
   item(
-      contentType = RenderEditableItemsContentTypes.EDIT_HTTP,
+      contentType = RenderEditableItemsContentTypes.EDIT_PORTS,
   ) {
     val isHttpEnabled by serverViewState.isHttpEnabled.collectAsStateWithLifecycle()
     val isSocksEnabled by serverViewState.isSocksEnabled.collectAsStateWithLifecycle()
-    Row(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-      Switch(
-          modifier =
-              Modifier.padding(
-                  start = MaterialTheme.keylines.baseline,
-                  end = MaterialTheme.keylines.content,
-              ),
-          checked = isHttpEnabled,
-          onCheckedChange = {
-            if (isSocksEnabled) {
-              onHttpEnabledChanged(it)
-            } else {
-              onEnableChangeFailed(ServerPortTypes.HTTP)
-            }
-          },
-      )
 
-      EditHttpPort(
-          modifier = Modifier.weight(1F),
-          state = state,
-          onPortChanged = onHttpPortChanged,
-      )
+    Card(
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.large,
+    ) {
+      Column {
+        Text(
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            text = stringResource(R.string.editmode_hotspot_proxy_mode_title),
+            style =
+                MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.W700,
+                    color = MaterialTheme.colorScheme.primary,
+                ),
+        )
+
+        EditProxyPort(
+            modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
+            portType = ServerPortTypes.HTTP,
+            titleRes = R.string.editmode_hotspot_proxy_http_title,
+            descriptionRes = R.string.editmode_hotspot_proxy_http_description,
+            isEnabled = isHttpEnabled,
+            isOtherEnabled = isSocksEnabled,
+            onEnabledChanged = onHttpEnabledChanged,
+            onEnableChangeFailed = onEnableChangeFailed,
+        ) {
+          EditHttpPort(
+              modifier = Modifier.weight(1F).padding(end = MaterialTheme.keylines.content),
+              state = state,
+              onPortChanged = onHttpPortChanged,
+          )
+        }
+
+        EditProxyPort(
+            modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
+            portType = ServerPortTypes.SOCKS,
+            titleRes = R.string.editmode_hotspot_proxy_socks_title,
+            descriptionRes = R.string.editmode_hotspot_proxy_socks_description,
+            isEnabled = isSocksEnabled,
+            isOtherEnabled = isHttpEnabled,
+            onEnabledChanged = onSocksEnabledChanged,
+            onEnableChangeFailed = onEnableChangeFailed,
+        ) {
+          EditSocksPort(
+              modifier = Modifier.weight(1F).padding(end = MaterialTheme.keylines.content),
+              state = state,
+              onPortChanged = onSocksPortChanged,
+          )
+        }
+      }
     }
   }
+}
 
-  item(
-      contentType = RenderEditableItemsContentTypes.EDIT_SOCKS,
+@Composable
+private fun EditProxyPort(
+    modifier: Modifier = Modifier,
+    portType: ServerPortTypes,
+    @StringRes titleRes: Int,
+    @StringRes descriptionRes: Int,
+    isEnabled: Boolean,
+    isOtherEnabled: Boolean,
+    onEnabledChanged: (Boolean) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
+    content: @Composable RowScope.() -> Unit,
+) {
+  Column(
+      modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
   ) {
-    val isHttpEnabled by serverViewState.isHttpEnabled.collectAsStateWithLifecycle()
-    val isSocksEnabled by serverViewState.isSocksEnabled.collectAsStateWithLifecycle()
+    Text(
+        modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+        text = stringResource(titleRes),
+        style =
+            MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.W700,
+                color = MaterialTheme.colorScheme.primary,
+            ),
+    )
+    Text(
+        modifier =
+            Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                .padding(
+                    top = MaterialTheme.keylines.content,
+                    bottom = MaterialTheme.keylines.baseline,
+                ),
+        text = stringResource(descriptionRes),
+        style =
+            MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+    )
+
     Row(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
         verticalAlignment = Alignment.CenterVertically,
     ) {
       Switch(
           modifier =
               Modifier.padding(
-                  start = MaterialTheme.keylines.baseline,
-                  end = MaterialTheme.keylines.content,
+                  horizontal = MaterialTheme.keylines.content,
               ),
-          checked = isSocksEnabled,
+          checked = isEnabled,
           onCheckedChange = {
-            if (isHttpEnabled) {
-              onSocksEnabledChanged(it)
+            if (isOtherEnabled) {
+              onEnabledChanged(it)
             } else {
-              onEnableChangeFailed(ServerPortTypes.SOCKS)
+              onEnableChangeFailed(portType)
             }
           },
       )
 
-      EditSocksPort(
-          modifier = Modifier.weight(1F),
-          state = state,
-          onPortChanged = onSocksPortChanged,
-      )
+      content()
     }
   }
 }
