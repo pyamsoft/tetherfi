@@ -47,13 +47,13 @@ buildscript {
     dataStore = "1.1.7"
 
     // Coil
-    coil = "3.2.0"
+    coil = "3.3.0"
 
     // QR code
     qrCode = "4.5.0"
 
     // KTOR
-    ktor = "3.2.1-PYAMSOFT"
+    ktor = "3.2.2-PYAMSOFT"
 
     // Build and Sugar
     dagger = "2.57"
