@@ -243,10 +243,7 @@ internal constructor(
             f.collect { ready ->
               if (ready) {
                 Timber.d { "Proxy has fully launched, update status!" }
-                status.set(
-                    RunningStatus.Running,
-                    clearError = true,
-                )
+                status.set(RunningStatus.Running)
               }
             }
           }
