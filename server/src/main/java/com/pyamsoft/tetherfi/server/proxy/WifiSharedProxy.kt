@@ -35,12 +35,14 @@ import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -103,15 +105,18 @@ internal constructor(
     }
   }
 
+  private suspend fun shutdownProxyServerWithCause(e: Throwable) {
+    reset()
+    status.set(RunningStatus.ProxyError(e))
+    shutdownBus.emit(ServerShutdownEvent(throwable = e))
+  }
+
   private suspend fun handleServerLoopError(
       e: Throwable,
       type: SharedProxy.Type,
   ) {
     Timber.e(e) { "Error running server loop: ${type.name}" }
-
-    reset()
-    status.set(RunningStatus.ProxyError(e))
-    shutdownBus.emit(ServerShutdownEvent(throwable = e))
+    shutdownProxyServerWithCause(e)
   }
 
   private suspend fun beginProxyLoop(
@@ -295,7 +300,9 @@ internal constructor(
       withContext(context = Dispatchers.IO) {
         // Scope local
         val mutex = Mutex()
-        var job: Job? = null
+
+        var proxyJob: Job? = null
+        var killTimerJob: Job? = null
 
         // Create the server dispatcher here that future proxy bits will use
         val serverDispatcher = serverDispatcherFactory.create()
@@ -324,14 +331,18 @@ internal constructor(
                   // This will re-launch any time the connection info changes
 
                   mutex.withLock {
-                    job?.stopProxyLoop()
-                    job = null
+                    // Kill timer, we have something now
+                    killTimerJob?.cancelAndJoin()
+                    killTimerJob = null
+
+                    proxyJob?.stopProxyLoop()
+                    proxyJob = null
 
                     // Reset old
                     reset()
 
                     // Hold onto the job here so we can cancel it if we need to
-                    job =
+                    proxyJob =
                         launch(context = Dispatchers.Default) {
                           startServer(
                               info = info,
@@ -347,10 +358,24 @@ internal constructor(
 
                   // Empty is missing the channel, bad
                   mutex.withLock {
-                    job?.stopProxyLoop()
-                    job = null
+                    proxyJob?.stopProxyLoop()
+                    proxyJob = null
                   }
+
                   broadcastProxyStop()
+
+                  mutex.withLock {
+                    // Assign kill timer when we first see EMPTY
+                    if (killTimerJob == null) {
+                      killTimerJob =
+                          launch(context = Dispatchers.Default) {
+                            delay(10.seconds)
+
+                            Timber.w { "Connection has been EMPTY for too long, shut down Proxy" }
+                            shutdownProxyServerWithCause(EMPTY_CONNECTION_TOO_LONG_ERROR)
+                          }
+                    }
+                  }
                 }
 
                 is BroadcastNetworkStatus.ConnectionInfo.Error -> {
@@ -358,17 +383,23 @@ internal constructor(
 
                   // Error is bad, shut down the proxy
                   mutex.withLock {
-                    job?.stopProxyLoop()
-                    job = null
+                    // Kill timer, we are dead
+                    killTimerJob?.cancelAndJoin()
+                    killTimerJob = null
+
+                    proxyJob?.stopProxyLoop()
+                    proxyJob = null
                   }
                   broadcastProxyStop()
+
+                  shutdownProxyServerWithCause(
+                      IllegalStateException("Cannot use Invalid Connection", info.error),
+                  )
                 }
 
                 is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
                   Timber.w { "UNCHANGED SHOULD NOT HAPPEN" }
-                  throw AssertionError(
-                      "GroupInfo.Unchanged should never escape the server-module internals.",
-                  )
+                  shutdownProxyServerWithCause(UNCHANGED_SHOULD_NOT_HAPPEN_ERROR)
                 }
               }
             }
@@ -379,8 +410,8 @@ internal constructor(
 
             // Kill proxy job
             mutex.withLock {
-              job?.stopProxyLoop()
-              job = null
+              killTimerJob?.cancelAndJoin()
+              proxyJob?.stopProxyLoop()
             }
             // Stop dispatcher looper
             serverDispatcher.shutdown()
@@ -413,5 +444,16 @@ internal constructor(
 
       return true
     }
+  }
+
+  companion object {
+
+    private val UNCHANGED_SHOULD_NOT_HAPPEN_ERROR =
+        AssertionError(
+            "GroupInfo.Unchanged should never escape the server-module internals.",
+        )
+
+    private val EMPTY_CONNECTION_TOO_LONG_ERROR =
+        IllegalStateException("Cannot use Empty connection")
   }
 }
