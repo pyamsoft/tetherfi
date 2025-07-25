@@ -255,7 +255,7 @@ internal constructor(
   private suspend fun handleGroupDebugEnvironment(): BroadcastNetworkStatus.GroupInfo? {
     enforcer.assertOffMainThread()
 
-    val debugGroup = appEnvironment.group
+    val debugGroup = appEnvironment.fakeGroup
     if (debugGroup.isEmpty.first()) {
       Timber.w { "DEBUG forcing Empty group response" }
       return BroadcastNetworkStatus.GroupInfo.Empty
@@ -323,7 +323,7 @@ internal constructor(
   private suspend fun handleConnectionDebugEnvironment(): BroadcastNetworkStatus.ConnectionInfo? {
     enforcer.assertOffMainThread()
 
-    val debugConnection = appEnvironment.connection
+    val debugConnection = appEnvironment.fakeConnection
     if (debugConnection.isEmpty.first()) {
       Timber.w { "DEBUG forcing Empty connection response" }
       return BroadcastNetworkStatus.ConnectionInfo.Empty

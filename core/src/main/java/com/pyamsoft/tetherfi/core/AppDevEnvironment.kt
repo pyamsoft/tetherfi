@@ -57,7 +57,7 @@ constructor(
   override val isSocketBuilderOOMClient = mutableSocketBuilderOOMClient.whenInAppDebugEnabled()
 
   @get:CheckResult
-  val group =
+  val fakeGroup =
       GroupInfo(
           isEmpty = mutableGroupFakeEmpty.whenInAppDebugEnabled(),
           isConnected = mutableGroupFakeConnected.whenInAppDebugEnabled(),
@@ -65,7 +65,7 @@ constructor(
       )
 
   @get:CheckResult
-  val connection =
+  val fakeConnection =
       ConnectionInfo(
           isEmpty = mutableConnectionFakeEmpty.whenInAppDebugEnabled(),
           isConnected = mutableConnectionFakeConnected.whenInAppDebugEnabled(),

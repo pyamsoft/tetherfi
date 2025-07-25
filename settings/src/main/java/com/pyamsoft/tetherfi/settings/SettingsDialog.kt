@@ -246,7 +246,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_GROUP_EMPTY,
   ) {
     val isGroupFakeEmpty by
-        appEnvironment.group.isEmpty.collectAsStateWithLifecycle(
+        appEnvironment.fakeGroup.isEmpty.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
@@ -261,7 +261,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_GROUP_GOOD,
   ) {
     val isGroupFakeConnected by
-        appEnvironment.group.isConnected.collectAsStateWithLifecycle(
+        appEnvironment.fakeGroup.isConnected.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
@@ -276,7 +276,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_GROUP_ERROR,
   ) {
     val isGroupFakeError by
-        appEnvironment.group.isError.collectAsStateWithLifecycle(
+        appEnvironment.fakeGroup.isError.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_GROUP_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
@@ -291,7 +291,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_CONN_EMPTY,
   ) {
     val isConnectionFakeEmpty by
-        appEnvironment.connection.isEmpty.collectAsStateWithLifecycle(
+        appEnvironment.fakeConnection.isEmpty.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
@@ -306,7 +306,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_CONN_GOOD,
   ) {
     val isConnectionFakeConnected by
-        appEnvironment.connection.isConnected.collectAsStateWithLifecycle(
+        appEnvironment.fakeConnection.isConnected.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
@@ -321,7 +321,7 @@ private fun LazyListScope.renderExtraDebugContent(
       contentType = SettingsContentTypes.DEBUG_CONN_ERROR,
   ) {
     val isConnectionFakeError by
-        appEnvironment.connection.isError.collectAsStateWithLifecycle(
+        appEnvironment.fakeConnection.isError.collectAsStateWithLifecycle(
             AppDevEnvironment.Defaults.IS_CONNECTION_FIELD_INITIAL_STATE)
     DebugItem(
         modifier = itemModifier,
