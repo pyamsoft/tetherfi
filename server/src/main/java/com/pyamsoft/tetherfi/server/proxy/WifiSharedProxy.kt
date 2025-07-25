@@ -334,9 +334,12 @@ internal constructor(
 
                     proxyJob?.stopProxyLoop()
                     proxyJob = null
+                  }
 
-                    // Reset old
-                    reset()
+                  // Reset old
+                  reset()
+
+                  mutex.withLock {
 
                     // Hold onto the job here so we can cancel it if we need to
                     proxyJob =
