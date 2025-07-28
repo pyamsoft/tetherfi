@@ -68,17 +68,7 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-                    feature(
-                        """BETA: Support for SOCKS proxy type.
-                      |
-                      |SOCKS has support for simple connections, as well as UDP connection binding.
-                      |
-                      |This feature is for advanced users only, most users will be content with the default HTTP proxy settings.
-                    """
-                            .trimMargin())
-                    change("Wired Tethering: Add support for devices that use USB connection")
-                    bugfix(
-                        "Guard against datastore corruption by starting over from scratch when it occurs")
+                    feature("Add unique Activities to turn the hotspot On or Off.")
                   }
                 },
         )
