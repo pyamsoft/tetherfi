@@ -38,6 +38,7 @@ import io.ktor.network.sockets.isClosed
 import io.ktor.network.sockets.toJavaAddress
 import io.ktor.utils.io.core.build
 import java.net.DatagramSocket
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
@@ -74,6 +75,21 @@ internal data class UDPRelayServer(
       proxyConnectionInfo: ProxyConnectionInfo,
   ): Boolean {
     return address.hostname == proxyConnectionInfo.hostNameOrIp
+  }
+
+  internal class LastActivityTimeHolder internal constructor() {
+
+    private var lastActivityNano = System.nanoTime()
+
+    // Record our last activity frequently to keep the relay from dying early
+    fun recordLastActivity() {
+      lastActivityNano = System.nanoTime()
+    }
+
+    @CheckResult
+    fun asNanoSeconds(): Duration {
+      return lastActivityNano.nanoseconds
+    }
   }
 
   @CheckResult
@@ -125,11 +141,11 @@ internal data class UDPRelayServer(
               server.localAddress
                   .toJavaAddress()
                   .cast<java.net.InetSocketAddress>()
-                  .requireNotNull { "server.localAddress was NOT  a java.net.InetSocketAddress" }
+                  .requireNotNull { "server.localAddress was NOT a java.net.InetSocketAddress" }
                   .address
                   .requireNotNull { "server.localAddress.address is NULL" }
                   .address
-                  .requireNotNull { "server.localAddress.address bytes is NULL" },
+                  .requireNotNull { "server.localAddress.address.address is NULL" },
           )
           writeUShort(proxyConnectionInfo.port.toUShort())
 
@@ -185,7 +201,8 @@ internal data class UDPRelayServer(
                         socketTracker.track(it)
                       }
 
-              var lastActivityNano = System.nanoTime()
+              // Keep track of the most recent "activity" time
+              val lastActivityTime = LastActivityTimeHolder()
 
               // Watch the client for timeout
               //
@@ -199,7 +216,7 @@ internal data class UDPRelayServer(
                     delay(timeoutAfter)
 
                     val nowNano = System.nanoTime()
-                    val timeDiff = nowNano.nanoseconds - lastActivityNano.nanoseconds
+                    val timeDiff = nowNano.nanoseconds - lastActivityTime.asNanoSeconds()
                     if (timeDiff > timeoutAfter) {
                       Timber.w { "UDP relay has gone too long without activity. Close $client" }
                       server.close()
@@ -243,8 +260,7 @@ internal data class UDPRelayServer(
                     // Wait for a client message
                     val proxyReadPacket = server.receive()
 
-                    // Record activity
-                    lastActivityNano = System.nanoTime()
+                    lastActivityTime.recordLastActivity()
 
                     val proxyClientAddress =
                         proxyReadPacket.address.cast<InetSocketAddress>().requireNotNull {
@@ -289,14 +305,12 @@ internal data class UDPRelayServer(
                       proxyToInternetBytes.update { it + writeAmount }
                     }
 
-                    // Record activity
-                    lastActivityNano = System.nanoTime()
+                    lastActivityTime.recordLastActivity()
 
                     // Wait for a UDP response from real upstream
                     val response = socket.receive()
 
-                    // Record activity
-                    lastActivityNano = System.nanoTime()
+                    lastActivityTime.recordLastActivity()
 
                     // Respond with our message back to the client
                     val responsePacket = buildResponsePacket(response.packet)
@@ -316,8 +330,7 @@ internal data class UDPRelayServer(
                       internetToProxyBytes.update { it + readAmount }
                     }
 
-                    // Record activity
-                    lastActivityNano = System.nanoTime()
+                    lastActivityTime.recordLastActivity()
 
                     // Rate Limiting
                     if (mustEnforceBandwidthLimit) {
@@ -333,7 +346,7 @@ internal data class UDPRelayServer(
                       }
 
                       // Record activity again in case we were delayed by bandwidth limiter
-                      lastActivityNano = System.nanoTime()
+                      lastActivityTime.recordLastActivity()
                     }
                   }
                 }
