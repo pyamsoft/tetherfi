@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.tile
 
+import androidx.annotation.CheckResult
 import com.pyamsoft.pydroid.arch.AbstractViewModeler
 import com.pyamsoft.tetherfi.core.AppCoroutineScope
 import com.pyamsoft.tetherfi.core.Timber
@@ -43,12 +44,14 @@ internal constructor(
     state.status.value = handler.getOverallStatus()
   }
 
-  private suspend fun handleProxyAction(action: ProxyTileAction) {
+  @CheckResult
+  private suspend fun handleProxyAction(action: ProxyTileAction): Boolean {
     when (val status = handler.getOverallStatus()) {
       is RunningStatus.NotRunning -> {
         // As long as the action is allowed to start [TOGGLE, START]
         if (action != ProxyTileAction.STOP) {
           startProxy()
+          return true
         }
       }
 
@@ -56,6 +59,7 @@ internal constructor(
         // As long as the action is allowed to stop [TOGGLE, STOP]
         if (action != ProxyTileAction.START) {
           stopProxy()
+          return true
         }
       }
 
@@ -63,6 +67,8 @@ internal constructor(
         Timber.d { "Cannot change Proxy while we are in the middle of an operation: $status" }
       }
     }
+
+    return false
   }
 
   private suspend fun startProxy() {
@@ -118,21 +124,30 @@ internal constructor(
     )
   }
 
-  fun handleToggleProxy() {
+  fun handleToggleProxy(onNoAction: suspend () -> Unit) {
     appScope.launch(context = Dispatchers.Default) {
-      handleProxyAction(action = ProxyTileAction.TOGGLE)
+      val acted = handleProxyAction(action = ProxyTileAction.TOGGLE)
+      if (!acted) {
+        onNoAction()
+      }
     }
   }
 
-  fun handleStartProxy() {
+  fun handleStartProxy(onNoAction: suspend () -> Unit) {
     appScope.launch(context = Dispatchers.Default) {
-      handleProxyAction(action = ProxyTileAction.START)
+      val acted = handleProxyAction(action = ProxyTileAction.START)
+      if (!acted) {
+        onNoAction()
+      }
     }
   }
 
-  fun handleStopProxy() {
+  fun handleStopProxy(onNoAction: suspend () -> Unit) {
     appScope.launch(context = Dispatchers.Default) {
-      handleProxyAction(action = ProxyTileAction.STOP)
+      val acted = handleProxyAction(action = ProxyTileAction.STOP)
+      if (!acted) {
+        onNoAction()
+      }
     }
   }
 }

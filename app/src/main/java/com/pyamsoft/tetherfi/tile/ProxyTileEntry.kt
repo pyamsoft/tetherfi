@@ -29,7 +29,10 @@ import com.pyamsoft.pydroid.ui.util.rememberNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
 internal class ProxyTileInjector : ComposableInjector() {
 
@@ -85,13 +88,19 @@ fun ProxyTileEntry(
   val component = rememberComposableInjector { ProxyTileInjector() }
   val viewModel = rememberNotNull(component.viewModel)
 
+  // If the proxy does not act, we wait a little bit and then close
+  val handleComplete: suspend () -> Unit by rememberUpdatedState {
+    delay(1.seconds)
+    withContext(context = Dispatchers.Main) { onComplete() }
+  }
+
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
       tileAction = tileAction,
-      onStartProxy = { viewModel.handleStartProxy() },
-      onStopProxy = { viewModel.handleStopProxy() },
-      onToggleProxy = { viewModel.handleToggleProxy() },
+      onStartProxy = { viewModel.handleStartProxy { handleComplete() } },
+      onStopProxy = { viewModel.handleStopProxy { handleComplete() } },
+      onToggleProxy = { viewModel.handleToggleProxy { handleComplete() } },
   )
 
   ProxyTileScreen(
