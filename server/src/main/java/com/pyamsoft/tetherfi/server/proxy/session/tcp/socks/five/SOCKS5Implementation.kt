@@ -421,8 +421,12 @@ internal constructor(
     }
 
     override suspend fun sendRefusal() {
-      // Error with unknown data, who cares
-      return sendRefusal(addressType = SOCKS5AddressType.IPV4)
+      return sendRefusal(
+          // Since the generic refusal is ONLY delivered when something goes wrong
+          // parsing the input, we can send back essentially whatever here, as its
+          // not part of the protocol that the consumer will read the address type byte.
+          addressType = SOCKS5AddressType.IPV4,
+      )
     }
 
     suspend fun sendCommandUnsupported() {
