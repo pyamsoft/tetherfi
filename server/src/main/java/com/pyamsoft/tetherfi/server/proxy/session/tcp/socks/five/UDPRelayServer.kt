@@ -64,7 +64,7 @@ internal data class UDPRelayServer(
     private val socketCreator: SocketCreator,
     private val socketTracker: SocketTracker,
     private val serverDispatcher: ServerDispatcher,
-    private val server: BoundDatagramSocket,
+    private val serverSocket: BoundDatagramSocket,
     private val proxyConnectionInfo: ProxyConnectionInfo,
     private val client: TetherClient,
 ) {
@@ -138,7 +138,7 @@ internal data class UDPRelayServer(
           // Address type is IPv4
           writeByte(SOCKS5AddressType.IPV4.byte)
           write(
-              server.localAddress
+              serverSocket.localAddress
                   .toJavaAddress()
                   .cast<java.net.InetSocketAddress>()
                   .requireNotNull { "server.localAddress was NOT a java.net.InetSocketAddress" }
@@ -212,14 +212,14 @@ internal data class UDPRelayServer(
               if (!timeoutAfter.isInfinite()) {
                 Timber.d { "Watch for UDP relay timeout $timeoutAfter" }
                 scope.launch(context = serverDispatcher.sideEffect) {
-                  while (!server.isClosed && isActive) {
+                  while (!serverSocket.isClosed && isActive) {
                     delay(timeoutAfter)
 
                     val nowNano = System.nanoTime()
                     val timeDiff = nowNano.nanoseconds - lastActivityTime.asNanoSeconds()
                     if (timeDiff > timeoutAfter) {
                       Timber.w { "UDP relay has gone too long without activity. Close $client" }
-                      server.close()
+                      serverSocket.close()
                     }
                   }
                 }
@@ -243,7 +243,7 @@ internal data class UDPRelayServer(
               // Periodically report the transfer status
               val reportJob =
                   scope.launch(context = serverDispatcher.sideEffect) {
-                    while (!server.isClosed && isActive) {
+                    while (!serverSocket.isClosed && isActive) {
                       delay(5.seconds)
                       sendReport()
                     }
@@ -256,9 +256,9 @@ internal data class UDPRelayServer(
 
               try {
                 bound.use { socket ->
-                  while (!server.isClosed && isActive) {
+                  while (!serverSocket.isClosed && isActive) {
                     // Wait for a client message
-                    val proxyReadPacket = server.receive()
+                    val proxyReadPacket = serverSocket.receive()
 
                     lastActivityTime.recordLastActivity()
 
@@ -318,7 +318,7 @@ internal data class UDPRelayServer(
                     // Grab the size we have read
                     val readAmount = responsePacket.buffer.size
 
-                    server.send(
+                    serverSocket.send(
                         Datagram(
                             address = proxyClientAddress,
                             packet = responsePacket,

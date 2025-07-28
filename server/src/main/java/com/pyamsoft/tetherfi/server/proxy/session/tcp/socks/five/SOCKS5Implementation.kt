@@ -152,7 +152,7 @@ internal constructor(
                   }
                 }
 
-            bound.use { server ->
+            bound.use { serverSocket ->
               val udpServer =
                   UDPRelayServer(
                       appScope = appScope,
@@ -164,7 +164,7 @@ internal constructor(
                       socketTracker = socketTracker,
                       serverDispatcher = serverDispatcher,
                       proxyConnectionInfo = proxyConnectionInfo,
-                      server = server,
+                      serverSocket = serverSocket,
                       client = client,
                   )
 
@@ -179,7 +179,7 @@ internal constructor(
                 // the IP and the port
                 responder.sendBindInitialized(
                     addressType = addressType,
-                    bound = server.localAddress.cast(),
+                    bound = serverSocket.localAddress.cast(),
                 )
 
                 // Wait for the relay to finish
