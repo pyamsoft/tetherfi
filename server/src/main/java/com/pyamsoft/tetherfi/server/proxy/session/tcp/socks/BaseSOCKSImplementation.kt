@@ -420,10 +420,10 @@ protected constructor(
       internal const val DEBUG_SOCKS_REPLIES = false
 
       /** The zero IP, we send to this IP for error commands */
-      internal val INVALID_IPV6_BYTES = ByteArray(16) { 0 }
+      internal val INVALID_IPV6_BYTES = ByteArray(16)
 
       /** The zero IP, we send to this IP for error commands */
-      internal val INVALID_IPV4_BYTES = ByteArray(4) { 0 }
+      internal val INVALID_IPV4_BYTES = ByteArray(4)
 
       /** Zero port sent for error commands */
       internal const val INVALID_PORT: Short = 0
