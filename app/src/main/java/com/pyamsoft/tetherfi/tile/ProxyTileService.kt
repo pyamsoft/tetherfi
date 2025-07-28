@@ -170,7 +170,11 @@ internal class ProxyTileService internal constructor() : TileService() {
 
   override fun onClick() {
     Timber.d { "Tile Clicked!" }
-    tileActivityLauncher.requireNotNull().launchTileActivity()
+    tileActivityLauncher
+        .requireNotNull()
+        .launchTileActivity(
+            action = ProxyTileAction.TOGGLE,
+        )
   }
 
   override fun onStartListening() {

@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.runtime.CheckResult
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +29,7 @@ import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.ObjectGraph
 import com.pyamsoft.tetherfi.R
 import com.pyamsoft.tetherfi.TetherFiTheme
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.getSystemDarkMode
 import com.pyamsoft.tetherfi.main.SystemBars
 import com.pyamsoft.tetherfi.main.ThemeViewModeler
@@ -38,6 +40,21 @@ class ProxyTileActivity : AppCompatActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 
+  @CheckResult
+  private fun getTileAction(): ProxyTileAction {
+    val rawValue = intent.getStringExtra(ProxyTileActionKeys.KEY_ACTION)
+    if (rawValue != null) {
+      try {
+        return ProxyTileAction.valueOf(rawValue)
+      } catch (e: Throwable) {
+        Timber.e(e) { "Error parsing ProxyTileActivity.Action param: $rawValue" }
+      }
+    }
+
+    // No value means TOGGLE
+    return ProxyTileAction.TOGGLE
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     setTheme(R.style.Theme_TetherFi_Tile)
     super.onCreate(savedInstanceState)
@@ -46,6 +63,8 @@ class ProxyTileActivity : AppCompatActivity() {
 
     val vm = viewModel.requireNotNull()
     val appName = getString(R.string.app_name)
+
+    val tileAction = getTileAction()
 
     setContent {
       val theme by vm.mode.collectAsStateWithLifecycle()
@@ -63,6 +82,7 @@ class ProxyTileActivity : AppCompatActivity() {
         ProxyTileEntry(
             modifier = Modifier.widthIn(max = LANDSCAPE_MAX_WIDTH),
             appName = appName,
+            tileAction = tileAction,
             onComplete = { finishAndRemoveTask() },
             onUpdateTile = { ProxyTileService.updateTile(this) },
         )

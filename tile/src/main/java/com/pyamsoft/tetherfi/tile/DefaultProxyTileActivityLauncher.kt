@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
+import androidx.annotation.CheckResult
 import androidx.annotation.RequiresApi
 import com.pyamsoft.tetherfi.core.Timber
 import javax.inject.Inject
@@ -44,27 +45,29 @@ internal constructor(
     }
   }
 
-  override fun launchTileActivity() {
-    launchMethod.launchTileActivity()
+  override fun launchTileActivity(action: ProxyTileAction) {
+    launchMethod.launchTileActivity(action)
   }
 
   internal interface LaunchMethod {
 
     /** Open the tile activity */
-    fun launchTileActivity()
+    fun launchTileActivity(action: ProxyTileAction)
 
     abstract class Base(
-        tileActivityClass: Class<out Activity>,
-        context: Context,
+        private val tileActivityClass: Class<out Activity>,
+        protected val context: Context,
         private val service: TileService,
     ) : LaunchMethod {
 
-      protected val tileActivityIntent by lazy {
-        Intent(context, tileActivityClass).apply {
+      @CheckResult
+      protected fun createNewTileActivityIntent(action: ProxyTileAction): Intent {
+        return Intent(context, tileActivityClass).apply {
           flags =
               Intent.FLAG_ACTIVITY_SINGLE_TOP or
                   Intent.FLAG_ACTIVITY_CLEAR_TOP or
                   Intent.FLAG_ACTIVITY_NEW_TASK
+          putExtra(ProxyTileActionKeys.KEY_ACTION, action.name)
         }
       }
 
@@ -80,14 +83,17 @@ internal constructor(
         }
       }
 
-      final override fun launchTileActivity() {
+      final override fun launchTileActivity(action: ProxyTileAction) {
         ensureUnlocked {
-          Timber.d { "Start TileActivity!" }
-          onLaunchTileActivity(service)
+          Timber.d { "Start TileActivity: $action" }
+          onLaunchTileActivity(service, action)
         }
       }
 
-      protected abstract fun onLaunchTileActivity(service: TileService)
+      protected abstract fun onLaunchTileActivity(
+          service: TileService,
+          action: ProxyTileAction,
+      )
     }
 
     class OldWay(
@@ -97,8 +103,9 @@ internal constructor(
     ) : Base(tileActivityClass, context, service) {
 
       @SuppressLint("StartActivityAndCollapseDeprecated")
-      override fun onLaunchTileActivity(service: TileService) {
-        @Suppress("DEPRECATION") service.startActivityAndCollapse(tileActivityIntent)
+      override fun onLaunchTileActivity(service: TileService, action: ProxyTileAction) {
+        val intent = createNewTileActivityIntent(action)
+        @Suppress("DEPRECATION") service.startActivityAndCollapse(intent)
       }
     }
 
@@ -108,22 +115,31 @@ internal constructor(
         service: TileService,
     ) : Base(tileActivityClass, context, service) {
 
-      private val pendingIntent by lazy {
-        PendingIntent.getActivity(
+      private var requestCode = BASE_REQUEST_CODE_ACTIVITY
+
+      @CheckResult
+      private fun generateRequestCode(): Int {
+        return requestCode++
+      }
+
+      @CheckResult
+      private fun createNewPendingIntent(action: ProxyTileAction): PendingIntent {
+        return PendingIntent.getActivity(
             context,
-            REQUEST_CODE_ACTIVITY,
-            tileActivityIntent,
+            generateRequestCode(),
+            createNewTileActivityIntent(action),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
       }
 
       @RequiresApi(34)
-      override fun onLaunchTileActivity(service: TileService) {
+      override fun onLaunchTileActivity(service: TileService, action: ProxyTileAction) {
+        val pendingIntent = createNewPendingIntent(action)
         service.startActivityAndCollapse(pendingIntent)
       }
 
       companion object {
-        private const val REQUEST_CODE_ACTIVITY = 42069
+        private const val BASE_REQUEST_CODE_ACTIVITY = 42069
       }
     }
   }

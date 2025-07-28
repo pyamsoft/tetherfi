@@ -16,7 +16,8 @@
 
 package com.pyamsoft.tetherfi.tile
 
-interface ProxyTileActivityLauncher {
-
-  fun launchTileActivity(action: ProxyTileAction)
+enum class ProxyTileAction {
+  TOGGLE,
+  START,
+  STOP
 }

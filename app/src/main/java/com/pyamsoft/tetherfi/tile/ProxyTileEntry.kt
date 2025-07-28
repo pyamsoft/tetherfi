@@ -48,15 +48,27 @@ internal class ProxyTileInjector : ComposableInjector() {
 @Composable
 private fun MountHooks(
     viewModel: ProxyTileViewModeler,
+    tileAction: ProxyTileAction,
+    onStartProxy: () -> Unit,
+    onStopProxy: () -> Unit,
     onToggleProxy: () -> Unit,
 ) {
   val handleToggleProxy by rememberUpdatedState(onToggleProxy)
+  val handleStartProxy by rememberUpdatedState(onStartProxy)
+  val handleStopProxy by rememberUpdatedState(onStopProxy)
 
   SaveStateDisposableEffect(viewModel)
 
-  LaunchedEffect(viewModel) {
+  LaunchedEffect(
+      viewModel,
+      tileAction,
+  ) {
     delay(500)
-    handleToggleProxy()
+    when (tileAction) {
+      ProxyTileAction.TOGGLE -> handleToggleProxy()
+      ProxyTileAction.START -> handleStartProxy()
+      ProxyTileAction.STOP -> handleStopProxy()
+    }
   }
 
   LaunchedEffect(viewModel) { viewModel.bind(scope = this) }
@@ -66,6 +78,7 @@ private fun MountHooks(
 fun ProxyTileEntry(
     modifier: Modifier = Modifier,
     appName: String,
+    tileAction: ProxyTileAction,
     onComplete: () -> Unit,
     onUpdateTile: (RunningStatus) -> Unit,
 ) {
@@ -75,6 +88,9 @@ fun ProxyTileEntry(
   // Hooks that run on mount
   MountHooks(
       viewModel = viewModel,
+      tileAction = tileAction,
+      onStartProxy = { viewModel.handleStartProxy() },
+      onStopProxy = { viewModel.handleStopProxy() },
       onToggleProxy = { viewModel.handleToggleProxy() },
   )
 

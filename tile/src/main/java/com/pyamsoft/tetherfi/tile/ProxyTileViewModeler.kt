@@ -43,6 +43,28 @@ internal constructor(
     state.status.value = handler.getOverallStatus()
   }
 
+  private suspend fun handleProxyAction(action: ProxyTileAction) {
+    when (val status = handler.getOverallStatus()) {
+      is RunningStatus.NotRunning -> {
+        // As long as the action is allowed to start [TOGGLE, START]
+        if (action != ProxyTileAction.STOP) {
+          startProxy()
+        }
+      }
+
+      is RunningStatus.Running -> {
+        // As long as the action is allowed to stop [TOGGLE, STOP]
+        if (action != ProxyTileAction.START) {
+          stopProxy()
+        }
+      }
+
+      else -> {
+        Timber.d { "Cannot change Proxy while we are in the middle of an operation: $status" }
+      }
+    }
+  }
+
   private suspend fun startProxy() {
     val blockers = requirements.blockers()
 
@@ -98,17 +120,19 @@ internal constructor(
 
   fun handleToggleProxy() {
     appScope.launch(context = Dispatchers.Default) {
-      when (val status = handler.getOverallStatus()) {
-        is RunningStatus.NotRunning -> {
-          startProxy()
-        }
-        is RunningStatus.Running -> {
-          stopProxy()
-        }
-        else -> {
-          Timber.d { "Cannot toggle while we are in the middle of an operation: $status" }
-        }
-      }
+      handleProxyAction(action = ProxyTileAction.TOGGLE)
+    }
+  }
+
+  fun handleStartProxy() {
+    appScope.launch(context = Dispatchers.Default) {
+      handleProxyAction(action = ProxyTileAction.START)
+    }
+  }
+
+  fun handleStopProxy() {
+    appScope.launch(context = Dispatchers.Default) {
+      handleProxyAction(action = ProxyTileAction.STOP)
     }
   }
 }

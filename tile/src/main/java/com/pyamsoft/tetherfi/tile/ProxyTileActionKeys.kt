@@ -16,7 +16,7 @@
 
 package com.pyamsoft.tetherfi.tile
 
-interface ProxyTileActivityLauncher {
+object ProxyTileActionKeys {
 
-  fun launchTileActivity(action: ProxyTileAction)
+  const val KEY_ACTION = "key_action"
 }
