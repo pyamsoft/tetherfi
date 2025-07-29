@@ -26,14 +26,12 @@ import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.pydroid.ui.uri.ExternalUriPortal
 import com.pyamsoft.pydroid.ui.util.fillUpToPortraitSize
 import com.pyamsoft.pydroid.ui.widget.BillingUpsellWidget
-import com.pyamsoft.pydroid.ui.widget.NewVersionWidget
 import com.pyamsoft.pydroid.ui.widget.ShowChangeLogWidget
 import com.pyamsoft.pydroid.ui.widget.ShowDataPolicyDialog
-import com.pyamsoft.pydroid.ui.widget.UpdateProgressWidget
+import com.pyamsoft.pydroid.ui.widget.VersionCheckWidget
 
 private enum class PYDroidContentTypes {
-  UPDATE_VERSION,
-  NEW_VERSION,
+  VERSION_CHECK,
   CHANGELOG,
   BILLING,
 }
@@ -57,17 +55,9 @@ fun LazyListScope.renderPYDroidExtras(
     modifier: Modifier = Modifier,
 ) {
   item(
-      contentType = PYDroidContentTypes.UPDATE_VERSION,
+      contentType = PYDroidContentTypes.VERSION_CHECK,
   ) {
-    UpdateProgressWidget(
-        modifier = modifier.padding(top = MaterialTheme.keylines.content),
-    )
-  }
-
-  item(
-      contentType = PYDroidContentTypes.NEW_VERSION,
-  ) {
-    NewVersionWidget(
+    VersionCheckWidget(
         modifier = modifier.padding(top = MaterialTheme.keylines.content),
     )
   }
