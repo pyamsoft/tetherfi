@@ -54,6 +54,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -146,6 +147,9 @@ internal constructor(
   ): Flow<T> =
       preferences.data
           .map { it[key] ?: value }
+          // Otherwise any time ANY preference updates, ALL preferences will be
+          // re-sent
+          .distinctUntilChanged()
           .catch { err ->
             Timber.e(err) { "Error reading from dataStore: ${key.name}" }
             preferences.edit { it[key] = value }
