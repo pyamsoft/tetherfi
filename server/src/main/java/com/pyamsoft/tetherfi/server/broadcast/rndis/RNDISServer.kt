@@ -135,6 +135,28 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
         arrayOf(
             // Samsung? and others?
             "192.168.",
+            // The Z-Fold 7
+            // https://github.com/pyamsoft/tetherfi/issues/421
+            "10.",
+            // A known private IP space, though no known cases of it in the wild
+            // TODO(Peter): Ideally a Regex instead of listing out every single one
+            //              At least there are not too many.
+            "172.16.",
+            "172.17.",
+            "172.18.",
+            "172.19.",
+            "172.20.",
+            "172.21.",
+            "172.22.",
+            "172.23.",
+            "172.24.",
+            "172.25.",
+            "172.26.",
+            "172.27.",
+            "172.28.",
+            "172.29.",
+            "172.30.",
+            "172.31.",
         )
   }
 }
