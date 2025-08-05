@@ -60,7 +60,7 @@ buildscript {
     desugar = "2.1.5"
 
     // Testing
-    testRunner = "1.6.2"
+    testRunner = "1.7.0"
   }
 }
 
