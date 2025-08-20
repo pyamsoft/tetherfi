@@ -18,9 +18,9 @@ package com.pyamsoft.tetherfi.tile
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.annotation.CheckResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.runtime.CheckResult
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
