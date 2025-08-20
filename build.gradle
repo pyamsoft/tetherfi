@@ -28,7 +28,7 @@ buildscript {
     coroutines = "1.10.2"
 
     // Us
-    pydroid = "29.1.0"
+    pydroid = "29.1.1"
 
     // Square
     leakCanary = "2.14"
