@@ -207,13 +207,20 @@ private fun NetworkSetupExplainer(
     modifier = modifier,
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Text(
-      text = stringResource(R.string.hotspot_configuration_title, appName),
-      style = MaterialTheme.typography.bodyLarge.copy(
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.W700,
-      ),
-    )
+    Column {
+      Text(
+        text = stringResource(R.string.hotspot_configuration_title, appName),
+        style = MaterialTheme.typography.bodyLarge.copy(
+          color = MaterialTheme.colorScheme.primary,
+          fontWeight = FontWeight.W700,
+        ),
+      )
+      Text(
+        modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
+        text = stringResource(R.string.hotspot_configuration_google_please, appName),
+        style = MaterialTheme.typography.bodySmall,
+      )
+    }
 
     IconButton(
       modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
