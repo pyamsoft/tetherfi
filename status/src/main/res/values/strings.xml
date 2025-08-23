@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright 2025 pyamsoft
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at:
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <!-- TODO Need translations -->
+    <string name="hotspot_configuration_title">%1$s Hotspot Configuration</string>
+    <string name="hotspot_config_defaults">You can edit the name and password for the %1$s Hotspot. By default a valid configuration is created for you.</string>
+    <string name="hotspot_config_no_account">%1$s will never require you to use an account or remember a login.</string>
+    <string name="hotspot_config_name_requirement">• The name MUST be prefixed with %1$s. This is a system requirement.</string>
+    <string name="hotspot_config_password_requirement">• The password must be at least 8 characters long. This is a system requirement.</string>
+</resources>

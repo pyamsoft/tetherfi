@@ -146,6 +146,7 @@ internal fun LazyListScope.renderNetworkInformation(
   if (isEditable) {
     renderEditableItems(
         modifier = itemModifier,
+        appName = appName,
         state = state,
         serverViewState = serverViewState,
         onSsidChanged = onSsidChanged,
