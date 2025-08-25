@@ -68,9 +68,10 @@ class MainActivity : AppCompatActivity() {
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
-//                    feature("Add unique Activities to turn the hotspot On or Off.")
-                      change("Support other address spaces for USB Tethering")
-                      bugfix("Fix SOCKS based UDP connections closing too early")
+                    //                    feature("Add unique Activities to turn the hotspot On or
+                    // Off.")
+                    change("Support other address spaces for USB Tethering")
+                    bugfix("Fix SOCKS based UDP connections closing too early")
                   }
                 },
         )

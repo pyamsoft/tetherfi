@@ -18,7 +18,6 @@ package com.pyamsoft.tetherfi.status.sections.network
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,121 +71,117 @@ private enum class RenderEditableItemsContentTypes {
 }
 
 internal fun LazyListScope.renderEditableItems(
-  modifier: Modifier = Modifier,
-  appName: String,
-  state: StatusViewState,
-  serverViewState: ServerViewState,
-  onSsidChanged: (String) -> Unit,
-  onPasswordChanged: (String) -> Unit,
-  onTogglePasswordVisibility: () -> Unit,
-  onHttpEnabledChanged: (Boolean) -> Unit,
-  onHttpPortChanged: (String) -> Unit,
-  onSocksEnabledChanged: (Boolean) -> Unit,
-  onSocksPortChanged: (String) -> Unit,
-  onEnableChangeFailed: (ServerPortTypes) -> Unit,
+    modifier: Modifier = Modifier,
+    appName: String,
+    state: StatusViewState,
+    serverViewState: ServerViewState,
+    onSsidChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onTogglePasswordVisibility: () -> Unit,
+    onHttpEnabledChanged: (Boolean) -> Unit,
+    onHttpPortChanged: (String) -> Unit,
+    onSocksEnabledChanged: (Boolean) -> Unit,
+    onSocksPortChanged: (String) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
 ) {
   item(
-    contentType = RenderEditableItemsContentTypes.EXPLAIN_EDIT_WIFI_DIRECT,
+      contentType = RenderEditableItemsContentTypes.EXPLAIN_EDIT_WIFI_DIRECT,
   ) {
     val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
     if (broadcastType == BroadcastType.WIFI_DIRECT) {
       NetworkSetupExplainer(
-        appName = appName,
+          appName = appName,
       )
     }
   }
 
   item(
-    contentType = RenderEditableItemsContentTypes.EDIT_SSID,
+      contentType = RenderEditableItemsContentTypes.EDIT_SSID,
   ) {
     val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
     if (broadcastType == BroadcastType.WIFI_DIRECT) {
       EditSsid(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        onSsidChanged = onSsidChanged,
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          state = state,
+          onSsidChanged = onSsidChanged,
       )
     }
   }
 
   item(
-    contentType = RenderEditableItemsContentTypes.EDIT_PASSWD,
+      contentType = RenderEditableItemsContentTypes.EDIT_PASSWD,
   ) {
     val broadcastType by serverViewState.broadcastType.collectAsStateWithLifecycle()
 
     if (broadcastType == BroadcastType.WIFI_DIRECT) {
       EditPassword(
-        modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
-        state = state,
-        onTogglePasswordVisibility = onTogglePasswordVisibility,
-        onPasswordChanged = onPasswordChanged,
+          modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+          state = state,
+          onTogglePasswordVisibility = onTogglePasswordVisibility,
+          onPasswordChanged = onPasswordChanged,
       )
     }
   }
 
   item(
-    contentType = RenderEditableItemsContentTypes.EDIT_PORTS,
+      contentType = RenderEditableItemsContentTypes.EDIT_PORTS,
   ) {
     val isHttpEnabled by serverViewState.isHttpEnabled.collectAsStateWithLifecycle()
     val isSocksEnabled by serverViewState.isSocksEnabled.collectAsStateWithLifecycle()
 
     Card(
-      modifier = modifier.padding(top = MaterialTheme.keylines.content),
-      border =
-        BorderStroke(
-          width = 2.dp,
-          color = MaterialTheme.colorScheme.primaryContainer,
-        ),
-      shape = MaterialTheme.shapes.large,
+        modifier = modifier.padding(top = MaterialTheme.keylines.content),
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        shape = MaterialTheme.shapes.large,
     ) {
       Column {
         Text(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
-          text = stringResource(R.string.editmode_hotspot_proxy_mode_title),
-          style =
-            MaterialTheme.typography.headlineSmall.copy(
-              fontWeight = FontWeight.W700,
-              color = MaterialTheme.colorScheme.primary,
-            ),
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            text = stringResource(R.string.editmode_hotspot_proxy_mode_title),
+            style =
+                MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.W700,
+                    color = MaterialTheme.colorScheme.primary,
+                ),
         )
 
         EditProxyPort(
-          modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
-          portType = ServerPortTypes.HTTP,
-          titleRes = R.string.editmode_hotspot_proxy_http_title,
-          descriptionRes = R.string.editmode_hotspot_proxy_http_description,
-          isEnabled = isHttpEnabled,
-          isOtherEnabled = isSocksEnabled,
-          onEnabledChanged = onHttpEnabledChanged,
-          onEnableChangeFailed = onEnableChangeFailed,
+            modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
+            portType = ServerPortTypes.HTTP,
+            titleRes = R.string.editmode_hotspot_proxy_http_title,
+            descriptionRes = R.string.editmode_hotspot_proxy_http_description,
+            isEnabled = isHttpEnabled,
+            isOtherEnabled = isSocksEnabled,
+            onEnabledChanged = onHttpEnabledChanged,
+            onEnableChangeFailed = onEnableChangeFailed,
         ) {
           EditHttpPort(
-            modifier = Modifier
-              .weight(1F)
-              .padding(end = MaterialTheme.keylines.content),
-            state = state,
-            onPortChanged = onHttpPortChanged,
+              modifier = Modifier.weight(1F).padding(end = MaterialTheme.keylines.content),
+              state = state,
+              onPortChanged = onHttpPortChanged,
           )
         }
 
         EditProxyPort(
-          modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
-          portType = ServerPortTypes.SOCKS,
-          titleRes = R.string.editmode_hotspot_proxy_socks_title,
-          descriptionRes = R.string.editmode_hotspot_proxy_socks_description,
-          isEnabled = isSocksEnabled,
-          isOtherEnabled = isHttpEnabled,
-          onEnabledChanged = onSocksEnabledChanged,
-          onEnableChangeFailed = onEnableChangeFailed,
+            modifier = modifier.padding(bottom = MaterialTheme.keylines.content),
+            portType = ServerPortTypes.SOCKS,
+            titleRes = R.string.editmode_hotspot_proxy_socks_title,
+            descriptionRes = R.string.editmode_hotspot_proxy_socks_description,
+            isEnabled = isSocksEnabled,
+            isOtherEnabled = isHttpEnabled,
+            onEnabledChanged = onSocksEnabledChanged,
+            onEnableChangeFailed = onEnableChangeFailed,
         ) {
           EditSocksPort(
-            modifier = Modifier
-              .weight(1F)
-              .padding(end = MaterialTheme.keylines.content),
-            state = state,
-            onPortChanged = onSocksPortChanged,
+              modifier = Modifier.weight(1F).padding(end = MaterialTheme.keylines.content),
+              state = state,
+              onPortChanged = onSocksPortChanged,
           )
         }
       }
@@ -196,84 +191,82 @@ internal fun LazyListScope.renderEditableItems(
 
 @Composable
 private fun NetworkSetupExplainer(
-  modifier: Modifier = Modifier,
-  appName: String,
+    modifier: Modifier = Modifier,
+    appName: String,
 ) {
   val requiredPrefix = remember { ServerDefaults.getWifiSsidPrefix() }
 
   val (show, setShow) = remember { mutableStateOf(false) }
 
   Row(
-    modifier = modifier,
-    verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
   ) {
     Column {
       Text(
-        text = stringResource(R.string.hotspot_configuration_title, appName),
-        style = MaterialTheme.typography.bodyLarge.copy(
-          color = MaterialTheme.colorScheme.primary,
-          fontWeight = FontWeight.W700,
-        ),
+          text = stringResource(R.string.hotspot_configuration_title, appName),
+          style =
+              MaterialTheme.typography.bodyLarge.copy(
+                  color = MaterialTheme.colorScheme.primary,
+                  fontWeight = FontWeight.W700,
+              ),
       )
       Text(
-        modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
-        text = stringResource(R.string.hotspot_configuration_google_please, appName),
-        style = MaterialTheme.typography.bodySmall,
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.typography),
+          text = stringResource(R.string.hotspot_configuration_google_please, appName),
+          style = MaterialTheme.typography.bodySmall,
       )
     }
 
     IconButton(
-      modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
-      onClick = { setShow(true) }
-    ) {
-      Icon(
-        imageVector = Icons.Filled.Info,
-        contentDescription = stringResource(R.string.hotspot_configuration_title, appName),
-      )
-    }
+        modifier = Modifier.padding(start = MaterialTheme.keylines.baseline),
+        onClick = { setShow(true) }) {
+          Icon(
+              imageVector = Icons.Filled.Info,
+              contentDescription = stringResource(R.string.hotspot_configuration_title, appName),
+          )
+        }
   }
 
   if (show) {
-    val handleHide = {
-      setShow(false)
-    }
+    val handleHide = { setShow(false) }
     CardDialog(
-      onDismiss = handleHide,
+        onDismiss = handleHide,
     ) {
       Column(
-        modifier = Modifier.padding(MaterialTheme.keylines.content),
+          modifier = Modifier.padding(MaterialTheme.keylines.content),
       ) {
         Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.hotspot_config_defaults, appName),
-          style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
+            text = stringResource(R.string.hotspot_config_defaults, appName),
+            style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-          modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-          text = stringResource(R.string.hotspot_config_no_account, appName),
-          style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = MaterialTheme.keylines.content),
+            text = stringResource(R.string.hotspot_config_no_account, appName),
+            style = MaterialTheme.typography.bodyLarge,
         )
         Text(
-          text = stringResource(R.string.hotspot_config_name_requirement, requiredPrefix),
-          style = MaterialTheme.typography.bodySmall,
+            text = stringResource(R.string.hotspot_config_name_requirement, requiredPrefix),
+            style = MaterialTheme.typography.bodyMedium,
         )
         Text(
-          text = stringResource(R.string.hotspot_config_password_requirement),
-          style = MaterialTheme.typography.bodySmall,
+            text = stringResource(R.string.hotspot_config_password_requirement),
+            style = MaterialTheme.typography.bodyMedium,
         )
 
         Row(
-          modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
-          verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = MaterialTheme.keylines.baseline),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
           Box(
-            modifier = Modifier.weight(1F),
+              modifier = Modifier.weight(1F),
           )
           TextButton(
-            onClick = handleHide,
+              onClick = handleHide,
           ) {
             Text(
-              text = stringResource(android.R.string.cancel),
+                text = stringResource(android.R.string.cancel),
             )
           }
         }
@@ -284,59 +277,58 @@ private fun NetworkSetupExplainer(
 
 @Composable
 private fun EditProxyPort(
-  modifier: Modifier = Modifier,
-  portType: ServerPortTypes,
-  @StringRes titleRes: Int,
-  @StringRes descriptionRes: Int,
-  isEnabled: Boolean,
-  isOtherEnabled: Boolean,
-  onEnabledChanged: (Boolean) -> Unit,
-  onEnableChangeFailed: (ServerPortTypes) -> Unit,
-  content: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    portType: ServerPortTypes,
+    @StringRes titleRes: Int,
+    @StringRes descriptionRes: Int,
+    isEnabled: Boolean,
+    isOtherEnabled: Boolean,
+    onEnabledChanged: (Boolean) -> Unit,
+    onEnableChangeFailed: (ServerPortTypes) -> Unit,
+    content: @Composable RowScope.() -> Unit,
 ) {
   Column(
-    modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
+      modifier = modifier.padding(bottom = MaterialTheme.keylines.baseline),
   ) {
     Text(
-      modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
-      text = stringResource(titleRes),
-      style =
-        MaterialTheme.typography.bodyLarge.copy(
-          fontWeight = FontWeight.W700,
-          color = MaterialTheme.colorScheme.primary,
-        ),
+        modifier = Modifier.padding(horizontal = MaterialTheme.keylines.content),
+        text = stringResource(titleRes),
+        style =
+            MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.W700,
+                color = MaterialTheme.colorScheme.primary,
+            ),
     )
     Text(
-      modifier =
-        Modifier
-          .padding(horizontal = MaterialTheme.keylines.content)
-          .padding(
-            top = MaterialTheme.keylines.content,
-            bottom = MaterialTheme.keylines.baseline,
-          ),
-      text = stringResource(descriptionRes),
-      style =
-        MaterialTheme.typography.bodyMedium.copy(
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
+        modifier =
+            Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                .padding(
+                    top = MaterialTheme.keylines.content,
+                    bottom = MaterialTheme.keylines.baseline,
+                ),
+        text = stringResource(descriptionRes),
+        style =
+            MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
     )
 
     Row(
-      verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
       Switch(
-        modifier =
-          Modifier.padding(
-            horizontal = MaterialTheme.keylines.content,
-          ),
-        checked = isEnabled,
-        onCheckedChange = {
-          if (isOtherEnabled) {
-            onEnabledChanged(it)
-          } else {
-            onEnableChangeFailed(portType)
-          }
-        },
+          modifier =
+              Modifier.padding(
+                  horizontal = MaterialTheme.keylines.content,
+              ),
+          checked = isEnabled,
+          onCheckedChange = {
+            if (isOtherEnabled) {
+              onEnabledChanged(it)
+            } else {
+              onEnableChangeFailed(portType)
+            }
+          },
       )
 
       content()
@@ -347,31 +339,31 @@ private fun EditProxyPort(
 @TestOnly
 @Composable
 private fun PreviewEditableItems(
-  ssid: String = TEST_SSID,
-  password: String = TEST_PASSWORD,
-  port: String = "$TEST_PORT",
-  http: Boolean,
-  socks: Boolean,
+    ssid: String = TEST_SSID,
+    password: String = TEST_PASSWORD,
+    port: String = "$TEST_PORT",
+    http: Boolean,
+    socks: Boolean,
 ) {
   LazyColumn {
     renderEditableItems(
-      modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
-      appName = "TEST",
-      state =
-        MutableStatusViewState().apply {
-          this.ssid.value = ssid
-          this.password.value = password
-          this.httpPort.value = port
-        },
-      onHttpEnabledChanged = {},
-      onHttpPortChanged = {},
-      onSocksEnabledChanged = {},
-      onSocksPortChanged = {},
-      onSsidChanged = {},
-      onPasswordChanged = {},
-      onTogglePasswordVisibility = {},
-      onEnableChangeFailed = {},
-      serverViewState = makeTestServerState(TestServerState.EMPTY, http, socks),
+        modifier = Modifier.width(LANDSCAPE_MAX_WIDTH),
+        appName = "TEST",
+        state =
+            MutableStatusViewState().apply {
+              this.ssid.value = ssid
+              this.password.value = password
+              this.httpPort.value = port
+            },
+        onHttpEnabledChanged = {},
+        onHttpPortChanged = {},
+        onSocksEnabledChanged = {},
+        onSocksPortChanged = {},
+        onSsidChanged = {},
+        onPasswordChanged = {},
+        onTogglePasswordVisibility = {},
+        onEnableChangeFailed = {},
+        serverViewState = makeTestServerState(TestServerState.EMPTY, http, socks),
     )
   }
 }
@@ -380,11 +372,11 @@ private fun PreviewEditableItems(
 @Preview(showBackground = true)
 private fun PreviewEditableItemsBlankHttp() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    port = "",
-    http = true,
-    socks = false,
+      ssid = "",
+      password = "",
+      port = "",
+      http = true,
+      socks = false,
   )
 }
 
@@ -392,10 +384,10 @@ private fun PreviewEditableItemsBlankHttp() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlySsidHttp() {
   PreviewEditableItems(
-    password = "",
-    port = "",
-    http = true,
-    socks = false,
+      password = "",
+      port = "",
+      http = true,
+      socks = false,
   )
 }
 
@@ -403,10 +395,10 @@ private fun PreviewEditableItemsOnlySsidHttp() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPasswordHttp() {
   PreviewEditableItems(
-    ssid = "",
-    port = "",
-    http = true,
-    socks = false,
+      ssid = "",
+      port = "",
+      http = true,
+      socks = false,
   )
 }
 
@@ -414,10 +406,10 @@ private fun PreviewEditableItemsOnlyPasswordHttp() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPortHttp() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    http = true,
-    socks = false,
+      ssid = "",
+      password = "",
+      http = true,
+      socks = false,
   )
 }
 
@@ -425,11 +417,11 @@ private fun PreviewEditableItemsOnlyPortHttp() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsBlankSocks() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    port = "",
-    http = false,
-    socks = true,
+      ssid = "",
+      password = "",
+      port = "",
+      http = false,
+      socks = true,
   )
 }
 
@@ -437,10 +429,10 @@ private fun PreviewEditableItemsBlankSocks() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlySsidSocks() {
   PreviewEditableItems(
-    password = "",
-    port = "",
-    http = false,
-    socks = true,
+      password = "",
+      port = "",
+      http = false,
+      socks = true,
   )
 }
 
@@ -448,10 +440,10 @@ private fun PreviewEditableItemsOnlySsidSocks() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPasswordSocks() {
   PreviewEditableItems(
-    ssid = "",
-    port = "",
-    http = false,
-    socks = true,
+      ssid = "",
+      port = "",
+      http = false,
+      socks = true,
   )
 }
 
@@ -459,10 +451,10 @@ private fun PreviewEditableItemsOnlyPasswordSocks() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPortSocks() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    http = false,
-    socks = true,
+      ssid = "",
+      password = "",
+      http = false,
+      socks = true,
   )
 }
 
@@ -470,11 +462,11 @@ private fun PreviewEditableItemsOnlyPortSocks() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsBlankBoth() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    port = "",
-    http = true,
-    socks = true,
+      ssid = "",
+      password = "",
+      port = "",
+      http = true,
+      socks = true,
   )
 }
 
@@ -482,10 +474,10 @@ private fun PreviewEditableItemsBlankBoth() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlySsidBoth() {
   PreviewEditableItems(
-    password = "",
-    port = "",
-    http = true,
-    socks = true,
+      password = "",
+      port = "",
+      http = true,
+      socks = true,
   )
 }
 
@@ -493,10 +485,10 @@ private fun PreviewEditableItemsOnlySsidBoth() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPasswordBoth() {
   PreviewEditableItems(
-    ssid = "",
-    port = "",
-    http = true,
-    socks = true,
+      ssid = "",
+      port = "",
+      http = true,
+      socks = true,
   )
 }
 
@@ -504,9 +496,9 @@ private fun PreviewEditableItemsOnlyPasswordBoth() {
 @Preview(showBackground = true)
 private fun PreviewEditableItemsOnlyPortBoth() {
   PreviewEditableItems(
-    ssid = "",
-    password = "",
-    http = true,
-    socks = true,
+      ssid = "",
+      password = "",
+      http = true,
+      socks = true,
   )
 }
