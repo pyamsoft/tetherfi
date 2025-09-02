@@ -99,7 +99,7 @@ plugins {
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
-  id("com.osacky.doctor") version "0.12.0" apply true
+  id("com.osacky.doctor") version "0.12.1" apply true
 }
 
 allprojects {
