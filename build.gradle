@@ -43,7 +43,7 @@ buildscript {
     core = "1.17.0"
     preferences = "1.2.1"
     appCompat = "1.7.1"
-    lifecycle = "2.9.2"
+    lifecycle = "2.9.3"
     dataStore = "1.1.7"
 
     // Coil
@@ -53,10 +53,10 @@ buildscript {
     qrCode = "4.5.0"
 
     // KTOR
-    ktor = "3.2.2-PYAMSOFT"
+    ktor = "3.2.3-PYAMSOFT"
 
     // Build and Sugar
-    dagger = "2.57"
+    dagger = "2.57.1"
     desugar = "2.1.5"
 
     // Testing
