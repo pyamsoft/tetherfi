@@ -32,14 +32,14 @@ android {
   defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 
     // Flag to enable support for the new language APIs
     isCoreLibraryDesugaringEnabled = true
   }
 
-  kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
+  kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_21 } }
 
   buildFeatures {
     buildConfig = false
