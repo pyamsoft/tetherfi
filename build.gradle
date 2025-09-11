@@ -53,7 +53,7 @@ buildscript {
     qrCode = "4.5.0"
 
     // KTOR
-    ktor = "3.2.3-PYAMSOFT"
+    ktor = "3.3.0-PYAMSOFT"
 
     // Build and Sugar
     dagger = "2.57.1"
