@@ -43,7 +43,7 @@ buildscript {
     core = "1.17.0"
     preferences = "1.2.1"
     appCompat = "1.7.1"
-    lifecycle = "2.9.3"
+    lifecycle = "2.9.4"
     dataStore = "1.1.7"
 
     // Coil
