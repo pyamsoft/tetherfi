@@ -83,7 +83,7 @@ plugins {
 
   // Gradle version checker
   // https://github.com/ben-manes/gradle-versions-plugin
-  id("com.github.ben-manes.versions") version "0.52.0" apply false
+  id("com.github.ben-manes.versions") version "0.53.0" apply false
 
   // Version Filter Plugin
   // https://github.com/janderssonse/gradle-versions-filter-plugin
