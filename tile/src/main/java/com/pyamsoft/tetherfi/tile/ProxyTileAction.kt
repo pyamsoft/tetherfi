@@ -19,5 +19,5 @@ package com.pyamsoft.tetherfi.tile
 enum class ProxyTileAction {
   TOGGLE,
   START,
-  STOP
+  STOP,
 }

@@ -149,7 +149,8 @@ dependencies {
 
   // Leak Canary
   debugImplementation(
-      "com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}")
+      "com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}"
+  )
   implementation("com.squareup.leakcanary:plumber-android:${rootProject.extra["leakCanary"]}")
 
   // AndroidX

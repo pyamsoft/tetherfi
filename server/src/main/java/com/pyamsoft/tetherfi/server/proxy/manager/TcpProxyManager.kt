@@ -68,7 +68,7 @@ internal constructor(
     proxyType: SharedProxy.Type,
     serverStopConsumer: EventConsumer<ServerStopRequestEvent>,
     enforcer: ThreadEnforcer,
-    serverDispatcher: ServerDispatcher
+    serverDispatcher: ServerDispatcher,
 ) :
     BaseProxyManager<ServerSocket>(
         appScope = appScope,
@@ -322,6 +322,7 @@ internal constructor(
             // Close normally by client
             "Channel was closed",
             // Close normally by server
-            "Broken pipe")
+            "Broken pipe",
+        )
   }
 }

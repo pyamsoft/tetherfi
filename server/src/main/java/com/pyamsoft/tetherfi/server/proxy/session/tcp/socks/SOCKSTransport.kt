@@ -51,7 +51,7 @@ internal constructor(
   override suspend fun writeProxyOutput(
       output: ByteWriteChannel,
       request: SOCKSVersion,
-      command: TransportWriteCommand
+      command: TransportWriteCommand,
   ) =
       when (request) {
         SOCKSVersion.Invalid -> {
@@ -76,7 +76,7 @@ internal constructor(
 
   override suspend fun parseRequest(
       input: ByteReadChannel,
-      output: ByteWriteChannel
+      output: ByteWriteChannel,
   ): SOCKSVersion {
     try {
       val versionByte = input.readByte()
@@ -101,7 +101,7 @@ internal constructor(
       client: TetherClient,
       version: SOCKSVersion,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
         when (version) {

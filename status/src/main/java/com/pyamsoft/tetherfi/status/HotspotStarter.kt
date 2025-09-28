@@ -122,14 +122,18 @@ private fun PreviewHotspotStarterStoppingEnabled() {
 @Preview(showBackground = true)
 private fun PreviewHotspotStarterHotspotErrorEnabled() {
   PreviewHotspotStarter(
-      isButtonEnabled = true, status = RunningStatus.HotspotError(RuntimeException("TEST")))
+      isButtonEnabled = true,
+      status = RunningStatus.HotspotError(RuntimeException("TEST")),
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewHotspotStarterProxyErrorEnabled() {
   PreviewHotspotStarter(
-      isButtonEnabled = true, status = RunningStatus.ProxyError(RuntimeException("TEST")))
+      isButtonEnabled = true,
+      status = RunningStatus.ProxyError(RuntimeException("TEST")),
+  )
 }
 
 @Composable
@@ -160,12 +164,16 @@ private fun PreviewHotspotStarterStoppingDisabled() {
 @Preview(showBackground = true)
 private fun PreviewHotspotStarterHotspotErrorDisabled() {
   PreviewHotspotStarter(
-      isButtonEnabled = false, status = RunningStatus.HotspotError(RuntimeException("TEST")))
+      isButtonEnabled = false,
+      status = RunningStatus.HotspotError(RuntimeException("TEST")),
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun PreviewHotspotStarterProxyErrorDisabled() {
   PreviewHotspotStarter(
-      isButtonEnabled = false, status = RunningStatus.ProxyError(RuntimeException("TEST")))
+      isButtonEnabled = false,
+      status = RunningStatus.ProxyError(RuntimeException("TEST")),
+  )
 }

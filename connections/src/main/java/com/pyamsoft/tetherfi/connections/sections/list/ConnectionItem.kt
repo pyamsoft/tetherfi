@@ -308,7 +308,9 @@ private fun Transfer(
       modifier = itemModifier.padding(top = MaterialTheme.keylines.baseline),
       text =
           stringResource(
-              R.string.connection_total_from_internet, client.transferFromInternet.display),
+              R.string.connection_total_from_internet,
+              client.transferFromInternet.display,
+          ),
       style =
           MaterialTheme.typography.bodySmall.copy(
               color =
@@ -338,7 +340,7 @@ private fun Limit(
     limit: TransferAmount?,
     label: String,
     @StringRes limitLabelResId: Int,
-    isOverLimit: Boolean
+    isOverLimit: Boolean,
 ) {
   limit?.also { target ->
     val context = LocalContext.current

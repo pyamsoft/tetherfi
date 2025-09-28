@@ -38,7 +38,7 @@ import com.pyamsoft.tetherfi.ui.dialog.CardDialog
 private enum class VpnBlockerContentTypes {
   NOTE,
   RESOLVE,
-  PRIVACY_POLICY
+  PRIVACY_POLICY,
 }
 
 @Composable

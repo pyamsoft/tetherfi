@@ -60,7 +60,8 @@ internal constructor(
         Intent(appContext, serviceClass).apply {
           putExtra(
               NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION,
-              NotificationLauncher.Actions.STOP.name)
+              NotificationLauncher.Actions.STOP.name,
+          )
         }
     return PendingIntent.getService(
         appContext,
@@ -98,7 +99,7 @@ internal constructor(
   override fun onCreateNotificationBuilder(
       appName: String,
       notification: ServerNotificationData,
-      builder: NotificationCompat.Builder
+      builder: NotificationCompat.Builder,
   ): NotificationCompat.Builder =
       builder
           .setOngoing(true)

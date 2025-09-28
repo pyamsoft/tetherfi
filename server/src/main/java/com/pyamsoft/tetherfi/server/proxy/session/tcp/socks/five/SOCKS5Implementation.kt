@@ -76,7 +76,7 @@ internal constructor(
 
   override suspend fun usingResponder(
       proxyOutput: ByteWriteChannel,
-      block: suspend Responder.() -> Unit
+      block: suspend Responder.() -> Unit,
   ) {
     Responder(proxyOutput).also { block(it) }
   }
@@ -96,7 +96,7 @@ internal constructor(
       addressType: SOCKS5AddressType,
       responder: Responder,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       socketCreator.create(
           type = SocketCreator.Type.SERVER,
@@ -205,7 +205,7 @@ internal constructor(
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
         val methodCount = proxyInput.readByte()
@@ -343,7 +343,7 @@ internal constructor(
         addressType: SOCKS5AddressType,
         replyCode: Byte,
         port: Short,
-        address: ByteArray
+        address: ByteArray,
     ) {
       sendPacket {
         // CD
@@ -387,7 +387,7 @@ internal constructor(
 
     override suspend fun sendBindInitialized(
         addressType: SOCKS5AddressType,
-        bound: InetSocketAddress?
+        bound: InetSocketAddress?,
     ) {
       return sendPacket(
           addressType = addressType,
@@ -482,7 +482,7 @@ internal constructor(
       @CheckResult
       internal fun getDestinationAddress(
           addressType: SOCKS5AddressType,
-          address: InetSocketAddress?
+          address: InetSocketAddress?,
       ): ByteArray {
         return address?.getJavaInetSocketAddress()?.address ?: getInvalidAddress(addressType)
       }

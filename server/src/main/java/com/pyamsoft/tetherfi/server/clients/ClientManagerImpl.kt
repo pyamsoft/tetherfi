@@ -233,7 +233,7 @@ internal constructor(
   @CheckResult
   private fun Map<String, TetherClient>.addClient(
       key: String,
-      client: TetherClient
+      client: TetherClient,
   ): Map<String, TetherClient> {
     return this.toMutableMap().apply { put(key, client) }
   }

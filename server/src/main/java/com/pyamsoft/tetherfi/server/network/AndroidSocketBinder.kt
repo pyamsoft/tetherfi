@@ -83,7 +83,7 @@ internal constructor(
    */
   private fun requestMobileDataNetwork(
       preferredNetwork: PreferredNetwork,
-      callback: NetworkCallback
+      callback: NetworkCallback,
   ) {
     val request =
         NetworkRequest.Builder()

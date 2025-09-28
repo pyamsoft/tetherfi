@@ -67,7 +67,8 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
                 RNDISCandidate(
                     name = name,
                     hostNames = hostNames,
-                ))
+                )
+            )
           }
         }
 
@@ -115,7 +116,7 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
-      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {}
 
   companion object {

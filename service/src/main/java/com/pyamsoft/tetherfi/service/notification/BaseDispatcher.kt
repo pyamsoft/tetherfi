@@ -81,7 +81,7 @@ protected constructor(
   final override fun build(
       id: NotifyId,
       channelInfo: NotifyChannelInfo,
-      notification: T
+      notification: T,
   ): Notification {
     val appName = context.getString(appNameRes)
     guaranteeNotificationChannelExists(channelInfo)

@@ -212,7 +212,7 @@ internal constructor(
   @CheckResult
   private suspend fun attemptReUseConnection(
       channel: Channel,
-      updateNetworkInfo: suspend (Channel) -> DelegatingBroadcastServer.UpdateResult
+      updateNetworkInfo: suspend (Channel) -> DelegatingBroadcastServer.UpdateResult,
   ): Boolean {
     // Sometimes, if the system has not closed down the Wifi group (because an old version of the
     // app made a group and a new one was then installed before the group was shut down) we can
@@ -239,10 +239,12 @@ internal constructor(
 
     try {
       Timber.d { "Attempt open connection with channel" }
-      if (attemptReUseConnection(
-          channel = channel,
-          updateNetworkInfo = updateNetworkInfo,
-      )) {
+      if (
+          attemptReUseConnection(
+              channel = channel,
+              updateNetworkInfo = updateNetworkInfo,
+          )
+      ) {
         Timber.d { "Existing Wi-Fi group connection was re-used!" }
       } else {
         Timber.d { "Cannot re-use Wi-Fi group connection, make new one" }
@@ -321,7 +323,7 @@ internal constructor(
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
-      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {
     scope.launch(context = Dispatchers.Default) { register.register() }
   }

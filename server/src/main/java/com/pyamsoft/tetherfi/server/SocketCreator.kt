@@ -43,7 +43,7 @@ interface SocketCreator {
     fun create(
         appScope: CoroutineScope,
         appEnvironment: AppDevEnvironment,
-        dispatcher: ServerDispatcher
+        dispatcher: ServerDispatcher,
     ): SocketCreator {
       return DefaultSocketCreator(
           appScope = appScope,

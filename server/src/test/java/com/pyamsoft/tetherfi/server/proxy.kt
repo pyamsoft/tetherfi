@@ -187,7 +187,7 @@ internal suspend fun setupProxy(
             override suspend fun <T> create(
                 type: SocketCreator.Type,
                 onError: (Throwable) -> Unit,
-                onBuild: suspend (SocketBuilder) -> T
+                onBuild: suspend (SocketBuilder) -> T,
             ): T {
               throw IllegalStateException("Expected CRASH: Too many files")
             }

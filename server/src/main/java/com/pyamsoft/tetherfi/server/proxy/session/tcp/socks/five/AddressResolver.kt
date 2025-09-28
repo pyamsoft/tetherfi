@@ -31,7 +31,7 @@ internal object AddressResolver {
   private suspend fun readDestinationAddress(
       serverDispatcher: ServerDispatcher,
       sourceOrByteReadChannel: SourceOrByteReadChannel,
-      addressType: SOCKS5AddressType
+      addressType: SOCKS5AddressType,
   ): InetAddress =
       withContext(context = serverDispatcher.primary) {
         when (addressType) {

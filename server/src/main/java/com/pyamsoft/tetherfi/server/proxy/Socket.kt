@@ -86,7 +86,7 @@ internal inline fun <T> usingSocketBuilder(
  */
 internal inline fun <T> Socket.usingConnection(
     autoFlush: Boolean,
-    block: (ByteReadChannel, ByteWriteChannel) -> T
+    block: (ByteReadChannel, ByteWriteChannel) -> T,
 ): T {
   this.use { socket ->
     val reader = socket.openReadChannel()

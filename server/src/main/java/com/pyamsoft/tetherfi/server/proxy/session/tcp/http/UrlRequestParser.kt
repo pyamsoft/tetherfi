@@ -44,7 +44,7 @@ internal constructor(
       val hostName: String,
       val port: Int,
       val file: String,
-      val proto: String
+      val proto: String,
   )
 
   /**

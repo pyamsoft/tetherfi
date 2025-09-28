@@ -51,13 +51,15 @@ internal constructor(
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.httpPort &&
-        config.isHttpEnabled &&
-        config.socksPort &&
-        config.isSocksEnabled &&
-        config.ssid &&
-        config.password &&
-        config.band) {
+    if (
+        config.httpPort &&
+            config.isHttpEnabled &&
+            config.socksPort &&
+            config.isSocksEnabled &&
+            config.ssid &&
+            config.password &&
+            config.band
+    ) {
       state.loadingState.value = StatusViewState.LoadingState.DONE
     }
   }

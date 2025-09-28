@@ -49,6 +49,6 @@ internal interface BroadcastServerImplementation<T> {
   /** Side effects ran from this function should have their own launch {} */
   fun onNetworkStarted(
       scope: CoroutineScope,
-      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   )
 }

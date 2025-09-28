@@ -70,7 +70,7 @@ protected constructor(
   private suspend fun closeAllSockets(
       scope: CoroutineScope,
       mutex: Mutex,
-      sockets: MutableCollection<ASocket>
+      sockets: MutableCollection<ASocket>,
   ) {
     mutex.withLock {
       val waitForClose = mutableSetOf<Deferred<Unit>>()
@@ -100,7 +100,7 @@ protected constructor(
   private suspend fun handleServerClosing(
       scope: CoroutineScope,
       mutex: Mutex,
-      sockets: MutableCollection<ASocket>
+      sockets: MutableCollection<ASocket>,
   ) {
     prepareToDie(
         scope = scope,
@@ -117,7 +117,7 @@ protected constructor(
   private fun periodicSocketCleanUp(
       scope: CoroutineScope,
       mutex: Mutex,
-      sockets: MutableCollection<ASocket>
+      sockets: MutableCollection<ASocket>,
   ) {
     scope.launch(context = serverDispatcher.sideEffect) {
       while (isActive) {
@@ -164,7 +164,7 @@ protected constructor(
   private fun trackingSideEffects(
       scope: CoroutineScope,
       mutex: Mutex,
-      sockets: MutableCollection<ASocket>
+      sockets: MutableCollection<ASocket>,
   ) {
     periodicSocketCleanUp(
         scope = scope,

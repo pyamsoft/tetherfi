@@ -78,7 +78,7 @@ internal constructor(
 
   override suspend fun usingResponder(
       proxyOutput: ByteWriteChannel,
-      block: suspend Responder.() -> Unit
+      block: suspend Responder.() -> Unit,
   ) {
     Responder(proxyOutput).also { block(it) }
   }
@@ -98,7 +98,7 @@ internal constructor(
       addressType: SOCKS4AddressType,
       responder: Responder,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) {
     Timber.w { "SOCKS4 implementation does not support UDP_ASSOCIATE" }
     usingResponder(proxyOutput) { sendRefusal() }
@@ -117,7 +117,7 @@ internal constructor(
       connectionInfo: BroadcastNetworkStatus.ConnectionInfo.Connected,
       client: TetherClient,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       withContext(context = serverDispatcher.primary) {
 
@@ -254,7 +254,7 @@ internal constructor(
 
     override suspend fun sendConnectSuccess(
         addressType: SOCKS4AddressType,
-        remote: InetSocketAddress?
+        remote: InetSocketAddress?,
     ) {
       return sendPacket(
           replyCode = SUCCESS_CODE,
@@ -265,7 +265,7 @@ internal constructor(
 
     override suspend fun sendBindInitialized(
         addressType: SOCKS4AddressType,
-        bound: InetSocketAddress?
+        bound: InetSocketAddress?,
     ) {
       return sendPacket(
           replyCode = SUCCESS_CODE,

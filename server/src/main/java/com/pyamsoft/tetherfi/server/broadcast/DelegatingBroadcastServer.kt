@@ -93,7 +93,8 @@ internal constructor(
   // On some devices, refreshing channel info too frequently leads to errors
   private val connectionInfoChannel =
       MutableStateFlow<BroadcastNetworkStatus.ConnectionInfo>(
-          BroadcastNetworkStatus.ConnectionInfo.Empty)
+          BroadcastNetworkStatus.ConnectionInfo.Empty
+      )
   private var lastConnectionRefreshTime = LocalDateTime.MIN
 
   private val mutex = Mutex()
@@ -283,7 +284,7 @@ internal constructor(
   @CheckResult
   private suspend fun withLockGetGroupInfo(
       source: ServerDataType?,
-      force: Boolean
+      force: Boolean,
   ): BroadcastNetworkStatus.GroupInfo {
     enforcer.assertOffMainThread()
 
@@ -347,7 +348,7 @@ internal constructor(
   @CheckResult
   private suspend fun withLockGetConnectionInfo(
       source: ServerDataType?,
-      force: Boolean
+      force: Boolean,
   ): BroadcastNetworkStatus.ConnectionInfo {
     enforcer.assertOffMainThread()
 
@@ -390,7 +391,8 @@ internal constructor(
     shutdownBus.emit(
         ServerShutdownEvent(
             throwable = if (newStatus is RunningStatus.Error) newStatus.throwable else null,
-        ))
+        )
+    )
   }
 
   /**
@@ -545,7 +547,7 @@ internal constructor(
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
-      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {
     // Need to mark the network as running so that the Proxy network can start
     Timber.d { "Broadcast server is fully set up!" }

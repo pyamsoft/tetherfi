@@ -91,8 +91,10 @@ internal fun RunningTiles(
           onShowConnectionError = onShowNetworkError,
       )
 
-      if (connection is BroadcastNetworkStatus.ConnectionInfo.Error &&
-          group is BroadcastNetworkStatus.GroupInfo.Error) {
+      if (
+          connection is BroadcastNetworkStatus.ConnectionInfo.Error &&
+              group is BroadcastNetworkStatus.GroupInfo.Error
+      ) {
         Spacer(
             modifier = Modifier.width(MaterialTheme.keylines.content),
         )

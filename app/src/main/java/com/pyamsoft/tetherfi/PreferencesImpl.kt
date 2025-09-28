@@ -130,7 +130,7 @@ internal constructor(
   private inline fun <T : Any> setPreference(
       key: Preferences.Key<T>,
       fallbackValue: T,
-      crossinline value: suspend (Preferences) -> T
+      crossinline value: suspend (Preferences) -> T,
   ) {
     scope.launch(context = Dispatchers.IO) {
       try {

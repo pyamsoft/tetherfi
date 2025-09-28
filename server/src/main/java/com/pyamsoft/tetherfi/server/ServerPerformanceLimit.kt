@@ -30,7 +30,7 @@ sealed interface ServerPerformanceLimit {
     BOUND_2N_CPU(coroutineLimit = 2 * BOUND_N_CPU.coroutineLimit),
     BOUND_3N_CPU(coroutineLimit = 3 * BOUND_N_CPU.coroutineLimit),
     BOUND_4N_CPU(coroutineLimit = 4 * BOUND_N_CPU.coroutineLimit),
-    BOUND_5N_CPU(coroutineLimit = 5 * BOUND_N_CPU.coroutineLimit)
+    BOUND_5N_CPU(coroutineLimit = 5 * BOUND_N_CPU.coroutineLimit),
   }
 
   data class BoundLimit(

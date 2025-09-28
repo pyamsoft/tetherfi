@@ -101,7 +101,7 @@ private fun RegisterPermissionRequests(
 private fun MountHooks(
     viewModel: BehaviorViewModeler,
     permissionResponseBus: Flow<PermissionResponse>,
-    onRefreshConnection: () -> Unit
+    onRefreshConnection: () -> Unit,
 ) {
   val scope = rememberCoroutineScope()
 

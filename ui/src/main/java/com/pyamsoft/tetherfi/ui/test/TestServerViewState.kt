@@ -104,10 +104,12 @@ fun makeTestServerState(
                         ssid = TEST_SSID,
                         password = TEST_PASSWORD,
                         clients = TEST_CLIENT_LIST,
-                    ))
+                    )
+                )
             override val connection =
                 MutableStateFlow(
-                    BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME))
+                    BroadcastNetworkStatus.ConnectionInfo.Connected(hostName = TEST_HOSTNAME)
+                )
 
             override val isHttpEnabled = MutableStateFlow(isHttpEnabled)
             override val httpPort = MutableStateFlow(TEST_PORT)
@@ -129,11 +131,15 @@ fun makeTestServerState(
             override val group =
                 MutableStateFlow(
                     BroadcastNetworkStatus.GroupInfo.Error(
-                        error = RuntimeException("Test Group Error")))
+                        error = RuntimeException("Test Group Error")
+                    )
+                )
             override val connection =
                 MutableStateFlow(
                     BroadcastNetworkStatus.ConnectionInfo.Error(
-                        error = RuntimeException("Test Connection Error")))
+                        error = RuntimeException("Test Connection Error")
+                    )
+                )
 
             override val isHttpEnabled = MutableStateFlow(isHttpEnabled)
             override val httpPort = MutableStateFlow(TEST_PORT)

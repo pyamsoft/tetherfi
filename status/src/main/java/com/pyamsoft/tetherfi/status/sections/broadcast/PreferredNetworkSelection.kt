@@ -77,5 +77,6 @@ internal fun PreferredNetworkSelection(
       currentSelection = currentPreferredNetwork,
       allSelections = allPreferredNetworks,
       strings = NETWORK_STRINGS,
-      onResolveStrings = { handleResolveStrings(it) })
+      onResolveStrings = { handleResolveStrings(it) },
+  )
 }

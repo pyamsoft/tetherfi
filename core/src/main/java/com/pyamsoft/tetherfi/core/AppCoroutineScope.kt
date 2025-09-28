@@ -40,7 +40,7 @@ internal constructor(
   fun launch(
       context: CoroutineContext = EmptyCoroutineContext,
       start: CoroutineStart = CoroutineStart.DEFAULT,
-      block: suspend CoroutineScope.() -> Unit
+      block: suspend CoroutineScope.() -> Unit,
   ): Job {
     assert(appScope.isActive) { "AppScope must never be cancelled!" }
     return appScope.launch(
@@ -54,7 +54,7 @@ internal constructor(
   fun <T> async(
       context: CoroutineContext = EmptyCoroutineContext,
       start: CoroutineStart = CoroutineStart.DEFAULT,
-      block: suspend CoroutineScope.() -> T
+      block: suspend CoroutineScope.() -> T,
   ): Deferred<T> {
     assert(appScope.isActive) { "AppScope must never be cancelled!" }
     return appScope.async(

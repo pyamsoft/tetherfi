@@ -43,7 +43,7 @@ import org.jetbrains.annotations.TestOnly
 
 private enum class InfoContentTypes {
   SPACER,
-  BOTTOM_SPACER
+  BOTTOM_SPACER,
 }
 
 @Composable

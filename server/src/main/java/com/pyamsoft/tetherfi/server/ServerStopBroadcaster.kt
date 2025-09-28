@@ -34,7 +34,7 @@ internal constructor(
     private val appScope: AppCoroutineScope,
     private val proxy: ProxyStatus,
     private val wifiDirect: BroadcastStatus,
-    private val stopRequestBroadcaster: EventBus<ServerStopRequestEvent>
+    private val stopRequestBroadcaster: EventBus<ServerStopRequestEvent>,
 ) {
 
   private suspend fun beforeStop() {

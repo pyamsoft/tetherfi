@@ -34,7 +34,7 @@ import com.pyamsoft.tetherfi.status.sections.StatusItem
 
 internal enum class StatusSize {
   SMALL,
-  NORMAL
+  NORMAL,
 }
 
 @Composable
@@ -67,20 +67,26 @@ internal fun DisplayStatus(
   val textNothingColor = MaterialTheme.colorScheme.onSurfaceVariant
   val textColor =
       remember(
-          size, status, textErrorColor, textRunningColor, textProgressColor, textNothingColor) {
-            when (status) {
-              is RunningStatus.Error -> textErrorColor
-              is RunningStatus.Running -> textRunningColor
-              is RunningStatus.NotRunning -> textNothingColor
-              is RunningStatus.Starting,
-              is RunningStatus.Stopping -> {
-                when (size) {
-                  StatusSize.SMALL -> textNothingColor
-                  StatusSize.NORMAL -> textProgressColor
-                }
-              }
+          size,
+          status,
+          textErrorColor,
+          textRunningColor,
+          textProgressColor,
+          textNothingColor,
+      ) {
+        when (status) {
+          is RunningStatus.Error -> textErrorColor
+          is RunningStatus.Running -> textRunningColor
+          is RunningStatus.NotRunning -> textNothingColor
+          is RunningStatus.Starting,
+          is RunningStatus.Stopping -> {
+            when (size) {
+              StatusSize.SMALL -> textNothingColor
+              StatusSize.NORMAL -> textProgressColor
             }
           }
+        }
+      }
 
   val smallStyle = MaterialTheme.typography.bodyLarge
   val normalStyle = MaterialTheme.typography.headlineSmall
@@ -101,19 +107,24 @@ internal fun DisplayStatus(
   val backgroundProgressColor = MaterialTheme.colorScheme.secondaryContainer
   val backgroundColor =
       remember(
-          size, status, backgroundErrorColor, backgroundProgressColor, backgroundRunningColor) {
-            when (size) {
-              StatusSize.SMALL -> Color.Unspecified
-              StatusSize.NORMAL ->
-                  when (status) {
-                    is RunningStatus.Error -> backgroundErrorColor
-                    is RunningStatus.Running -> backgroundRunningColor
-                    is RunningStatus.Starting -> backgroundProgressColor
-                    is RunningStatus.Stopping -> backgroundProgressColor
-                    is RunningStatus.NotRunning -> Color.Unspecified
-                  }
-            }
-          }
+          size,
+          status,
+          backgroundErrorColor,
+          backgroundProgressColor,
+          backgroundRunningColor,
+      ) {
+        when (size) {
+          StatusSize.SMALL -> Color.Unspecified
+          StatusSize.NORMAL ->
+              when (status) {
+                is RunningStatus.Error -> backgroundErrorColor
+                is RunningStatus.Running -> backgroundRunningColor
+                is RunningStatus.Starting -> backgroundProgressColor
+                is RunningStatus.Stopping -> backgroundProgressColor
+                is RunningStatus.NotRunning -> Color.Unspecified
+              }
+        }
+      }
 
   val borderColor =
       remember(

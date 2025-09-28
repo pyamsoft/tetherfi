@@ -56,11 +56,13 @@ internal constructor(
   )
 
   private fun markPreferencesLoaded(config: LoadConfig) {
-    if (config.tweakIgnoreVpn &&
-        config.tweakShutdownWithNoClients &&
-        config.expertPowerBalance &&
-        config.expertSocketTimeout &&
-        config.tweakKeepScreenOn) {
+    if (
+        config.tweakIgnoreVpn &&
+            config.tweakShutdownWithNoClients &&
+            config.expertPowerBalance &&
+            config.expertSocketTimeout &&
+            config.tweakKeepScreenOn
+    ) {
       state.loadingState.value = BehaviorViewState.LoadingState.DONE
     }
   }

@@ -32,7 +32,7 @@ data class TransferAmount(
 
   constructor(
       amount: Long,
-      unit: TransferUnit
+      unit: TransferUnit,
   ) : this(
       bytes = toBytes(amount, unit),
       amount = amount,

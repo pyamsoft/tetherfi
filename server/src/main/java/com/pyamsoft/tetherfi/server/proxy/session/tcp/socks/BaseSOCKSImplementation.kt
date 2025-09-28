@@ -70,7 +70,7 @@ protected constructor(
       addressType: AT,
       responder: R,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       socketCreator.create(
           type = SocketCreator.Type.CLIENT,
@@ -187,7 +187,7 @@ protected constructor(
       addressType: AT,
       responder: R,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       socketCreator.create(
           type = SocketCreator.Type.SERVER,
@@ -317,7 +317,7 @@ protected constructor(
       addressType: AT,
       responder: R,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) =
       when (command) {
         SOCKSCommand.CONNECT -> {
@@ -394,7 +394,7 @@ protected constructor(
       addressType: AT,
       responder: R,
       onError: suspend (Throwable) -> Unit,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   )
 
   internal interface SOCKSAddressType

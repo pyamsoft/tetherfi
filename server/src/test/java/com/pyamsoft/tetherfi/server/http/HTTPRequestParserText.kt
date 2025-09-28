@@ -77,7 +77,8 @@ class HTTPRequestParserText {
     assertNotEquals(
         true,
         port == null && host == null && method == null && file == null && version == null,
-        "You must test at least 1 Request part")
+        "You must test at least 1 Request part",
+    )
 
     val result = this.parse(line)
     if (fails) {

@@ -33,7 +33,7 @@ sealed interface ServerSocketTimeout {
     FAST(timeoutDuration = 10.seconds),
     BALANCED(timeoutDuration = 30.seconds),
     COMPAT(timeoutDuration = 1.minutes),
-    NICE(timeoutDuration = 5.minutes)
+    NICE(timeoutDuration = 5.minutes),
   }
 
   data class BoundTimeout(

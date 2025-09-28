@@ -86,7 +86,7 @@ internal constructor(
       request: HttpProxyRequest,
       socketTracker: SocketTracker,
       noinline onError: (Throwable) -> Unit,
-      crossinline block: suspend (ByteReadChannel, ByteWriteChannel) -> T
+      crossinline block: suspend (ByteReadChannel, ByteWriteChannel) -> T,
   ): T =
       socketCreator.create(
           type = SocketCreator.Type.CLIENT,
@@ -166,7 +166,7 @@ internal constructor(
       socketTracker: SocketTracker,
       client: TetherClient,
       request: HttpProxyRequest,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) {
     enforcer.assertOffMainThread()
 

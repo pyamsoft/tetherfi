@@ -28,15 +28,16 @@ buildscript {
     coroutines = "1.10.2"
 
     // Us
-    pydroid = "29.1.2"
+    pydroid = "29.1.3"
 
     // Square
     leakCanary = "2.14"
     timber = "5.0.1"
 
     // Compose
-    compose = "1.9.1"
-    composeMaterial3 = "1.3.2"
+    compose = "1.9.2"
+    composeMaterial = "1.7.8"
+    composeMaterial3 = "1.4.0"
     composeActivity = "1.11.0"
 
     // AndroidX
@@ -56,7 +57,7 @@ buildscript {
     ktor = "3.3.0-PYAMSOFT"
 
     // Build and Sugar
-    dagger = "2.57.1"
+    dagger = "2.57.2"
     desugar = "2.1.5"
 
     // Testing
@@ -83,7 +84,8 @@ plugins {
 
   // Gradle version checker
   // https://github.com/ben-manes/gradle-versions-plugin
-  id("com.github.ben-manes.versions") version "0.52.0" apply false
+  // 0.53.0 needs to run with --no-parallel
+  id("com.github.ben-manes.versions") version "0.53.0" apply false
 
   // Version Filter Plugin
   // https://github.com/janderssonse/gradle-versions-filter-plugin
@@ -91,7 +93,7 @@ plugins {
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id("com.diffplug.spotless") version "7.2.1" apply false
+  id("com.diffplug.spotless") version "8.0.0" apply false
 
   // KSP
   // https://github.com/google/ksp

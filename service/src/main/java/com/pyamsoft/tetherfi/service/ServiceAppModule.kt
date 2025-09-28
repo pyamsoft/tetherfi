@@ -92,7 +92,7 @@ abstract class ServiceAppModule {
     internal fun provideNotifier(
         // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
         @ServiceInternalApi dispatchers: MutableSet<NotifyDispatcher<*>>,
-        context: Context
+        context: Context,
     ): Notifier {
       return Notifier.createDefault(context, dispatchers)
     }

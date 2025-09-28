@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class ServerPortTypes {
   HTTP,
-  SOCKS
+  SOCKS,
 }
 
 @Stable
@@ -51,7 +51,7 @@ interface StatusViewState : UiViewState {
   enum class LoadingState {
     NONE,
     LOADING,
-    DONE
+    DONE,
   }
 }
 

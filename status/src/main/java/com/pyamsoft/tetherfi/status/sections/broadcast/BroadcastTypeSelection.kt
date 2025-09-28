@@ -70,5 +70,6 @@ internal fun BroadcastTypeSelection(
       currentSelection = currentBroadcastType,
       allSelections = allBroadcastTypes,
       strings = BROADCAST_STRINGS,
-      onResolveStrings = { handleResolveStrings(it) })
+      onResolveStrings = { handleResolveStrings(it) },
+  )
 }

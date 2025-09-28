@@ -57,7 +57,7 @@ private enum class ProxyHttpEvents(
 ) {
   CONNECT(200, "Connection Established"),
   ERROR(502, "Bad Gateway"),
-  BLOCKED(403, "Forbidden")
+  BLOCKED(403, "Forbidden"),
 }
 
 /** Write a message to the proxy for various events */

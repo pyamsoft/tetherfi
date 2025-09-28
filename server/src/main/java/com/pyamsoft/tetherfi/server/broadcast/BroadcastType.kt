@@ -18,5 +18,5 @@ package com.pyamsoft.tetherfi.server.broadcast
 
 enum class BroadcastType {
   WIFI_DIRECT,
-  RNDIS
+  RNDIS,
 }

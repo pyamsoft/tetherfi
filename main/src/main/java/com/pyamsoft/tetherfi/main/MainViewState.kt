@@ -36,7 +36,7 @@ enum class MainViewDialogs {
   NETWORK_ERROR,
   HOTSPOT_ERROR,
   BROADCAST_ERROR,
-  PROXY_ERROR
+  PROXY_ERROR,
 }
 
 @Stable
@@ -64,7 +64,8 @@ class MutableMainViewState @Inject internal constructor() : MainViewState {
       MutableStateFlow<BroadcastNetworkStatus.GroupInfo>(BroadcastNetworkStatus.GroupInfo.Empty)
   override val connection =
       MutableStateFlow<BroadcastNetworkStatus.ConnectionInfo>(
-          BroadcastNetworkStatus.ConnectionInfo.Empty)
+          BroadcastNetworkStatus.ConnectionInfo.Empty
+      )
 
   override val isHttpEnabled = MutableStateFlow(false)
   override val httpPort = MutableStateFlow(0)

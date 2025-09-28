@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class BehaviorViewDialogs {
   POWER_BALANCE,
-  SOCKET_TIMEOUT
+  SOCKET_TIMEOUT,
 }
 
 enum class BehaviorViewTweaks {
@@ -64,7 +64,7 @@ interface BehaviorViewState : UiViewState {
   enum class LoadingState {
     NONE,
     LOADING,
-    DONE
+    DONE,
   }
 }
 

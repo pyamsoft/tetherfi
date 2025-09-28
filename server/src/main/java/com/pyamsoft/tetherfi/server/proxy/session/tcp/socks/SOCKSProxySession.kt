@@ -94,7 +94,7 @@ internal constructor(
       socketTracker: SocketTracker,
       client: TetherClient,
       request: SOCKSVersion,
-      onReport: suspend (ByteTransferReport) -> Unit
+      onReport: suspend (ByteTransferReport) -> Unit,
   ) {
     enforcer.assertOffMainThread()
 

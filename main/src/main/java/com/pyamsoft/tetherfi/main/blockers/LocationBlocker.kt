@@ -41,7 +41,7 @@ private enum class LocationBlockerContentTypes {
   NOTE,
   RESOLVE,
   OPEN_SETTINGS,
-  PRIVACY_POLICY
+  PRIVACY_POLICY,
 }
 
 @Composable

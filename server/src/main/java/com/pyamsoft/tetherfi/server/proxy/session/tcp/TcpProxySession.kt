@@ -87,7 +87,7 @@ protected constructor(
   @CheckResult
   private fun resolveClientOrBlock(
       hostConnection: BroadcastNetworkStatus.ConnectionInfo.Connected,
-      hostNameOrIp: String
+      hostNameOrIp: String,
   ): TetherClient? {
     // If the host is an IP address, and we are an IP address,
     // check that we fall into the host

@@ -195,7 +195,8 @@ internal data class UDPRelayServer(
                             if (datagramSocket != null) {
                               networkBinder.bindToNetwork(datagramSocket)
                             }
-                          })
+                          }
+                      )
                       .also {
                         // Track server socket
                         socketTracker.track(it)

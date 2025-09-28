@@ -41,7 +41,7 @@ internal suspend fun enforceBandwidthLimit(
     client: TetherClient,
     bandwidthLimit: Long,
     startTimeNanos: Long,
-    read: Long
+    read: Long,
 ): Long {
   val bytesCopied = client.limiter.updateAndGet(read)
 

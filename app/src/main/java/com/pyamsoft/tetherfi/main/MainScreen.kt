@@ -265,7 +265,8 @@ private fun PreviewMainScreenDefaultSocks() {
       isShowingQr = false,
       isShowingSlowSpeedHelp = false,
       http = false,
-      socks = true)
+      socks = true,
+  )
 }
 
 @Preview

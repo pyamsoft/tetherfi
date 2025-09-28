@@ -22,5 +22,5 @@ enum class MainView(@param:StringRes val displayNameRes: Int) {
   STATUS(R.string.main_tab_name_status),
   BEHAVIOR(R.string.main_tab_name_behavior),
   INFO(R.string.main_tab_name_info),
-  CONNECTIONS(R.string.main_tab_name_connections)
+  CONNECTIONS(R.string.main_tab_name_connections),
 }

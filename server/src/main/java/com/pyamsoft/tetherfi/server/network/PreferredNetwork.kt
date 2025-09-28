@@ -19,5 +19,5 @@ package com.pyamsoft.tetherfi.server.network
 enum class PreferredNetwork {
   NONE,
   WIFI,
-  CELLULAR
+  CELLULAR,
 }

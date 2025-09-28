@@ -76,7 +76,7 @@ internal constructor(
   override fun onCreateNotificationBuilder(
       appName: String,
       notification: ErrorNotificationData,
-      builder: NotificationCompat.Builder
+      builder: NotificationCompat.Builder,
   ): NotificationCompat.Builder =
       builder
           .setOngoing(false)
@@ -88,7 +88,8 @@ internal constructor(
           .setContentText(
               notification.throwable.message.orEmpty().ifBlank {
                 "An unexpected error occurred. Please restart the $appName Hotspot."
-              })
+              }
+          )
 
   override fun canShow(notification: NotifyData): Boolean {
     return notification is ErrorNotificationData

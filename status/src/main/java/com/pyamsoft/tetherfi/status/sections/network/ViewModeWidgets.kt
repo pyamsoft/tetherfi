@@ -161,7 +161,8 @@ internal fun ViewPassword(
                 if (isPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
             contentDescription =
                 stringResource(
-                    if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden),
+                    if (isPasswordVisible) R2.string.pass_visible else R2.string.pass_hidden
+                ),
             tint = MaterialTheme.colorScheme.primary,
         )
       }

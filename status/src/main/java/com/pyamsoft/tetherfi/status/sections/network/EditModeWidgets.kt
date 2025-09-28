@@ -77,7 +77,8 @@ private fun EditPort(
                     stringResource(portLabelRes),
                     stringResource(
                         if (isValid) R.string.editmode_label_valid
-                        else R.string.editmode_label_invalid),
+                        else R.string.editmode_label_invalid
+                    ),
                 ),
         )
       },
@@ -185,7 +186,8 @@ internal fun EditPassword(
                           stringResource(R2.string.password),
                           stringResource(
                               if (isValid) R.string.editmode_label_visible
-                              else R.string.editmode_label_hidden),
+                              else R.string.editmode_label_hidden
+                          ),
                       ),
               )
             }
@@ -198,7 +200,8 @@ internal fun EditPassword(
                         stringResource(R2.string.password),
                         stringResource(
                             if (isValid) R.string.editmode_label_valid
-                            else R.string.editmode_label_invalid),
+                            else R.string.editmode_label_invalid
+                        ),
                     ),
             )
           }
@@ -284,8 +287,10 @@ internal fun EditSsid(
                       stringResource(R.string.editmode_type_ssid),
                       stringResource(
                           if (isValid) R.string.editmode_label_valid
-                          else R.string.editmode_label_invalid),
-                  ))
+                          else R.string.editmode_label_invalid
+                      ),
+                  ),
+          )
         }
       } else {
         null
