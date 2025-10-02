@@ -61,6 +61,7 @@ allprojects {
     maven {
       setUrl("https://jitpack.io")
       content {
+        includeGroup("com.github.pyamsoft.cachify")
         includeGroup("com.github.pyamsoft.pydroid")
         includeGroup("com.github.pyamsoft")
       }
