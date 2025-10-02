@@ -11,7 +11,6 @@ cacheFix = "3.0.2"
 # Kotlin
 kotlin = "2.2.20"
 coroutines = "1.10.2"
-dokka = "2.0.0"
 
 # Us
 pydroid = "29.2.0"
@@ -61,7 +60,6 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 doctor = { id = "com.osacky.doctor", version.ref = "doctor" }
 caupain = { id = "com.deezer.caupain", version.ref = "caupain" }

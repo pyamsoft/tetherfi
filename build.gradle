@@ -33,10 +33,6 @@ plugins {
   // https://android-developers.googleblog.com/2024/04/jetpack-compose-compiler-moving-to-kotlin-repository.html
   alias(libs.plugins.compose.compiler) apply false
 
-  // Dokka
-  // https://github.com/Kotlin/dokka
-  alias(libs.plugins.dokka) apply false
-
   // Spotless
   // https://github.com/diffplug/spotless
   alias(libs.plugins.spotless) apply true
