@@ -154,7 +154,6 @@ dependencies {
   implementation(libs.leakcanary.plumber)
 
   // AndroidX
-  implementation(libs.androidx.appcompat)
   implementation(libs.androidx.activity.compose)
 
   // Needed just for androidx.preference.PreferenceManager

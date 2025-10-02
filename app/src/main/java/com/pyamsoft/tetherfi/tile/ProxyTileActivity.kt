@@ -17,9 +17,9 @@
 package com.pyamsoft.tetherfi.tile
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.CheckResult
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,7 +36,7 @@ import com.pyamsoft.tetherfi.main.ThemeViewModeler
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import javax.inject.Inject
 
-class ProxyTileActivity : AppCompatActivity() {
+class ProxyTileActivity : ComponentActivity() {
 
   @Inject @JvmField internal var viewModel: ThemeViewModeler? = null
 

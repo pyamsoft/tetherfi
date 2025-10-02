@@ -18,8 +18,8 @@ package com.pyamsoft.tetherfi.main
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.getValue
@@ -49,7 +49,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
   @Inject @JvmField internal var themeViewModeler: ThemeViewModeler? = null
   @Inject @JvmField internal var serviceLauncher: ServiceLauncher? = null
