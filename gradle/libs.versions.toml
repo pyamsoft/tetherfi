@@ -27,7 +27,6 @@ dagger = "2.57.2"
 # AndroidX
 core = "1.17.0"
 activity = "1.11.0"
-appCompat = "1.7.1"
 lifecycle = "2.9.4"
 dataStore = "1.1.7"
 preference = "1.2.1"
