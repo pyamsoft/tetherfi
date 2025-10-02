@@ -17,19 +17,21 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.library")
-  id("com.google.devtools.ksp")
-  id("org.jetbrains.kotlin.plugin.compose")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.android)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.tetherfi.ui"
 
-  compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
-  defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get().toInt()
+  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -48,30 +50,30 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp(libs.dagger.compiler)
 
   // Lifecycle extensions
-  api("androidx.lifecycle:lifecycle-runtime-compose:${rootProject.extra["lifecycle"]}")
+  api(libs.androidx.lifecycle.compose)
 
   // Compose
-  api("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
-  api("androidx.compose.animation:animation:${rootProject.extra["compose"]}")
-  api("androidx.compose.material3:material3:${rootProject.extra["composeMaterial3"]}")
-  api("androidx.compose.material:material-icons-core:${rootProject.extra["composeMaterial"]}")
-  // api("androidx.compose.material:material-icons-extended:${rootProject.extra["composeMaterial"]}")
+  api(libs.compose.ui)
+  api(libs.compose.animation)
+  api(libs.compose.material3)
+  api(libs.compose.material.icons)
+  // api(libs.compose.material.icons.extended)
 
   // Compose Preview
-  api("androidx.compose.ui:ui-tooling-preview:${rootProject.extra["compose"]}")
-  debugApi("androidx.compose.ui:ui-tooling:${rootProject.extra["compose"]}")
+  api(libs.compose.ui.tooling.preview)
+  debugApi(libs.compose.ui.tooling)
 
   // WiFi QR Code
-  api("io.coil-kt.coil3:coil-compose-core:${rootProject.extra["coil"]}")
-  implementation("io.github.g0dkar:qrcode-kotlin-android:${rootProject.extra["qrCode"]}")
+  api(libs.coil.compose)
+  implementation(libs.qrcode)
 
   // PYDroid
-  implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
+  implementation(libs.pydroid.ui)
 
   implementation(project(":core"))
   implementation(project(":server"))

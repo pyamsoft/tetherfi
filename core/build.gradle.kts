@@ -17,19 +17,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.library")
-  id("com.google.devtools.ksp")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.android)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.tetherfi.core"
 
-  compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
   defaultConfig {
-    minSdk = rootProject.extra["minSdk"] as Int
+    minSdk = libs.versions.minSdk.get().toInt()
 
     // Android Testing
     // https://developer.android.com/training/testing/instrumented-tests
@@ -49,35 +49,32 @@ android {
   buildFeatures { buildConfig = false }
 }
 
+
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp(libs.dagger.compiler)
 
-  api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.extra["coroutines"]}")
+  api(libs.kotlinx.coroutines)
 
-  api("com.jakewharton.timber:timber:${rootProject.extra["timber"]}")
+  api(libs.timber)
 
   // Compose runtime for annotations
-  implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
+  implementation(libs.compose.runtime.annotation)
 
   // Android support library.
-  api("androidx.core:core-ktx:${rootProject.extra["core"]}")
+  api(libs.androidx.core.ktx)
 
   // Dagger
-  api("com.google.dagger:dagger:${rootProject.extra["dagger"]}")
-
-  testImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
-  testImplementation(
-      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}"
-  )
-
-  androidTestImplementation("androidx.test:runner:${rootProject.extra["testRunner"]}")
-  androidTestImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
-  androidTestImplementation(
-      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}"
-  )
+  api(libs.dagger)
 
   // TODO(Peter): Remove in favor of slim shared module
-  api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
+  api(libs.pydroid.notify)
+
+  testImplementation(libs.kotlin.test)
+  testImplementation(libs.kotlinx.coroutines.test)
+
+  androidTestImplementation(libs.androidx.testRunner)
+  androidTestImplementation(libs.kotlin.test)
+  androidTestImplementation(libs.kotlinx.coroutines.test)
 }

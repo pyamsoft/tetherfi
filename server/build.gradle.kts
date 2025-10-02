@@ -17,19 +17,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.library")
-  id("com.google.devtools.ksp")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.android)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.tetherfi.server"
 
-  compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
   defaultConfig {
-    minSdk = rootProject.extra["minSdk"] as Int
+    minSdk = libs.versions.minSdk.get().toInt()
 
     // Android Testing
     // https://developer.android.com/training/testing/instrumented-tests
@@ -60,31 +60,27 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp(libs.dagger.compiler)
 
   // Compose runtime for annotations
-  implementation("androidx.compose.runtime:runtime:${rootProject.extra["compose"]}")
+  implementation(libs.compose.runtime.annotation)
 
-  implementation("io.ktor:ktor-network:${rootProject.extra["ktor"]}")
+  implementation(libs.ktor.network)
 
   // PYDroid
-  implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
-  implementation("com.github.pyamsoft.pydroid:util:${rootProject.extra["pydroid"]}")
+  implementation(libs.pydroid.bus)
+  implementation(libs.pydroid.util)
 
-  testImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
-  testImplementation(
-      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}"
-  )
-  testImplementation("io.ktor:ktor-server-netty-jvm:${rootProject.extra["ktor"]}")
+  testImplementation(libs.kotlin.test)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.ktor.server.netty)
 
-  androidTestImplementation("androidx.test:runner:${rootProject.extra["testRunner"]}")
-  androidTestImplementation("org.jetbrains.kotlin:kotlin-test:${rootProject.extra["kotlin"]}")
-  androidTestImplementation(
-      "org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutines"]}"
-  )
-  androidTestImplementation("io.ktor:ktor-server-netty-jvm:${rootProject.extra["ktor"]}")
+  androidTestImplementation(libs.androidx.testRunner)
+  androidTestImplementation(libs.kotlin.test)
+  androidTestImplementation(libs.kotlinx.coroutines.test)
+  androidTestImplementation(libs.ktor.server.netty)
 
   implementation(project(":core"))
 }

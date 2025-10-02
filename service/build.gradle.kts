@@ -17,18 +17,20 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.library")
-  id("com.google.devtools.ksp")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.android)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.tetherfi.service"
 
-  compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
-  defaultConfig { minSdk = rootProject.extra["minSdk"] as Int }
+  defaultConfig {
+    minSdk = libs.versions.minSdk.get().toInt()
+  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -44,15 +46,15 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp(libs.dagger.compiler)
 
   // API for Dagger to inject
   // Notifier in ServiceAppModule
   // NotifyDispatcher in ServiceAppModule
-  api("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
-  implementation("com.github.pyamsoft.pydroid:bus:${rootProject.extra["pydroid"]}")
+  api(libs.pydroid.notify)
+  implementation(libs.pydroid.bus)
 
   implementation(project(":core"))
   implementation(project(":server"))

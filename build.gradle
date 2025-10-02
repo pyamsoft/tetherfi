@@ -16,99 +16,45 @@
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-buildscript {
-  ext {
-    // SDK
-    minSdk = 24
-    targetSdk = 36
-    compileSdk = 36
-
-    // Kotlin
-    kotlin = "2.2.20"
-    coroutines = "1.10.2"
-
-    // Us
-    pydroid = "29.2.0"
-
-    // Square
-    leakCanary = "2.14"
-    timber = "5.0.1"
-
-    // Compose
-    compose = "1.9.2"
-    composeMaterial = "1.7.8"
-    composeMaterial3 = "1.4.0"
-    composeActivity = "1.11.0"
-
-    // AndroidX
-    core = "1.17.0"
-    preferences = "1.2.1"
-    appCompat = "1.7.1"
-    lifecycle = "2.9.4"
-    dataStore = "1.1.7"
-
-    // Coil
-    coil = "3.3.0"
-
-    // QR code
-    qrCode = "4.5.0"
-
-    // KTOR
-    ktor = "3.3.0-PYAMSOFT"
-
-    // Build and Sugar
-    dagger = "2.57.2"
-    desugar = "2.1.5"
-
-    // Testing
-    testRunner = "1.7.0"
-  }
-}
-
 plugins {
   // Android AGP
   // https://developer.android.com/studio/build#top-level
-  id("com.android.library") version '8.13.0' apply false
+  alias(libs.plugins.android) apply false
 
   // Fix Android build cache
   // https://github.com/gradle/android-cache-fix-gradle-plugin
-  id("org.gradle.android.cache-fix") version "3.0.1" apply false
+  alias(libs.plugins.android.cacheFix) apply false
 
   // Kotlin
   // https://developer.android.com/studio/build#top-level
-  id("org.jetbrains.kotlin.android") version "${kotlin}" apply false
+  alias(libs.plugins.kotlin.android) apply false
 
   // Jetpack Compose Compiler
   // https://android-developers.googleblog.com/2024/04/jetpack-compose-compiler-moving-to-kotlin-repository.html
-  id("org.jetbrains.kotlin.plugin.compose") version "${kotlin}" apply false
+  alias(libs.plugins.compose.compiler) apply false
 
-  // Gradle version checker
-  // https://github.com/ben-manes/gradle-versions-plugin
-  // 0.53.0 needs to run with --no-parallel
-  id("com.github.ben-manes.versions") version "0.53.0" apply false
-
-  // Version Filter Plugin
-  // https://github.com/janderssonse/gradle-versions-filter-plugin
-  id("se.ascp.gradle.gradle-versions-filter") version "0.1.16" apply false
+  // Dokka
+  // https://github.com/Kotlin/dokka
+  alias(libs.plugins.dokka) apply false
 
   // Spotless
   // https://github.com/diffplug/spotless
-  id("com.diffplug.spotless") version "8.0.0" apply false
+  alias(libs.plugins.spotless) apply true
 
   // KSP
   // https://github.com/google/ksp
-  id("com.google.devtools.ksp") version "${kotlin}-2.0.3" apply false
+  alias(libs.plugins.ksp) apply false
 
   // Gradle Doctor
   // https://runningcode.github.io/gradle-doctor/
-  id("com.osacky.doctor") version "0.12.1" apply true
+  alias(libs.plugins.doctor) apply true
+
+  // Caupain
+  // https://github.com/deezer/caupain/blob/main/gradle-plugin/README.md
+  alias(libs.plugins.caupain) apply true
 }
 
 allprojects {
-  apply plugin: "com.diffplug.spotless"
-  apply plugin: "com.github.ben-manes.versions"
-  apply plugin: "se.ascp.gradle.gradle-versions-filter"
-
   repositories {
     mavenLocal()
     gradlePluginPortal()
@@ -124,47 +70,49 @@ allprojects {
       }
     }
   }
+}
 
+subprojects {
   // Java compile show
   tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add("-Xlint:unchecked")
     options.compilerArgs.add("-Xlint:deprecation")
     options.deprecation = true
   }
+}
 
-  // Spotless plugin
-  spotless {
-    java {
-      target("src/**/*.java")
+// Spotless plugin
+spotless {
+  java {
+    target("src/**/*.java")
 
-      removeUnusedImports()
-      trimTrailingWhitespace()
-      endWithNewline()
-      leadingTabsToSpaces(2)
-    }
-    kotlin {
-      target("src/**/*.kt")
-      ktfmt()
+    removeUnusedImports()
+    trimTrailingWhitespace()
+    endWithNewline()
+    leadingTabsToSpaces(2)
+  }
+  kotlin {
+    target("src/**/*.kt")
+    ktfmt()
 
-      trimTrailingWhitespace()
-      endWithNewline()
-      leadingTabsToSpaces(2)
-    }
-    kotlinGradle {
-      target("*.gradle.kts")
-      ktfmt()
+    trimTrailingWhitespace()
+    endWithNewline()
+    leadingTabsToSpaces(2)
+  }
+  kotlinGradle {
+    target("*.gradle.kts")
+    ktfmt()
 
-      trimTrailingWhitespace()
-      endWithNewline()
-      leadingTabsToSpaces(2)
-    }
-    groovyGradle {
-      target("*.gradle")
-      greclipse()
+    trimTrailingWhitespace()
+    endWithNewline()
+    leadingTabsToSpaces(2)
+  }
+  groovyGradle {
+    target("*.gradle")
+    greclipse()
 
-      trimTrailingWhitespace()
-      endWithNewline()
-      leadingTabsToSpaces(2)
-    }
+    trimTrailingWhitespace()
+    endWithNewline()
+    leadingTabsToSpaces(2)
   }
 }

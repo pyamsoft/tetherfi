@@ -17,24 +17,27 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.application")
-  id("org.jetbrains.kotlin.plugin.compose")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  // Can't use alias() or we get some weird error about double Android on classpath?
+  id(libs.plugins.android.application.get().pluginId)
+
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.networktest"
-  compileSdk = rootProject.extra["compileSdk"] as Int
+
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
   defaultConfig {
     applicationId = "com.pyamsoft.networktest"
 
-    minSdk = rootProject.extra["minSdk"] as Int
-    targetSdk = rootProject.extra["targetSdk"] as Int
-
     versionCode = 1
     versionName = "1.0"
+
+    minSdk = libs.versions.minSdk.get().toInt()
+    targetSdk = libs.versions.targetSdk.get().toInt()
 
     vectorDrawables.useSupportLibrary = true
   }
@@ -58,9 +61,9 @@ android {
 }
 
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
-  implementation("androidx.compose.ui:ui:${rootProject.extra["compose"]}")
-  implementation("androidx.compose.material3:material3:${rootProject.extra["composeMaterial3"]}")
+  implementation(libs.androidx.activity.compose)
+  implementation(libs.compose.ui)
+  implementation(libs.compose.material3)
 }

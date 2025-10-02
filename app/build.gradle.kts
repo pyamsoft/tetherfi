@@ -18,17 +18,19 @@ import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-  id("com.android.application")
-  id("com.google.devtools.ksp")
-  id("org.jetbrains.kotlin.plugin.compose")
-  id("org.jetbrains.kotlin.android")
-  id("org.gradle.android.cache-fix")
+  // Can't use alias() or we get some weird error about double Android on classpath?
+  id(libs.plugins.android.application.get().pluginId)
+
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.android.cacheFix)
 }
 
 android {
   namespace = "com.pyamsoft.tetherfi"
 
-  compileSdk = rootProject.extra["compileSdk"] as Int
+  compileSdk = libs.versions.compileSdk.get().toInt()
 
   defaultConfig {
     applicationId = "com.pyamsoft.tetherfi"
@@ -36,8 +38,8 @@ android {
     versionCode = 61
     versionName = "20250824-1"
 
-    minSdk = rootProject.extra["minSdk"] as Int
-    targetSdk = rootProject.extra["targetSdk"] as Int
+    minSdk = libs.versions.minSdk.get().toInt()
+    targetSdk = libs.versions.targetSdk.get().toInt()
 
     vectorDrawables.useSupportLibrary = true
   }
@@ -143,31 +145,29 @@ android {
 // Leave at bottom
 // apply plugin: "com.google.gms.google-services"
 dependencies {
-  coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:${rootProject.extra["desugar"]}")
+  coreLibraryDesugaring(libs.android.desugar)
 
-  ksp("com.google.dagger:dagger-compiler:${rootProject.extra["dagger"]}")
+  ksp(libs.dagger.compiler)
 
   // Leak Canary
-  debugImplementation(
-      "com.squareup.leakcanary:leakcanary-android:${rootProject.extra["leakCanary"]}"
-  )
-  implementation("com.squareup.leakcanary:plumber-android:${rootProject.extra["leakCanary"]}")
+  debugImplementation(libs.leakcanary)
+  implementation(libs.leakcanary.plumber)
 
   // AndroidX
-  implementation("androidx.appcompat:appcompat:${rootProject.extra["appCompat"]}")
-  implementation("androidx.activity:activity-compose:${rootProject.extra["composeActivity"]}")
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.activity.compose)
 
   // Needed just for androidx.preference.PreferenceManager
   // Eventually, big G may push for DataStore being a requirement, which will be pain
   // This pulls in all the UI bits too, which is a little lame.
-  implementation("androidx.preference:preference:${rootProject.extra["preferences"]}")
+  implementation(libs.androidx.preference)
 
   // DataStore
-  implementation("androidx.datastore:datastore-preferences:${rootProject.extra["dataStore"]}")
+  implementation(libs.androidx.dataStore)
 
   // PYDroid
-  implementation("com.github.pyamsoft.pydroid:notify:${rootProject.extra["pydroid"]}")
-  implementation("com.github.pyamsoft.pydroid:ui:${rootProject.extra["pydroid"]}")
+  implementation(libs.pydroid.notify)
+  implementation(libs.pydroid.ui)
 
   implementation(project(":behavior"))
   implementation(project(":connections"))

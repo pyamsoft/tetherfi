@@ -31,7 +31,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -110,16 +111,16 @@ fun MainTopBar(
       )
 
       val currentPage = pagerState.currentPage
-      ScrollableTabRow(
+      SecondaryScrollableTabRow(
           modifier = Modifier.fillMaxWidth(),
           selectedTabIndex = currentPage,
           containerColor = Color.Transparent,
           contentColor = LocalContentColor.current,
-          indicator = { tabPositions ->
+          indicator = {
             TabRowDefaults.SecondaryIndicator(
                 modifier =
                     Modifier.tabIndicatorOffset(
-                        currentTabPosition = tabPositions[currentPage],
+                      selectedTabIndex = currentPage,
                     ),
                 height = MaterialTheme.keylines.typography,
                 color = MaterialTheme.colorScheme.onPrimary,

@@ -1,0 +1,112 @@
+[versions]
+# SDK
+minSdk = "24"
+targetSdk = "36"
+compileSdk = "36"
+
+# Android Gradle
+agp = "8.13.0"
+cacheFix = "3.0.1"
+
+# Kotlin
+kotlin = "2.2.20"
+coroutines = "1.10.2"
+dokka = "2.0.0"
+
+# Us
+pydroid = "29.2.0"
+ktor = "3.3.0-PYAMSOFT"
+
+# Square
+leakCanary = "2.14"
+timber = "5.0.1"
+
+qrCode = "4.5.0"
+dagger = "2.57.2"
+
+# AndroidX
+core = "1.17.0"
+activity = "1.11.0"
+appCompat = "1.7.1"
+lifecycle = "2.9.4"
+dataStore = "1.1.7"
+preference = "1.2.1"
+testRunner = "1.7.0"
+
+# Compose
+compose = "1.9.2"
+composeMaterial = "1.7.8"
+composeMaterial3 = "1.4.0"
+
+# Google
+ksp = "2.2.20-2.0.3"
+
+# Images
+coil = "3.3.0"
+
+# Developer Tools
+spotless = "8.0.0"
+doctor = "0.12.1"
+jdkDesugar = "2.1.5"
+caupain = "1.6.1"
+
+
+[plugins]
+android = { id = "com.android.library", version.ref = "agp" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-cacheFix = { id = "org.gradle.android.cache-fix", version.ref = "cacheFix" }
+
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin"}
+
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+doctor = { id = "com.osacky.doctor", version.ref = "doctor" }
+caupain = { id = "com.deezer.caupain", version.ref = "caupain" }
+
+[libraries]
+android-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "jdkDesugar" }
+
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appCompat" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+androidx-dataStore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
+androidx-lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
+androidx-testRunner = { group = "androidx.test", name = "runner", version.ref = "testRunner" }
+
+compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "compose" }
+compose-material-icons = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "composeMaterial" }
+compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "composeMaterial" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "composeMaterial3" }
+compose-runtime-annotation = { group = "androidx.compose.runtime", name = "runtime-annotation", version.ref = "compose" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose-core", version.ref = "coil" }
+
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+
+ktor-network = { group = "io.ktor", name = "ktor-network", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor" }
+
+leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakCanary" }
+leakcanary-plumber = { group = "com.squareup.leakcanary", name = "plumber-android", version.ref = "leakCanary" }
+
+pydroid-bus = { group = "com.github.pyamsoft.pydroid", name = "bus", version.ref = "pydroid" }
+pydroid-notify = { group = "com.github.pyamsoft.pydroid", name = "notify", version.ref = "pydroid" }
+pydroid-ui = { group = "com.github.pyamsoft.pydroid", name = "ui", version.ref = "pydroid" }
+pydroid-util = { group = "com.github.pyamsoft.pydroid", name = "util", version.ref = "pydroid" }
+
+qrcode = { group = "io.github.g0dkar", name = "qrcode-kotlin-android", version.ref = "qrCode" }
+
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
