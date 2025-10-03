@@ -45,7 +45,7 @@ internal fun GroupErrorTile(
           onShowError = onShowGroupError,
       ) { modifier, iconButton ->
         Row(
-            modifier = Modifier.fillMaxWidth().then(modifier),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
           val color = LocalContentColor.current

@@ -29,17 +29,11 @@
     name="trouble_broadcast_wifi_on"
   >• Wi-Fi 功能必須被啟用以啟動網路熱點</string>
   <string
-    name="trouble_broadcast_wifi_not_connected"
-  >• Wi-Fi 功能「不能」連接至任何其他網路</string>
-  <string
     name="trouble_broadcast_wifi_restart"
   >• Wi-Fi 功能必須透過將其停用再啟用的方式重新啟動</string>
   <string
     name="trouble_broadcast_password_length"
   >• 網路熱點的密碼長度必須至少為 8 個字元</string>
-  <string
-    name="trouble_broadcast_ssid_name"
-  >• 網路熱點的名稱(SSID)必須是唯一的</string>
   <string
     name="trouble_proxy_already_used"
   >• 網路熱點代理服務的通訊埠號可能已被另一個應用軟體使用</string>

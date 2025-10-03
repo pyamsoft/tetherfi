@@ -62,31 +62,13 @@ internal fun RunningTiles(
       modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
   ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = MaterialTheme.keylines.content),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-      RefreshTile(
-          modifier = Modifier.weight(1F),
-          onRefreshConnection = onRefreshConnection,
-      )
-
-      Spacer(
-          modifier = Modifier.width(MaterialTheme.keylines.content),
-      )
-
-      ViewQRCodeTile(
-          modifier = Modifier.weight(1F),
-          isQREnabled = isQREnabled,
-          onShowQRCode = onShowQRCode,
-      )
-    }
-
-    Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
       ConnectionErrorTile(
-          modifier = Modifier.weight(1F),
+          modifier = Modifier
+            .padding(bottom = MaterialTheme.keylines.content)
+            .weight(1F),
           connection = connection,
           onShowConnectionError = onShowNetworkError,
       )
@@ -101,9 +83,31 @@ internal fun RunningTiles(
       }
 
       GroupErrorTile(
-          modifier = Modifier.weight(1F),
+          modifier = Modifier
+            .padding(bottom = MaterialTheme.keylines.content)
+            .weight(1F),
           group = group,
           onShowGroupError = onShowHotspotError,
+      )
+    }
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      RefreshTile(
+        modifier = Modifier.weight(1F),
+        onRefreshConnection = onRefreshConnection,
+      )
+
+      Spacer(
+        modifier = Modifier.width(MaterialTheme.keylines.content),
+      )
+
+      ViewQRCodeTile(
+        modifier = Modifier.weight(1F),
+        isQREnabled = isQREnabled,
+        onShowQRCode = onShowQRCode,
       )
     }
   }

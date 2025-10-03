@@ -40,17 +40,11 @@
     name="trouble_broadcast_wifi_on"
   >• Wi-Fi must be turned ON to start the Hotspot</string>
   <string
-    name="trouble_broadcast_wifi_not_connected"
-  >• Wi-Fi must NOT be connected to any other network</string>
-  <string
     name="trouble_broadcast_wifi_restart"
   >• Wi-Fi should be restarted by turning it OFF and then back ON again</string>
   <string
     name="trouble_broadcast_password_length"
   >• The Hotspot password must be at least 8 characters long</string>
-  <string
-    name="trouble_broadcast_ssid_name"
-  >• The Hotspot name must be unique</string>
 
   <string
     name="trouble_location_service"
@@ -61,4 +55,7 @@
   <string
     name="trouble_broadcast_rndis"
   >• USB Tethering must be turned ON</string>
+
+  <!-- TODO(Peter): Need zh-rTW translation -->
+  <string name="trouble_click_expand">Click to expand Error trace</string>
 </resources>

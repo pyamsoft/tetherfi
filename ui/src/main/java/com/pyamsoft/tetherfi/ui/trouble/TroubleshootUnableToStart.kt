@@ -16,12 +16,15 @@
 
 package com.pyamsoft.tetherfi.ui.trouble
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,6 +46,8 @@ fun TroubleshootUnableToStart(
     isProxyError: Boolean,
     throwable: Throwable?,
 ) {
+  val (showStackTrace, setShowStackTrace) = rememberSaveable { mutableStateOf(false) }
+
   val context = LocalContext.current
   val errType =
       remember(
@@ -106,12 +111,6 @@ fun TroubleshootUnableToStart(
 
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_wifi_not_connected),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             text = stringResource(R.string.trouble_broadcast_wifi_restart),
             style = MaterialTheme.typography.bodyLarge,
         )
@@ -119,12 +118,6 @@ fun TroubleshootUnableToStart(
         Text(
             modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
             text = stringResource(R.string.trouble_broadcast_password_length),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-
-        Text(
-            modifier = Modifier.padding(bottom = MaterialTheme.keylines.baseline),
-            text = stringResource(R.string.trouble_broadcast_ssid_name),
             style = MaterialTheme.typography.bodyLarge,
         )
       } else if (broadcastType == BroadcastType.RNDIS) {
@@ -166,22 +159,35 @@ fun TroubleshootUnableToStart(
             return@remember err.message.orEmpty().ifBlank { "Unexpected Hotspot Error" }
           }
 
-      Text(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
+      Column(
+        modifier = Modifier
+          .padding(vertical = MaterialTheme.keylines.content)
+          .clickable {
+            setShowStackTrace(!showStackTrace)
+          },
+      ) {
+        Text(
           text = title,
-          style = MaterialTheme.typography.bodyMedium,
-      )
+          style = MaterialTheme.typography.bodyLarge,
+        )
 
-      val trace = remember(err) { err.stackTraceToString() }
+        Text(
+          text = stringResource(R.string.trouble_click_expand),
+          style = MaterialTheme.typography.bodySmall,
+        )
+      }
 
-      Text(
+      if (showStackTrace) {
+        val trace = remember(err) { err.stackTraceToString() }
+        Text(
           modifier = Modifier.padding(MaterialTheme.keylines.content),
           text = trace,
           style =
-              MaterialTheme.typography.bodySmall.copy(
-                  fontFamily = FontFamily.Monospace,
-              ),
-      )
+            MaterialTheme.typography.bodySmall.copy(
+              fontFamily = FontFamily.Monospace,
+            ),
+        )
+      }
     }
   }
 }
