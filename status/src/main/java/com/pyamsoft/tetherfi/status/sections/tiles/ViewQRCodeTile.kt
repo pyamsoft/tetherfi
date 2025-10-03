@@ -42,6 +42,7 @@ internal fun ViewQRCodeTile(
 
   StatusTile(
       modifier = modifier,
+    show = true,
       enabled = isQREnabled,
   ) {
     Row(

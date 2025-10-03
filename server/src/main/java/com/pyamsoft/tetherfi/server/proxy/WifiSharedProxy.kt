@@ -364,6 +364,10 @@ internal constructor(
 
                   broadcastProxyStop()
 
+                  // Mark us as starting
+                  // don't clear errors if they exist
+                  status.set(RunningStatus.Starting)
+
                   mutex.withLock {
                     // Assign kill timer when we first see EMPTY
                     if (killTimerJob == null) {
@@ -371,8 +375,10 @@ internal constructor(
                           launch(context = Dispatchers.Default) {
                             delay(10.seconds)
 
-                            Timber.w { "Connection has been EMPTY for too long, shut down Proxy" }
-                            shutdownProxyServerWithCause(EMPTY_CONNECTION_TOO_LONG_ERROR)
+                            Timber.w { "Connection has been EMPTY for too long!" }
+
+                            // Stop the proxy again so the user can interact with UI
+                            broadcastProxyStop()
                           }
                     }
                   }
@@ -446,10 +452,7 @@ internal constructor(
 
     private val UNCHANGED_SHOULD_NOT_HAPPEN_ERROR =
         AssertionError(
-            "GroupInfo.Unchanged should never escape the server-module internals.",
+            "ConnectionInfo.Unchanged should never escape the server-module internals.",
         )
-
-    private val EMPTY_CONNECTION_TOO_LONG_ERROR =
-        IllegalStateException("Cannot use Empty connection")
   }
 }

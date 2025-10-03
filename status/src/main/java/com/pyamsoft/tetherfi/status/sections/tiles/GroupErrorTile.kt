@@ -16,12 +16,16 @@
 
 package com.pyamsoft.tetherfi.status.sections.tiles
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,6 +33,8 @@ import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.dialog.ServerErrorTile
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun GroupErrorTile(
@@ -36,31 +42,51 @@ internal fun GroupErrorTile(
     group: BroadcastNetworkStatus.GroupInfo,
     onShowGroupError: () -> Unit,
 ) {
-  group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also {
+  val (showErrorTile, setShowErrorTile) = rememberSaveable { mutableStateOf(false) }
+
+  LaunchedEffect(group) {
+    when (group) {
+      is BroadcastNetworkStatus.GroupInfo.Error -> {
+        // Debounce just a little bit, just incase we are just starting up normally
+        delay(1.seconds)
+        setShowErrorTile(true)
+      }
+      is BroadcastNetworkStatus.GroupInfo.Empty -> {
+        // If this is empty for a while, show it as error
+        delay(10.seconds)
+        setShowErrorTile(true)
+      }
+      else -> {
+        // Not a problem
+        setShowErrorTile(false)
+      }
+    }
+  }
+
     StatusTile(
         modifier = modifier,
+      show = showErrorTile,
         borderColor = MaterialTheme.colorScheme.error,
     ) {
       ServerErrorTile(
-          onShowError = onShowGroupError,
-      ) { modifier, iconButton ->
+        onShowError = onShowGroupError,
+      ) { modifier, renderIcon ->
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
         ) {
           val color = LocalContentColor.current
 
-          iconButton()
+          renderIcon()
 
           Text(
-              text = stringResource(R.string.tile_broadcast_error),
-              style =
-                  MaterialTheme.typography.bodySmall.copy(
-                      color = color,
-                  ),
+            text = stringResource(R.string.tile_broadcast_error),
+            style =
+              MaterialTheme.typography.bodySmall.copy(
+                color = color,
+              ),
           )
         }
       }
-    }
   }
 }

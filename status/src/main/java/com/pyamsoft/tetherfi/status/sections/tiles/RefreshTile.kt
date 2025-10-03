@@ -56,6 +56,7 @@ internal fun RefreshTile(
 
   StatusTile(
       modifier = modifier,
+    show= true,
   ) {
     AttemptRefreshButton(
         onClick = {

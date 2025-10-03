@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.ui.dialog
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,9 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -48,7 +45,6 @@ import com.pyamsoft.pydroid.ui.haptics.LocalHapticManager
 import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISInitializeException
 import com.pyamsoft.tetherfi.ui.IconButtonContent
 import com.pyamsoft.tetherfi.ui.R
-import kotlinx.coroutines.delay
 
 private enum class ServerErrorDialogContentTypes {
   TITLE,
@@ -57,14 +53,7 @@ private enum class ServerErrorDialogContentTypes {
 }
 
 @Composable
-fun ServerErrorTile(
-    onShowError: () -> Unit,
-    content: IconButtonContent,
-) {
-  /** Show the content which hosts the button (we delay slightly to avoid state-change flicker */
-  val (showContent, setShowContent) = remember { mutableStateOf(false) }
-  val handleShowContent by rememberUpdatedState { setShowContent(true) }
-
+fun ServerErrorTile(onShowError: () -> Unit, content: IconButtonContent) {
   val hapticManager = LocalHapticManager.current
 
   val handleClick by rememberUpdatedState {
@@ -72,109 +61,66 @@ fun ServerErrorTile(
     onShowError()
   }
 
-  LaunchedEffect(showContent) {
-    if (!showContent) {
-      // Wait a little bit in case the network is just starting up normally
-      delay(1000L)
-
-      // Mark the content as shown
-      handleShowContent()
-    }
-  }
-
-  AnimatedVisibility(
-      visible = showContent,
-  ) {
-    content(
-        Modifier.clickable { handleClick() },
-    ) {
-      IconButton(
-          onClick = { handleClick() },
-      ) {
-        Icon(
-            imageVector = Icons.Filled.Warning,
-            contentDescription = stringResource(R.string.something_went_wrong),
-            tint = MaterialTheme.colorScheme.error,
-        )
-      }
-    }
+  content(Modifier.clickable { handleClick() }) {
+      Icon(
+        modifier = Modifier.padding(MaterialTheme.keylines.content),
+        imageVector = Icons.Filled.Warning,
+        contentDescription = stringResource(R.string.something_went_wrong),
+        tint = MaterialTheme.colorScheme.error,
+      )
   }
 }
 
 @Composable
-fun ServerErrorDialog(
-    modifier: Modifier = Modifier,
-    title: String,
-    error: Throwable,
-    onDismiss: () -> Unit,
-) {
-  Dialog(
-      properties = rememberDialogProperties(),
-      onDismissRequest = onDismiss,
-  ) {
+fun ServerErrorDialog(modifier: Modifier = Modifier, title: String, error: Throwable, onDismiss: () -> Unit) {
+  Dialog(properties = rememberDialogProperties(), onDismissRequest = onDismiss) {
     Column(
-        modifier =
-            modifier
-                // Top already has padding for some reason?
-                .padding(horizontal = MaterialTheme.keylines.content)
-                .padding(bottom = MaterialTheme.keylines.content),
+      modifier =
+        modifier
+          // Top already has padding for some reason?
+          .padding(horizontal = MaterialTheme.keylines.content)
+          .padding(bottom = MaterialTheme.keylines.content)
     ) {
       DialogToolbar(
-          modifier = Modifier.fillMaxWidth(),
-          onClose = onDismiss,
-          title = {
-            // Intentionally blank
-          },
+        modifier = Modifier.fillMaxWidth(),
+        onClose = onDismiss,
+        title = {
+          // Intentionally blank
+        },
       )
 
       // TODO(Peter): Checkbox to show stacktrace
       Card(
-          shape =
-              MaterialTheme.shapes.large.copy(
-                  topStart = ZeroCornerSize,
-                  topEnd = ZeroCornerSize,
-              ),
-          elevation = CardDefaults.elevatedCardElevation(),
-          colors = CardDefaults.elevatedCardColors(),
+        shape = MaterialTheme.shapes.large.copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize),
+        elevation = CardDefaults.elevatedCardElevation(),
+        colors = CardDefaults.elevatedCardColors(),
       ) {
         LazyColumn {
-          item(
-              contentType = ServerErrorDialogContentTypes.TITLE,
-          ) {
+          item(contentType = ServerErrorDialogContentTypes.TITLE) {
             Text(
-                modifier = Modifier.padding(MaterialTheme.keylines.content),
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              text = title,
+              style = MaterialTheme.typography.titleLarge,
             )
           }
 
           if (error is RNDISInitializeException) {
-            item(
-                contentType = ServerErrorDialogContentTypes.EXTRA,
-            ) {
+            item(contentType = ServerErrorDialogContentTypes.EXTRA) {
               val trace = remember(error) { error.candidateMessage }
               Text(
-                  modifier = Modifier.padding(MaterialTheme.keylines.content),
-                  text = trace,
-                  style =
-                      MaterialTheme.typography.bodyMedium.copy(
-                          fontFamily = FontFamily.Monospace,
-                      ),
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = trace,
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
               )
             }
           }
 
-          item(
-              contentType = ServerErrorDialogContentTypes.TRACE,
-          ) {
+          item(contentType = ServerErrorDialogContentTypes.TRACE) {
             val trace = remember(error) { error.stackTraceToString() }
             Text(
-                modifier = Modifier.padding(MaterialTheme.keylines.content),
-                text = trace,
-                style =
-                    MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                    ),
+              modifier = Modifier.padding(MaterialTheme.keylines.content),
+              text = trace,
+              style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
             )
           }
         }
@@ -186,9 +132,5 @@ fun ServerErrorDialog(
 @Preview
 @Composable
 private fun PreviewServerErrorDialog() {
-  ServerErrorDialog(
-      title = "TEST",
-      error = IllegalStateException("TEST ERROR"),
-      onDismiss = {},
-  )
+  ServerErrorDialog(title = "TEST", error = IllegalStateException("TEST ERROR"), onDismiss = {})
 }

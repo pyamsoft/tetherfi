@@ -22,6 +22,6 @@ import androidx.compose.ui.Modifier
 typealias IconButtonContent =
     @Composable
     (
-        Modifier,
-        @Composable () -> Unit,
+        modifier: Modifier,
+        renderIcon: @Composable () -> Unit,
     ) -> Unit

@@ -111,28 +111,11 @@ fun StatusScreen(
           return@remember STATIC_HOTSPOT_ERROR
         }
 
-        // If either is starting, mark us starting
-        if (wiDiStatus is RunningStatus.Starting || proxyStatus is RunningStatus.Starting) {
-          return@remember RunningStatus.Starting
-        }
-
-        // If the wifi direct broadcast is up, but the proxy is not up yet, mark starting
-        if (wiDiStatus is RunningStatus.Running && proxyStatus !is RunningStatus.Running) {
-          return@remember RunningStatus.Starting
-        }
-
-        // If either is stopping, mark us stopping
-        if (wiDiStatus is RunningStatus.Stopping || proxyStatus is RunningStatus.Stopping) {
-          return@remember RunningStatus.Stopping
-        }
-
-        if (wiDiStatus is RunningStatus.Running) {
-          // If the Wifi Direct is running, watch the proxy status
-          return@remember proxyStatus
-        } else {
-          // Otherwise fallback to wiDi status
-          return@remember wiDiStatus
-        }
+        // Otherwise just take the broadcast status
+        //
+        // The proxy may have issues starting up, but we should allow the screen to transition
+        // and the button to be enabled
+        return@remember wiDiStatus
       }
 
   val isButtonEnabled =

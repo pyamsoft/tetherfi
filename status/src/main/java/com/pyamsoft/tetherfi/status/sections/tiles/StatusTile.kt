@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.status.sections.tiles
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -27,19 +28,24 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun StatusTile(
     modifier: Modifier = Modifier,
+    show: Boolean,
     borderColor: Color = MaterialTheme.colorScheme.primary,
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-  Card(
-      modifier = modifier,
-      border =
-          BorderStroke(
-              width = 2.dp,
-              color = if (enabled) borderColor else MaterialTheme.colorScheme.onSurfaceVariant,
-          ),
-      shape = MaterialTheme.shapes.large,
+  AnimatedVisibility(
+    modifier = modifier,
+    visible = show,
   ) {
-    content()
+    Card(
+      border =
+        BorderStroke(
+          width = 2.dp,
+          color = if (enabled) borderColor else MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+      shape = MaterialTheme.shapes.large,
+    ) {
+      content()
+    }
   }
 }

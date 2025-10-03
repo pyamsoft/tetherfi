@@ -112,8 +112,7 @@ internal constructor(
         // Using the lock we already have, force check for updated info
         withLockUpdateNetworkInfo(
             source = source,
-            force = true,
-            onlyAcceptWhenAllConnected = false,
+            strategy = NetworkUpdateStrategy.FORCE_CHECK_LATEST,
         )
       }
 
@@ -147,10 +146,10 @@ internal constructor(
           try {
             Timber.d { "Starting broadcast network" }
             val source = withLockStartBroadcast { source ->
+              // We MAY be able to re-use the existing connection, but EVERYTHING MUST BE VALID
               withLockUpdateNetworkInfo(
                   source = source,
-                  force = true,
-                  onlyAcceptWhenAllConnected = true,
+                  strategy = NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED,
               )
             }
 
@@ -300,16 +299,15 @@ internal constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
+      // If this is not a force request, we don't do any work unless we are outside of the refresh window
       if (lastGroupRefreshTime.plusSeconds(REFRESH_DEBOUNCE) >= now) {
         return BroadcastNetworkStatus.GroupInfo.Unchanged
       }
     }
 
+    // Regardless of what the system gives back, we "track" this time to avoid request spamming
     val result = resolveCurrentGroupInfo(source)
-    if (result is BroadcastNetworkStatus.GroupInfo.Connected) {
-      // Save success time
-      lastGroupRefreshTime = now
-    }
+    lastGroupRefreshTime = now
 
     val forcedDebugResult = handleGroupDebugEnvironment()
     if (forcedDebugResult != null) {
@@ -364,16 +362,15 @@ internal constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
+      // If this is not a force request, we don't do any work unless we are outside of the refresh window
       if (lastConnectionRefreshTime.plusSeconds(REFRESH_DEBOUNCE) > now) {
         return BroadcastNetworkStatus.ConnectionInfo.Unchanged
       }
     }
 
+    // Regardless of what the system gives back, we "track" this time to avoid request spamming
     val result = resolveCurrentConnectionInfo(source)
-    if (result is BroadcastNetworkStatus.ConnectionInfo.Connected) {
-      // Save success time
-      lastConnectionRefreshTime = now
-    }
+    lastConnectionRefreshTime = now
 
     val forcedDebugResult = handleConnectionDebugEnvironment()
     if (forcedDebugResult != null) {
@@ -395,6 +392,23 @@ internal constructor(
     )
   }
 
+  private enum class NetworkUpdateStrategy {
+    /**
+     * Artificially limit the frequency that the system can fire requests to WiFi direct
+     */
+    DEBOUNCE_FAST_REQUESTS,
+
+    /**
+     * The response from the Wifi direct system will only be accepted if everything is CONNECTED
+     */
+    UPDATE_ONLY_IF_ALL_CONNECTED,
+
+    /**
+     * Force a check for the latest information
+     */
+    FORCE_CHECK_LATEST
+  }
+
   /**
    * Attempt to update network info for Group and Connection
    *
@@ -403,17 +417,18 @@ internal constructor(
   @CheckResult
   private suspend fun withLockUpdateNetworkInfo(
       source: ServerDataType?,
-      // Force rechecking instead of allowing UNCHANGED to be returned because of minimum time
-      // between requests
-      force: Boolean,
-      // For re-using connections when possible, ALL network data must be available and valid
-      onlyAcceptWhenAllConnected: Boolean,
+      strategy: NetworkUpdateStrategy,
   ): UpdateResult =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
-        val groupInfo = withLockGetGroupInfo(source, force = force)
-        val connectionInfo = withLockGetConnectionInfo(source, force = force)
+        // Always go to the system IF the strategy is one of our internal hooks
+        val isForceCheckConnection = strategy != NetworkUpdateStrategy.DEBOUNCE_FAST_REQUESTS
+
+        val onlyAcceptWhenAllConnected = strategy == NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED
+
+        val groupInfo = withLockGetGroupInfo(source, force = isForceCheckConnection)
+        val connectionInfo = withLockGetConnectionInfo(source, force = isForceCheckConnection)
 
         val acceptGroup: Boolean
         val acceptConnection: Boolean
@@ -427,9 +442,11 @@ internal constructor(
 
         if (onlyAcceptWhenAllConnected) {
           if (acceptGroup && acceptConnection) {
-            Timber.d { "Network info update accepted: GRP=$groupInfo CON=$connectionInfo" }
+            Timber.d { "ALL_CONNECT Network info update accepted: GRP=$groupInfo CON=$connectionInfo" }
             groupInfoChannel.value = groupInfo
             connectionInfoChannel.value = connectionInfo
+          } else {
+            Timber.w { "ALL_CONNECT Network update not accepted: GRP=$groupInfo CON=$connectionInfo" }
           }
         } else {
           if (acceptGroup) {
@@ -474,8 +491,7 @@ internal constructor(
 
           withLockUpdateNetworkInfo(
               source = source,
-              force = false,
-              onlyAcceptWhenAllConnected = true,
+              strategy = NetworkUpdateStrategy.DEBOUNCE_FAST_REQUESTS,
           )
         }
 
