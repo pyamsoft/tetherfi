@@ -53,7 +53,7 @@ internal fun ConnectionErrorTile(
           iconButton()
 
           Text(
-              text = stringResource(R.string.tile_network_error),
+              text = stringResource(R.string.tile_proxy_error),
               style =
                   MaterialTheme.typography.bodySmall.copy(
                       color = color,

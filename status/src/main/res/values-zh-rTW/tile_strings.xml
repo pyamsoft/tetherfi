@@ -17,7 +17,5 @@
   -->
 <resources>
   <string name="tile_qr_code">查看 QR 碼</string>
-  <string name="tile_hotspot_error">網路熱點錯誤</string>
   <string name="tile_refresh_hotspot">重新設定網路熱點</string>
-  <string name="tile_network_error">網路錯誤</string>
 </resources>

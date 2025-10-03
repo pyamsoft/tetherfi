@@ -16,7 +16,9 @@
   -->
 <resources>
   <string name="tile_qr_code">View QR Code</string>
-  <string name="tile_hotspot_error">Hotspot Error</string>
   <string name="tile_refresh_hotspot">Refresh Hotspot</string>
-  <string name="tile_network_error">Network Error</string>
+
+  <!-- TODO(Peter): Need zh-rTW translation -->
+  <string name="tile_broadcast_error">Broadcast Error</string>
+  <string name="tile_proxy_error">Proxy Error</string>
 </resources>

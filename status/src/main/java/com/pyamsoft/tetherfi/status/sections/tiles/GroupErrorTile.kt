@@ -53,7 +53,7 @@ internal fun GroupErrorTile(
           iconButton()
 
           Text(
-              text = stringResource(R.string.tile_hotspot_error),
+              text = stringResource(R.string.tile_broadcast_error),
               style =
                   MaterialTheme.typography.bodySmall.copy(
                       color = color,

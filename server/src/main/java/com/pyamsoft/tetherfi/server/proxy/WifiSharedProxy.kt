@@ -391,10 +391,6 @@ internal constructor(
                     proxyJob = null
                   }
                   broadcastProxyStop()
-
-                  shutdownProxyServerWithCause(
-                      IllegalStateException("Cannot use Invalid Connection", info.error),
-                  )
                 }
 
                 is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> {
