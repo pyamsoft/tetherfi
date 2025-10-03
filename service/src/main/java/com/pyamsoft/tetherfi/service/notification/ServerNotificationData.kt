@@ -17,12 +17,15 @@
 package com.pyamsoft.tetherfi.service.notification
 
 import com.pyamsoft.pydroid.notify.NotifyData
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 
 @ConsistentCopyVisibility
 internal data class ServerNotificationData
 internal constructor(
-    val status: RunningStatus,
+    val broadcastStatus: RunningStatus,
+    val group: BroadcastNetworkStatus.GroupInfo,
+    val connection: BroadcastNetworkStatus.ConnectionInfo,
     val clientCount: Int,
     val blockCount: Int,
 ) : NotifyData

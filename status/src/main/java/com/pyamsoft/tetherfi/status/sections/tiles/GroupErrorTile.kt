@@ -29,7 +29,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.dialog.ServerErrorTile
@@ -53,7 +52,7 @@ internal fun GroupErrorTile(
       }
       is BroadcastNetworkStatus.GroupInfo.Empty -> {
         // If this is empty for a while, show it as error
-        delay(10.seconds)
+        delay(5.seconds)
         setShowErrorTile(true)
       }
       else -> {
@@ -72,7 +71,7 @@ internal fun GroupErrorTile(
         onShowError = onShowGroupError,
       ) { modifier, renderIcon ->
         Row(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().then(modifier),
           verticalAlignment = Alignment.CenterVertically,
         ) {
           val color = LocalContentColor.current

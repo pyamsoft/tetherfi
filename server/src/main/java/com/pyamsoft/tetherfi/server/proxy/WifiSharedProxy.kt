@@ -373,7 +373,7 @@ internal constructor(
                     if (killTimerJob == null) {
                       killTimerJob =
                           launch(context = Dispatchers.Default) {
-                            delay(10.seconds)
+                            delay(5.seconds)
 
                             Timber.w { "Connection has been EMPTY for too long!" }
 

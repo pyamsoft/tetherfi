@@ -42,23 +42,31 @@ import kotlinx.coroutines.withContext
 internal class NotificationLauncherImpl
 @Inject
 internal constructor(
-    private val notifier: Notifier,
-    private val enforcer: ThreadEnforcer,
-    private val networkStatus: BroadcastNetworkStatus,
-    private val allowedClients: AllowedClients,
-    private val blockedClients: BlockedClients,
+  private val notifier: Notifier,
+  private val enforcer: ThreadEnforcer,
+  private val broadcastStatus: BroadcastNetworkStatus,
+  private val allowedClients: AllowedClients,
+  private val blockedClients: BlockedClients,
 ) : NotificationLauncher {
 
   private val showing = MutableStateFlow(false)
 
   private val clientCount = MutableStateFlow(0)
   private val blockCount = MutableStateFlow(0)
-  private val runningStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+
+  private val runningBroadcastStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+
+  private val runningProxyGroup =
+    MutableStateFlow<BroadcastNetworkStatus.GroupInfo>(BroadcastNetworkStatus.GroupInfo.Unchanged)
+  private val runningProxyConnection =
+    MutableStateFlow<BroadcastNetworkStatus.ConnectionInfo>(BroadcastNetworkStatus.ConnectionInfo.Unchanged)
 
   private suspend fun onStatusUpdated(
-      status: RunningStatus,
-      clientCount: Int,
-      blockCount: Int,
+    broadcastStatus: RunningStatus,
+    group: BroadcastNetworkStatus.GroupInfo,
+    connection: BroadcastNetworkStatus.ConnectionInfo,
+    clientCount: Int,
+    blockCount: Int,
   ) {
     if (!showing.value) {
       Timber.w { "Do not update notification, no longer showing!" }
@@ -67,38 +75,33 @@ internal constructor(
 
     withContext(context = Dispatchers.Main) {
       val data =
-          ServerNotificationData(
-              status = status,
-              clientCount = clientCount,
-              blockCount = blockCount,
-          )
+        ServerNotificationData(
+          broadcastStatus = broadcastStatus,
+          connection = connection,
+          group = group,
+          clientCount = clientCount,
+          blockCount = blockCount,
+        )
 
-      notifier
-          .show(
-              id = LONG_RUNNING_ID,
-              channelInfo = LONG_RUNNING_CHANNEL_INFO,
-              notification = data,
-          )
-          .also { Timber.d { "Updated foreground notification: $it: $data" } }
+      notifier.show(id = LONG_RUNNING_ID, channelInfo = LONG_RUNNING_CHANNEL_INFO, notification = data).also {
+        Timber.d { "Updated foreground notification: $it: $data" }
+      }
     }
   }
 
   @CheckResult
   private fun <T> MutableStateFlow<T>.compareCurrent(update: T): Boolean {
     val current = this.value
-    if (current != update) {
-      this.value = update
-      return true
-    }
-
-    return false
+    return this.compareAndSet(expect = current, update = update)
   }
 
   private suspend fun updateNotification() {
     onStatusUpdated(
-        status = runningStatus.value,
-        clientCount = clientCount.value,
-        blockCount = blockCount.value,
+      group = runningProxyGroup.value,
+      connection = runningProxyConnection.value,
+      broadcastStatus = runningBroadcastStatus.value,
+      clientCount = clientCount.value,
+      blockCount = blockCount.value,
     )
   }
 
@@ -110,12 +113,34 @@ internal constructor(
       enforcer.assertOffMainThread()
 
       // Listen for notification updates
-      networkStatus.onStatusChanged().also { f ->
+      broadcastStatus.onStatusChanged().also { f ->
         launch {
           enforcer.assertOffMainThread()
 
           f.collect { s ->
-            if (runningStatus.compareCurrent(s)) {
+            if (runningBroadcastStatus.compareCurrent(s)) {
+              updateNotification()
+            }
+          }
+        }
+      }
+      broadcastStatus.onGroupInfoChanged().also { f ->
+        launch {
+          enforcer.assertOffMainThread()
+
+          f.collect { g ->
+            if (runningProxyGroup.compareCurrent(g)) {
+              updateNotification()
+            }
+          }
+        }
+      }
+      broadcastStatus.onConnectionInfoChanged().also { f ->
+        launch {
+          enforcer.assertOffMainThread()
+
+          f.collect { c ->
+            if (runningProxyConnection.compareCurrent(c)) {
               updateNotification()
             }
           }
@@ -124,42 +149,45 @@ internal constructor(
 
       // Listen for client updates
       allowedClients
-          .listenForClients()
-          .map { it.size }
-          .also { f ->
-            launch {
-              enforcer.assertOffMainThread()
+        .listenForClients()
+        .map { it.size }
+        .also { f ->
+          launch {
+            enforcer.assertOffMainThread()
 
-              f.collect { c ->
-                if (clientCount.compareCurrent(c)) {
-                  updateNotification()
-                }
+            f.collect { c ->
+              if (clientCount.compareCurrent(c)) {
+                updateNotification()
               }
             }
           }
+        }
 
       // Listen for block updates
       blockedClients
-          .listenForBlocked()
-          .map { it.size }
-          .also { f ->
-            launch {
-              enforcer.assertOffMainThread()
+        .listenForBlocked()
+        .map { it.size }
+        .also { f ->
+          launch {
+            enforcer.assertOffMainThread()
 
-              f.collect { b ->
-                if (blockCount.compareCurrent(b)) {
-                  updateNotification()
-                }
+            f.collect { b ->
+              if (blockCount.compareCurrent(b)) {
+                updateNotification()
               }
             }
           }
+        }
     }
   }
 
   private fun reset() {
     clientCount.value = 0
     blockCount.value = 0
-    runningStatus.value = RunningStatus.NotRunning
+
+    runningBroadcastStatus.value = RunningStatus.NotRunning
+    runningProxyGroup.value = BroadcastNetworkStatus.GroupInfo.Unchanged
+    runningProxyConnection.value = BroadcastNetworkStatus.ConnectionInfo.Unchanged
   }
 
   private fun stop(service: Service) {
@@ -178,24 +206,24 @@ internal constructor(
     // Initialize with blank data first
     val data = LONG_RUNNING_DEFAULT_DATA
     notifier
-        .startForeground(
-            service = service,
-            id = LONG_RUNNING_ID,
-            channelInfo = LONG_RUNNING_CHANNEL_INFO,
-            notification = data,
-        )
-        .also { Timber.d { "Started foreground notification: $it: $data" } }
+      .startForeground(
+        service = service,
+        id = LONG_RUNNING_ID,
+        channelInfo = LONG_RUNNING_CHANNEL_INFO,
+        notification = data,
+      )
+      .also { Timber.d { "Started foreground notification: $it: $data" } }
   }
 
   override suspend fun update() =
-      withContext(context = Dispatchers.Default) {
-        if (!showing.value) {
-          Timber.w { "Cannot update notification since not showing" }
-          return@withContext
-        }
-
-        updateNotification()
+    withContext(context = Dispatchers.Default) {
+      if (!showing.value) {
+        Timber.w { "Cannot update notification since not showing" }
+        return@withContext
       }
+
+      updateNotification()
+    }
 
   override fun startForeground(service: Service): NotificationLauncher.Watcher {
     if (showing.compareAndSet(expect = false, update = true)) {
@@ -231,17 +259,19 @@ internal constructor(
 
     private val LONG_RUNNING_ID = 42069.toNotifyId()
     private val LONG_RUNNING_DEFAULT_DATA =
-        ServerNotificationData(
-            status = RunningStatus.NotRunning,
-            clientCount = 0,
-            blockCount = 0,
-        )
+      ServerNotificationData(
+        group = BroadcastNetworkStatus.GroupInfo.Unchanged,
+        connection = BroadcastNetworkStatus.ConnectionInfo.Unchanged,
+        broadcastStatus = RunningStatus.NotRunning,
+        clientCount = 0,
+        blockCount = 0,
+      )
     private val LONG_RUNNING_CHANNEL_INFO =
-        NotifyChannelInfo(
-            id = "channel_tetherfi_service_1",
-            title = "TetherFi Proxy",
-            description = "TetherFi Proxy Service",
-        )
+      NotifyChannelInfo(
+        id = "channel_tetherfi_service_1",
+        title = "TetherFi Proxy",
+        description = "TetherFi Proxy Service",
+      )
 
     private val EMPTY_WATCHER = NotificationLauncher.Watcher {}
   }

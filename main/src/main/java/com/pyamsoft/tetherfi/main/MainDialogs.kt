@@ -18,7 +18,9 @@ package com.pyamsoft.tetherfi.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -143,31 +145,26 @@ fun MainDialogs(
     )
   }
 
-  group.cast<BroadcastNetworkStatus.GroupInfo.Error>()?.also { err ->
-    AnimatedVisibility(
-        visible = isShowingHotspotError,
-    ) {
-      ServerErrorDialog(
-          modifier = dialogModifier,
-          title = "Hotspot Initialization Error",
-          error = err.error,
-          onDismiss = onHideHotspotError,
-      )
-    }
-  }
+  GroupErrorDialog(
+    modifier = dialogModifier,
+    group =group,
+    show = isShowingHotspotError,
+    onDismiss = onHideHotspotError,
+  )
 
-  connection.cast<BroadcastNetworkStatus.ConnectionInfo.Error>()?.also { err ->
-    AnimatedVisibility(
-        visible = isShowingNetworkError,
-    ) {
-      ServerErrorDialog(
-          modifier = dialogModifier,
-          title = "Network Initialization Error",
-          error = err.error,
-          onDismiss = onHideNetworkError,
-      )
-    }
-  }
+  GroupErrorDialog(
+    modifier = dialogModifier,
+    group =group,
+    show = isShowingHotspotError,
+    onDismiss = onHideHotspotError,
+  )
+
+  ConnectionErrorDialog(
+    modifier = dialogModifier,
+    connection =connection,
+    show = isShowingNetworkError,
+    onDismiss = onHideNetworkError,
+  )
 
   wiDiStatus.cast<RunningStatus.Error>()?.also { err ->
     AnimatedVisibility(
@@ -191,6 +188,83 @@ fun MainDialogs(
           title = "Proxy Initialization Error",
           error = err.throwable,
           onDismiss = onHideProxyError,
+      )
+    }
+  }
+}
+
+@Composable
+private fun GroupErrorDialog(
+  modifier: Modifier = Modifier,
+  group: BroadcastNetworkStatus.GroupInfo,
+  show: Boolean,
+  onDismiss: () -> Unit,
+) {
+  val (groupError, setGroupError) = remember { mutableStateOf<Throwable?>(null)}
+
+  LaunchedEffect(group) {
+    val g = group
+    when (g) {
+      is BroadcastNetworkStatus.GroupInfo.Error -> {
+        setGroupError(g.error)
+      }
+      is BroadcastNetworkStatus.GroupInfo.Empty -> {
+        setGroupError(IllegalStateException("No Wi-Fi Direct Information Available"))
+      }
+      else -> {
+        // Not a problem
+        setGroupError(null)
+      }
+    }
+  }
+
+  if (groupError != null) {
+    AnimatedVisibility(
+      visible = show,
+    ) {
+      ServerErrorDialog(
+        modifier = modifier,
+        title = "Hotspot Initialization Error",
+        error = groupError,
+        onDismiss = onDismiss,
+      )
+    }
+  }
+}
+@Composable
+private fun ConnectionErrorDialog(
+  modifier: Modifier = Modifier,
+  connection: BroadcastNetworkStatus.ConnectionInfo,
+  show: Boolean,
+  onDismiss: () -> Unit,
+) {
+  val (connectionError, setConnectionError) = remember { mutableStateOf<Throwable?>(null)}
+
+  LaunchedEffect(connection) {
+    val c = connection
+    when (c) {
+      is BroadcastNetworkStatus.ConnectionInfo.Error -> {
+        setConnectionError(c.error)
+      }
+      is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
+        setConnectionError(IllegalStateException("Wi-Fi Direct did not return Connection info"))
+      }
+      else -> {
+        // Not a problem
+        setConnectionError(null)
+      }
+    }
+  }
+
+  if (connectionError != null) {
+    AnimatedVisibility(
+      visible = show,
+    ) {
+      ServerErrorDialog(
+        modifier = modifier,
+        title = "Network Initialization Error",
+        error = connectionError,
+        onDismiss = onDismiss,
       )
     }
   }

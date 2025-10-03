@@ -52,7 +52,7 @@ internal fun ConnectionErrorTile(
       }
       is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
         // If this is empty for a while, show it as error
-        delay(10.seconds)
+        delay(5.seconds)
         setShowErrorTile(true)
       }
       else -> {
