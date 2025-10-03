@@ -80,10 +80,7 @@ internal constructor(
     BroadcastNetworkUpdater,
     BroadcastServerImplementation<ServerDataType> {
 
-  data class UpdateResult(
-      val group: Boolean,
-      val connection: Boolean,
-  )
+  data class UpdateResult(val group: Boolean, val connection: Boolean)
 
   // On some devices, refreshing channel info too frequently leads to errors
   private val groupInfoChannel =
@@ -112,6 +109,8 @@ internal constructor(
         // Using the lock we already have, force check for updated info
         withLockUpdateNetworkInfo(
             source = source,
+            // Force a check for the latest information to see if we can re-use the existing
+            // connection
             strategy = NetworkUpdateStrategy.FORCE_CHECK_LATEST,
         )
       }
@@ -121,10 +120,7 @@ internal constructor(
         enforcer.assertOffMainThread()
 
         // Mark starting
-        status.set(
-            RunningStatus.Starting,
-            clearError = true,
-        )
+        status.set(RunningStatus.Starting, clearError = true)
 
         // Kill the old proxy
         killProxyJob()
@@ -134,10 +130,7 @@ internal constructor(
         if (!permissionGuard.canCreateNetwork()) {
           Timber.w { "Missing permissions for making network" }
           val e = RuntimeException("Missing required Permissions")
-          shutdownForStatus(
-              RunningStatus.HotspotError(e),
-              clearErrorStatus = false,
-          )
+          shutdownForStatus(RunningStatus.HotspotError(e), clearErrorStatus = false)
           return@withContext
         }
 
@@ -149,6 +142,7 @@ internal constructor(
               // We MAY be able to re-use the existing connection, but EVERYTHING MUST BE VALID
               withLockUpdateNetworkInfo(
                   source = source,
+                  // We only reuse connection if everything has valid data
                   strategy = NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED,
               )
             }
@@ -166,10 +160,7 @@ internal constructor(
 
               completeStop {
                 Timber.w { "Stopping network after startup failed" }
-                shutdownForStatus(
-                    RunningStatus.HotspotError(e),
-                    clearErrorStatus = false,
-                )
+                shutdownForStatus(RunningStatus.HotspotError(e), clearErrorStatus = false)
               }
             }
           }
@@ -182,19 +173,14 @@ internal constructor(
         if (launchProxy) {
           val newProxyJob =
               launch(context = Dispatchers.IO) {
-                onNetworkStarted(
-                    scope = this,
-                    connectionStatus = connectionInfoChannel,
-                )
+                onNetworkStarted(scope = this, connectionStatus = connectionInfoChannel)
               }
           Timber.d { "Track new proxy job!" }
           proxyJob = newProxyJob
         }
       }
 
-  private inline fun completeStop(
-      onStopped: () -> Unit,
-  ) {
+  private inline fun completeStop(onStopped: () -> Unit) {
     enforcer.assertOffMainThread()
 
     Timber.d { "Reset last info refresh times" }
@@ -242,10 +228,7 @@ internal constructor(
           heldSource?.also { shutdownWifiNetwork(it) }
 
           completeStop {
-            shutdownForStatus(
-                RunningStatus.NotRunning,
-                clearErrorStatus,
-            )
+            shutdownForStatus(RunningStatus.NotRunning, clearErrorStatus)
             Timber.d { "Network was stopped" }
           }
         }
@@ -264,7 +247,7 @@ internal constructor(
     if (debugGroup.isError.first()) {
       Timber.w { "DEBUG forcing Error group response" }
       return BroadcastNetworkStatus.GroupInfo.Error(
-          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
+          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE")
       )
     }
 
@@ -283,6 +266,7 @@ internal constructor(
   @CheckResult
   private suspend fun withLockGetGroupInfo(
       source: ServerDataType?,
+      allowDebugOverride: Boolean,
       force: Boolean,
   ): BroadcastNetworkStatus.GroupInfo {
     enforcer.assertOffMainThread()
@@ -310,10 +294,12 @@ internal constructor(
     val result = resolveCurrentGroupInfo(source)
     lastGroupRefreshTime = now
 
-    val forcedDebugResult = handleGroupDebugEnvironment()
-    if (forcedDebugResult != null) {
-      Timber.w { "Returning DEBUG result which overrides real: $result" }
-      return forcedDebugResult
+    if (allowDebugOverride) {
+      val forcedDebugResult = handleGroupDebugEnvironment()
+      if (forcedDebugResult != null) {
+        Timber.w { "Returning DEBUG result which overrides real: $result" }
+        return forcedDebugResult
+      }
     }
 
     return result
@@ -332,7 +318,7 @@ internal constructor(
     if (debugConnection.isError.first()) {
       Timber.w { "DEBUG forcing Error connection response" }
       return BroadcastNetworkStatus.ConnectionInfo.Error(
-          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE"),
+          error = IllegalStateException("DEBUG FORCED ERROR RESPONSE")
       )
     }
 
@@ -348,6 +334,7 @@ internal constructor(
   private suspend fun withLockGetConnectionInfo(
       source: ServerDataType?,
       force: Boolean,
+      allowDebugOverride: Boolean,
   ): BroadcastNetworkStatus.ConnectionInfo {
     enforcer.assertOffMainThread()
 
@@ -374,22 +361,22 @@ internal constructor(
     val result = resolveCurrentConnectionInfo(source)
     lastConnectionRefreshTime = now
 
-    val forcedDebugResult = handleConnectionDebugEnvironment()
-    if (forcedDebugResult != null) {
-      Timber.w { "Returning DEBUG result which overrides real: $result" }
-      return forcedDebugResult
+    if (allowDebugOverride) {
+      val forcedDebugResult = handleConnectionDebugEnvironment()
+      if (forcedDebugResult != null) {
+        Timber.w { "Returning DEBUG result which overrides real: $result" }
+        return forcedDebugResult
+      }
     }
+
     return result
   }
 
-  private suspend fun shutdownForStatus(
-      newStatus: RunningStatus,
-      clearErrorStatus: Boolean,
-  ) {
+  private suspend fun shutdownForStatus(newStatus: RunningStatus, clearErrorStatus: Boolean) {
     status.set(newStatus, clearErrorStatus)
     shutdownBus.emit(
         ServerShutdownEvent(
-            throwable = if (newStatus is RunningStatus.Error) newStatus.throwable else null,
+            throwable = if (newStatus is RunningStatus.Error) newStatus.throwable else null
         )
     )
   }
@@ -424,8 +411,22 @@ internal constructor(
         val onlyAcceptWhenAllConnected =
             strategy == NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED
 
-        val groupInfo = withLockGetGroupInfo(source, force = isForceCheckConnection)
-        val connectionInfo = withLockGetConnectionInfo(source, force = isForceCheckConnection)
+        // Do not allow debug overriding if we are checking for an existing connection
+        // we want to hit the actual backend
+        val allowDebugOverride = strategy != NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED
+
+        val groupInfo =
+            withLockGetGroupInfo(
+                source,
+                force = isForceCheckConnection,
+                allowDebugOverride = allowDebugOverride,
+            )
+        val connectionInfo =
+            withLockGetConnectionInfo(
+                source,
+                force = isForceCheckConnection,
+                allowDebugOverride = allowDebugOverride,
+            )
 
         val acceptGroup: Boolean
         val acceptConnection: Boolean
@@ -465,10 +466,7 @@ internal constructor(
           }
         }
 
-        return@withContext UpdateResult(
-            group = acceptGroup,
-            connection = acceptConnection,
-        )
+        return@withContext UpdateResult(group = acceptGroup, connection = acceptConnection)
       }
 
   @CheckResult
@@ -492,6 +490,7 @@ internal constructor(
 
           withLockUpdateNetworkInfo(
               source = source,
+              // Do not allow too many requests
               strategy = NetworkUpdateStrategy.DEBOUNCE_FAST_REQUESTS,
           )
         }
@@ -521,10 +520,7 @@ internal constructor(
         } catch (e: Throwable) {
           e.ifNotCancellation {
             Timber.e(e) { "Error starting Network" }
-            shutdownForStatus(
-                RunningStatus.HotspotError(e),
-                clearErrorStatus = false,
-            )
+            shutdownForStatus(RunningStatus.HotspotError(e), clearErrorStatus = false)
           }
         } finally {
           withContext(context = NonCancellable) {
@@ -571,11 +567,7 @@ internal constructor(
     status.set(RunningStatus.Running)
 
     scope.launch(context = Dispatchers.Default) {
-      resolveImplementation()
-          .onNetworkStarted(
-              scope = this,
-              connectionStatus = connectionStatus,
-          )
+      resolveImplementation().onNetworkStarted(scope = this, connectionStatus = connectionStatus)
     }
     scope.launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
     scope.launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
