@@ -43,43 +43,48 @@ import javax.inject.Singleton
 internal class LongRunningServiceDispatcher
 @Inject
 internal constructor(
-  context: Context,
-  @Named("main_activity") mainActivityClass: Class<out Activity>,
-  @StringRes @Named("app_name") appNameRes: Int,
-  @param:Named("service") private val serviceClass: Class<out Service>,
+    context: Context,
+    @Named("main_activity") mainActivityClass: Class<out Activity>,
+    @StringRes @Named("app_name") appNameRes: Int,
+    @param:Named("service") private val serviceClass: Class<out Service>,
 ) :
-  BaseDispatcher<ServerNotificationData>(
-    context = context,
-    mainActivityClass = mainActivityClass,
-    appNameRes = appNameRes,
-  ) {
+    BaseDispatcher<ServerNotificationData>(
+        context = context,
+        mainActivityClass = mainActivityClass,
+        appNameRes = appNameRes,
+    ) {
 
   @CheckResult
   private fun getServiceStopPendingIntent(): PendingIntent {
     val appContext = context.applicationContext
     val serviceIntent =
-      Intent(appContext, serviceClass).apply {
-        putExtra(NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION, NotificationLauncher.Actions.STOP.name)
-      }
+        Intent(appContext, serviceClass).apply {
+          putExtra(
+              NotificationLauncher.INTENT_EXTRA_SERVICE_ACTION,
+              NotificationLauncher.Actions.STOP.name,
+          )
+        }
     return PendingIntent.getService(
-      appContext,
-      REQUEST_CODE_SERVICE,
-      serviceIntent,
-      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        appContext,
+        REQUEST_CODE_SERVICE,
+        serviceIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onGuaranteeNotificationChannelExists(channelInfo: NotifyChannelInfo) {
-    val notificationGroup = NotificationChannelGroup("${channelInfo.id} Group", "${channelInfo.title} Group")
+    val notificationGroup =
+        NotificationChannelGroup("${channelInfo.id} Group", "${channelInfo.title} Group")
     val notificationChannel =
-      NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_LOW).apply {
-        group = notificationGroup.id
-        lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        description = channelInfo.description
-        enableLights(false)
-        enableVibration(true)
-      }
+        NotificationChannel(channelInfo.id, channelInfo.title, NotificationManager.IMPORTANCE_LOW)
+            .apply {
+              group = notificationGroup.id
+              lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+              description = channelInfo.description
+              enableLights(false)
+              enableVibration(true)
+            }
 
     channelCreator.apply {
       // Delete the group if it already exists with a bad group ID
@@ -93,20 +98,24 @@ internal constructor(
   }
 
   override fun onCreateNotificationBuilder(
-    appName: String,
-    notification: ServerNotificationData,
-    builder: NotificationCompat.Builder,
+      appName: String,
+      notification: ServerNotificationData,
+      builder: NotificationCompat.Builder,
   ): NotificationCompat.Builder =
-    builder
-      .setOngoing(true)
-      .setSilent(true)
-      .setSmallIcon(R.drawable.ic_wifi_tethering_24)
-      .setPriority(NotificationCompat.PRIORITY_LOW)
-      .setCategory(NotificationCompat.CATEGORY_SERVICE)
-      .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-      .addAction(R.drawable.ic_wifi_tethering_off_24, "Stop $appName Hotspot", getServiceStopPendingIntent())
-      .setContentTitle("$appName Running")
-      .setContentText(resolveContentText(appName, notification))
+      builder
+          .setOngoing(true)
+          .setSilent(true)
+          .setSmallIcon(R.drawable.ic_wifi_tethering_24)
+          .setPriority(NotificationCompat.PRIORITY_LOW)
+          .setCategory(NotificationCompat.CATEGORY_SERVICE)
+          .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+          .addAction(
+              R.drawable.ic_wifi_tethering_off_24,
+              "Stop $appName Hotspot",
+              getServiceStopPendingIntent(),
+          )
+          .setContentTitle("$appName Running")
+          .setContentText(resolveContentText(appName, notification))
 
   @CheckResult
   private fun resolveContentText(appName: String, notification: ServerNotificationData): String {
@@ -126,8 +135,10 @@ internal constructor(
             // Wi-Fi direction connection info must be available
             when (notification.connection) {
               is BroadcastNetworkStatus.ConnectionInfo.Unchanged -> "Hotspot preparing..."
-              is BroadcastNetworkStatus.ConnectionInfo.Empty -> "Hotspot Connection Unavailable. $openAppMessage"
-              is BroadcastNetworkStatus.ConnectionInfo.Error -> "Hotspot Connection Error. $openAppMessage"
+              is BroadcastNetworkStatus.ConnectionInfo.Empty ->
+                  "Hotspot Connection Unavailable. $openAppMessage"
+              is BroadcastNetworkStatus.ConnectionInfo.Error ->
+                  "Hotspot Connection Error. $openAppMessage"
               is BroadcastNetworkStatus.ConnectionInfo.Connected -> {
                 "Hotspot Ready. ${notification.clientCount} Clients. ${notification.blockCount} Blocked."
               }

@@ -16,7 +16,6 @@
 
 package com.pyamsoft.tetherfi.status.sections.tiles
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LocalContentColor
@@ -32,8 +31,8 @@ import androidx.compose.ui.res.stringResource
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.status.R
 import com.pyamsoft.tetherfi.ui.dialog.ServerErrorTile
-import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun GroupErrorTile(
@@ -62,30 +61,30 @@ internal fun GroupErrorTile(
     }
   }
 
-    StatusTile(
-        modifier = modifier,
+  StatusTile(
+      modifier = modifier,
       show = showErrorTile,
-        borderColor = MaterialTheme.colorScheme.error,
-    ) {
-      ServerErrorTile(
+      borderColor = MaterialTheme.colorScheme.error,
+  ) {
+    ServerErrorTile(
         onShowError = onShowGroupError,
-      ) { modifier, renderIcon ->
-        Row(
+    ) { modifier, renderIcon ->
+      Row(
           modifier = Modifier.fillMaxWidth().then(modifier),
           verticalAlignment = Alignment.CenterVertically,
-        ) {
-          val color = LocalContentColor.current
+      ) {
+        val color = LocalContentColor.current
 
-          renderIcon()
+        renderIcon()
 
-          Text(
+        Text(
             text = stringResource(R.string.tile_broadcast_error),
             style =
-              MaterialTheme.typography.bodySmall.copy(
-                color = color,
-              ),
-          )
-        }
+                MaterialTheme.typography.bodySmall.copy(
+                    color = color,
+                ),
+        )
       }
+    }
   }
 }

@@ -34,16 +34,16 @@ internal fun StatusTile(
     content: @Composable () -> Unit,
 ) {
   AnimatedVisibility(
-    modifier = modifier,
-    visible = show,
+      modifier = modifier,
+      visible = show,
   ) {
     Card(
-      border =
-        BorderStroke(
-          width = 2.dp,
-          color = if (enabled) borderColor else MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-      shape = MaterialTheme.shapes.large,
+        border =
+            BorderStroke(
+                width = 2.dp,
+                color = if (enabled) borderColor else MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        shape = MaterialTheme.shapes.large,
     ) {
       content()
     }

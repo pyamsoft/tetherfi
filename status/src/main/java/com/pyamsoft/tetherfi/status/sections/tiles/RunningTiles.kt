@@ -35,48 +35,49 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 internal fun RunningTiles(
-  modifier: Modifier = Modifier,
-  serverViewState: ServerViewState,
+    modifier: Modifier = Modifier,
+    serverViewState: ServerViewState,
 
-  // Connections
-  onShowQRCode: () -> Unit,
-  onRefreshConnection: () -> Unit,
+    // Connections
+    onShowQRCode: () -> Unit,
+    onRefreshConnection: () -> Unit,
 
-  // Errors
-  onShowNetworkError: () -> Unit,
-  onShowHotspotError: () -> Unit,
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
   val isQREnabled =
-    remember(connection, group) {
-      connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
-        group is BroadcastNetworkStatus.GroupInfo.Connected
-    }
+      remember(connection, group) {
+        connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
+            group is BroadcastNetworkStatus.GroupInfo.Connected
+      }
 
   Column(modifier = modifier.padding(vertical = MaterialTheme.keylines.content)) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
       ConnectionErrorTile(
-        modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
-        connection = connection,
-        onShowConnectionError = onShowNetworkError,
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+          connection = connection,
+          onShowConnectionError = onShowNetworkError,
       )
 
       val isShowingConnectionTile =
-        connection is BroadcastNetworkStatus.ConnectionInfo.Error ||
-          connection is BroadcastNetworkStatus.ConnectionInfo.Empty
+          connection is BroadcastNetworkStatus.ConnectionInfo.Error ||
+              connection is BroadcastNetworkStatus.ConnectionInfo.Empty
       val isShowingGroupTile =
-        group is BroadcastNetworkStatus.GroupInfo.Error || group is BroadcastNetworkStatus.GroupInfo.Empty
+          group is BroadcastNetworkStatus.GroupInfo.Error ||
+              group is BroadcastNetworkStatus.GroupInfo.Empty
 
       if (isShowingGroupTile && isShowingConnectionTile) {
         Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
       }
 
       GroupErrorTile(
-        modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
-        group = group,
-        onShowGroupError = onShowHotspotError,
+          modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+          group = group,
+          onShowGroupError = onShowHotspotError,
       )
     }
 
@@ -85,7 +86,11 @@ internal fun RunningTiles(
 
       Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
 
-      ViewQRCodeTile(modifier = Modifier.weight(1F), isQREnabled = isQREnabled, onShowQRCode = onShowQRCode)
+      ViewQRCodeTile(
+          modifier = Modifier.weight(1F),
+          isQREnabled = isQREnabled,
+          onShowQRCode = onShowQRCode,
+      )
     }
   }
 }

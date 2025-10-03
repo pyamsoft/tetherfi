@@ -299,7 +299,8 @@ internal constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
-      // If this is not a force request, we don't do any work unless we are outside of the refresh window
+      // If this is not a force request, we don't do any work unless we are outside of the refresh
+      // window
       if (lastGroupRefreshTime.plusSeconds(REFRESH_DEBOUNCE) >= now) {
         return BroadcastNetworkStatus.GroupInfo.Unchanged
       }
@@ -362,7 +363,8 @@ internal constructor(
 
     val now = LocalDateTime.now(clock)
     if (!force) {
-      // If this is not a force request, we don't do any work unless we are outside of the refresh window
+      // If this is not a force request, we don't do any work unless we are outside of the refresh
+      // window
       if (lastConnectionRefreshTime.plusSeconds(REFRESH_DEBOUNCE) > now) {
         return BroadcastNetworkStatus.ConnectionInfo.Unchanged
       }
@@ -393,20 +395,14 @@ internal constructor(
   }
 
   private enum class NetworkUpdateStrategy {
-    /**
-     * Artificially limit the frequency that the system can fire requests to WiFi direct
-     */
+    /** Artificially limit the frequency that the system can fire requests to WiFi direct */
     DEBOUNCE_FAST_REQUESTS,
 
-    /**
-     * The response from the Wifi direct system will only be accepted if everything is CONNECTED
-     */
+    /** The response from the Wifi direct system will only be accepted if everything is CONNECTED */
     UPDATE_ONLY_IF_ALL_CONNECTED,
 
-    /**
-     * Force a check for the latest information
-     */
-    FORCE_CHECK_LATEST
+    /** Force a check for the latest information */
+    FORCE_CHECK_LATEST,
   }
 
   /**
@@ -425,7 +421,8 @@ internal constructor(
         // Always go to the system IF the strategy is one of our internal hooks
         val isForceCheckConnection = strategy != NetworkUpdateStrategy.DEBOUNCE_FAST_REQUESTS
 
-        val onlyAcceptWhenAllConnected = strategy == NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED
+        val onlyAcceptWhenAllConnected =
+            strategy == NetworkUpdateStrategy.UPDATE_ONLY_IF_ALL_CONNECTED
 
         val groupInfo = withLockGetGroupInfo(source, force = isForceCheckConnection)
         val connectionInfo = withLockGetConnectionInfo(source, force = isForceCheckConnection)
@@ -442,11 +439,15 @@ internal constructor(
 
         if (onlyAcceptWhenAllConnected) {
           if (acceptGroup && acceptConnection) {
-            Timber.d { "ALL_CONNECT Network info update accepted: GRP=$groupInfo CON=$connectionInfo" }
+            Timber.d {
+              "ALL_CONNECT Network info update accepted: GRP=$groupInfo CON=$connectionInfo"
+            }
             groupInfoChannel.value = groupInfo
             connectionInfoChannel.value = connectionInfo
           } else {
-            Timber.w { "ALL_CONNECT Network update not accepted: GRP=$groupInfo CON=$connectionInfo" }
+            Timber.w {
+              "ALL_CONNECT Network update not accepted: GRP=$groupInfo CON=$connectionInfo"
+            }
           }
         } else {
           if (acceptGroup) {

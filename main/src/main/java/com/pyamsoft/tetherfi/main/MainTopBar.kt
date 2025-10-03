@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -120,7 +119,7 @@ fun MainTopBar(
             TabRowDefaults.SecondaryIndicator(
                 modifier =
                     Modifier.tabIndicatorOffset(
-                      selectedTabIndex = currentPage,
+                        selectedTabIndex = currentPage,
                     ),
                 height = MaterialTheme.keylines.typography,
                 color = MaterialTheme.colorScheme.onPrimary,

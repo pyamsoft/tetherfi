@@ -49,7 +49,6 @@ android {
   buildFeatures { buildConfig = false }
 }
 
-
 dependencies {
   coreLibraryDesugaring(libs.android.desugar)
 

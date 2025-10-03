@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,45 +61,51 @@ fun ServerErrorTile(onShowError: () -> Unit, content: IconButtonContent) {
   }
 
   content(Modifier.clickable { handleClick() }) {
-      Icon(
+    Icon(
         modifier = Modifier.padding(MaterialTheme.keylines.content),
         imageVector = Icons.Filled.Warning,
         contentDescription = stringResource(R.string.something_went_wrong),
         tint = MaterialTheme.colorScheme.error,
-      )
+    )
   }
 }
 
 @Composable
-fun ServerErrorDialog(modifier: Modifier = Modifier, title: String, error: Throwable, onDismiss: () -> Unit) {
+fun ServerErrorDialog(
+    modifier: Modifier = Modifier,
+    title: String,
+    error: Throwable,
+    onDismiss: () -> Unit,
+) {
   Dialog(properties = rememberDialogProperties(), onDismissRequest = onDismiss) {
     Column(
-      modifier =
-        modifier
-          // Top already has padding for some reason?
-          .padding(horizontal = MaterialTheme.keylines.content)
-          .padding(bottom = MaterialTheme.keylines.content)
+        modifier =
+            modifier
+                // Top already has padding for some reason?
+                .padding(horizontal = MaterialTheme.keylines.content)
+                .padding(bottom = MaterialTheme.keylines.content)
     ) {
       DialogToolbar(
-        modifier = Modifier.fillMaxWidth(),
-        onClose = onDismiss,
-        title = {
-          // Intentionally blank
-        },
+          modifier = Modifier.fillMaxWidth(),
+          onClose = onDismiss,
+          title = {
+            // Intentionally blank
+          },
       )
 
       // TODO(Peter): Checkbox to show stacktrace
       Card(
-        shape = MaterialTheme.shapes.large.copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize),
-        elevation = CardDefaults.elevatedCardElevation(),
-        colors = CardDefaults.elevatedCardColors(),
+          shape =
+              MaterialTheme.shapes.large.copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize),
+          elevation = CardDefaults.elevatedCardElevation(),
+          colors = CardDefaults.elevatedCardColors(),
       ) {
         LazyColumn {
           item(contentType = ServerErrorDialogContentTypes.TITLE) {
             Text(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              text = title,
-              style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
             )
           }
 
@@ -108,9 +113,10 @@ fun ServerErrorDialog(modifier: Modifier = Modifier, title: String, error: Throw
             item(contentType = ServerErrorDialogContentTypes.EXTRA) {
               val trace = remember(error) { error.candidateMessage }
               Text(
-                modifier = Modifier.padding(MaterialTheme.keylines.content),
-                text = trace,
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                  modifier = Modifier.padding(MaterialTheme.keylines.content),
+                  text = trace,
+                  style =
+                      MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
               )
             }
           }
@@ -118,9 +124,9 @@ fun ServerErrorDialog(modifier: Modifier = Modifier, title: String, error: Throw
           item(contentType = ServerErrorDialogContentTypes.TRACE) {
             val trace = remember(error) { error.stackTraceToString() }
             Text(
-              modifier = Modifier.padding(MaterialTheme.keylines.content),
-              text = trace,
-              style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.padding(MaterialTheme.keylines.content),
+                text = trace,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
             )
           }
         }

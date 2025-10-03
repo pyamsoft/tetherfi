@@ -35,7 +35,7 @@ plugins {
 
   // Spotless
   // https://github.com/diffplug/spotless
-  alias(libs.plugins.spotless) apply true
+  alias(libs.plugins.spotless) apply false
 
   // KSP
   // https://github.com/google/ksp
@@ -51,6 +51,8 @@ plugins {
 }
 
 allprojects {
+  apply(plugin: libs.plugins.spotless.get().pluginId)
+
   repositories {
     mavenLocal()
     gradlePluginPortal()
@@ -67,6 +69,42 @@ allprojects {
       }
     }
   }
+
+  // Spotless plugin
+  spotless {
+    java {
+      target("src/**/*.java")
+
+      removeUnusedImports()
+      trimTrailingWhitespace()
+      endWithNewline()
+      leadingTabsToSpaces(2)
+    }
+    kotlin {
+      target("src/**/*.kt")
+      ktfmt()
+
+      trimTrailingWhitespace()
+      endWithNewline()
+      leadingTabsToSpaces(2)
+    }
+    kotlinGradle {
+      target("*.gradle.kts")
+      ktfmt()
+
+      trimTrailingWhitespace()
+      endWithNewline()
+      leadingTabsToSpaces(2)
+    }
+    groovyGradle {
+      target("*.gradle")
+      greclipse()
+
+      trimTrailingWhitespace()
+      endWithNewline()
+      leadingTabsToSpaces(2)
+    }
+  }
 }
 
 subprojects {
@@ -75,41 +113,5 @@ subprojects {
     options.compilerArgs.add("-Xlint:unchecked")
     options.compilerArgs.add("-Xlint:deprecation")
     options.deprecation = true
-  }
-}
-
-// Spotless plugin
-spotless {
-  java {
-    target("src/**/*.java")
-
-    removeUnusedImports()
-    trimTrailingWhitespace()
-    endWithNewline()
-    leadingTabsToSpaces(2)
-  }
-  kotlin {
-    target("src/**/*.kt")
-    ktfmt()
-
-    trimTrailingWhitespace()
-    endWithNewline()
-    leadingTabsToSpaces(2)
-  }
-  kotlinGradle {
-    target("*.gradle.kts")
-    ktfmt()
-
-    trimTrailingWhitespace()
-    endWithNewline()
-    leadingTabsToSpaces(2)
-  }
-  groovyGradle {
-    target("*.gradle")
-    greclipse()
-
-    trimTrailingWhitespace()
-    endWithNewline()
-    leadingTabsToSpaces(2)
   }
 }

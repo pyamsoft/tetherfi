@@ -146,24 +146,24 @@ fun MainDialogs(
   }
 
   GroupErrorDialog(
-    modifier = dialogModifier,
-    group =group,
-    show = isShowingHotspotError,
-    onDismiss = onHideHotspotError,
+      modifier = dialogModifier,
+      group = group,
+      show = isShowingHotspotError,
+      onDismiss = onHideHotspotError,
   )
 
   GroupErrorDialog(
-    modifier = dialogModifier,
-    group =group,
-    show = isShowingHotspotError,
-    onDismiss = onHideHotspotError,
+      modifier = dialogModifier,
+      group = group,
+      show = isShowingHotspotError,
+      onDismiss = onHideHotspotError,
   )
 
   ConnectionErrorDialog(
-    modifier = dialogModifier,
-    connection =connection,
-    show = isShowingNetworkError,
-    onDismiss = onHideNetworkError,
+      modifier = dialogModifier,
+      connection = connection,
+      show = isShowingNetworkError,
+      onDismiss = onHideNetworkError,
   )
 
   wiDiStatus.cast<RunningStatus.Error>()?.also { err ->
@@ -195,12 +195,12 @@ fun MainDialogs(
 
 @Composable
 private fun GroupErrorDialog(
-  modifier: Modifier = Modifier,
-  group: BroadcastNetworkStatus.GroupInfo,
-  show: Boolean,
-  onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    group: BroadcastNetworkStatus.GroupInfo,
+    show: Boolean,
+    onDismiss: () -> Unit,
 ) {
-  val (groupError, setGroupError) = remember { mutableStateOf<Throwable?>(null)}
+  val (groupError, setGroupError) = remember { mutableStateOf<Throwable?>(null) }
 
   LaunchedEffect(group) {
     val g = group
@@ -220,25 +220,26 @@ private fun GroupErrorDialog(
 
   if (groupError != null) {
     AnimatedVisibility(
-      visible = show,
+        visible = show,
     ) {
       ServerErrorDialog(
-        modifier = modifier,
-        title = "Hotspot Initialization Error",
-        error = groupError,
-        onDismiss = onDismiss,
+          modifier = modifier,
+          title = "Hotspot Initialization Error",
+          error = groupError,
+          onDismiss = onDismiss,
       )
     }
   }
 }
+
 @Composable
 private fun ConnectionErrorDialog(
-  modifier: Modifier = Modifier,
-  connection: BroadcastNetworkStatus.ConnectionInfo,
-  show: Boolean,
-  onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    connection: BroadcastNetworkStatus.ConnectionInfo,
+    show: Boolean,
+    onDismiss: () -> Unit,
 ) {
-  val (connectionError, setConnectionError) = remember { mutableStateOf<Throwable?>(null)}
+  val (connectionError, setConnectionError) = remember { mutableStateOf<Throwable?>(null) }
 
   LaunchedEffect(connection) {
     val c = connection
@@ -258,13 +259,13 @@ private fun ConnectionErrorDialog(
 
   if (connectionError != null) {
     AnimatedVisibility(
-      visible = show,
+        visible = show,
     ) {
       ServerErrorDialog(
-        modifier = modifier,
-        title = "Network Initialization Error",
-        error = connectionError,
-        onDismiss = onDismiss,
+          modifier = modifier,
+          title = "Network Initialization Error",
+          error = connectionError,
+          onDismiss = onDismiss,
       )
     }
   }

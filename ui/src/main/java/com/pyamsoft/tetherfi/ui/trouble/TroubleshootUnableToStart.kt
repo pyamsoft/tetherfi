@@ -160,32 +160,31 @@ fun TroubleshootUnableToStart(
           }
 
       Column(
-        modifier = Modifier
-          .padding(vertical = MaterialTheme.keylines.content)
-          .clickable {
-            setShowStackTrace(!showStackTrace)
-          },
+          modifier =
+              Modifier.padding(vertical = MaterialTheme.keylines.content).clickable {
+                setShowStackTrace(!showStackTrace)
+              },
       ) {
         Text(
-          text = title,
-          style = MaterialTheme.typography.bodyLarge,
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
         )
 
         Text(
-          text = stringResource(R.string.trouble_click_expand),
-          style = MaterialTheme.typography.bodySmall,
+            text = stringResource(R.string.trouble_click_expand),
+            style = MaterialTheme.typography.bodySmall,
         )
       }
 
       if (showStackTrace) {
         val trace = remember(err) { err.stackTraceToString() }
         Text(
-          modifier = Modifier.padding(MaterialTheme.keylines.content),
-          text = trace,
-          style =
-            MaterialTheme.typography.bodySmall.copy(
-              fontFamily = FontFamily.Monospace,
-            ),
+            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            text = trace,
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                ),
         )
       }
     }
