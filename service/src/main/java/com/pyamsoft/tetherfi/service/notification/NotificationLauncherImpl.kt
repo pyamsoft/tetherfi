@@ -63,13 +63,18 @@ internal constructor(
           BroadcastNetworkStatus.ConnectionInfo.Unchanged
       )
 
-  private suspend fun onStatusUpdated(
-      broadcastStatus: RunningStatus,
-      group: BroadcastNetworkStatus.GroupInfo,
-      connection: BroadcastNetworkStatus.ConnectionInfo,
-      clientCount: Int,
-      blockCount: Int,
-  ) {
+  @CheckResult
+  private fun <T> MutableStateFlow<T>.compareCurrent(update: T): Boolean {
+    val current = this.value
+    if (current != update) {
+      this.value = update
+      return true
+    }
+
+    return false
+  }
+
+  private suspend fun updateNotification() {
     if (!showing.value) {
       Timber.w { "Do not update notification, no longer showing!" }
       return
@@ -78,33 +83,17 @@ internal constructor(
     withContext(context = Dispatchers.Main) {
       val data =
           ServerNotificationData(
-              broadcastStatus = broadcastStatus,
-              connection = connection,
-              group = group,
-              clientCount = clientCount,
-              blockCount = blockCount,
+              broadcastStatus = runningBroadcastStatus.value,
+              connection = runningProxyConnection.value,
+              group = runningProxyGroup.value,
+              clientCount = clientCount.value,
+              blockCount = blockCount.value,
           )
 
       notifier
           .show(id = LONG_RUNNING_ID, channelInfo = LONG_RUNNING_CHANNEL_INFO, notification = data)
           .also { Timber.d { "Updated foreground notification: $it: $data" } }
     }
-  }
-
-  @CheckResult
-  private fun <T> MutableStateFlow<T>.compareCurrent(update: T): Boolean {
-    val current = this.value
-    return this.compareAndSet(expect = current, update = update)
-  }
-
-  private suspend fun updateNotification() {
-    onStatusUpdated(
-        group = runningProxyGroup.value,
-        connection = runningProxyConnection.value,
-        broadcastStatus = runningBroadcastStatus.value,
-        clientCount = clientCount.value,
-        blockCount = blockCount.value,
-    )
   }
 
   private fun CoroutineScope.watchNotification() {
