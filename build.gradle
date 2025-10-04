@@ -51,6 +51,10 @@ plugins {
 }
 
 allprojects {
+  // Need to do this instead of applying Spotless in the plugin block
+  // or we get an error about duplicate plugins
+  //
+  // and we can't just apply this toplevel or it won't run on all the subprojects
   apply(plugin: libs.plugins.spotless.get().pluginId)
 
   repositories {
