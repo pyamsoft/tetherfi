@@ -145,12 +145,6 @@ class TetherFi : Application() {
       )
 
       OssLibraries.add(
-          "AndroidX Appcompat",
-          "https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/appcompat/",
-          "AndroidX compatibility library for older versions of Android",
-      )
-
-      OssLibraries.add(
           "AndroidX Activity Compose",
           "https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev/activity/activity-compose",
           "Jetpack Compose bridge for AndroidX Activity",
