@@ -70,8 +70,8 @@ class MainActivity : ComponentActivity() {
                   override val changelog = buildChangeLog {
                     //                    feature("Add unique Activities to turn the hotspot On or
                     // Off.")
-                    change("Support other address spaces for USB Tethering")
-                    bugfix("Fix SOCKS based UDP connections closing too early")
+                    bugfix("Show more error information for devices with buggy Wi-Fi Direct.")
+                    bugfix("Guard against errors caused by bad Wi-Fi Direct")
                   }
                 },
         )
