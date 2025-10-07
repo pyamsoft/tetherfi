@@ -32,7 +32,7 @@
   <string name="keep_screen_on_title">Keep Screen On</string>
   <string
     name="keep_screen_on_description"
-  >Keep the screen on while the Hotspot is running. Once the Hotspot is stopped, the screen will be allowed to turn off again. This tweak is not supported on every device. If "Use Wakelock" does not work, you should try this tweak or enable "Always Alive" instead</string>
+  >Keep the screen on while the Hotspot is running. Once the Hotspot is stopped, the screen will be allowed to turn off again. This tweak is not supported on every device. If Use Wakelock does not work, you should try this tweak or enable Always Alive instead</string>
 
   <string name="ignore_location_description">
         In order to use Wi-Fi Direct, %1$s may require Location turned on. Not
@@ -45,5 +45,5 @@
   <string name="hold_wakelock_title">Use Wakelock</string>
   <string
     name="hold_wakelock_description"
-  >Using a wakelock will keep your CPU on and will keep processing fast. However, it will consume more battery. On devices that use restrictive power-saving measures, this may not work, and you should try the "Keep Screen On" tweak, or enable "Always Alive" instead.</string>
+  >Using a wakelock will keep your CPU on and will keep processing fast. However, it will consume more battery. On devices that use restrictive power-saving measures, this may not work, and you should try the Keep Screen On tweak, or enable Always Alive instead.</string>
 </resources>
