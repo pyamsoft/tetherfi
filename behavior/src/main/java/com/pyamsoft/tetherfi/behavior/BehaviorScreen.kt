@@ -70,6 +70,7 @@ fun BehaviorScreen(
     onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
+    onToggleWakeLock: () -> Unit,
 
     // Expert
     onShowPowerBalance: () -> Unit,
@@ -174,6 +175,7 @@ fun BehaviorScreen(
             onShowPowerBalance = onShowPowerBalance,
             onToggleKeepScreenOn = onToggleKeepScreenOn,
             onShowSocketTimeout = onShowSocketTimeout,
+            onToggleWakeLock = onToggleWakeLock,
         )
       }
     }
@@ -221,6 +223,7 @@ private fun PreviewBehaviorScreen(
       onUpdateSocketTimeout = {},
       onHideSocketTimeout = {},
       onShowSocketTimeout = {},
+      onToggleWakeLock = {},
   )
 }
 

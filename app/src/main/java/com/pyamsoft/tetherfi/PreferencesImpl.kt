@@ -62,10 +62,7 @@ import kotlinx.coroutines.launch
 @Singleton
 internal class PreferencesImpl
 @Inject
-internal constructor(
-    private val enforcer: ThreadEnforcer,
-    context: Context,
-) :
+internal constructor(private val enforcer: ThreadEnforcer, context: Context) :
     StatusPreferences,
     ProxyPreferences,
     InAppRatingPreferences,
@@ -111,7 +108,7 @@ internal constructor(
                     produceSharedPreferences = {
                       PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
                     },
-                ),
+                )
             )
           },
       )
@@ -123,7 +120,7 @@ internal constructor(
 
   private val scope by lazy {
     CoroutineScope(
-        context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name),
+        context = SupervisorJob() + Dispatchers.IO + CoroutineName(this::class.java.name)
     )
   }
 
@@ -141,10 +138,7 @@ internal constructor(
     }
   }
 
-  private fun <T : Any> getPreference(
-      key: Preferences.Key<T>,
-      value: T,
-  ): Flow<T> =
+  private fun <T : Any> getPreference(key: Preferences.Key<T>, value: T): Flow<T> =
       preferences.data
           .map { it[key] ?: value }
           // Otherwise any time ANY preference updates, ALL preferences will be
@@ -169,32 +163,16 @@ internal constructor(
       preferences[IN_APP_RATING_SHOWN_VERSION] ?: 0
 
   override fun listenForSsidChanges(): Flow<String> =
-      getPreference(
-              key = SSID,
-              value = ServerDefaults.WIFI_SSID,
-          )
-          .flowOn(context = Dispatchers.IO)
+      getPreference(key = SSID, value = ServerDefaults.WIFI_SSID).flowOn(context = Dispatchers.IO)
 
   override fun setSsid(ssid: String) =
-      setPreference(
-          key = SSID,
-          fallbackValue = ServerDefaults.WIFI_SSID,
-          value = { ssid },
-      )
+      setPreference(key = SSID, fallbackValue = ServerDefaults.WIFI_SSID, value = { ssid })
 
   override fun listenForPasswordChanges(): Flow<String> =
-      getPreference(
-              key = PASSWORD,
-              value = fallbackPassword,
-          )
-          .flowOn(context = Dispatchers.IO)
+      getPreference(key = PASSWORD, value = fallbackPassword).flowOn(context = Dispatchers.IO)
 
   override fun setPassword(password: String) =
-      setPreference(
-          key = PASSWORD,
-          fallbackValue = fallbackPassword,
-          value = { password },
-      )
+      setPreference(key = PASSWORD, fallbackValue = fallbackPassword, value = { password })
 
   override fun listenForHttpEnabledChanges(): Flow<Boolean> =
       getPreference(key = IS_HTTP_ENABLED, value = DEFAULT_IS_HTTP_ENABLED)
@@ -212,11 +190,7 @@ internal constructor(
           .flowOn(context = Dispatchers.IO)
 
   override fun setHttpPort(port: Int) =
-      setPreference(
-          key = HTTP_PORT,
-          fallbackValue = ServerDefaults.HTTP_PORT,
-          value = { port },
-      )
+      setPreference(key = HTTP_PORT, fallbackValue = ServerDefaults.HTTP_PORT, value = { port })
 
   override fun listenForSocksEnabledChanges(): Flow<Boolean> =
       getPreference(key = IS_SOCKS_ENABLED, value = DEFAULT_IS_SOCKS_ENABLED)
@@ -234,11 +208,7 @@ internal constructor(
           .flowOn(context = Dispatchers.IO)
 
   override fun setSocksPort(port: Int) =
-      setPreference(
-          key = SOCKS_PORT,
-          fallbackValue = ServerDefaults.SOCKS_PORT,
-          value = { port },
-      )
+      setPreference(key = SOCKS_PORT, fallbackValue = ServerDefaults.SOCKS_PORT, value = { port })
 
   override fun listenForNetworkBandChanges(): Flow<ServerNetworkBand> =
       getPreference(key = NETWORK_BAND, value = ServerDefaults.WIFI_NETWORK_BAND.name)
@@ -253,10 +223,7 @@ internal constructor(
       )
 
   override fun listenForStartIgnoreVpn(): Flow<Boolean> =
-      getPreference(
-              key = START_IGNORE_VPN,
-              value = DEFAULT_START_IGNORE_VPN,
-          )
+      getPreference(key = START_IGNORE_VPN, value = DEFAULT_START_IGNORE_VPN)
           .flowOn(context = Dispatchers.IO)
 
   override fun setStartIgnoreVpn(ignore: Boolean) =
@@ -267,10 +234,7 @@ internal constructor(
       )
 
   override fun listenForStartIgnoreLocation(): Flow<Boolean> =
-      getPreference(
-              key = START_IGNORE_LOCATION,
-              value = DEFAULT_START_IGNORE_LOCATION,
-          )
+      getPreference(key = START_IGNORE_LOCATION, value = DEFAULT_START_IGNORE_LOCATION)
           .flowOn(context = Dispatchers.IO)
 
   override fun setStartIgnoreLocation(ignore: Boolean) =
@@ -281,10 +245,7 @@ internal constructor(
       )
 
   override fun listenForShutdownWithNoClients(): Flow<Boolean> =
-      getPreference(
-              key = SHUTDOWN_NO_CLIENTS,
-              value = DEFAULT_SHUTDOWN_NO_CLIENTS,
-          )
+      getPreference(key = SHUTDOWN_NO_CLIENTS, value = DEFAULT_SHUTDOWN_NO_CLIENTS)
           .flowOn(context = Dispatchers.IO)
 
   override fun setShutdownWithNoClients(shutdown: Boolean) =
@@ -294,16 +255,23 @@ internal constructor(
           value = { shutdown },
       )
 
+  override fun listenForWakeLock(): Flow<Boolean> =
+      getPreference(key = HOLD_WAKELOCK, value = DEFAULT_HOLD_WAKELOCK)
+          .flowOn(context = Dispatchers.IO)
+
+  override fun setWakeLock(wakelock: Boolean) =
+      setPreference(
+          key = HOLD_WAKELOCK,
+          fallbackValue = DEFAULT_HOLD_WAKELOCK,
+          value = { wakelock },
+      )
+
   override fun listenForKeepScreenOn(): Flow<Boolean> =
       getPreference(key = KEEP_SCREEN_ON, value = DEFAULT_KEEP_SCREEN_ON)
           .flowOn(context = Dispatchers.IO)
 
   override fun setKeepScreenOn(keep: Boolean) =
-      setPreference(
-          key = KEEP_SCREEN_ON,
-          fallbackValue = DEFAULT_KEEP_SCREEN_ON,
-          value = { keep },
-      )
+      setPreference(key = KEEP_SCREEN_ON, fallbackValue = DEFAULT_KEEP_SCREEN_ON, value = { keep })
 
   override fun listenForBroadcastType(): Flow<BroadcastType> =
       getPreference(key = BROADCAST_TYPE, value = BroadcastType.WIFI_DIRECT.name)
@@ -509,6 +477,9 @@ internal constructor(
 
     private val SHUTDOWN_NO_CLIENTS = booleanPreferencesKey("key_shutdown_no_clients_1")
     private const val DEFAULT_SHUTDOWN_NO_CLIENTS = false
+
+    private val HOLD_WAKELOCK = booleanPreferencesKey("key_hold_wakelock_1")
+    private const val DEFAULT_HOLD_WAKELOCK = false
 
     private val SERVER_LIMITS = intPreferencesKey("key_server_perf_limit_1")
 

@@ -24,6 +24,7 @@ import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.StatusPreferences
+import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ internal class WakeLocker
 internal constructor(
     context: Context,
     private val statusPreferences: StatusPreferences,
+    private val tweakPreferences: TweakPreferences,
 ) : AbstractLocker() {
 
   private val powerManager by lazy {
@@ -94,24 +96,32 @@ internal constructor(
   }
 
   @SuppressLint("WakelockTimeout")
+  private suspend fun reallyAcquireWakeLock() =
+      withContext(context = NonCancellable) {
+        if (wakeAcquired.compareAndSet(expect = false, update = true)) {
+          Timber.d { "####################################" }
+          Timber.d { "Acquire CPU wakelock: $tag" }
+          Timber.d { "####################################" }
+          killOldWakeLock()
+          createWakeLock()
+              .also { lock = it }
+              .also { l ->
+                try {
+                  l.acquire()
+                } catch (e: Throwable) {
+                  Timber.e(e) { "Unable to acquire wakelock" }
+                }
+              }
+        }
+      }
+
   override suspend fun acquireLock() =
       withContext(context = Dispatchers.Default) {
         withContext(context = NonCancellable) {
           mutex.withLock {
-            if (wakeAcquired.compareAndSet(expect = false, update = true)) {
-              Timber.d { "####################################" }
-              Timber.d { "Acquire CPU wakelock: $tag" }
-              Timber.d { "####################################" }
-              killOldWakeLock()
-              createWakeLock()
-                  .also { lock = it }
-                  .also { l ->
-                    try {
-                      l.acquire()
-                    } catch (e: Throwable) {
-                      Timber.e(e) { "Unable to acquire wakelock" }
-                    }
-                  }
+            val holdWakeLock = tweakPreferences.listenForWakeLock().first()
+            if (holdWakeLock) {
+              reallyAcquireWakeLock()
             }
           }
         }

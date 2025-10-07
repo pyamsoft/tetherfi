@@ -41,52 +41,52 @@ internal fun ViewQRCodeTile(
   val hapticManager = LocalHapticManager.current
 
   StatusTile(
-    modifier = modifier,
-    show = true,
-    enabled = isQREnabled,
+      modifier = modifier,
+      show = true,
+      enabled = isQREnabled,
   ) {
     Row(
-      modifier =
-        Modifier.fillMaxWidth().clickable(enabled = isQREnabled) {
-          hapticManager?.actionButtonPress()
-          onShowQRCode()
-        },
-      verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            Modifier.fillMaxWidth().clickable(enabled = isQREnabled) {
+              hapticManager?.actionButtonPress()
+              onShowQRCode()
+            },
+        verticalAlignment = Alignment.CenterVertically,
     ) {
       IconButton(
-        onClick = {
-          hapticManager?.actionButtonPress()
-          onShowQRCode()
-        },
-        enabled = isQREnabled,
+          onClick = {
+            hapticManager?.actionButtonPress()
+            onShowQRCode()
+          },
+          enabled = isQREnabled,
       ) {
         Icon(
-          imageVector = Icons.Filled.QrCode,
-          contentDescription = stringResource(R.string.tile_qr_code),
-          tint =
-            MaterialTheme.colorScheme.run {
-              if (isQREnabled) {
-                primary
-              } else {
-                onSurfaceVariant
-              }
-            },
+            imageVector = Icons.Filled.QrCode,
+            contentDescription = stringResource(R.string.tile_qr_code),
+            tint =
+                MaterialTheme.colorScheme.run {
+                  if (isQREnabled) {
+                    primary
+                  } else {
+                    onSurfaceVariant
+                  }
+                },
         )
       }
 
       Text(
-        text = stringResource(R.string.tile_qr_code),
-        style =
-          MaterialTheme.typography.bodySmall.copy(
-            color =
-              MaterialTheme.colorScheme.run {
-                if (isQREnabled) {
-                  onSurface
-                } else {
-                  onSurfaceVariant
-                }
-              },
-          ),
+          text = stringResource(R.string.tile_qr_code),
+          style =
+              MaterialTheme.typography.bodySmall.copy(
+                  color =
+                      MaterialTheme.colorScheme.run {
+                        if (isQREnabled) {
+                          onSurface
+                        } else {
+                          onSurfaceVariant
+                        }
+                      },
+              ),
       )
     }
   }

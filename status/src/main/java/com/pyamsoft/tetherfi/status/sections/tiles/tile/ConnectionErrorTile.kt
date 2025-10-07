@@ -62,27 +62,27 @@ internal fun ConnectionErrorTile(
   }
 
   StatusTile(
-    modifier = modifier,
-    show = showErrorTile,
-    borderColor = MaterialTheme.colorScheme.error,
+      modifier = modifier,
+      show = showErrorTile,
+      borderColor = MaterialTheme.colorScheme.error,
   ) {
     ServerErrorTile(
-      onShowError = onShowConnectionError,
+        onShowError = onShowConnectionError,
     ) { modifier, renderIcon ->
       Row(
-        modifier = Modifier.fillMaxWidth().then(modifier),
-        verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth().then(modifier),
+          verticalAlignment = Alignment.CenterVertically,
       ) {
         val color = LocalContentColor.current
 
         renderIcon()
 
         Text(
-          text = stringResource(R.string.tile_proxy_error),
-          style =
-            MaterialTheme.typography.bodySmall.copy(
-              color = color,
-            ),
+            text = stringResource(R.string.tile_proxy_error),
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color = color,
+                ),
         )
       }
     }

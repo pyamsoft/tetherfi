@@ -55,29 +55,29 @@ internal fun RefreshTile(
   val hapticManager = LocalHapticManager.current
 
   StatusTile(
-    modifier = modifier,
-    show = true,
+      modifier = modifier,
+      show = true,
   ) {
     AttemptRefreshButton(
-      onClick = {
-        hapticManager?.actionButtonPress()
-        onRefreshConnection()
-      },
+        onClick = {
+          hapticManager?.actionButtonPress()
+          onRefreshConnection()
+        },
     ) { modifier, iconButton ->
       Row(
-        modifier = Modifier.fillMaxWidth().then(modifier),
-        verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth().then(modifier),
+          verticalAlignment = Alignment.CenterVertically,
       ) {
         val color = LocalContentColor.current
 
         iconButton()
 
         Text(
-          text = stringResource(R.string.tile_refresh_hotspot),
-          style =
-            MaterialTheme.typography.bodySmall.copy(
-              color = color,
-            ),
+            text = stringResource(R.string.tile_refresh_hotspot),
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color = color,
+                ),
         )
       }
     }

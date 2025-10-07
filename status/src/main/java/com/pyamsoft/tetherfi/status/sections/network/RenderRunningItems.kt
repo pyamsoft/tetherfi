@@ -44,7 +44,7 @@ import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
 private enum class RenderRunningItemsContentTypes {
-                                                  ERROR_TILES,
+  ERROR_TILES,
   VIEW_HOWTO,
   VIEW_SSID,
   VIEW_PASSWD,
@@ -66,13 +66,13 @@ internal fun LazyListScope.renderRunningItems(
     onViewSlowSpeedHelp: () -> Unit,
 ) {
   item(
-    contentType = RenderRunningItemsContentTypes.ERROR_TILES,
+      contentType = RenderRunningItemsContentTypes.ERROR_TILES,
   ) {
     ErrorTiles(
-      modifier = modifier,
-      serverViewState = serverViewState,
-      onShowHotspotError = onShowHotspotError,
-      onShowNetworkError = onShowNetworkError,
+        modifier = modifier,
+        serverViewState = serverViewState,
+        onShowHotspotError = onShowHotspotError,
+        onShowNetworkError = onShowNetworkError,
     )
   }
 

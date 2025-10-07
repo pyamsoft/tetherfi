@@ -53,8 +53,7 @@ internal fun LazyListScope.renderHotspotStatus(
       contentType = RenderHotspotStatusContentTypes.HOTSPOT_STATUS,
   ) {
     Card(
-        modifier =
-            itemModifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
+        modifier = itemModifier.fillMaxWidth().padding(vertical = MaterialTheme.keylines.content),
         border =
             BorderStroke(
                 width = 4.dp,

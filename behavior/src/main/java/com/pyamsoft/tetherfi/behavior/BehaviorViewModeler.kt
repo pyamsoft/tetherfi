@@ -51,6 +51,7 @@ internal constructor(
       var tweakIgnoreLocation: Boolean,
       var tweakShutdownWithNoClients: Boolean,
       var tweakKeepScreenOn: Boolean,
+      var tweakWakeLock: Boolean,
       var expertPowerBalance: Boolean,
       var expertSocketTimeout: Boolean,
   )
@@ -58,10 +59,12 @@ internal constructor(
   private fun markPreferencesLoaded(config: LoadConfig) {
     if (
         config.tweakIgnoreVpn &&
+            config.tweakIgnoreLocation &&
             config.tweakShutdownWithNoClients &&
+            config.tweakKeepScreenOn &&
+            config.tweakWakeLock &&
             config.expertPowerBalance &&
-            config.expertSocketTimeout &&
-            config.tweakKeepScreenOn
+            config.expertSocketTimeout
     ) {
       state.loadingState.value = BehaviorViewState.LoadingState.DONE
     }
@@ -103,10 +106,11 @@ internal constructor(
         LoadConfig(
             tweakIgnoreVpn = false,
             tweakIgnoreLocation = false,
+            tweakKeepScreenOn = false,
             tweakShutdownWithNoClients = false,
+            tweakWakeLock = false,
             expertPowerBalance = false,
             expertSocketTimeout = false,
-            tweakKeepScreenOn = false,
         )
 
     // Start loading
@@ -156,6 +160,21 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         f.collect { shutdown ->
           s.isShutdownWithNoClients.value = shutdown
+
+          // Watch constantly but only update the initial load config if we haven't loaded yet
+          if (s.loadingState.value != BehaviorViewState.LoadingState.DONE) {
+            config.tweakWakeLock = true
+            markPreferencesLoaded(config)
+          }
+        }
+      }
+    }
+
+    // Always populate the latest wakelock value
+    tweakPreferences.listenForWakeLock().also { f ->
+      scope.launch(context = Dispatchers.Default) {
+        f.collect { wakelock ->
+          s.isHoldWakelock.value = wakelock
 
           // Watch constantly but only update the initial load config if we haven't loaded yet
           if (s.loadingState.value != BehaviorViewState.LoadingState.DONE) {
@@ -293,6 +312,10 @@ internal constructor(
         BehaviorViewTweaks.SHUTDOWN_NO_CLIENTS -> {
           val newVal = state.isShutdownWithNoClients.updateAndGet { !it }
           tweakPreferences.setShutdownWithNoClients(newVal)
+        }
+        BehaviorViewTweaks.USE_WAKELOCK -> {
+          val newVal = state.isHoldWakelock.updateAndGet { !it }
+          tweakPreferences.setWakeLock(newVal)
         }
       }
 

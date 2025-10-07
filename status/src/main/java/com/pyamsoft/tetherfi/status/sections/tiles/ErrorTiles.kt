@@ -34,45 +34,45 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 internal fun ErrorTiles(
-  modifier: Modifier = Modifier,
-  serverViewState: ServerViewState,
+    modifier: Modifier = Modifier,
+    serverViewState: ServerViewState,
 
-  // Errors
-  onShowNetworkError: () -> Unit,
-  onShowHotspotError: () -> Unit,
+    // Errors
+    onShowNetworkError: () -> Unit,
+    onShowHotspotError: () -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
   val isShowingConnectionTile =
-    connection is BroadcastNetworkStatus.ConnectionInfo.Error ||
-        connection is BroadcastNetworkStatus.ConnectionInfo.Empty
+      connection is BroadcastNetworkStatus.ConnectionInfo.Error ||
+          connection is BroadcastNetworkStatus.ConnectionInfo.Empty
   val isShowingGroupTile =
-    group is BroadcastNetworkStatus.GroupInfo.Error || group is BroadcastNetworkStatus.GroupInfo.Empty
+      group is BroadcastNetworkStatus.GroupInfo.Error ||
+          group is BroadcastNetworkStatus.GroupInfo.Empty
 
   if (!isShowingGroupTile && !isShowingConnectionTile) {
     return
   }
 
   Row(
-    modifier = modifier,
-    verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier,
+      verticalAlignment = Alignment.CenterVertically,
   ) {
     ConnectionErrorTile(
-      modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
-      connection = connection,
-      onShowConnectionError = onShowNetworkError,
+        modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+        connection = connection,
+        onShowConnectionError = onShowNetworkError,
     )
-
 
     if (isShowingGroupTile && isShowingConnectionTile) {
       Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
     }
 
     GroupErrorTile(
-      modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
-      group = group,
-      onShowGroupError = onShowHotspotError,
+        modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+        group = group,
+        onShowGroupError = onShowHotspotError,
     )
   }
 }

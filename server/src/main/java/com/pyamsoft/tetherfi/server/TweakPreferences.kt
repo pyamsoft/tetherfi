@@ -32,4 +32,8 @@ interface TweakPreferences {
   @CheckResult fun listenForShutdownWithNoClients(): Flow<Boolean>
 
   fun setShutdownWithNoClients(shutdown: Boolean)
+
+  @CheckResult fun listenForWakeLock(): Flow<Boolean>
+
+  fun setWakeLock(wakelock: Boolean)
 }

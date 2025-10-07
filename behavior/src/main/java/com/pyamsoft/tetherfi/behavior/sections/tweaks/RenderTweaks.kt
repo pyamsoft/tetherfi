@@ -53,6 +53,7 @@ internal fun LazyListScope.renderTweaks(
     onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
+    onToggleWakeLock: () -> Unit,
 ) {
   item(contentType = ContentTypes.LABEL) {
     Label(
@@ -93,6 +94,14 @@ internal fun LazyListScope.renderTweaks(
                             alpha = textAlpha(isEditable),
                         ),
                 ),
+        )
+
+        WakeLockTweak(
+            modifier = Modifier.fillMaxWidth(),
+            appName = appName,
+            isEditable = isEditable,
+            state = state,
+            onToggleWakeLock = onToggleWakeLock,
         )
 
         KeepScreenOnTweak(
@@ -155,6 +164,34 @@ private fun LocationBlockerTweak(
       title = stringResource(R2.string.ignore_location_title),
       description = stringResource(R.string.ignore_location_description, appName),
       onClick = onToggleIgnoreLocation,
+  )
+}
+
+@Composable
+private fun WakeLockTweak(
+    modifier: Modifier = Modifier,
+    appName: String,
+    isEditable: Boolean,
+    state: BehaviorViewState,
+    onToggleWakeLock: () -> Unit,
+) {
+  val isHoldWakelock by state.isHoldWakelock.collectAsStateWithLifecycle()
+  val color by
+      rememberCheckableColor(
+          enabled = isEditable,
+          label = "Use Wakelock",
+          condition = isHoldWakelock,
+          selectedColor = MaterialTheme.colorScheme.primary,
+      )
+
+  ToggleSwitch(
+      modifier = modifier,
+      isEditable = isEditable,
+      color = color,
+      checked = isHoldWakelock,
+      title = stringResource(R.string.hold_wakelock_title),
+      description = stringResource(R.string.hold_wakelock_description, appName),
+      onClick = onToggleWakeLock,
   )
 }
 

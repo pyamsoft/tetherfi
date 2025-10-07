@@ -35,6 +35,7 @@ enum class BehaviorViewTweaks {
   IGNORE_LOCATION,
   KEEP_SCREEN_ON,
   SHUTDOWN_NO_CLIENTS,
+  USE_WAKELOCK,
 }
 
 @Stable
@@ -50,6 +51,7 @@ interface BehaviorViewState : UiViewState {
   val isIgnoreLocation: StateFlow<Boolean>
   val isShutdownWithNoClients: StateFlow<Boolean>
   val isKeepScreenOn: StateFlow<Boolean>
+  val isHoldWakelock: StateFlow<Boolean>
 
   // Expert
   val powerBalance: StateFlow<ServerPerformanceLimit>
@@ -83,6 +85,7 @@ class MutableBehaviorViewState @Inject internal constructor() : BehaviorViewStat
   override val isShowingPowerBalance = MutableStateFlow(false)
   override val isShowingSocketTimeout = MutableStateFlow(false)
 
+  override val isHoldWakelock = MutableStateFlow(false)
   override val isIgnoreVpn = MutableStateFlow(false)
   override val isIgnoreLocation = MutableStateFlow(false)
   override val isShutdownWithNoClients = MutableStateFlow(false)

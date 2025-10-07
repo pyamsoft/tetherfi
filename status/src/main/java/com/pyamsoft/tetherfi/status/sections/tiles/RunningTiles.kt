@@ -35,30 +35,34 @@ import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
 internal fun RunningTiles(
-  modifier: Modifier = Modifier,
-  serverViewState: ServerViewState,
+    modifier: Modifier = Modifier,
+    serverViewState: ServerViewState,
 
-  // Connections
-  onShowQRCode: () -> Unit,
-  onRefreshConnection: () -> Unit,
+    // Connections
+    onShowQRCode: () -> Unit,
+    onRefreshConnection: () -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
   val isQREnabled =
-    remember(connection, group) {
-      connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
-        group is BroadcastNetworkStatus.GroupInfo.Connected
-    }
+      remember(connection, group) {
+        connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
+            group is BroadcastNetworkStatus.GroupInfo.Connected
+      }
 
   Row(
-    modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
-    verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
+      verticalAlignment = Alignment.CenterVertically,
   ) {
     RefreshTile(modifier = Modifier.weight(1F), onRefreshConnection = onRefreshConnection)
 
     Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
 
-    ViewQRCodeTile(modifier = Modifier.weight(1F), isQREnabled = isQREnabled, onShowQRCode = onShowQRCode)
+    ViewQRCodeTile(
+        modifier = Modifier.weight(1F),
+        isQREnabled = isQREnabled,
+        onShowQRCode = onShowQRCode,
+    )
   }
 }

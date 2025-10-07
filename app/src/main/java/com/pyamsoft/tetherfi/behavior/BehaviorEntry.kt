@@ -192,5 +192,6 @@ fun BehaviorEntry(
       onHideSocketTimeout = { viewModel.handleCloseDialog(BehaviorViewDialogs.SOCKET_TIMEOUT) },
       onShowSocketTimeout = { viewModel.handleOpenDialog(BehaviorViewDialogs.SOCKET_TIMEOUT) },
       onUpdateSocketTimeout = { viewModel.handleUpdateSocketTimeout(it) },
+      onToggleWakeLock = { viewModel.handleToggleTweak(BehaviorViewTweaks.USE_WAKELOCK) },
   )
 }

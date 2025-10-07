@@ -57,6 +57,7 @@ internal fun LazyListScope.renderLoadedContent(
     onToggleIgnoreLocation: () -> Unit,
     onToggleShutdownWithNoClients: () -> Unit,
     onToggleKeepScreenOn: () -> Unit,
+    onToggleWakeLock: () -> Unit,
 
     // Expert
     onShowPowerBalance: () -> Unit,
@@ -89,6 +90,7 @@ internal fun LazyListScope.renderLoadedContent(
       onToggleIgnoreLocation = onToggleIgnoreLocation,
       onToggleShutdownWithNoClients = onToggleShutdownWithNoClients,
       onToggleKeepScreenOn = onToggleKeepScreenOn,
+      onToggleWakeLock = onToggleWakeLock,
   )
 
   renderExpertSettings(
@@ -133,6 +135,7 @@ private fun PreviewLoadedContent(
         showNotificationSettings = showNotifications,
         onToggleKeepScreenOn = {},
         onToggleIgnoreLocation = {},
+        onToggleWakeLock = {},
     )
   }
 }
