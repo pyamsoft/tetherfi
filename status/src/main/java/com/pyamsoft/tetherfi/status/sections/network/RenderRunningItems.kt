@@ -31,6 +31,7 @@ import com.pyamsoft.tetherfi.core.ExperimentalRuntimeFlags
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
 import com.pyamsoft.tetherfi.status.MutableStatusViewState
 import com.pyamsoft.tetherfi.status.StatusViewState
+import com.pyamsoft.tetherfi.status.sections.tiles.ErrorTiles
 import com.pyamsoft.tetherfi.status.sections.tiles.RunningTiles
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
 import com.pyamsoft.tetherfi.ui.ServerViewState
@@ -43,11 +44,12 @@ import com.pyamsoft.tetherfi.ui.test.makeTestServerState
 import org.jetbrains.annotations.TestOnly
 
 private enum class RenderRunningItemsContentTypes {
+                                                  ERROR_TILES,
   VIEW_HOWTO,
   VIEW_SSID,
   VIEW_PASSWD,
   VIEW_PROXY,
-  TILES,
+  RUNNING_TILES,
 }
 
 internal fun LazyListScope.renderRunningItems(
@@ -63,6 +65,17 @@ internal fun LazyListScope.renderRunningItems(
     onJumpToHowTo: () -> Unit,
     onViewSlowSpeedHelp: () -> Unit,
 ) {
+  item(
+    contentType = RenderRunningItemsContentTypes.ERROR_TILES,
+  ) {
+    ErrorTiles(
+      modifier = modifier,
+      serverViewState = serverViewState,
+      onShowHotspotError = onShowHotspotError,
+      onShowNetworkError = onShowNetworkError,
+    )
+  }
+
   item(
       contentType = RenderRunningItemsContentTypes.VIEW_HOWTO,
   ) {
@@ -111,15 +124,13 @@ internal fun LazyListScope.renderRunningItems(
   }
 
   item(
-      contentType = RenderRunningItemsContentTypes.TILES,
+      contentType = RenderRunningItemsContentTypes.RUNNING_TILES,
   ) {
     RunningTiles(
         modifier = modifier,
         serverViewState = serverViewState,
         onShowQRCode = onShowQRCode,
         onRefreshConnection = onRefreshConnection,
-        onShowHotspotError = onShowHotspotError,
-        onShowNetworkError = onShowNetworkError,
     )
   }
 }

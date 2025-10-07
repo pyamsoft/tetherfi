@@ -23,42 +23,56 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.theme.keylines
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.status.sections.tiles.tile.RefreshTile
-import com.pyamsoft.tetherfi.status.sections.tiles.tile.ViewQRCodeTile
+import com.pyamsoft.tetherfi.status.sections.tiles.tile.ConnectionErrorTile
+import com.pyamsoft.tetherfi.status.sections.tiles.tile.GroupErrorTile
 import com.pyamsoft.tetherfi.ui.ServerViewState
 
 @Composable
-internal fun RunningTiles(
+internal fun ErrorTiles(
   modifier: Modifier = Modifier,
   serverViewState: ServerViewState,
 
-  // Connections
-  onShowQRCode: () -> Unit,
-  onRefreshConnection: () -> Unit,
+  // Errors
+  onShowNetworkError: () -> Unit,
+  onShowHotspotError: () -> Unit,
 ) {
   val group by serverViewState.group.collectAsStateWithLifecycle()
   val connection by serverViewState.connection.collectAsStateWithLifecycle()
 
-  val isQREnabled =
-    remember(connection, group) {
-      connection is BroadcastNetworkStatus.ConnectionInfo.Connected &&
-        group is BroadcastNetworkStatus.GroupInfo.Connected
-    }
+  val isShowingConnectionTile =
+    connection is BroadcastNetworkStatus.ConnectionInfo.Error ||
+        connection is BroadcastNetworkStatus.ConnectionInfo.Empty
+  val isShowingGroupTile =
+    group is BroadcastNetworkStatus.GroupInfo.Error || group is BroadcastNetworkStatus.GroupInfo.Empty
+
+  if (!isShowingGroupTile && !isShowingConnectionTile) {
+    return
+  }
 
   Row(
-    modifier = modifier.padding(vertical = MaterialTheme.keylines.content),
+    modifier = modifier,
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    RefreshTile(modifier = Modifier.weight(1F), onRefreshConnection = onRefreshConnection)
+    ConnectionErrorTile(
+      modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+      connection = connection,
+      onShowConnectionError = onShowNetworkError,
+    )
 
-    Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
 
-    ViewQRCodeTile(modifier = Modifier.weight(1F), isQREnabled = isQREnabled, onShowQRCode = onShowQRCode)
+    if (isShowingGroupTile && isShowingConnectionTile) {
+      Spacer(modifier = Modifier.width(MaterialTheme.keylines.content))
+    }
+
+    GroupErrorTile(
+      modifier = Modifier.padding(bottom = MaterialTheme.keylines.content).weight(1F),
+      group = group,
+      onShowGroupError = onShowHotspotError,
+    )
   }
 }

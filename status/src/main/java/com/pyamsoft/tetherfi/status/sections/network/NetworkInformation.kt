@@ -123,7 +123,7 @@ internal fun LazyListScope.renderNetworkInformation(
       Box(
           modifier =
               itemModifier
-                  .padding(bottom = MaterialTheme.keylines.content * 2)
+                  .padding(bottom = MaterialTheme.keylines.content)
                   .border(
                       width = HairlineSize,
                       color = MaterialTheme.colorScheme.error,

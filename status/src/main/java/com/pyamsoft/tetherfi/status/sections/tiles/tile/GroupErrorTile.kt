@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.status.sections.tiles
+package com.pyamsoft.tetherfi.status.sections.tiles.tile
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,21 +35,21 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 
 @Composable
-internal fun ConnectionErrorTile(
+internal fun GroupErrorTile(
     modifier: Modifier = Modifier,
-    connection: BroadcastNetworkStatus.ConnectionInfo,
-    onShowConnectionError: () -> Unit,
+    group: BroadcastNetworkStatus.GroupInfo,
+    onShowGroupError: () -> Unit,
 ) {
   val (showErrorTile, setShowErrorTile) = rememberSaveable { mutableStateOf(false) }
 
-  LaunchedEffect(connection) {
-    when (connection) {
-      is BroadcastNetworkStatus.ConnectionInfo.Error -> {
+  LaunchedEffect(group) {
+    when (group) {
+      is BroadcastNetworkStatus.GroupInfo.Error -> {
         // Debounce just a little bit, just incase we are just starting up normally
         delay(1.seconds)
         setShowErrorTile(true)
       }
-      is BroadcastNetworkStatus.ConnectionInfo.Empty -> {
+      is BroadcastNetworkStatus.GroupInfo.Empty -> {
         // If this is empty for a while, show it as error
         delay(5.seconds)
         setShowErrorTile(true)
@@ -62,27 +62,27 @@ internal fun ConnectionErrorTile(
   }
 
   StatusTile(
-      modifier = modifier,
-      show = showErrorTile,
-      borderColor = MaterialTheme.colorScheme.error,
+    modifier = modifier,
+    show = showErrorTile,
+    borderColor = MaterialTheme.colorScheme.error,
   ) {
     ServerErrorTile(
-        onShowError = onShowConnectionError,
+      onShowError = onShowGroupError,
     ) { modifier, renderIcon ->
       Row(
-          modifier = Modifier.fillMaxWidth().then(modifier),
-          verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().then(modifier),
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         val color = LocalContentColor.current
 
         renderIcon()
 
         Text(
-            text = stringResource(R.string.tile_proxy_error),
-            style =
-                MaterialTheme.typography.bodySmall.copy(
-                    color = color,
-                ),
+          text = stringResource(R.string.tile_broadcast_error),
+          style =
+            MaterialTheme.typography.bodySmall.copy(
+              color = color,
+            ),
         )
       }
     }
