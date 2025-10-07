@@ -179,7 +179,7 @@ fun TroubleshootUnableToStart(
       if (showStackTrace) {
         val trace = remember(err) { err.stackTraceToString() }
         Text(
-            modifier = Modifier.padding(MaterialTheme.keylines.content),
+            modifier = Modifier.padding(vertical = MaterialTheme.keylines.content),
             text = trace,
             style =
                 MaterialTheme.typography.bodySmall.copy(
