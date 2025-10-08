@@ -23,6 +23,7 @@ import com.pyamsoft.pydroid.util.ifNotCancellation
 import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.proxy.SocketTracker
@@ -259,6 +260,7 @@ protected constructor(
 
   /** This function must ALWAYS call usingSocketBuilder {} or else a socket may potentially leak */
   override suspend fun loop(
+      lock: Locker.Lock,
       onOpened: suspend () -> Unit,
       onClosing: suspend () -> Unit,
       onError: suspend (Throwable) -> Unit,
@@ -284,6 +286,7 @@ protected constructor(
                   trackSockets(scope = scope) { tracker ->
                     try {
                       runServer(
+                          lock = lock,
                           server = server,
                           tracker = tracker,
                       )
@@ -308,6 +311,7 @@ protected constructor(
       }
 
   protected abstract suspend fun runServer(
+      lock: Locker.Lock,
       tracker: SocketTracker,
       server: S,
   )

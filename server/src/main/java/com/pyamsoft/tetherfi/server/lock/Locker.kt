@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.server.proxy
+package com.pyamsoft.tetherfi.server.lock
 
-import com.pyamsoft.tetherfi.server.Server
-import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
-import com.pyamsoft.tetherfi.server.lock.Locker
-import kotlinx.coroutines.flow.Flow
+import androidx.annotation.CheckResult
 
-interface SharedProxy : Server {
+interface Locker {
 
-  suspend fun start(
-      lock: Locker.Lock,
-      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
-  )
+  @CheckResult suspend fun createLock(): Lock
 
-  enum class Type {
-    HTTP,
-    SOCKS,
+  interface Lock {
+
+    @CheckResult suspend fun acquire(): Releaser
+
+    suspend fun release()
+
+    fun interface Releaser {
+      suspend fun release()
+    }
   }
 }

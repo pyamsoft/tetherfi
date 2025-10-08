@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.clients.ClientEraser
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.proxy.manager.ProxyManager
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import javax.inject.Inject
@@ -71,13 +72,7 @@ internal constructor(
     status: ProxyStatus,
 ) : BaseServer(status), SharedProxy {
 
-  private val overallState =
-      MutableStateFlow(
-          ProxyState(
-              http = false,
-              socks = false,
-          ),
-      )
+  private val overallState = MutableStateFlow(ProxyState(http = false, socks = false))
 
   private fun adjustState(type: SharedProxy.Type, ready: Boolean) {
     overallState.update { s ->
@@ -97,12 +92,7 @@ internal constructor(
   }
 
   private fun resetState() {
-    overallState.update {
-      it.copy(
-          http = false,
-          socks = false,
-      )
-    }
+    overallState.update { it.copy(http = false, socks = false) }
   }
 
   private suspend fun shutdownProxyServerWithCause(e: Throwable) {
@@ -111,16 +101,14 @@ internal constructor(
     shutdownBus.emit(ServerShutdownEvent(throwable = e))
   }
 
-  private suspend fun handleServerLoopError(
-      e: Throwable,
-      type: SharedProxy.Type,
-  ) {
+  private suspend fun handleServerLoopError(e: Throwable, type: SharedProxy.Type) {
     Timber.e(e) { "Error running server loop: ${type.name}" }
     shutdownProxyServerWithCause(e)
   }
 
   private suspend fun beginProxyLoop(
       type: SharedProxy.Type,
+      lock: Locker.Lock,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
@@ -137,33 +125,23 @@ internal constructor(
               serverDispatcher = serverDispatcher,
           )
           .loop(
+              lock = lock,
               onOpened = { readyState(type) },
               onClosing = {
                 // Closing, we mark as stopping early
                 status.set(RunningStatus.Stopping)
                 unreadyState(type)
               },
-              onError = { e ->
-                e.ifNotCancellation {
-                  handleServerLoopError(
-                      e = e,
-                      type = type,
-                  )
-                }
-              },
+              onError = { e -> e.ifNotCancellation { handleServerLoopError(e = e, type = type) } },
           )
     } catch (e: Throwable) {
-      e.ifNotCancellation {
-        handleServerLoopError(
-            e = e,
-            type = type,
-        )
-      }
+      e.ifNotCancellation { handleServerLoopError(e = e, type = type) }
     }
   }
 
   private suspend fun proxyLoop(
       scope: CoroutineScope,
+      lock: Locker.Lock,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
@@ -171,11 +149,7 @@ internal constructor(
     val fakeError = appEnvironment.isProxyFakeError
     if (fakeError.first()) {
       Timber.w { "DEBUG forcing Fake Proxy Error" }
-      status.set(
-          RunningStatus.ProxyError(
-              RuntimeException("DEBUG: Force Fake Proxy Error"),
-          ),
-      )
+      status.set(RunningStatus.ProxyError(RuntimeException("DEBUG: Force Fake Proxy Error")))
       return
     }
 
@@ -184,6 +158,7 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         beginProxyLoop(
             type = SharedProxy.Type.HTTP,
+            lock = lock,
             info = info,
             socketCreator = socketCreator,
             serverDispatcher = serverDispatcher,
@@ -196,6 +171,7 @@ internal constructor(
       scope.launch(context = Dispatchers.Default) {
         beginProxyLoop(
             type = SharedProxy.Type.SOCKS,
+            lock = lock,
             info = info,
             socketCreator = socketCreator,
             serverDispatcher = serverDispatcher,
@@ -206,9 +182,7 @@ internal constructor(
     if (!isHttpEnabled && !isSocksEnabled) {
       Timber.w { "Cannot run proxy. HTTP and SOCKS both disabled" }
       status.set(
-          RunningStatus.ProxyError(
-              RuntimeException("Must enable either HTTP or SOCKS server"),
-          ),
+          RunningStatus.ProxyError(RuntimeException("Must enable either HTTP or SOCKS server"))
       )
     }
   }
@@ -251,6 +225,7 @@ internal constructor(
   }
 
   private suspend fun startServer(
+      lock: Locker.Lock,
       info: BroadcastNetworkStatus.ConnectionInfo.Connected,
       socketCreator: SocketCreator,
       serverDispatcher: ServerDispatcher,
@@ -263,10 +238,7 @@ internal constructor(
       coroutineScope {
         // Mark proxy launching
         Timber.d { "Starting proxy server ..." }
-        status.set(
-            RunningStatus.Starting,
-            clearError = true,
-        )
+        status.set(RunningStatus.Starting, clearError = true)
 
         watchServerReadyStatus()
 
@@ -277,6 +249,7 @@ internal constructor(
         launch(context = Dispatchers.Default) {
           proxyLoop(
               scope = this,
+              lock = lock,
               info = info,
               socketCreator = socketCreator,
               serverDispatcher = serverDispatcher,
@@ -293,7 +266,10 @@ internal constructor(
     cancelAndJoin()
   }
 
-  override suspend fun start(connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>) =
+  override suspend fun start(
+      lock: Locker.Lock,
+      connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
+  ) =
       withContext(context = Dispatchers.IO) {
         // Scope local
         val mutex = Mutex()
@@ -345,6 +321,7 @@ internal constructor(
                     proxyJob =
                         launch(context = Dispatchers.Default) {
                           startServer(
+                              lock = lock,
                               info = info,
                               socketCreator = socketCreator,
                               serverDispatcher = serverDispatcher,
@@ -451,8 +428,6 @@ internal constructor(
   companion object {
 
     private val UNCHANGED_SHOULD_NOT_HAPPEN_ERROR =
-        AssertionError(
-            "ConnectionInfo.Unchanged should never escape the server-module internals.",
-        )
+        AssertionError("ConnectionInfo.Unchanged should never escape the server-module internals.")
   }
 }

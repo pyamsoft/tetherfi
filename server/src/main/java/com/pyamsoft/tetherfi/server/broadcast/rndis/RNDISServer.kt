@@ -21,6 +21,7 @@ import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
+import com.pyamsoft.tetherfi.server.lock.Locker
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.util.Enumeration
@@ -116,6 +117,7 @@ internal class RNDISServer @Inject internal constructor() : BroadcastServerImple
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
+      lock: Locker.Lock,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {}
 

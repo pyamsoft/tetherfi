@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.lock
+package com.pyamsoft.tetherfi.server.lock
 
-interface Locker {
+internal object NoopLock : Locker.Lock {
 
-  suspend fun acquire()
+  override suspend fun acquire(): Locker.Lock.Releaser {
+    return NoopReleaser
+  }
 
-  suspend fun release()
+  override suspend fun release() {}
+
+  private object NoopReleaser : Locker.Lock.Releaser {
+    override suspend fun release() {}
+  }
 }

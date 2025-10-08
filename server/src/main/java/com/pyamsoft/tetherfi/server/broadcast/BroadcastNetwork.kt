@@ -16,7 +16,9 @@
 
 package com.pyamsoft.tetherfi.server.broadcast
 
+import com.pyamsoft.tetherfi.server.lock.Locker
+
 interface BroadcastNetwork {
 
-  suspend fun start()
+  suspend fun start(lock: Locker.Lock)
 }

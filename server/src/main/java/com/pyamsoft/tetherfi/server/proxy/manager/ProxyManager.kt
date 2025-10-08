@@ -19,12 +19,14 @@ package com.pyamsoft.tetherfi.server.proxy.manager
 import androidx.annotation.CheckResult
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 
 internal interface ProxyManager {
 
   suspend fun loop(
+      lock: Locker.Lock,
       onOpened: suspend () -> Unit,
       onClosing: suspend () -> Unit,
       onError: suspend (Throwable) -> Unit,

@@ -17,8 +17,7 @@
 package com.pyamsoft.tetherfi.service.foreground
 
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetwork
-import com.pyamsoft.tetherfi.service.ServiceInternalApi
-import com.pyamsoft.tetherfi.service.lock.Locker
+import com.pyamsoft.tetherfi.server.lock.Locker
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -28,29 +27,19 @@ import kotlinx.coroutines.withContext
 @Singleton
 class ForegroundLauncher
 @Inject
-internal constructor(
-    @param:ServiceInternalApi private val locker: Locker,
-    private val network: BroadcastNetwork,
-) {
-
-  private suspend fun withLock(block: suspend () -> Unit) {
-    try {
-      locker.acquire()
-      block()
-    } finally {
-      locker.release()
-    }
-  }
+internal constructor(private val locker: Locker, private val network: BroadcastNetwork) {
 
   suspend fun startProxy() =
       withContext(context = Dispatchers.Default) {
-        withLock {
-          // Launch a new scope so this function won't proceed to finally block until the scope is
-          // completed/cancelled
-          //
-          // This will suspend until network.start() completes, which is suspended until the proxy
-          // server loop dies
-          coroutineScope { network.start() }
+        val lock = locker.createLock()
+        // This will suspend until network.start() completes, which is suspended until the proxy
+        // server loop dies
+        coroutineScope {
+          try {
+            network.start(lock)
+          } finally {
+            lock.release()
+          }
         }
       }
 }

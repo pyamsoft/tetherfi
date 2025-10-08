@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.lock
+package com.pyamsoft.tetherfi.server.lock
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -28,11 +28,7 @@ import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 @Singleton
@@ -48,11 +44,7 @@ internal constructor(
     context.applicationContext.getSystemService<PowerManager>().requireNotNull()
   }
 
-  private val mutex = Mutex()
-  private val tag = createTag(context.applicationContext.packageName)
-  private val wakeAcquired = MutableStateFlow(false)
-
-  private var lock: PowerManager.WakeLock? = null
+  private val tag by lazy { createTag(context.applicationContext.packageName) }
 
   @CheckResult
   @Suppress("DEPRECATION")
@@ -80,73 +72,41 @@ internal constructor(
       wakeLockLevel = PowerManager.PARTIAL_WAKE_LOCK
     }
 
-    return powerManager.newWakeLock(wakeLockLevel, tag)
-  }
-
-  @SuppressLint("Wakelock")
-  private fun killOldWakeLock() {
-    lock?.also { l ->
-      Timber.w { "LOCK IS STILL ALIVE. RELEASE OLD LOCK" }
-      try {
-        l.release()
-      } catch (e: Throwable) {
-        Timber.e(e) { "Unable to release old wakelock" }
-      }
+    return powerManager.newWakeLock(wakeLockLevel, tag).apply {
+      // We will count our own refs
+      setReferenceCounted(false)
     }
   }
 
-  @SuppressLint("WakelockTimeout")
-  private suspend fun reallyAcquireWakeLock() =
-      withContext(context = NonCancellable) {
-        if (wakeAcquired.compareAndSet(expect = false, update = true)) {
-          Timber.d { "####################################" }
-          Timber.d { "Acquire CPU wakelock: $tag" }
-          Timber.d { "####################################" }
-          killOldWakeLock()
-          createWakeLock()
-              .also { lock = it }
-              .also { l ->
-                try {
-                  l.acquire()
-                } catch (e: Throwable) {
-                  Timber.e(e) { "Unable to acquire wakelock" }
-                }
-              }
+  override suspend fun createLock(): Locker.Lock =
+      withContext(context = Dispatchers.Default) {
+        val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
+        if (isWakeLockEnabled) {
+          val wakeLock = createWakeLock()
+          return@withContext Lock(wakeLock, tag)
         }
+
+        return@withContext NoopLock
       }
 
-  override suspend fun acquireLock() =
-      withContext(context = Dispatchers.Default) {
-        withContext(context = NonCancellable) {
-          mutex.withLock {
-            val holdWakeLock = tweakPreferences.listenForWakeLock().first()
-            if (holdWakeLock) {
-              reallyAcquireWakeLock()
-            }
-          }
-        }
-      }
+  internal class Lock(
+      private val wakeLock: PowerManager.WakeLock,
+      lockTag: String,
+  ) : AbstractLock(lockType = "CPU", lockTag = lockTag) {
 
-  override suspend fun releaseLock() =
-      withContext(context = Dispatchers.Default) {
-        withContext(context = NonCancellable) {
-          mutex.withLock {
-            if (wakeAcquired.compareAndSet(expect = true, update = false)) {
-              Timber.d { "####################################" }
-              Timber.d { "Release CPU wakelock: $tag" }
-              Timber.d { "####################################" }
-              lock?.also { l ->
-                try {
-                  l.release()
-                } catch (e: Throwable) {
-                  Timber.e(e) { "Unable to release wakelock" }
-                }
-              }
-              lock = null
-            }
-          }
-        }
-      }
+    override suspend fun isHeld(): Boolean {
+      return wakeLock.isHeld
+    }
+
+    @SuppressLint("WakelockTimeout")
+    override suspend fun onAcquireLock() {
+      wakeLock.acquire()
+    }
+
+    override suspend fun onReleaseLock() {
+      wakeLock.release()
+    }
+  }
 
   companion object {
 

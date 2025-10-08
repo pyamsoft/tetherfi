@@ -32,6 +32,10 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
+import com.pyamsoft.tetherfi.server.lock.LockerImpl
+import com.pyamsoft.tetherfi.server.lock.WakeLocker
+import com.pyamsoft.tetherfi.server.lock.WiFiLocker
 import com.pyamsoft.tetherfi.server.network.AndroidSocketBinder
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.prereq.location.AndroidLocationChecker
@@ -162,6 +166,13 @@ abstract class ServerAppModule {
   @CheckResult
   @Named("socks")
   internal abstract fun bindSocksProxySession(impl: SOCKSProxySession): ProxySession<TcpProxyData>
+
+  // Lockers
+  @Binds @IntoSet @ServerInternalApi internal abstract fun bindWakeLocker(impl: WakeLocker): Locker
+
+  @Binds @IntoSet @ServerInternalApi internal abstract fun bindWiFiLocker(impl: WiFiLocker): Locker
+
+  @Binds internal abstract fun bindLocker(impl: LockerImpl): Locker
 
   @Module
   companion object {

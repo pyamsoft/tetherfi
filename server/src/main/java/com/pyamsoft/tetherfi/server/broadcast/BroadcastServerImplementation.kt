@@ -17,6 +17,7 @@
 package com.pyamsoft.tetherfi.server.broadcast
 
 import androidx.annotation.CheckResult
+import com.pyamsoft.tetherfi.server.lock.Locker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
@@ -49,6 +50,7 @@ internal interface BroadcastServerImplementation<T> {
   /** Side effects ran from this function should have their own launch {} */
   fun onNetworkStarted(
       scope: CoroutineScope,
+      lock: Locker.Lock,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   )
 }

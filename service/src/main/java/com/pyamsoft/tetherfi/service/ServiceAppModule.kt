@@ -24,10 +24,6 @@ import com.pyamsoft.pydroid.bus.internal.DefaultEventBus
 import com.pyamsoft.pydroid.notify.Notifier
 import com.pyamsoft.pydroid.notify.NotifyDispatcher
 import com.pyamsoft.tetherfi.service.foreground.NotificationRefreshEvent
-import com.pyamsoft.tetherfi.service.lock.Locker
-import com.pyamsoft.tetherfi.service.lock.LockerImpl
-import com.pyamsoft.tetherfi.service.lock.WakeLocker
-import com.pyamsoft.tetherfi.service.lock.WiFiLocker
 import com.pyamsoft.tetherfi.service.notification.ErrorNotificationDispatcher
 import com.pyamsoft.tetherfi.service.notification.LongRunningServiceDispatcher
 import com.pyamsoft.tetherfi.service.notification.NotificationLauncher
@@ -66,13 +62,6 @@ abstract class ServiceAppModule {
   internal abstract fun bindNotificationRefreshConsumer(
       impl: EventBus<NotificationRefreshEvent>
   ): EventConsumer<NotificationRefreshEvent>
-
-  // Lockers
-  @Binds @IntoSet @ServiceInternalApi internal abstract fun bindWakeLocker(impl: WakeLocker): Locker
-
-  @Binds @IntoSet @ServiceInternalApi internal abstract fun bindWiFiLocker(impl: WiFiLocker): Locker
-
-  @Binds @ServiceInternalApi internal abstract fun bindLocker(impl: LockerImpl): Locker
 
   @Module
   companion object {

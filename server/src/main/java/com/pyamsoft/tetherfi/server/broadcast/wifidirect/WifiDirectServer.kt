@@ -38,6 +38,7 @@ import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastServerImplementation
 import com.pyamsoft.tetherfi.server.broadcast.DelegatingBroadcastServer
+import com.pyamsoft.tetherfi.server.lock.Locker
 import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -323,6 +324,7 @@ internal constructor(
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
+      lock: Locker.Lock,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {
     scope.launch(context = Dispatchers.Default) { register.register() }

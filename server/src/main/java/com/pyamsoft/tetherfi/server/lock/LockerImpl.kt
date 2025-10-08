@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.lock
+package com.pyamsoft.tetherfi.server.lock
 
-import com.pyamsoft.tetherfi.service.ServiceInternalApi
+import com.pyamsoft.tetherfi.server.ServerInternalApi
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -28,15 +28,23 @@ internal class LockerImpl
 @Inject
 internal constructor(
     // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
-    @param:ServiceInternalApi private val lockers: MutableSet<Locker>,
+    @param:ServerInternalApi private val lockers: MutableSet<Locker>
 ) : Locker {
-  override suspend fun acquire() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) { lockers.forEach { it.acquire() } }
+  override suspend fun createLock(): Locker.Lock =
+      withContext(context = Dispatchers.Default) {
+        return@withContext Lock(locks = lockers.map { it.createLock() })
       }
 
-  override suspend fun release() =
-      withContext(context = NonCancellable) {
-        withContext(context = Dispatchers.Default) { lockers.forEach { it.release() } }
-      }
+  private class Lock(private val locks: Collection<Locker.Lock>) : Locker.Lock {
+    override suspend fun acquire(): Locker.Lock.Releaser =
+        withContext(context = Dispatchers.Default) {
+          val acquiredLocks = locks.map { it.acquire() }
+          return@withContext Locker.Lock.Releaser { acquiredLocks.forEach { it.release() } }
+        }
+
+    override suspend fun release() =
+        withContext(context = Dispatchers.Default) {
+          withContext(context = NonCancellable) { locks.forEach { it.release() } }
+        }
+  }
 }

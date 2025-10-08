@@ -30,6 +30,7 @@ import com.pyamsoft.tetherfi.server.ExpertPreferences
 import com.pyamsoft.tetherfi.server.broadcast.rndis.RNDISServer
 import com.pyamsoft.tetherfi.server.broadcast.wifidirect.WifiDirectServer
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.prereq.permission.PermissionGuard
 import com.pyamsoft.tetherfi.server.proxy.SharedProxy
 import com.pyamsoft.tetherfi.server.status.RunningStatus
@@ -115,7 +116,7 @@ internal constructor(
         )
       }
 
-  private suspend fun startNetwork() =
+  private suspend fun startNetwork(lock: Locker.Lock) =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
@@ -173,7 +174,11 @@ internal constructor(
         if (launchProxy) {
           val newProxyJob =
               launch(context = Dispatchers.IO) {
-                onNetworkStarted(scope = this, connectionStatus = connectionInfoChannel)
+                onNetworkStarted(
+                    scope = this,
+                    lock = lock,
+                    connectionStatus = connectionInfoChannel,
+                )
               }
           Timber.d { "Track new proxy job!" }
           proxyJob = newProxyJob
@@ -499,7 +504,7 @@ internal constructor(
         return@withContext
       }
 
-  override suspend fun start() =
+  override suspend fun start(lock: Locker.Lock) =
       withContext(context = Dispatchers.Default) {
         enforcer.assertOffMainThread()
 
@@ -515,7 +520,7 @@ internal constructor(
           coroutineScope {
             // This will suspend until onNetworkStart proxy.start() completes,
             // which is suspended until the proxy server loop dies
-            startNetwork()
+            startNetwork(lock)
           }
         } catch (e: Throwable) {
           e.ifNotCancellation {
@@ -560,6 +565,7 @@ internal constructor(
 
   override fun onNetworkStarted(
       scope: CoroutineScope,
+      lock: Locker.Lock,
       connectionStatus: Flow<BroadcastNetworkStatus.ConnectionInfo>,
   ) {
     // Need to mark the network as running so that the Proxy network can start
@@ -567,10 +573,11 @@ internal constructor(
     status.set(RunningStatus.Running)
 
     scope.launch(context = Dispatchers.Default) {
-      resolveImplementation().onNetworkStarted(scope = this, connectionStatus = connectionStatus)
+      resolveImplementation()
+          .onNetworkStarted(scope = this, lock = lock, connectionStatus = connectionStatus)
     }
     scope.launch(context = Dispatchers.Default) { inAppRatingPreferences.markHotspotUsed() }
-    scope.launch(context = Dispatchers.Default) { proxy.start(connectionStatus) }
+    scope.launch(context = Dispatchers.Default) { proxy.start(lock, connectionStatus) }
   }
 
   companion object {

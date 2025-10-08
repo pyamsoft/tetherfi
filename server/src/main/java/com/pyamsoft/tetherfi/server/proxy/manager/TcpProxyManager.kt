@@ -26,6 +26,7 @@ import com.pyamsoft.tetherfi.server.ServerSocketTimeout
 import com.pyamsoft.tetherfi.server.SocketCreator
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.network.SocketBinder
 import com.pyamsoft.tetherfi.server.proxy.ProxyConnectionInfo
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
@@ -104,11 +105,7 @@ internal constructor(
       return null
     }
 
-    return ProxyConnectionInfo(
-        address = remote,
-        hostNameOrIp = hostName,
-        port = port,
-    )
+    return ProxyConnectionInfo(address = remote, hostNameOrIp = hostName, port = port)
   }
 
   private suspend fun CoroutineScope.handleProxyConnection(
@@ -264,7 +261,7 @@ internal constructor(
     throw IllegalStateException("TCP Proxy failed to grab a socket correctly")
   }
 
-  override suspend fun runServer(tracker: SocketTracker, server: ServerSocket) =
+  override suspend fun runServer(lock: Locker.Lock, tracker: SocketTracker, server: ServerSocket) =
       withContext(context = serverDispatcher.primary) {
         val addr = server.localAddress
         debugLog { "Awaiting TCP connections on $addr" }
@@ -284,6 +281,7 @@ internal constructor(
 
               // Run this server loop off thread so we can handle multiple connections at once.
               launch(context = serverDispatcher.primary) {
+                val lockReleaser = lock.acquire()
                 try {
                   // Track this socket to close it later
                   tracker.track(connection)
@@ -299,6 +297,7 @@ internal constructor(
                   e.ifNotCancellation { errorLog(e) { "Error during server socket accept" } }
                 } finally {
                   connection.dispose()
+                  lockReleaser.release()
                 }
               }
             }
