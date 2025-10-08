@@ -269,6 +269,10 @@ internal constructor(
         val timeout = expertPreferences.listenForSocketTimeout().first()
         debugLog { "Socket timeout set as ${timeout.timeoutDuration}" }
 
+        // TODO(Peter): If we need to hold a lock "all the time", create a pref for it
+        //              Acquire the lock out here and release it in the finally at the bottom
+        //              with the Closing TCP server message
+
         socketBinder.withMobileDataNetworkActive { networkBinder ->
           try {
             // In a loop, we wait for new TCP connections and then offload them to their own
@@ -281,6 +285,7 @@ internal constructor(
 
               // Run this server loop off thread so we can handle multiple connections at once.
               launch(context = serverDispatcher.primary) {
+                // Hold a lock for the duration of the operation of this Socket
                 val lockReleaser = lock.acquire()
                 try {
                   // Track this socket to close it later
