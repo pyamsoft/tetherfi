@@ -14,7 +14,7 @@ coroutines = "1.10.2"
 
 # Us
 pydroid = "29.2.0"
-ktor = "3.3.0-PYAMSOFT"
+ktor = "3.3.1-PYAMSOFT"
 
 # Square
 leakCanary = "2.14"
@@ -32,7 +32,7 @@ preference = "1.2.1"
 testRunner = "1.7.0"
 
 # Compose
-compose = "1.9.2"
+compose = "1.9.3"
 composeMaterial = "1.7.8"
 composeMaterial3 = "1.4.0"
 

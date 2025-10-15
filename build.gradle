@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import com.deezer.caupain.model.StabilityLevelPolicy
+import com.deezer.caupain.plugin.DependenciesUpdateTask
 
 plugins {
   // Android AGP
@@ -108,6 +109,11 @@ allprojects {
       endWithNewline()
       leadingTabsToSpaces(2)
     }
+  }
+
+  // Caupain Version Strategy
+  tasks.withType(DependenciesUpdateTask).configureEach {
+    selectIf(StabilityLevelPolicy.INSTANCE)
   }
 }
 
