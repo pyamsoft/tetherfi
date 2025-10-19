@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package com.pyamsoft.tetherfi.service.prereq
+package com.pyamsoft.tetherfi.server.prereq.background
 
-enum class HotspotStartBlocker(val required: Boolean) {
-  /** We must have permission */
-  PERMISSION(required = true),
+import androidx.annotation.CheckResult
 
-  /** In the future, the user can "agree" to "try anyway" */
-  VPN(required = false),
+interface BackgroundDataGuard {
 
-  /** In the future, the user can "agree" to "try anyway" */
-  LOCATION(required = false),
-
-  /** TetherFi MUST be allowed to use background data. It does NOT need to be whitelisted */
-  BACKGROUND_DATA(required = false),
+  @CheckResult suspend fun canCreateNetwork(): Boolean
 }

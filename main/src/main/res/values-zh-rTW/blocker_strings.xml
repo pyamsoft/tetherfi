@@ -34,4 +34,19 @@
     name="block_location_instruction"
   >請啟動您裝置上的定位服務，然後再次嘗試啟動熱點。另外您也可以啟用「%1$s」行為調整設定以測試 %2$s 是否能夠在不需要啟動定位服務的狀態下正常運作。</string>
   <string name="block_location_open_settings">啟用定位服務</string>
+
+  <string name="block_permission_title">權限請求</string>
+  <string
+      name="block_permission_description"
+      >%1$s 需要 %2$s 權限以創建一個 Wi-Fi 群組</string>
+  <string
+      name="block_permission_reassure"
+      >%1$s 不會使用這些權限來進行除了 Wi-Fi 群組建立以外的任何事情。</string>
+  <string name="block_permission_open_settings">開啟設定</string>
+  <string name="block_permission_deny">拒絕</string>
+  <string name="block_permission_grant">授權</string>
+  <string name="block_permission_type_location">精確地理位置</string>
+  <string name="block_permission_type_nearby">鄰近 Wi-Fi 網路</string>
+
+  <string name="block_background_data_open_settings">啟用定位服務</string>
 </resources>

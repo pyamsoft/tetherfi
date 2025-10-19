@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.CheckResult
 import androidx.core.content.ContextCompat
+import com.pyamsoft.pydroid.core.ThreadEnforcer
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,13 +29,16 @@ import kotlinx.coroutines.withContext
 internal class PermissionGuardImpl
 @Inject
 internal constructor(
+  private val enforcer: ThreadEnforcer,
     private val context: Context,
 ) : PermissionGuard {
 
   @CheckResult
   private fun hasPermission(permission: String): Boolean {
-    return ContextCompat.checkSelfPermission(context.applicationContext, permission) ==
-        PackageManager.PERMISSION_GRANTED
+    enforcer.assertOffMainThread()
+
+    val permissionType = ContextCompat.checkSelfPermission(context.applicationContext, permission)
+    return permissionType == PackageManager.PERMISSION_GRANTED
   }
 
   override val requiredPermissions: List<String> by lazy {
@@ -43,7 +47,7 @@ internal constructor(
   }
 
   override suspend fun canCreateNetwork(): Boolean =
-      withContext(context = Dispatchers.Main) {
+      withContext(context = Dispatchers.Default) {
         return@withContext requiredPermissions.all { hasPermission(it) }
       }
 

@@ -23,36 +23,47 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pyamsoft.pydroid.core.cast
 import com.pyamsoft.pydroid.ui.util.collectAsStateListWithLifecycle
+import com.pyamsoft.tetherfi.main.blockers.BackgroundDataBlocker
 import com.pyamsoft.tetherfi.main.blockers.LocationBlocker
 import com.pyamsoft.tetherfi.main.blockers.PermissionBlocker
 import com.pyamsoft.tetherfi.main.blockers.VpnBlocker
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetworkStatus
+import com.pyamsoft.tetherfi.server.broadcast.BroadcastType
+import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.status.RunningStatus
 import com.pyamsoft.tetherfi.service.prereq.HotspotStartBlocker
 import com.pyamsoft.tetherfi.ui.dialog.ServerErrorDialog
 import com.pyamsoft.tetherfi.ui.trouble.TroubleshootDialog
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.collections.emptySet
 
 @Composable
 fun MainDialogs(
-    dialogModifier: Modifier = Modifier,
-    state: MainViewState,
-    appName: String,
-    onDismissBlocker: (HotspotStartBlocker) -> Unit,
+  dialogModifier: Modifier = Modifier,
+  state: MainViewState,
+  appName: String,
+  onDismissBlocker: (HotspotStartBlocker) -> Unit,
 
-    // Permission
-    onOpenPermissionSettings: () -> Unit,
-    onRequestPermissions: () -> Unit,
-    onOpenLocationSettings: () -> Unit,
+  // Permission
+  onOpenPermissionSettings: () -> Unit,
+  onRequestPermissions: () -> Unit,
 
-    // Errors
-    onDismissSetupError: () -> Unit,
-    onHideNetworkError: () -> Unit,
-    onHideHotspotError: () -> Unit,
-    onHideBroadcastError: () -> Unit,
-    onHideProxyError: () -> Unit,
+  // Location
+  onOpenLocationSettings: () -> Unit,
+
+  // Background Data
+  onOpenBackroundDataSettings: () -> Unit,
+
+  // Errors
+  onDismissSetupError: () -> Unit,
+  onHideNetworkError: () -> Unit,
+  onHideHotspotError: () -> Unit,
+  onHideBroadcastError: () -> Unit,
+  onHideProxyError: () -> Unit,
 ) {
   val blockers = state.startBlockers.collectAsStateListWithLifecycle()
   val isShowingHotspotError by state.isShowingHotspotError.collectAsStateWithLifecycle()
@@ -71,134 +82,154 @@ fun MainDialogs(
   val requiredBlockers = remember(blockers) { blockers.filter { it.required } }
   val skippableBlockers = remember(blockers) { blockers.filterNot { it.required } }
 
-  if (requiredBlockers.isNotEmpty()) {
-    for (blocker in requiredBlockers) {
-      AnimatedVisibility(
-          visible = blocker == HotspotStartBlocker.PERMISSION,
-      ) {
-        PermissionBlocker(
-            modifier = dialogModifier,
-            appName = appName,
-            onDismiss = { onDismissBlocker(blocker) },
-            onOpenPermissionSettings = onOpenPermissionSettings,
-            onRequestPermissions = onRequestPermissions,
-        )
-      }
-    }
-  } else {
-    for (blocker in skippableBlockers) {
-      AnimatedVisibility(
-          visible = blocker == HotspotStartBlocker.VPN,
-      ) {
-        VpnBlocker(
-            modifier = dialogModifier,
-            appName = appName,
-            onDismiss = { onDismissBlocker(blocker) },
-        )
-      }
+  ShowBlockers(
+    modifier = dialogModifier,
+    requiredBlockers = requiredBlockers,
+    skippableBlockers = skippableBlockers,
+    appName = appName,
+    onRequestPermissions = onRequestPermissions,
+    onDismissBlocker = onDismissBlocker,
+    onOpenLocationSettings = onOpenLocationSettings,
+    onOpenPermissionSettings = onOpenPermissionSettings,
+    onOpenBackroundDataSettings = onOpenBackroundDataSettings,
+  )
 
-      AnimatedVisibility(
-          visible = blocker == HotspotStartBlocker.LOCATION,
-      ) {
-        LocationBlocker(
-            modifier = dialogModifier,
-            appName = appName,
-            onDismiss = { onDismissBlocker(blocker) },
-            onOpenLocationSettings = onOpenLocationSettings,
-        )
-      }
-    }
-  }
-
-  AnimatedVisibility(
-      visible = isShowingSetupError,
-  ) {
+  AnimatedVisibility(visible = isShowingSetupError) {
     val broadcastType by state.broadcastType.collectAsStateWithLifecycle()
     val isBroadcastError = remember(wiDiStatus) { wiDiStatus is RunningStatus.Error }
     val isProxyError = remember(proxyStatus) { proxyStatus is RunningStatus.Error }
 
     val errorThrowable =
-        remember(wiDiStatus, proxyStatus) {
-          wiDiStatus.also { w ->
-            if (w is RunningStatus.Error) {
-              return@remember w.throwable
-            }
+      remember(wiDiStatus, proxyStatus) {
+        wiDiStatus.also { w ->
+          if (w is RunningStatus.Error) {
+            return@remember w.throwable
           }
-
-          proxyStatus.also { p ->
-            if (p is RunningStatus.Error) {
-              return@remember p.throwable
-            }
-          }
-
-          return@remember null
         }
 
+        proxyStatus.also { p ->
+          if (p is RunningStatus.Error) {
+            return@remember p.throwable
+          }
+        }
+
+        return@remember null
+      }
+
     TroubleshootDialog(
-        modifier = dialogModifier,
-        appName = appName,
-        broadcastType = broadcastType,
-        isBroadcastError = isBroadcastError,
-        isProxyError = isProxyError,
-        throwable = errorThrowable,
-        onDismiss = onDismissSetupError,
+      modifier = dialogModifier,
+      appName = appName,
+      broadcastType = broadcastType,
+      isBroadcastError = isBroadcastError,
+      isProxyError = isProxyError,
+      throwable = errorThrowable,
+      onDismiss = onDismissSetupError,
     )
   }
 
   GroupErrorDialog(
-      modifier = dialogModifier,
-      group = group,
-      show = isShowingHotspotError,
-      onDismiss = onHideHotspotError,
+    modifier = dialogModifier,
+    group = group,
+    show = isShowingHotspotError,
+    onDismiss = onHideHotspotError,
   )
 
   GroupErrorDialog(
-      modifier = dialogModifier,
-      group = group,
-      show = isShowingHotspotError,
-      onDismiss = onHideHotspotError,
+    modifier = dialogModifier,
+    group = group,
+    show = isShowingHotspotError,
+    onDismiss = onHideHotspotError,
   )
 
   ConnectionErrorDialog(
-      modifier = dialogModifier,
-      connection = connection,
-      show = isShowingNetworkError,
-      onDismiss = onHideNetworkError,
+    modifier = dialogModifier,
+    connection = connection,
+    show = isShowingNetworkError,
+    onDismiss = onHideNetworkError,
   )
 
   wiDiStatus.cast<RunningStatus.Error>()?.also { err ->
-    AnimatedVisibility(
-        visible = isShowingBroadcastError,
-    ) {
+    AnimatedVisibility(visible = isShowingBroadcastError) {
       ServerErrorDialog(
-          modifier = dialogModifier,
-          title = "Broadcast Initialization Error",
-          error = err.throwable,
-          onDismiss = onHideBroadcastError,
+        modifier = dialogModifier,
+        title = "Broadcast Initialization Error",
+        error = err.throwable,
+        onDismiss = onHideBroadcastError,
       )
     }
   }
 
   proxyStatus.cast<RunningStatus.Error>()?.also { err ->
-    AnimatedVisibility(
-        visible = isShowingProxyError,
-    ) {
+    AnimatedVisibility(visible = isShowingProxyError) {
       ServerErrorDialog(
-          modifier = dialogModifier,
-          title = "Proxy Initialization Error",
-          error = err.throwable,
-          onDismiss = onHideProxyError,
+        modifier = dialogModifier,
+        title = "Proxy Initialization Error",
+        error = err.throwable,
+        onDismiss = onHideProxyError,
       )
     }
   }
 }
 
 @Composable
+private fun ShowBlockers(
+  modifier: Modifier = Modifier,
+  appName: String,
+  onDismissBlocker: (HotspotStartBlocker) -> Unit,
+  requiredBlockers: List<HotspotStartBlocker>,
+  skippableBlockers: List<HotspotStartBlocker>,
+
+  // Permission
+  onOpenPermissionSettings: () -> Unit,
+  onRequestPermissions: () -> Unit,
+
+  // Location
+  onOpenLocationSettings: () -> Unit,
+
+  // Background Data
+  onOpenBackroundDataSettings: () -> Unit,
+) {
+  val list = remember(requiredBlockers, skippableBlockers) { requiredBlockers.ifEmpty { skippableBlockers } }
+  for (blocker in list) {
+    when (blocker) {
+      HotspotStartBlocker.PERMISSION -> {
+        PermissionBlocker(
+          modifier = modifier,
+          appName = appName,
+          onDismiss = { onDismissBlocker(blocker) },
+          onOpenPermissionSettings = onOpenPermissionSettings,
+          onRequestPermissions = onRequestPermissions,
+        )
+      }
+      HotspotStartBlocker.VPN -> {
+        VpnBlocker(modifier = modifier, appName = appName, onDismiss = { onDismissBlocker(blocker) })
+      }
+      HotspotStartBlocker.LOCATION -> {
+        LocationBlocker(
+          modifier = modifier,
+          appName = appName,
+          onDismiss = { onDismissBlocker(blocker) },
+          onOpenLocationSettings = onOpenLocationSettings,
+        )
+      }
+      HotspotStartBlocker.BACKGROUND_DATA -> {
+        BackgroundDataBlocker(
+          modifier = modifier,
+          appName = appName,
+          onDismiss = { onDismissBlocker(blocker) },
+          onOpenBackgroundDataSettings = onOpenBackroundDataSettings,
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun GroupErrorDialog(
-    modifier: Modifier = Modifier,
-    group: BroadcastNetworkStatus.GroupInfo,
-    show: Boolean,
-    onDismiss: () -> Unit,
+  modifier: Modifier = Modifier,
+  group: BroadcastNetworkStatus.GroupInfo,
+  show: Boolean,
+  onDismiss: () -> Unit,
 ) {
   val (groupError, setGroupError) = remember { mutableStateOf<Throwable?>(null) }
 
@@ -219,14 +250,12 @@ private fun GroupErrorDialog(
   }
 
   if (groupError != null) {
-    AnimatedVisibility(
-        visible = show,
-    ) {
+    AnimatedVisibility(visible = show) {
       ServerErrorDialog(
-          modifier = modifier,
-          title = "Hotspot Initialization Error",
-          error = groupError,
-          onDismiss = onDismiss,
+        modifier = modifier,
+        title = "Hotspot Initialization Error",
+        error = groupError,
+        onDismiss = onDismiss,
       )
     }
   }
@@ -234,10 +263,10 @@ private fun GroupErrorDialog(
 
 @Composable
 private fun ConnectionErrorDialog(
-    modifier: Modifier = Modifier,
-    connection: BroadcastNetworkStatus.ConnectionInfo,
-    show: Boolean,
-    onDismiss: () -> Unit,
+  modifier: Modifier = Modifier,
+  connection: BroadcastNetworkStatus.ConnectionInfo,
+  show: Boolean,
+  onDismiss: () -> Unit,
 ) {
   val (connectionError, setConnectionError) = remember { mutableStateOf<Throwable?>(null) }
 
@@ -258,15 +287,102 @@ private fun ConnectionErrorDialog(
   }
 
   if (connectionError != null) {
-    AnimatedVisibility(
-        visible = show,
-    ) {
+    AnimatedVisibility(visible = show) {
       ServerErrorDialog(
-          modifier = modifier,
-          title = "Network Initialization Error",
-          error = connectionError,
-          onDismiss = onDismiss,
+        modifier = modifier,
+        title = "Network Initialization Error",
+        error = connectionError,
+        onDismiss = onDismiss,
       )
     }
   }
+}
+
+@Composable
+private fun PreviewMainDialogs(blockers: Collection<HotspotStartBlocker>) {
+  MainDialogs(
+    state =
+      object : MainViewState {
+        override val isSettingsOpen = MutableStateFlow(false)
+        override val isShowingQRCodeDialog = MutableStateFlow(false)
+        override val isShowingSlowSpeedHelp = MutableStateFlow(false)
+        override val group = MutableStateFlow(BroadcastNetworkStatus.GroupInfo.Empty)
+        override val connection = MutableStateFlow(BroadcastNetworkStatus.ConnectionInfo.Empty)
+
+        override val isHttpEnabled = MutableStateFlow(false)
+        override val httpPort = MutableStateFlow(0)
+
+        override val isSocksEnabled = MutableStateFlow(false)
+        override val socksPort = MutableStateFlow(0)
+
+        // TODO support RNDIS
+        override val broadcastType = MutableStateFlow(BroadcastType.WIFI_DIRECT)
+
+        // TODO support other network prefs
+        override val preferredNetwork = MutableStateFlow<PreferredNetwork?>(PreferredNetwork.NONE)
+
+        override val wiDiStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+        override val proxyStatus = MutableStateFlow<RunningStatus>(RunningStatus.NotRunning)
+        override val startBlockers = MutableStateFlow(blockers)
+
+        override val isShowingSetupError = MutableStateFlow(false)
+        override val isShowingNetworkError = MutableStateFlow(false)
+        override val isShowingHotspotError = MutableStateFlow(false)
+        override val isShowingBroadcastError = MutableStateFlow(false)
+        override val isShowingProxyError = MutableStateFlow(false)
+      },
+    appName = "TEST",
+    onDismissBlocker = {},
+    onRequestPermissions = {},
+    onHideProxyError = {},
+    onHideHotspotError = {},
+    onHideNetworkError = {},
+    onDismissSetupError = {},
+    onHideBroadcastError = {},
+    onOpenLocationSettings = {},
+    onOpenPermissionSettings = {},
+    onOpenBackroundDataSettings = {},
+  )
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsDefault() {
+  PreviewMainDialogs(blockers =  emptySet())
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockPermission() {
+  PreviewMainDialogs(blockers = setOf(HotspotStartBlocker.PERMISSION))
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockBackgroundData() {
+  PreviewMainDialogs(blockers = setOf(HotspotStartBlocker.BACKGROUND_DATA))
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockVPN() {
+  PreviewMainDialogs(blockers = setOf(HotspotStartBlocker.VPN))
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockLocation() {
+  PreviewMainDialogs(blockers = setOf(HotspotStartBlocker.LOCATION))
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockRequired() {
+  PreviewMainDialogs(blockers = HotspotStartBlocker.entries.filter { it.required })
+}
+
+@Preview
+@Composable
+private fun PreviewMainDialogsBlockSkippable() {
+  PreviewMainDialogs(blockers = HotspotStartBlocker.entries.filterNot { it.required })
 }

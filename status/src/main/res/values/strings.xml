@@ -16,7 +16,7 @@
   -->
 <resources>
   <!-- TODO Need translations -->
-  <string name="hotspot_configuration_title">%1$s Hotspot Configuration</string>
+  <string name="hotspot_configuration_title">Hotspot Configuration</string>
   <string
     name="hotspot_configuration_google_please"
   >This is not an account or a login.</string>

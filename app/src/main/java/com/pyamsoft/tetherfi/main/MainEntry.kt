@@ -280,6 +280,7 @@ fun MainEntry(
       },
       onOpenPermissionSettings = { onLaunchIntent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS) },
       onOpenLocationSettings = { onLaunchIntent(Settings.ACTION_LOCATION_SOURCE_SETTINGS) },
+      onOpenBackroundDataSettings = { onLaunchIntent(Settings.ACTION_IGNORE_BACKGROUND_DATA_RESTRICTIONS_SETTINGS) },
   )
 
   val isSettingsOpen by viewModel.isSettingsOpen.collectAsStateWithLifecycle()

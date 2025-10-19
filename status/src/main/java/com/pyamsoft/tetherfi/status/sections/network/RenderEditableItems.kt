@@ -205,7 +205,7 @@ private fun NetworkSetupExplainer(
   ) {
     Column {
       Text(
-          text = stringResource(R.string.hotspot_configuration_title, appName),
+          text = stringResource(R.string.hotspot_configuration_title),
           style =
               MaterialTheme.typography.bodyLarge.copy(
                   color = MaterialTheme.colorScheme.primary,
@@ -225,7 +225,7 @@ private fun NetworkSetupExplainer(
     ) {
       Icon(
           imageVector = Icons.Filled.Info,
-          contentDescription = stringResource(R.string.hotspot_configuration_title, appName),
+          contentDescription = stringResource(R.string.hotspot_configuration_title),
       )
     }
   }

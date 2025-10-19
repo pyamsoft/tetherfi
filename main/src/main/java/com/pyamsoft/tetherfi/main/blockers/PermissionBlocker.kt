@@ -59,9 +59,9 @@ internal fun PermissionBlocker(
   val neededPermission =
       remember(context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-          context.getString(R.string.permission_type_location)
+          context.getString(R.string.block_permission_type_location)
         } else {
-          context.getString(R.string.permission_type_nearby)
+          context.getString(R.string.block_permission_type_nearby)
         }
       }
 
@@ -73,7 +73,7 @@ internal fun PermissionBlocker(
         modifier =
             Modifier.padding(horizontal = MaterialTheme.keylines.content)
                 .padding(top = MaterialTheme.keylines.content),
-        text = stringResource(R.string.permission_title),
+        text = stringResource(R.string.block_permission_title),
         style = MaterialTheme.typography.headlineSmall,
     )
 
@@ -91,7 +91,7 @@ internal fun PermissionBlocker(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.permission_description, appName, neededPermission),
+            text = stringResource(R.string.block_permission_description, appName, neededPermission),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
@@ -103,7 +103,7 @@ internal fun PermissionBlocker(
             modifier =
                 Modifier.padding(horizontal = MaterialTheme.keylines.content)
                     .padding(top = MaterialTheme.keylines.content),
-            text = stringResource(R.string.permission_reassure, appName),
+            text = stringResource(R.string.block_permission_reassure, appName),
             style = MaterialTheme.typography.bodyLarge,
         )
       }
@@ -135,7 +135,7 @@ internal fun PermissionBlocker(
               ),
       ) {
         Text(
-            text = stringResource(R.string.permission_open_settings),
+            text = stringResource(R.string.block_permission_open_settings),
         )
       }
 
@@ -154,7 +154,7 @@ internal fun PermissionBlocker(
           },
       ) {
         Text(
-            text = stringResource(R.string.permission_deny),
+            text = stringResource(R.string.block_permission_deny),
         )
       }
 
@@ -165,7 +165,7 @@ internal fun PermissionBlocker(
           },
       ) {
         Text(
-            text = stringResource(R.string.permission_grant),
+            text = stringResource(R.string.block_permission_grant),
         )
       }
     }

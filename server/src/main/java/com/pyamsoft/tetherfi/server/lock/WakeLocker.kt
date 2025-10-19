@@ -17,7 +17,9 @@
 package com.pyamsoft.tetherfi.server.lock
 
 import android.annotation.SuppressLint
+import android.app.usage.NetworkStatsManager
 import android.content.Context
+import android.net.ConnectivityManager
 import android.os.PowerManager
 import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
