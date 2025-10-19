@@ -21,9 +21,9 @@ import android.net.ConnectivityManager
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.ThreadEnforcer
 import com.pyamsoft.pydroid.core.requireNotNull
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 internal class BackgroundDataGuardImpl
 @Inject
@@ -43,6 +43,7 @@ internal constructor(
 
         // We do NOT need to be whitelisted for "always", but we just can NOT be
         // restricted background
-        return@withContext backgroundStatus != ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED
+        return@withContext backgroundStatus !=
+            ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED
       }
 }

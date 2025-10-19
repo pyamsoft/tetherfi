@@ -37,11 +37,11 @@
 
   <string name="block_permission_title">權限請求</string>
   <string
-      name="block_permission_description"
-      >%1$s 需要 %2$s 權限以創建一個 Wi-Fi 群組</string>
+    name="block_permission_description"
+  >%1$s 需要 %2$s 權限以創建一個 Wi-Fi 群組</string>
   <string
-      name="block_permission_reassure"
-      >%1$s 不會使用這些權限來進行除了 Wi-Fi 群組建立以外的任何事情。</string>
+    name="block_permission_reassure"
+  >%1$s 不會使用這些權限來進行除了 Wi-Fi 群組建立以外的任何事情。</string>
   <string name="block_permission_open_settings">開啟設定</string>
   <string name="block_permission_deny">拒絕</string>
   <string name="block_permission_grant">授權</string>

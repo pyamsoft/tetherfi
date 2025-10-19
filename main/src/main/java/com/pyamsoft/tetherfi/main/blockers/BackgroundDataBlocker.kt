@@ -42,61 +42,64 @@ private enum class BackgroundDataBlockerContentTypes {
 
 @Composable
 internal fun BackgroundDataBlocker(
-  modifier: Modifier = Modifier,
-  appName: String,
-  onDismiss: () -> Unit,
-  onOpenBackgroundDataSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+    appName: String,
+    onDismiss: () -> Unit,
+    onOpenBackgroundDataSettings: () -> Unit,
 ) {
   val hapticManager = LocalHapticManager.current
 
   CardDialog(modifier = modifier, onDismiss = onDismiss) {
     Text(
-      modifier =
-        Modifier.padding(horizontal = MaterialTheme.keylines.content).padding(top = MaterialTheme.keylines.content),
-      text = stringResource(R.string.block_background_data_title),
-      style = MaterialTheme.typography.headlineSmall,
+        modifier =
+            Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                .padding(top = MaterialTheme.keylines.content),
+        text = stringResource(R.string.block_background_data_title),
+        style = MaterialTheme.typography.headlineSmall,
     )
 
     LazyColumn(modifier = Modifier.weight(weight = 1F, fill = false)) {
       item(contentType = BackgroundDataBlockerContentTypes.EXPLAIN) {
         Text(
-          modifier =
-            Modifier.padding(horizontal = MaterialTheme.keylines.content).padding(top = MaterialTheme.keylines.content),
-          text = stringResource(R.string.block_background_data_description, appName, appName),
-          style = MaterialTheme.typography.bodyLarge,
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(top = MaterialTheme.keylines.content),
+            text = stringResource(R.string.block_background_data_description, appName, appName),
+            style = MaterialTheme.typography.bodyLarge,
         )
       }
 
       item(contentType = BackgroundDataBlockerContentTypes.PRIVACY_POLICY) {
         ViewPrivacyPolicy(
-          modifier =
-            Modifier.padding(horizontal = MaterialTheme.keylines.content).padding(top = MaterialTheme.keylines.content),
-          appName = appName,
+            modifier =
+                Modifier.padding(horizontal = MaterialTheme.keylines.content)
+                    .padding(top = MaterialTheme.keylines.content),
+            appName = appName,
         )
       }
     }
 
     Row(
-      modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
-      verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.keylines.baseline),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
       Spacer(modifier = Modifier.weight(1F))
 
       TextButton(
-        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        onClick = {
-          hapticManager?.cancelButtonPress()
-          onDismiss()
-        },
+          colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+          onClick = {
+            hapticManager?.cancelButtonPress()
+            onDismiss()
+          },
       ) {
         Text(text = stringResource(android.R.string.cancel))
       }
 
       TextButton(
-        onClick = {
-          hapticManager?.confirmButtonPress()
-          onOpenBackgroundDataSettings()
-        }
+          onClick = {
+            hapticManager?.confirmButtonPress()
+            onOpenBackgroundDataSettings()
+          }
       ) {
         Text(text = stringResource(R.string.block_background_data_open_settings))
       }

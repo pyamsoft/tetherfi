@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 internal class PermissionGuardImpl
 @Inject
 internal constructor(
-  private val enforcer: ThreadEnforcer,
+    private val enforcer: ThreadEnforcer,
     private val context: Context,
 ) : PermissionGuard {
 

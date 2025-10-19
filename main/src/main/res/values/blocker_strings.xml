@@ -36,11 +36,11 @@
 
   <string name="block_permission_title">Permission Request</string>
   <string
-      name="block_permission_description"
-      >%1$s needs %2$s permission to create a Wi-Fi Group</string>
+    name="block_permission_description"
+  >%1$s needs %2$s permission to create a Wi-Fi Group</string>
   <string
-      name="block_permission_reassure"
-      >%1$s will not use these permissions for anything else but Wi-Fi Group creation.</string>
+    name="block_permission_reassure"
+  >%1$s will not use these permissions for anything else but Wi-Fi Group creation.</string>
   <string name="block_permission_open_settings">Open Settings</string>
   <string name="block_permission_deny">Deny</string>
   <string name="block_permission_grant">Grant</string>
@@ -51,5 +51,7 @@
 
   <!-- TODO(Peter): Need zh-rTW translation -->
   <string name="block_background_data_title">Background Data Required</string>
-  <string name="block_background_data_description">%1$s has trouble starting the hotspot Background Data usage permission is restricted. Please allow Background Data, or alternatively you can enable the \"%2$s\" tweak to test if this requirement is not needed for your device.</string>
+  <string
+    name="block_background_data_description"
+  >%1$s has trouble starting the hotspot Background Data usage permission is restricted. Please allow Background Data, or alternatively you can enable the \"%2$s\" tweak to test if this requirement is not needed for your device.</string>
 </resources>

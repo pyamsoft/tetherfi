@@ -27,10 +27,10 @@ import kotlinx.coroutines.withContext
 internal class AndroidHotspotRequirements
 @Inject
 internal constructor(
-  private val backgroundDataGuard: BackgroundDataGuard,
-  private val permissionGuard: PermissionGuard,
-  private val vpnChecker: VpnChecker,
-  private val locationChecker: LocationChecker,
+    private val backgroundDataGuard: BackgroundDataGuard,
+    private val permissionGuard: PermissionGuard,
+    private val vpnChecker: VpnChecker,
+    private val locationChecker: LocationChecker,
 ) : HotspotRequirements {
 
   override suspend fun blockers(): Collection<HotspotStartBlocker> =
