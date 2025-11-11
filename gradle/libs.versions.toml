@@ -6,7 +6,7 @@ compileSdk = "36"
 
 # Android Gradle
 agp = "8.13.1"
-cacheFix = "3.0.2"
+cacheFix = "3.0.3"
 
 # Kotlin
 kotlin = "2.2.21"
