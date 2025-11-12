@@ -70,11 +70,8 @@ class MainActivity : ComponentActivity() {
                   override val changelog = buildChangeLog {
                     //                    feature("Add unique Activities to turn the hotspot On or
                     // Off.")
-                    change(
-                        "Create a Tweak for holding the CPU WakeLock. Not every device needs this."
-                    )
-                    bugfix("Show more error information for devices with buggy Wi-Fi Direct.")
-                    bugfix("Guard against errors caused by bad Wi-Fi Direct")
+                    change("Apply the wakelocks closer to the proxy launch point")
+                    bugfix("Split up the CPU and Screen wakelocks")
                   }
                 },
         )
