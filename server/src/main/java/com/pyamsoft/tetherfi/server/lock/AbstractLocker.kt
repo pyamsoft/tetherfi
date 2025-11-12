@@ -112,8 +112,7 @@ internal abstract class AbstractLocker protected constructor() : Locker {
         }
 
     final override suspend fun release() =
-        withContext(context = Dispatchers.Default + NonCancellable) {
-          releaseLock(destroy = true) }
+        withContext(context = Dispatchers.Default + NonCancellable) { releaseLock(destroy = true) }
 
     @CheckResult protected abstract suspend fun isHeld(): Boolean
 
