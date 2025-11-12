@@ -278,6 +278,9 @@ internal constructor(
             // In a loop, we wait for new TCP connections and then offload them to their own
             // routine.
             while (!server.isClosed) {
+              // Hold a lock for the duration of the operation of this Socket
+              val lockReleaser = lock.acquire()
+
               // We must close the connection in the launch{} after exchange is over
               //
               // If this function throws, the server will stop
@@ -285,8 +288,6 @@ internal constructor(
 
               // Run this server loop off thread so we can handle multiple connections at once.
               launch(context = serverDispatcher.primary) {
-                // Hold a lock for the duration of the operation of this Socket
-                val lockReleaser = lock.acquire()
                 try {
                   // Track this socket to close it later
                   tracker.track(connection)
