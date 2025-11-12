@@ -17,10 +17,12 @@
 package com.pyamsoft.tetherfi.server.lock
 
 import com.pyamsoft.tetherfi.server.ServerInternalApi
+import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @Singleton
@@ -28,10 +30,16 @@ internal class LockerImpl
 @Inject
 internal constructor(
     // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
-    @param:ServerInternalApi private val lockers: MutableSet<Locker>
+    @param:ServerInternalApi private val lockers: MutableSet<Locker>,
+    private val tweakPreferences: TweakPreferences,
 ) : Locker {
   override suspend fun createLock(): Locker.Lock =
       withContext(context = Dispatchers.Default) {
+        val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
+        if (!isWakeLockEnabled) {
+          return@withContext NoopLock
+        }
+
         return@withContext Lock(locks = lockers.map { it.createLock() })
       }
 

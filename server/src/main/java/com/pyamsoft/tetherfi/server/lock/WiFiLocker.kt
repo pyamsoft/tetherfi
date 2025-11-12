@@ -24,18 +24,13 @@ import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @Singleton
-internal class WiFiLocker
-@Inject
-internal constructor(context: Context, private val tweakPreferences: TweakPreferences) :
-    AbstractLocker() {
+internal class WiFiLocker @Inject internal constructor(context: Context) : AbstractLocker() {
 
   private val wifiManager by lazy {
     context.applicationContext.getSystemService<WifiManager>().requireNotNull()
@@ -50,13 +45,8 @@ internal constructor(context: Context, private val tweakPreferences: TweakPrefer
 
   override suspend fun createLock(): Locker.Lock =
       withContext(context = Dispatchers.Default) {
-        val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
-        if (isWakeLockEnabled) {
-          val wifiLock = createWiFiLock()
-          return@withContext Lock(wifiLock, tag)
-        }
-
-        return@withContext NoopLock
+        val wifiLock = createWiFiLock()
+        return@withContext Lock(wifiLock, tag)
       }
 
   internal class Lock(private val wifiLock: WifiLock, lockTag: String) :

@@ -23,22 +23,13 @@ import androidx.annotation.CheckResult
 import androidx.core.content.getSystemService
 import com.pyamsoft.pydroid.core.requireNotNull
 import com.pyamsoft.tetherfi.core.Timber
-import com.pyamsoft.tetherfi.server.StatusPreferences
-import com.pyamsoft.tetherfi.server.TweakPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @Singleton
-internal class WakeLocker
-@Inject
-internal constructor(
-    context: Context,
-    private val statusPreferences: StatusPreferences,
-    private val tweakPreferences: TweakPreferences,
-) : AbstractLocker() {
+internal class CPULocker @Inject internal constructor(context: Context) : AbstractLocker() {
 
   private val powerManager by lazy {
     context.applicationContext.getSystemService<PowerManager>().requireNotNull()
@@ -47,30 +38,9 @@ internal constructor(
   private val tag by lazy { createTag(context.applicationContext.packageName) }
 
   @CheckResult
-  @Suppress("DEPRECATION")
-  private fun resolveValidBrightWakeLockLevel(): Int {
-    if (powerManager.isWakeLockLevelSupported(PowerManager.SCREEN_BRIGHT_WAKE_LOCK)) {
-      Timber.d { "KeepScreenOn: Create new wake lock with SCREEN_BRIGHT_WAKE_LOCK" }
-      return PowerManager.SCREEN_BRIGHT_WAKE_LOCK
-    } else {
-      Timber.d {
-        "KeepScreenOn: Create new wake lock with PARTIAL_WAKE_LOCK (SCREEN_BRIGHT_WAKE_LOCK unsupported)"
-      }
-      return PowerManager.PARTIAL_WAKE_LOCK
-    }
-  }
-
-  @CheckResult
-  private suspend fun createWakeLock(): PowerManager.WakeLock {
-    val isKeepScreenOn = statusPreferences.listenForKeepScreenOn().first()
-
-    val wakeLockLevel: Int
-    if (isKeepScreenOn) {
-      wakeLockLevel = resolveValidBrightWakeLockLevel()
-    } else {
-      Timber.d { "Create new wake lock with PARTIAL_WAKE_LOCK" }
-      wakeLockLevel = PowerManager.PARTIAL_WAKE_LOCK
-    }
+  private fun createWakeLock(): PowerManager.WakeLock {
+    Timber.d { "Create new wake lock with PARTIAL_WAKE_LOCK" }
+    val wakeLockLevel = PowerManager.PARTIAL_WAKE_LOCK
 
     return powerManager.newWakeLock(wakeLockLevel, tag).apply {
       // We will count our own refs
@@ -80,19 +50,12 @@ internal constructor(
 
   override suspend fun createLock(): Locker.Lock =
       withContext(context = Dispatchers.Default) {
-        val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
-        if (isWakeLockEnabled) {
-          val wakeLock = createWakeLock()
-          return@withContext Lock(wakeLock, tag)
-        }
-
-        return@withContext NoopLock
+        val wakeLock = createWakeLock()
+        return@withContext Lock(wakeLock, tag)
       }
 
-  internal class Lock(
-      private val wakeLock: PowerManager.WakeLock,
-      lockTag: String,
-  ) : AbstractLock(lockType = "CPU", lockTag = lockTag) {
+  internal class Lock(private val wakeLock: PowerManager.WakeLock, lockTag: String) :
+      AbstractLock(lockType = "CPU", lockTag = lockTag) {
 
     override suspend fun isHeld(): Boolean {
       return wakeLock.isHeld
@@ -113,7 +76,7 @@ internal constructor(
     @JvmStatic
     @CheckResult
     private fun createTag(name: String): String {
-      return "${name}:PROXY_WAKE_LOCK"
+      return "${name}:CPU_WAKE_LOCK"
     }
   }
 }

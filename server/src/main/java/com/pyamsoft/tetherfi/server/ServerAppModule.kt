@@ -32,9 +32,10 @@ import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.StartedClients
 import com.pyamsoft.tetherfi.server.event.ServerShutdownEvent
 import com.pyamsoft.tetherfi.server.event.ServerStopRequestEvent
+import com.pyamsoft.tetherfi.server.lock.CPULocker
 import com.pyamsoft.tetherfi.server.lock.Locker
 import com.pyamsoft.tetherfi.server.lock.LockerImpl
-import com.pyamsoft.tetherfi.server.lock.WakeLocker
+import com.pyamsoft.tetherfi.server.lock.ScreenLocker
 import com.pyamsoft.tetherfi.server.lock.WiFiLocker
 import com.pyamsoft.tetherfi.server.network.AndroidSocketBinder
 import com.pyamsoft.tetherfi.server.network.SocketBinder
@@ -174,7 +175,12 @@ abstract class ServerAppModule {
   internal abstract fun bindSocksProxySession(impl: SOCKSProxySession): ProxySession<TcpProxyData>
 
   // Lockers
-  @Binds @IntoSet @ServerInternalApi internal abstract fun bindWakeLocker(impl: WakeLocker): Locker
+  @Binds
+  @IntoSet
+  @ServerInternalApi
+  internal abstract fun bindScreenLocker(impl: ScreenLocker): Locker
+
+  @Binds @IntoSet @ServerInternalApi internal abstract fun bindCPULocker(impl: CPULocker): Locker
 
   @Binds @IntoSet @ServerInternalApi internal abstract fun bindWiFiLocker(impl: WiFiLocker): Locker
 
