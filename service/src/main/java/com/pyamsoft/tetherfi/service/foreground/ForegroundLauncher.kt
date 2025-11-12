@@ -16,6 +16,7 @@
 
 package com.pyamsoft.tetherfi.service.foreground
 
+import com.pyamsoft.tetherfi.core.Timber
 import com.pyamsoft.tetherfi.server.broadcast.BroadcastNetwork
 import com.pyamsoft.tetherfi.server.lock.Locker
 import javax.inject.Inject

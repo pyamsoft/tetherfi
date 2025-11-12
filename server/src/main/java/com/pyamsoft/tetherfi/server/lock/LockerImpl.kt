@@ -18,41 +18,42 @@ package com.pyamsoft.tetherfi.server.lock
 
 import com.pyamsoft.tetherfi.server.ServerInternalApi
 import com.pyamsoft.tetherfi.server.TweakPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 internal class LockerImpl
 @Inject
 internal constructor(
-    // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
-    @param:ServerInternalApi private val lockers: MutableSet<Locker>,
-    private val tweakPreferences: TweakPreferences,
+  // Need to use MutableSet instead of Set because of Java -> Kotlin fun.
+  @param:ServerInternalApi private val lockers: MutableSet<Locker>,
+  private val tweakPreferences: TweakPreferences,
 ) : Locker {
   override suspend fun createLock(): Locker.Lock =
-      withContext(context = Dispatchers.Default) {
-        val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
-        if (!isWakeLockEnabled) {
-          return@withContext NoopLock
-        }
-
-        return@withContext Lock(locks = lockers.map { it.createLock() })
+    withContext(context = Dispatchers.Default) {
+      val isWakeLockEnabled = tweakPreferences.listenForWakeLock().first()
+      if (!isWakeLockEnabled) {
+        return@withContext NoopLock
       }
+
+      return@withContext Lock(locks = lockers.map { it.createLock() })
+    }
 
   private class Lock(private val locks: Collection<Locker.Lock>) : Locker.Lock {
     override suspend fun acquire(): Locker.Lock.Releaser =
-        withContext(context = Dispatchers.Default) {
-          val acquiredLocks = locks.map { it.acquire() }
-          return@withContext Locker.Lock.Releaser { acquiredLocks.forEach { it.release() } }
+      withContext(context = Dispatchers.Default) {
+        val acquiredLocks = locks.map { it.acquire() }
+
+        return@withContext Locker.Lock.Releaser {
+          withContext(context = Dispatchers.Default + NonCancellable) { acquiredLocks.forEach { it.release() } }
         }
+      }
 
     override suspend fun release() =
-        withContext(context = Dispatchers.Default) {
-          withContext(context = NonCancellable) { locks.forEach { it.release() } }
-        }
+      withContext(context = Dispatchers.Default + NonCancellable) { locks.forEach { it.release() } }
   }
 }

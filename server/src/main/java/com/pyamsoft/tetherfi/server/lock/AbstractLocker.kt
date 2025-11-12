@@ -40,10 +40,6 @@ internal abstract class AbstractLocker protected constructor() : Locker {
     private val alive = MutableStateFlow(true)
     private val refCount = MutableStateFlow(0)
 
-    /** A release that can not be cancelled */
-    private suspend fun safeRelease(destroy: Boolean) =
-        withContext(context = NonCancellable) { releaseLock(destroy) }
-
     private suspend fun withMutexAcquireLock() {
       if (!isHeld()) {
         Timber.d { "####################################" }
@@ -108,11 +104,16 @@ internal abstract class AbstractLocker protected constructor() : Locker {
         withContext(context = Dispatchers.Default) {
           acquireLock()
 
-          return@withContext Locker.Lock.Releaser { safeRelease(destroy = false) }
+          return@withContext Locker.Lock.Releaser {
+            withContext(context = Dispatchers.Default + NonCancellable) {
+              releaseLock(destroy = false)
+            }
+          }
         }
 
     final override suspend fun release() =
-        withContext(context = Dispatchers.Default) { safeRelease(destroy = true) }
+        withContext(context = Dispatchers.Default + NonCancellable) {
+          releaseLock(destroy = true) }
 
     @CheckResult protected abstract suspend fun isHeld(): Boolean
 
