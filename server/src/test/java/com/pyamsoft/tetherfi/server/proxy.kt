@@ -27,6 +27,8 @@ import com.pyamsoft.tetherfi.server.clients.BlockedClients
 import com.pyamsoft.tetherfi.server.clients.ByteTransferReport
 import com.pyamsoft.tetherfi.server.clients.ClientResolver
 import com.pyamsoft.tetherfi.server.clients.TetherClient
+import com.pyamsoft.tetherfi.server.lock.Locker
+import com.pyamsoft.tetherfi.server.lock.NoopLock
 import com.pyamsoft.tetherfi.server.network.PassthroughSocketBinder
 import com.pyamsoft.tetherfi.server.network.PreferredNetwork
 import com.pyamsoft.tetherfi.server.proxy.ServerDispatcher
@@ -51,6 +53,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import timber.log.Timber
@@ -245,6 +248,7 @@ internal suspend fun setupProxy(
               scope.async {
                 val block = suspend {
                   manager.loop(
+                      lock = NoopLock,
                       onOpened = {},
                       onClosing = {},
                       onError = { e ->
@@ -286,7 +290,7 @@ internal suspend fun setupProxy(
   }
 
   // Wait for all jobs to be done
-  jobs.forEach { it.join() }
+  jobs.joinAll()
 
   tree?.also { Timber.uproot(it) }
 }

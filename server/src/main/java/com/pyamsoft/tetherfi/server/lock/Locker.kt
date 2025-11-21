@@ -18,7 +18,7 @@ package com.pyamsoft.tetherfi.server.lock
 
 import androidx.annotation.CheckResult
 
-interface Locker {
+fun interface Locker {
 
   @CheckResult suspend fun createLock(): Lock
 
